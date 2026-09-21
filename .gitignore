@@ -1,0 +1,20 @@
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.env/
+.venv/
+env/
+venv/
+
+# Secrets & Configuration
+.env
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# Media / Uploads
+media/
