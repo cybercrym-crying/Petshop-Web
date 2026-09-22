@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE>
+<html>
+    <head>
+        <title>Register</title>
+        <link rel="stylesheet" href="{% static 'styles/register.css' %}" />
+    </head>
+    <body>
+        <h1>Register Form</h1>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <p>
+                    {{ field.label_tag }}
+                    <br>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <span style="color: red; font-size: 14px;">{{ error }}</span>
+                    {% endfor %}
+                </p>
+            {% endfor %}
+            <button type="submit">Submit</button>
+        </form>
+    </body>
+</html>

@@ -7,7 +7,7 @@ class Role(models.TextChoices):
     OWNER = "OWNER"
     CASHIER = "CASHIER"
     WAREHOUSE = "WAREHOUSE"
-    GROOMING = "GROOMING"
+    SERVICE = "SERVICE"
 
 
 class Animal(models.TextChoices):
@@ -19,15 +19,12 @@ class Animal(models.TextChoices):
 class User(AbstractUser):
     first_name = None
     last_name = None
-    email = None
-    pass
 
 
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, null=False)
     phone_number = models.CharField(max_length=12, null=False)
-    email = models.CharField(max_length=100, default="", blank=True)
 
     class Meta:
         abstract = True

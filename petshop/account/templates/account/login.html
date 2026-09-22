@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE>
+<html>
+    <head>
+        <title>Login</title>
+        <link rel="stylesheet" href="{% static 'styles/login.css' %}" />
+    </head>
+    <body>
+        <h1>Login Form</h1>
+        <form method="post">
+            {% csrf_token %} {{ form.as_p }}
+            <button type="submit">Submit</button>
+        </form>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+            <style>
+    .error{
+      color: red;
+    }
+            </style>
+        {% endif %}
+    </body>
+</html>
