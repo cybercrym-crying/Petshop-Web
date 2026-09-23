@@ -46,6 +46,7 @@ def register_success_view(request):
 
 
 def login_form(request):
+    print(f"METHOD: {request.method}")
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
