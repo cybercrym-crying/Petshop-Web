@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout  # type: ignore
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django import template
-from .models import Employee, Customer
+from .models import Customer
 from .form import RegisterForm, LoginForm
 from django.contrib.auth import get_user_model
 
@@ -12,7 +12,7 @@ User = get_user_model()
 
 
 def home(request):
-    list_employee = Employee.objects.all()
+    list_employee = User.objects.all()
     context = {"list_employee": list_employee}
     return render(request, "index.html", context)
 
@@ -46,25 +46,17 @@ def register_success_view(request):
 
 
 def login_form(request):
-    print(f"METHOD: {request.method}")
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)  # type: ignore
-            if hasattr(user, "employee"):
-                match user.employee.role:  # type: ignore
-                    case "OWNER":
-                        return redirect("admin/")
-                    case "CASHIER":
-                        return redirect("cashier_dashboard")
-                    case "WAREHOUSE":
-                        return redirect("warehouse_dashboard")
-                    case "SERVICE":
-                        return redirect("service_dashboard")
-            else:
-                return redirect("customer_dashboard")
+            match user.role:  # type: ignore
+                case "ADMIN":
+                    return redirect("/admin/")
+                case "COURIR":
+                    return redirect("#")
         else:
             error_message = "Invalid Credential"
             form = LoginForm()

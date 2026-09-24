@@ -8,6 +8,11 @@ class Category(models.Model):
     ACCESSORIES = "ACCESSORIES"
 
 
+class MutationType(models.TextChoices):
+    IN = "IN"
+    OUT = "OUT"
+
+
 class Product(models.Model):
     category = models.ForeignKey(Category, null=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=255, null=False, blank=False)
@@ -15,6 +20,8 @@ class Product(models.Model):
     selling_price = models.PositiveBigIntegerField(null=True, blank=True)
     stock = models.PositiveIntegerField(null=False, default=0)
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
     image = models.ImageField(upload_to="products", null=True, blank=True)
 
 

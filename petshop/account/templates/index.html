@@ -1,22 +1,112 @@
 {% load static %}
-<!DOCTYPE>
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
-        <title>Home Page</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Home</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-              rel="stylesheet">
+              rel="stylesheet" />
+        <style>
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        background-color: #f7f1ea;
+      }
+
+      .navbar-custom {
+        background: #f7f1ea;
+        padding: 18px 40px;
+      }
+
+      .nav-link-custom {
+        color: #333;
+        font-size: 0.95rem;
+        margin: 0 16px;
+        text-decoration: none;
+      }
+
+      .search-box {
+        border-radius: 30px;
+        border: 1px solid #e5ddd0;
+        padding: 8px 20px;
+        width: 280px;
+        background: #fdfbf8;
+      }
+
+      .cart-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: #f2e4f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+
+      .hero-section {
+        background: linear-gradient(180deg, #cbaee0 0%, #e9ddec 55%, #f7f1ea 100%);
+        padding: 60px 40px 50px;
+        margin-top: -1px;
+      }
+
+      .btn-shop-solid {
+        background-color: #b98fce;
+        color: #fff;
+        border: none;
+        font-weight: 500;
+      }
+      .btn-shop-solid:hover {
+        background-color: #a87dbd;
+        color: #fff;
+      }
+
+      .btn-shop-outline {
+        background-color: #fdfbf8;
+        color: #b98fce;
+        border: 1px solid #d9c3e3;
+        font-weight: 500;
+      }
+      .btn-shop-outline:hover {
+        background-color: #f2e4f5;
+      }
+        </style>
     </head>
     <body>
-        <h1>Welcome To The Petshop</h1>
-        <div class="register">
-            <form action="{% url 'register_form' %}" method ="get">
-                <button type="submit" class="btn">Register</button>
-            </form>
-        </div>
-        <div class="login">
-            <form action='{% url 'login_form' %}' method="get">
-                <button type="submit" class="btn">Login</button>
-            </form>
+        <nav class="navbar-custom d-flex align-items-center justify-content-between">
+            <div class="fw-bold fs-4">Logo</div>
+            <div class="d-none d-md-flex">
+                <a href="#" class="nav-link-custom">Product</a>
+                <a href="#" class="nav-link-custom">Service</a>
+                <a href="#" class="nav-link-custom">Customer Service</a>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <input type="text" class="search-box" placeholder="" />
+                <div class="cart-btn">🛒</div>
+            </div>
+        </nav>
+        <div class="hero-section">
+            <h1 class="fw-bold" style="font-size: 2.5rem;">
+                Everthing your pet
+                <br />
+                need in one place
+            </h1>
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">
+                food, toys, accessories
+                <br />
+                and more for your best friend
+            </p>
+            <div class="d-flex gap-3">
+                <a href="{% url 'register_form' %}"
+                   class="btn btn-shop-solid rounded-pill px-4 py-2">Register</a>
+                <a href="{% url 'login_form' %}"
+                   class="btn btn-shop-outline rounded-pill px-4 py-2">Login</a>
+            </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>

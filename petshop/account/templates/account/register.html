@@ -1,25 +1,185 @@
-{% load static %}
-<!DOCTYPE>
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
-        <title>Register</title>
-        <link rel="stylesheet" href="{% static 'styles/register.css' %}" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>register</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+              rel="stylesheet" />
+        <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      .side-panel {
+        min-height: 100vh;
+        background: linear-gradient(
+          160deg,
+          #c9c9d8 0%,
+          #d9b8dd 45%,
+          #cfa0d6 100%
+        );
+      }
+
+      .main-panel {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f7f1ea 0%, #eef2e2 100%);
+      }
+
+      .form-wrap {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .form-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 0.35rem;
+      }
+
+      .form-control {
+        border-radius: 6px;
+        padding: 0.6rem 0.8rem;
+      }
+
+      .btn-register {
+        background-color: rgba(152, 80, 197, 0.42);
+        border: none;
+        color: #fff;
+        font-weight: 500;
+      }
+      .btn-register:hover {
+        background-color: rgba(152, 80, 197, 0.55);
+        color: #fff;
+      }
+
+      .toggle-password {
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: #6c757d;
+      }
+
+      .form-check-input:checked {
+        background-color: #9850c5;
+        border-color: #9850c5;
+      }
+
+      a.link-purple {
+        color: #9850c5;
+        text-decoration: none;
+        font-size: 0.85rem;
+      }
+      a.link-purple:hover {
+        text-decoration: underline;
+      }
+        </style>
     </head>
     <body>
-        <h1>Register Form</h1>
-        <form method="post">
-            {% csrf_token %}
-            {% for field in form %}
-                <p>
-                    {{ field.label_tag }}
-                    <br>
-                    {{ field }}
-                    {% for error in field.errors %}
-                        <span style="color: red; font-size: 14px;">{{ error }}</span>
-                    {% endfor %}
-                </p>
-            {% endfor %}
-            <button type="submit">Submit</button>
-        </form>
-    </body>
-</html>
+        <div class="row g-0">
+            <div class="col-12 col-md-4 side-panel p-5">
+                <h5 class="fw-bold mb-0"
+                    style="margin-left: 10px;
+                           margin-top: 10px;
+                           font-size: 100px">Register First!</h5>
+            </div>
+            <div class="col-12 col-md-8 main-panel d-flex flex-column align-items-center justify-content-center p-4">
+                <div class="form-wrap">
+                    <h2 class="fw-bold text-center mb-1"
+                        style="font-size: 1.8rem">Find everything that you need for your pet</h2>
+                    <p class="text-center text-muted mb-4" style="font-size: 0.9rem">Regist to make new account</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text"
+                                   name="username"
+                                   class="form-control"
+                                   id="username"
+                                   placeholder="Enter your username" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text"
+                                   name="name"
+                                   class="form-control"
+                                   id="name"
+                                   placeholder="Enter your full name" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="text"
+                                   name="email"
+                                   class="form-control"
+                                   id="email"
+                                   placeholder="Enter your email" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="text"
+                                   name="phone_number"
+                                   class="form-control"
+                                   id="phone_number"
+                                   placeholder="Enter your phone number" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <input type="password"
+                                       name="password"
+                                       class="form-control border-end-0"
+                                       id="password"
+                                       placeholder="Enter your password" />
+                                <button class="btn border border-start-0 toggle-password"
+                                        type="button"
+                                        onclick="togglePassword()">
+                                    <span id="eye-icon">👁</span>
+                                </button>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password_confirm" class="form-label">Password Confirm</label>
+                                <div class="input-group">
+                                    <input type="password"
+                                           name="password_confirm"
+                                           class="form-control border-end-0"
+                                           id="password_confirm"
+                                           placeholder="Enter your password again" />
+                                    <button class="btn border border-start-0 toggle-password"
+                                            type="button"
+                                            onclick="togglePassword()">
+                                        <span id="eye-icon">👁</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+
+                            <button type="submit"
+                                    class="btn btn-register rounded-pill w-100 py-2 mb-3">Register</button>
+                            <p class="text-center text-muted mb-0" style="font-size: 0.85rem">
+                                Already have an account?
+                                <a href="/login" class="link-purple">Login here</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <script>
+      function togglePassword() {
+        const input = document.getElementById("password");
+        const icon = document.getElementById("eye-icon");
+        if (input.type === "password") {
+          input.type = "text";
+          icon.innerHTML = "&#128064;&#65039;";
+        } else {
+          input.type = "password";
+          icon.innerHTML = "&#128065;";
+        }
+      }
+            </script>
+        </body>
+    </html>
