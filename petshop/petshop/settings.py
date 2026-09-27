@@ -130,3 +130,7 @@ MAILERS = {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
+
+#HazeTest
+LOGIN_URL = "login_form"
+LOGIN_REDIRECT_URL = "home"
