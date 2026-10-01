@@ -1,23 +1,30 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib.auth import authenticate, login, logout  # type: ignore
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django import template
-from .models import Customer
-from .form import RegisterForm, LoginForm
 from django.contrib.auth import get_user_model
+from .models import Customer, Role
+from .form import RegisterForm, LoginForm
+from .decorators import roleRequired
 
 User = get_user_model()
 
+# Peta role -> nama url dashboard masing-masing, dipakai login_form buat
+# redirect otomatis setelah login, dan dipakai lagi kalau butuh link "ke
+# dashboard saya" di template manapun.
+ROLE_DASHBOARD_URL_NAME = {
+    Role.OWNER: "staff_owner_dashboard",
+    Role.KASIR: "staff_cashier_dashboard",
+    Role.STAF_GUDANG: "staff_warehouse_dashboard",
+    Role.GROOMER: "staff_service_dashboard",
+    Role.PELANGGAN: "customer_dashboard",
+}
+
 
 def home(request):
-    list_employee = User.objects.all()
-    context = {"list_employee": list_employee}
-    return render(request, "index.html", context)
+    return render(request, "index.html")
 
 
-def register_form(request):
+def registerForm(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -25,78 +32,79 @@ def register_form(request):
             password = form.cleaned_data.get("password")
             name = form.cleaned_data.get("name")
             email = form.cleaned_data.get("email")
-            phone_number = form.cleaned_data.get("phone_number")
-            user = User(username=username, email=email)  # type: ignore
-            user.set_password(password)
+            phoneNumber = form.cleaned_data.get("phoneNumber")
+            address = form.cleaned_data.get("address")
 
+            user = User(username=username, email=email, name=name, role=Role.PELANGGAN)
+            user.set_password(password)
             user.save()
-            customer = Customer.objects.create(
-                user=user, name=name, phone_number=phone_number
+
+            Customer.objects.create(
+                user=user, name=name, phoneNumber=phoneNumber, address=address
             )
-            login(request, user)  # type: ignore
+
+            login(request, user)
             return redirect("register_success")
     else:
         form = RegisterForm()
-    context = {"form": form}
-    return render(request, "account/register.html", context)
+    return render(request, "account/register.html", {"form": form})
 
 
-def register_success_view(request):
+def registerSuccessView(request):
     return render(request, "account/register_success.html")
 
 
-def login_form(request):
+def loginForm(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)  # type: ignore
-            match user.role:  # type: ignore
-                case "ADMIN":
-                    return redirect("/admin/")
-                case "COURIR":
-                    return redirect("#")
+            login(request, user)
+            dashboardUrlName = ROLE_DASHBOARD_URL_NAME.get(user.role)
+            if dashboardUrlName:
+                return redirect(dashboardUrlName)
+            # role tidak dikenali/kosong — fallback aman daripada error None
+            return redirect("home")
         else:
-            error_message = "Invalid Credential"
+            errorMessage = "Invalid Credential"
             form = LoginForm()
-            context = {"error": error_message, "form": form}
-            return render(request, "account/login.html", context)
+            return render(request, "account/login.html", {"error": errorMessage, "form": form})
     else:
         form = LoginForm()
         return render(request, "account/login.html", {"form": form})
 
 
-def logout_form(request):
+def logoutForm(request):
     if request.method == "POST":
         logout(request)
         return redirect("home")
-    else:
-        return redirect("customer_dashboard")
+    return redirect("home")
 
 
 @login_required
-def customer(request):
-    username = request.user.username
-    return render(request, "customer/dashboard.html", {"username": username})
+def customerDashboard(request):
+    return render(request, "customer/dashboard.html", {"username": request.user.username})
 
 
-@login_required
-def cashier(request):
-    username = request.user.username
-    return render(request, "cashier/dashboard.html", {"username": username})
+# --- Dashboard staff, dipindah ke prefix /staff/ (bukan /admin/) supaya
+# tidak bentrok dengan Django admin bawaan yang tetap jalan di /admin/. ---
+
+@roleRequired(Role.OWNER)
+def staffOwnerDashboard(request):
+    return render(request, "staff/owner/dashboard.html", {"username": request.user.username})
 
 
-@login_required
-def warehouse(request):
-    username = request.user.username
-    return render(request, "warehouse/dashboard.html", {"username": username})
+@roleRequired(Role.KASIR)
+def staffCashierDashboard(request):
+    return render(request, "staff/cashier/dashboard.html", {"username": request.user.username})
 
 
-@login_required
-def service(request):
-    username = request.user.username
-    return render(request, "service/dashboard.html", {"username": username})
+@roleRequired(Role.STAF_GUDANG)
+def staffWarehouseDashboard(request):
+    return render(request, "staff/warehouse/dashboard.html", {"username": request.user.username})
 
 
-# Create your views here.
+@roleRequired(Role.GROOMER)
+def staffServiceDashboard(request):
+    return render(request, "staff/service/dashboard.html", {"username": request.user.username})
