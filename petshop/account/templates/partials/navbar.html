@@ -1,14 +1,14 @@
+<!--
 <nav class="navbar-custom d-flex align-items-center justify-content-between">
-    <a href="{% url 'home' %}" class="fw-bold fs-4 text-decoration-none text-dark">Petshop</a>
-
+    <a href="{% url 'home' %}"
+       class="fw-bold fs-4 text-decoration-none text-dark">Petshop</a>
     <div class="d-none d-md-flex align-items-center">
         <a href="{% url 'product_catalog' %}" class="nav-link-custom">Katalog Produk</a>
-
         {% if user.is_authenticated %}
             {% if user.role == "PELANGGAN" %}
                 <a href="{% url 'customer_dashboard' %}" class="nav-link-custom">Dashboard Saya</a>
-            {% elif user.role == "OWNER" %}
-                <a href="{% url 'staff_owner_dashboard' %}" class="nav-link-custom">Dashboard Owner</a>
+            {% elif user.role == "ADMIN" %}
+                <a href="{% url 'staff_admin_dashboard' %}" class="nav-link-custom">Dashboard admin</a>
                 <a href="{% url 'product_list' %}" class="nav-link-custom">Data Produk</a>
             {% elif user.role == "KASIR" %}
                 <a href="{% url 'staff_cashier_dashboard' %}" class="nav-link-custom">Dashboard Kasir</a>
@@ -22,7 +22,6 @@
             {% endif %}
         {% endif %}
     </div>
-
     <div class="d-flex align-items-center gap-2">
         {% if user.is_authenticated %}
             <span class="text-muted" style="font-size: 0.85rem;">Hi, {{ user.name }}</span>
@@ -31,7 +30,8 @@
                 <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill">Logout</button>
             </form>
         {% else %}
-            <a href="{% url 'login_form' %}" class="btn btn-brand btn-sm rounded-pill px-3">Login</a>
+            <a href="{% url 'login_form' %}"
+               class="btn btn-brand btn-sm rounded-pill px-3">Login</a>
         {% endif %}
     </div>
-</nav>
+</nav> -->

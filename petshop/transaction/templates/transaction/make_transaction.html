@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>PetAdmin - Make Transaction</title>
+        <link href="{% static 'styles/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+              rel="stylesheet" />
+        <link rel="stylesheet"
+              href="{% static 'transaction/css/manage_transaction.css' %}">
+    </head>
+    <body>
+        <nav class="navbar-petadmin">
+            <div class="brand">
+                <span class="brand-logo">L</span>
+                <a href="/staff/admin/dashboard">
+                    <span class="brand-name">PetAdmin</span>
+                </a>
+            </div>
+            <div class="pill-name">{{ request.user.get_full_name|default:"Name" }}</div>
+        </nav>
+        <main>
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                             role="alert">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <!-- pencarian -->
+            <div class="catalog-col">
+                <p class="eyebrow">Dashboard</p>
+                <h1 class="page-title">Make Transaction</h1>
+                <form class="search-form"
+                      method="get"
+                      action="{% url 'transaction:make_transaction' %}">
+                    <input type="search"
+                           name="q"
+                           value="{{ request.GET.q }}"
+                           class="filter-input"
+                           placeholder="Search"
+                           aria-label="Search Produk" />
+                </form>
+                <div class="product-grid">
+                    {% for p in products %}
+                        <div class="product-card">
+                            <form method="post" action="{% url 'transaction:add_to_cart' p.pk %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="card-trigger"
+                                        {% if p.stock == 0 %}disabled{% endif %}>
+                                    <div class="product-photo">
+                                        {% if p.photo %}
+                                            <img src="{{ p.photo.url }}" alt="{{ p.name }}" />
+                                        {% else %}
+                                            Photo
+                                        {% endif %}
+                                    </div>
+                                    <div class="product-body">
+                                        <p class="product-name">{{ p.name }}</p>
+                                        <p class="product-price">
+                                            {% if p.selling_price %}
+                                                Rp. {{ p.selling_price|floatformat:0 }}
+                                            {% else %}
+                                                Harga belum diset
+                                            {% endif %}
+                                        </p>
+                                        <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% endif %}">Stock {{ p.stock }}</span>
+                                    </div>
+                                </button>
+                            </form>
+                        </div>
+                    {% empty %}
+                        <div class="empty-state">
+                            {% if request.GET.q %}
+                                Tidak ada produk yang cocok dengan pencarian.
+                            {% else %}
+                                Belum ada produk yang bisa dijual.
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <aside class="order-panel">
+                <h2 class="order-title">Order Summary</h2>
+                <div class="order-list">
+                    {% for item in cart_items %}
+                        <div class="order-line">
+                            <div>
+                                <div class="order-line-name">{{ item.product.name }} x{{ item.quantity }}</div>
+                                <form method="post"
+                                      action="{% url 'transaction:remove_from_cart' item.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="order-line-remove">Remove</button>
+                                </form>
+                            </div>
+                            <div>Rp. {{ item.subtotal|floatformat:0 }}</div>
+                        </div>
+                    {% empty %}
+                        <p class="order-empty">Click product on the left, to fill this order.</p>
+                    {% endfor %}
+                </div>
+                <div class="order-total">
+                    <span>Total</span>
+                    <span>Rp. {{ cart_total|floatformat:0 }}</span>
+                </div>
+                <form method="post" action="{% url 'transaction:submit_transaction' %}">
+                    {% csrf_token %}
+                    <div class="order-field">
+                        <label for="payment-method">Payment Method</label>
+                        <select id="payment-method"
+                                name="payment_method"
+                                class="order-input"
+                                required>
+                            <option value="CASH">Cash</option>
+                            <option value="TRANSFER">Transfer</option>
+                        </select>
+                    </div>
+                    <div class="order-field">
+                        <label for="courier">Courier</label>
+                        <select id="courier" name="courier" class="order-input">
+                            <option value="">- Select Courier -</option>
+                            {% for c in couriers %}<option value="{{ c.pk }}">{{ c.first_name }} {{ c.last_name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="order-field">
+                        <label for="customer">Customer</label>
+                        <select id="customer" name="customer" class="order-input" required>
+                            <option value="">- Select Customer -</option>
+                            {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="order-actions">
+                        <button type="submit"
+                                formaction="{% url 'transaction:cancel_transaction' %}"
+                                class="btn-order-cancel">Cancel</button>
+                        <button type="submit"
+                                class="btn-order-submit"
+                                {% if not cart_items %}disabled{% endif %}>Submit</button>
+                    </div>
+                </form>
+            </aside>
+        </main>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

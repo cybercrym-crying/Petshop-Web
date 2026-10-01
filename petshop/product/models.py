@@ -27,17 +27,17 @@ class MutationType(models.TextChoices):
 class Product(models.Model):
     category = models.ForeignKey(Category, null=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=255, null=False, blank=False)
-    purchasePrice = models.PositiveBigIntegerField(null=False, blank=False)
-    sellingPrice = models.PositiveBigIntegerField(null=True, blank=True)
+    purchase_price = models.PositiveBigIntegerField(null=False, blank=False)
+    selling_price = models.PositiveBigIntegerField(null=True, blank=True)
     stock = models.PositiveIntegerField(null=False, default=0)
-    isActive = models.BooleanField(default=True)
-    createdAt = models.DateTimeField(default=timezone.now)
-    updatedAt = models.DateTimeField(auto_now=True)
-    image = models.ImageField(upload_to="products", null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    photo = models.ImageField(upload_to="products", null=True, blank=True)
 
     @property
     def isSellable(self):
-        return self.isActive and self.sellingPrice is not None
+        return self.is_active and self.selling_price is not None
 
     def __str__(self):
         return self.name
@@ -47,7 +47,9 @@ class StockMutation(models.Model):
     product = models.ForeignKey(
         Product, null=False, on_delete=models.PROTECT, related_name="mutations"
     )
-    mutationType = models.CharField(max_length=8, choices=MutationType.choices, null=False)
+    mutationType = models.CharField(
+        max_length=8, choices=MutationType.choices, null=False
+    )
     quantity = models.PositiveIntegerField(null=False)
     date = models.DateTimeField(default=timezone.now)
     note = models.CharField(max_length=255, default="", blank=True)

@@ -1,108 +1,252 @@
 <!doctype html>
-<html lang="en">
+{% load static %}
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login</title>
+    <title>Employee - Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="{% static 'styles/bootstrap.min.css' %}" rel="stylesheet" />
     <style>
+      :root {
+        --purple: #8b5fe0;
+        --purple-dk: #3d2c63;
+        --purple-card: #3a2e52;
+        --purple-card2: #453862;
+        --Employee#f0a63c;
+        --orange-dk: #e09a30;
+        --lav: #f3eefc;
+      }
+      * {
+        box-sizing: border-box;
+      }
       body {
-        font-family: "Inter", sans-serif;
+        font-family: "Inter", system-ui, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #f3eefc 0%, #fbf3ec 100%);
       }
 
+      /* Panel kiri */
       .side-panel {
         min-height: 100vh;
         background: linear-gradient(
-          160deg,
-          #c9c9d8 0%,
-          #d9b8dd 45%,
-          #cfa0d6 100%
+          145deg,
+          var(--purple-card),
+          var(--purple-card2)
         );
+        color: #fff;
+        padding: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .brand-logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #e9dffb;
+        color: var(--purple);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+      .brand-name {
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: #fff;
+      }
+      .side-title {
+        font-size: clamp(2.25rem, 4.2vw, 3.5rem);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin: 0 0 0.9rem;
+      }
+      .side-text {
+        color: #c9c2de;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        max-width: 26ch;
+        margin: 0;
       }
 
+      /* Panel kanan */
       .main-panel {
         min-height: 100vh;
-        background: linear-gradient(135deg, #f7f1ea 0%, #eef2e2 100%);
+        padding: 2rem 1.5rem;
       }
-
       .form-wrap {
         width: 100%;
-        max-width: 320px;
+        max-width: 360px;
       }
-
+      .form-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--purple-dk);
+        margin: 0 0 0.3rem;
+      }
+      .form-sub {
+        font-size: 0.9rem;
+        color: #8a8098;
+        margin: 0 0 1.75rem;
+      }
       .form-label {
-        font-size: 0.85rem;
-        font-weight: 500;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--purple-dk);
         margin-bottom: 0.35rem;
       }
-
       .form-control {
-        border-radius: 6px;
-        padding: 0.6rem 0.8rem;
+        background: #fff;
+        border: 1px solid #e4dcf5;
+        border-radius: 0.5rem;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.9rem;
+        color: #1c1730;
       }
-
-      .btn-login {
-        background-color: rgba(152, 80, 197, 0.42);
-        border: none;
-        color: #fff;
-        font-weight: 500;
+      .form-control::placeholder {
+        color: #a79fbb;
       }
-      .btn-login:hover {
-        background-color: rgba(152, 80, 197, 0.55);
-        color: #fff;
+      .form-control:focus {
+        border-color: var(--purple);
+        box-shadow: 0 0 0 3px rgba(139, 95, 224, 0.18);
       }
-
+      .input-group .form-control {
+        border-right: none;
+      }
       .toggle-password {
-        cursor: pointer;
-        border: none;
-        background: none;
-        color: #6c757d;
+        background: #fff;
+        border: 1px solid #e4dcf5;
+        border-left: none;
+        border-radius: 0 0.5rem 0.5rem 0;
+        color: #8a8098;
+        padding: 0 0.85rem;
+      }
+      .toggle-password:hover {
+        color: var(--purple);
+      }
+      .input-group:focus-within .form-control,
+      .input-group:focus-within .toggle-password {
+        border-color: var(--purple);
+      }
+      .input-group:focus-within {
+        border-radius: 0.5rem;
+        box-shadow: 0 0 0 3px rgba(139, 95, 224, 0.18);
+      }
+      .input-group .form-control:focus {
+        box-shadow: none;
       }
 
       .form-check-input:checked {
-        background-color: #9850c5;
-        border-color: #9850c5;
+        background-color: var(--purple);
+        border-color: var(--purple);
       }
-
+      .form-check-input:focus {
+        border-color: var(--purple);
+        box-shadow: 0 0 0 3px rgba(139, 95, 224, 0.18);
+      }
+      .check-label {
+        font-size: 0.85rem;
+        color: #6b6180;
+      }
       a.link-purple {
-        color: #9850c5;
+        color: var(--purple);
         text-decoration: none;
         font-size: 0.85rem;
+        font-weight: 500;
       }
       a.link-purple:hover {
         text-decoration: underline;
+      }
+
+      .btn-orange {
+        background: var(--orange);
+        color: #412402;
+        border: none;
+        font-weight: 600;
+        padding: 0.7rem 1.1rem;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        width: 100%;
+      }
+      .btn-orange:hover,
+      .btn-orange:focus-visible {
+        background: var(--orange-dk);
+        color: #412402;
+      }
+
+      .error-box {
+        background: #fdecec;
+        color: #8a1f1f;
+        border: 1px solid #f5c6c6;
+        border-radius: 0.5rem;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.85rem;
+        margin-bottom: 1.1rem;
+      }
+      .foot-text {
+        text-align: center;
+        font-size: 0.85rem;
+        color: #8a8098;
+        margin: 1.25rem 0 0;
+      }
+
+      @media (max-width: 767.98px) {
+        .side-panel {
+          min-height: auto;
+          padding: 1.5rem;
+          gap: 1.5rem;
+        }
+        .side-title {
+          font-size: 2rem;
+        }
+        .side-text {
+          max-width: none;
+        }
+        .main-panel {
+          min-height: auto;
+          padding: 2rem 1.5rem 3rem;
+        }
       }
     </style>
   </head>
   <body>
     <div class="row g-0">
-      <div class="col-12 col-md-4 side-panel p-5">
-        <h5
-          class="fw-bold mb-0"
-          style="margin-left: 10px; margin-top: 10px; font-size: 100px"
-        >
-          Welcome Back!
-        </h5>
-      </div>
-      <div
-        class="col-12 col-md-8 main-panel d-flex flex-column align-items-center justify-content-center p-4"
+      <aside class="col-12 col-md-5 col-lg-4 side-panel">
+        <div class="brand">
+          <span class="brand-logo">L</span>
+          <span class="brand-name">Employee</span>
+        </div>
+        <div>
+          <h1 class="side-title">Welcome back!</h1>
+          <p class="side-text">Manage accout, product and transaction</p>
+        </div>
+      </aside>
+
+      <main
+        class="col-12 col-md-7 col-lg-8 main-panel d-flex align-items-center justify-content-center"
       >
         <div class="form-wrap">
-          <h2 class="fw-bold text-center mb-1" style="font-size: 1.8rem">
-            Find everything that you need for your pet
-          </h2>
-          <p class="text-center text-muted mb-4" style="font-size: 0.9rem">
-            Login to your account
-          </p>
+          <h2 class="form-title">Login</h2>
+          <p class="form-sub">Log in to your account to continue</p>
+
+          {% if error %}
+          <div class="error-box" role="alert">{{ error }}</div>
+          {% endif %}
+
           <form method="post">
             {% csrf_token %}
             <div class="mb-3">
@@ -112,69 +256,89 @@
                 name="username"
                 class="form-control"
                 id="username"
-                placeholder="Enter your username"
+                placeholder="Masukkan username"
+                autocomplete="username"
+                required
               />
             </div>
+
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
               <div class="input-group">
                 <input
                   type="password"
                   name="password"
-                  class="form-control border-end-0"
+                  class="form-control"
                   id="password"
-                  placeholder="Enter your password"
+                  placeholder="Masukkan password"
+                  autocomplete="current-password"
+                  required
                 />
                 <button
-                  class="btn border border-start-0 toggle-password"
+                  class="toggle-password"
                   type="button"
-                  onclick="togglePassword()"
+                  aria-label="Tampilkan password"
+                  onclick="togglePassword(this)"
                 >
-                  <span id="eye-icon">👁</span>
+                  <svg
+                    id="icon-show"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"
+                    />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg
+                    id="icon-hide"
+                    class="d-none"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.4 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"
+                    />
+                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                  </svg>
                 </button>
               </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  id="rememberMe"
-                />
-                <label
-                  class="form-check-label"
-                  for="rememberMe"
-                  style="font-size: 0.85rem"
-                  >Remember me</label
-                >
-              </div>
-              <a href="#" class="link-purple">Forget Password?</a>
-            </div>
-            <button
-              type="submit"
-              class="btn btn-login rounded-pill w-100 py-2 mb-3"
-            >
-              Login
-            </button>
-            <p class="text-center text-muted mb-0" style="font-size: 0.85rem">
+
+            <button type="submit" class="btn-orange">Login</button>
+
+            <p class="foot-text">
               Don't have an account yet?
-              <a href="/register" class="link-purple">Regist First</a>
+              <a href="#" class="link-purple">Contact admin</a>
             </p>
           </form>
         </div>
-      </div>
+      </main>
     </div>
+
     <script>
-      function togglePassword() {
+      function togglePassword(btn) {
         const input = document.getElementById("password");
-        const icon = document.getElementById("eye-icon");
-        if (input.type === "password") {
-          input.type = "text";
-          icon.innerHTML = "&#128064;&#65039;";
-        } else {
-          input.type = "password";
-          icon.innerHTML = "&#128065;";
-        }
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        document.getElementById("icon-show").classList.toggle("d-none", show);
+        document.getElementById("icon-hide").classList.toggle("d-none", !show);
+        btn.setAttribute(
+          "aria-label",
+          show ? "Sembunyikan password" : "Tampilkan password",
+        );
       }
     </script>
   </body>
