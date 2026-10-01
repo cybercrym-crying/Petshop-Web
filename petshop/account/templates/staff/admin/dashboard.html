@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>PetAdmin - Dashboard</title>
+        <link href="{% static 'styles/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+              rel="stylesheet">
+        <style>
+  :root{
+    --purple:#8B5FE0; --purple-dk:#3D2C63; --purple-card:#3A2E52; --purple-card2:#453862;
+    --orange:#F0A63C; --lav:#F3EEFC;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:linear-gradient(180deg, #F3EEFC 0%, #FBF3EC 100%);
+    margin:0; min-height:100vh;
+  }
+
+  .navbar-petadmin{
+    background:#F3EEFC; border-bottom:1px solid #E4DCF5;
+    padding:1rem 1.75rem; display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand{ display:flex; align-items:center; gap:.6rem; }
+  .brand-logo{
+    width:34px; height:34px; border-radius:50%; background:#E9DFFB; color:var(--purple);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.95rem;
+  }
+  .brand-name{ color:var(--purple); font-weight:700; font-size:1.15rem; }
+  .pill-name{
+    border:1.5px solid #1C1730; border-radius:999px; padding:.5rem 1.4rem;
+    font-weight:700; font-size:.95rem; background:transparent;
+  }
+
+  main{ padding:1.75rem 1.75rem 3.5rem; max-width:900px; margin:0 auto; }
+  .eyebrow{ color:var(--purple); font-size:.95rem; margin:0 0 .2rem; }
+  .page-title{ font-size:1.75rem; font-weight:700; color:var(--purple-dk); margin:0 0 1.5rem; }
+
+  .card-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:1rem;
+  }
+  @media (max-width:680px){ .card-grid{ grid-template-columns:1fr; } }
+
+  .dash-card{
+    background:linear-gradient(145deg,var(--purple-card),var(--purple-card2));
+    border-radius:1rem; padding:1.5rem; color:#fff;
+    text-decoration:none; display:block;
+  }
+  .dash-card:hover{ color:#fff; }
+  .dash-card .dot{ width:40px; height:40px; border-radius:50%; background:#EDE6FB; margin-bottom:1rem; }
+  .dash-card h3{ font-size:1.2rem; font-weight:600; margin:0 0 .35rem; }
+  .dash-card p{ font-size:.87rem; color:#C9C2DE; margin:0 0 1rem; line-height:1.5; }
+  .dash-card .cta{ color:var(--orange); font-weight:600; font-size:.87rem; }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar-petadmin">
+            <div class="brand">
+                <span class="brand-logo">L</span>
+                <span class="brand-name">PetAdmin</span>
+            </div>
+            <div class="pill-name">{{ request.user.get_full_name|default:"Name" }}</div>
+        </nav>
+        <main>
+            <p class="eyebrow">Dashboard</p>
+            <h1 class="page-title">Welcome back again, Admin!</h1>
+            <div class="card-grid">
+                <a href="{% url 'manage_account' %}" class="dash-card">
+                    <div class="dot"></div>
+                    <h3>Manage Account</h3>
+                    <p>Manage employee account and customer account</p>
+                    <span class="cta">Manage Account ↗</span>
+                </a>
+                <a href="{% url 'product:manage_product' %}" class="dash-card">
+                    <div class="dot"></div>
+                    <h3>Manage Product</h3>
+                    <p>Manage product price and product avaibility</p>
+                    <span class="cta">Manage Product ↗</span>
+                </a>
+                <a href="{% url 'transaction:make_transaction' %}" class="dash-card">
+                    <div class="dot"></div>
+                    <h3>Make Transaction</h3>
+                    <p>Make new transaction for customer</p>
+                    <span class="cta">Make Transaction ↗</span>
+                </a>
+                <a href="#" class="dash-card">
+                    <div class="dot"></div>
+                    <h3>Manage Transaction</h3>
+                    <p>Manage and see transaction activity</p>
+                    <span class="cta">Manage Transaction ↗</span>
+                </a>
+            </div>
+        </main>
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    </body>
+</html>

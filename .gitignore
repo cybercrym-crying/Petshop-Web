@@ -12,10 +12,6 @@ venv/
 # Secrets & Configuration
 .env
 
-# Database
-db.sqlite3
-db.sqlite3-journal
-
 # Media / Uploads
 media/
 

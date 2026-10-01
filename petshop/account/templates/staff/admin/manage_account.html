@@ -1,0 +1,562 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>PetAdmin - Manage User</title>
+        <link href="{% static 'styles/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+              rel="stylesheet" />
+        <style>
+      :root {
+        --purple: #8b5fe0;
+        --purple-dk: #3d2c63;
+        --orange: #f0a63c;
+        --lav: #f3eefc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: linear-gradient(180deg, #f3eefc 0%, #fbf3ec 100%);
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      .navbar-petadmin {
+        background: #f3eefc;
+        border-bottom: 1px solid #e4dcf5;
+        padding: 1rem 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .brand-logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #e9dffb;
+        color: var(--purple);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+      .brand-name {
+        color: var(--purple);
+        font-weight: 700;
+        font-size: 1.15rem;
+      }
+      .pill-name {
+        border: 1.5px solid #1c1730;
+        border-radius: 999px;
+        padding: 0.5rem 1.4rem;
+        font-weight: 700;
+        font-size: 0.95rem;
+        background: transparent;
+      }
+
+      main {
+        padding: 1.75rem 1.75rem 3.5rem;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .eyebrow {
+        color: var(--purple);
+        font-size: 0.95rem;
+        margin: 0 0 0.2rem;
+      }
+      .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--purple-dk);
+        margin: 0 0 1rem;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 1.25rem;
+        border-bottom: 1px solid #e4dcf5;
+        margin-bottom: 1.25rem;
+      }
+      .tabs a {
+        display: inline-block;
+        text-decoration: none;
+        padding: 0.5rem 0;
+        font-size: 0.95rem;
+        color: #6b6180;
+        font-weight: 500;
+        border-bottom: 2px solid transparent;
+      }
+      .tabs a.active {
+        color: var(--purple);
+        font-weight: 600;
+        border-color: var(--purple);
+      }
+
+      .toolbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 0.9rem;
+      }
+      .btn-orange {
+        background: var(--orange);
+        color: #412402;
+        border: none;
+        font-weight: 600;
+        padding: 0.55rem 1.1rem;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px #eae3f7;
+      }
+      th {
+        text-align: left;
+        font-size: 0.78rem;
+        color: #8a8098;
+        font-weight: 600;
+        padding: 0.7rem 1rem;
+        border-bottom: 1px solid #eae3f7;
+        text-transform: none;
+      }
+      td {
+        padding: 0.7rem 1rem;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f1edf9;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr[data-row] {
+        cursor: pointer;
+      }
+      tr[data-row]:hover {
+        background: #faf8fe;
+      }
+      .badge-role {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.65rem;
+        border-radius: 0.4rem;
+      }
+      .role-admin {
+        background: #fcefda;
+        color: #8a5a0b;
+      }
+      .role-courier {
+        background: #eeeafb;
+        color: #5b45a8;
+      }
+      .status-hidden {
+        letter-spacing: 2px;
+        color: #b4a6d9;
+      }
+
+      /* Modal */
+      .modal-content {
+        border-radius: 1rem;
+        border: none;
+        padding: 0.5rem;
+      }
+      .modal-title-custom {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--purple-dk);
+      }
+      .modal-sub {
+        font-size: 0.85rem;
+        color: #8a8098;
+        margin-bottom: 1.1rem;
+      }
+      .form-label-custom {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--purple-dk);
+        margin-bottom: 0.35rem;
+      }
+      .dark-input {
+        background: #1e1b29;
+        color: #ede9f7;
+        border: 1px solid #2e2a3d;
+        border-radius: 0.5rem;
+        padding: 0.6rem 0.8rem;
+        width: 100%;
+        font-size: 0.9rem;
+      }
+      .dark-input::placeholder {
+        color: #8a84a3;
+      }
+      .dark-input:focus {
+        outline: none;
+        border-color: var(--purple);
+        background: #1e1b29;
+        color: #ede9f7;
+      }
+      select.dark-input {
+        appearance: none;
+      }
+      .btn-cancel {
+        background: #efeafb;
+        color: #6b6180;
+        border: none;
+        font-weight: 600;
+        padding: 0.8rem 1.6rem;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        margin-rigt: 0.5rem;
+      }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar-petadmin">
+            <div class="brand">
+                <span class="brand-logo">L</span>
+                <a href="/staff/admin/dashboard">
+                    <span class="brand-name">PetAdmin</span>
+                </a>
+            </div>
+            <div class="pill-name">{{ request.user.get_full_name|default:"Name" }}</div>
+        </nav>
+        <main>
+            <p class="eyebrow">Dashboard</p>
+            <h1 class="page-title">Manage User</h1>
+            <div class="tabs" id="userTabs">
+                <a href="?tab=employee"
+                   class="{% if active_tab != 'customer' %}active{% endif %}">Employee</a>
+                <a href="?tab=customer"
+                   class="{% if active_tab == 'customer' %}active{% endif %}">Customer</a>
+            </div>
+            <div id="tab-employee"
+                 class="{% if active_tab == 'customer' %}d-none{% endif %}">
+                <div class="toolbar">
+                    <button class="btn-orange"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addEmployeeModal">+ Add Employee</button>
+                </div>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Password</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                    </tr>
+                    {% for emp in employee %}
+                        <tr data-row
+                            data-bs-toggle="modal"
+                            data-bs-target="#detailEmployee{{ emp.pk }}">
+                            <td>{{ emp.first_name }} {{ emp.last_name }}</td>
+                            <td class="status-hidden">*********</td>
+                            <td>{{ emp.phone_number }}</td>
+                            <td>
+                                {% if emp.role == "ADMIN" %}
+                                    <span class="badge-role role-admin">Admin</span>
+                                {% else %}
+                                    <span class="badge-role role-courier">Kurir</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">Belum ada data employee</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div id="tab-customer"
+                 class="{% if active_tab != 'customer' %}d-none{% endif %}">
+                <div class="toolbar">
+                    <button class="btn-orange"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addCustomerModal">+ Add Customer</button>
+                </div>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                    </tr>
+                    {% for cust in customers %}
+                        <tr data-row
+                            data-bs-toggle="modal"
+                            data-bs-target="#detailCustomer{{ cust.pk }}">
+                            <td>{{ cust.name }}</td>
+                            <td>{{ cust.phone_number }}</td>
+                            <td>{{ cust.address }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-3">Belum ada data customer</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </main>
+        <!-- tambah employee baru -->
+        <div class="modal fade"
+             id="addEmployeeModal"
+             tabindex="-1"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body p-4">
+                        <h2 class="modal-title-custom">Add New Employee</h2>
+                        <p class="modal-sub">Fill in the employee details here</p>
+                        <form method="post" action="{% url 'add_employee' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label-custom">Username</label>
+                                <input type="text" name="username" class="dark-input" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">First Name</label>
+                                <input type="text" name="first_name" class="dark-input" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Last Name</label>
+                                <input type="text" name="last_name" class="dark-input" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Password</label>
+                                <input type="password"
+                                       name="password"
+                                       class="dark-input"
+                                       placeholder="min. 8 karakter"
+                                       required />
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label-custom">Phone Number</label>
+                                    <input type="text"
+                                           name="phone_number"
+                                           class="dark-input"
+                                           placeholder="08xxxxx"
+                                           required />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label-custom">Role</label>
+                                    <select name="role" class="dark-input">
+                                        <option value="ADMIN">Admin</option>
+                                        <option value="KURIR">Kurir</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3 justify-content-end mt-4">
+                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn-orange">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- tambah custmer baru -->
+        <div class="modal fade"
+             id="addCustomerModal"
+             tabindex="-1"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body p-4">
+                        <h2 class="modal-title-custom">Add New Customer</h2>
+                        <p class="modal-sub">Fill in the customer details here</p>
+                        <form method="post" action="{% url 'add_customer' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label-custom">Name</label>
+                                <input type="text" name="name" class="dark-input" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-custom">Address</label>
+                                <input type="text" name="address" class="dark-input" required />
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-12">
+                                    <label class="form-label-custom">Phone Number</label>
+                                    <input type="text"
+                                           name="phone_number"
+                                           class="dark-input"
+                                           placeholder="08xxxxx"
+                                           required />
+                                </div>
+                            </div>
+                            <div class="d-flex gap-4 justify-content-end mt-4">
+                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn-orange">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- update delete employee: satu modal per employee, diisi langsung oleh Django -->
+        {% for emp in employee %}
+            <div class="modal fade"
+                 id="detailEmployee{{ emp.pk }}"
+                 tabindex="-1"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body p-4">
+                            <h2 class="modal-title-custom">Employee Details</h2>
+                            <p class="modal-sub">Update or delete employee data here</p>
+                            <form method="post" action="{% url 'edit_employee' emp.pk %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label-custom">Username</label>
+                                    <input type="text"
+                                           name="username"
+                                           value="{{ emp.username }}"
+                                           class="dark-input"
+                                           required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label-custom">First Name</label>
+                                    <input type="text"
+                                           name="first_name"
+                                           value="{{ emp.first_name }}"
+                                           class="dark-input"
+                                           required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label-custom">Last Name</label>
+                                    <input type="text"
+                                           name="last_name"
+                                           value="{{ emp.last_name }}"
+                                           class="dark-input"
+                                           required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label-custom">New Password</label>
+                                    <input type="password"
+                                           name="password"
+                                           class="dark-input"
+                                           placeholder="Kosongkan jika tidak diubah" />
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label-custom">Phone Number</label>
+                                        <input type="text"
+                                               name="phone_number"
+                                               value="{{ emp.phone_number }}"
+                                               class="dark-input"
+                                               placeholder="08xxxxx"
+                                               required />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label-custom">Role</label>
+                                        <select name="role" class="dark-input">
+                                            <option value="ADMIN"
+                                                    {% if emp.role == "ADMIN" %}selected{% endif %}>Admin</option>
+                                            <option value="KURIR"
+                                                    {% if emp.role == "KURIR" %}selected{% endif %}>Kurir</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 justify-content-end mt-4">
+                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit"
+                                            form="deleteEmployee{{ emp.pk }}"
+                                            class="btn btn-danger">Delete</button>
+                                    <button type="submit" class="btn-orange">Update</button>
+                                </div>
+                            </form>
+                            <form id="deleteEmployee{{ emp.pk }}"
+                                  method="post"
+                                  action="{% url 'delete_employee' emp.pk %}"
+                                  onsubmit="return confirm('Yakin hapus employee ini?')">
+                                {% csrf_token %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <!-- update delete customer: satu modal perstu customer, biar disi langsung oleh Django -->
+        {% for cust in customers %}
+            <div class="modal fade"
+                 id="detailCustomer{{ cust.pk }}"
+                 tabindex="-1"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body p-4">
+                            <h2 class="modal-title-custom">Customer Details</h2>
+                            <p class="modal-sub">Update or delete customer data here</p>
+                            <form method="post" action="{% url 'edit_customer' cust.pk %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label-custom">Name</label>
+                                    <input type="text"
+                                           name="name"
+                                           value="{{ cust.name }}"
+                                           class="dark-input"
+                                           required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label-custom">Address</label>
+                                    <input type="text"
+                                           name="address"
+                                           value="{{ cust.address }}"
+                                           class="dark-input"
+                                           required />
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label-custom">Phone Number</label>
+                                        <input type="text"
+                                               name="phone_number"
+                                               value="{{ cust.phone_number }}"
+                                               class="dark-input"
+                                               placeholder="08xxxxx"
+                                               required />
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 justify-content-end mt-4">
+                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit"
+                                            form="deleteCustomer{{ cust.pk }}"
+                                            class="btn btn-danger">Delete</button>
+                                    <button type="submit" class="btn-orange">Update</button>
+                                </div>
+                            </form>
+                            <form id="deleteCustomer{{ cust.pk }}"
+                                  method="post"
+                                  action="{% url 'delete_customer' cust.pk %}"
+                                  onsubmit="return confirm('Are you sure delete this customer {{ cust.name }}?')">
+                                {% csrf_token %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                     role="alert">
+                    {{ message }}
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

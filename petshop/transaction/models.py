@@ -1,5 +1,9 @@
 from django.db import models
 from django.utils import timezone
+from django.db import models
+from django.conf import settings
+from product.models import Product
+from account.models import Customer, User
 
 
 class PaymentMethod(models.TextChoices):
@@ -21,7 +25,7 @@ class OrderStatus(models.TextChoices):
 
 
 class Order(models.Model):
-    cashier = models.ForeignKey("account.User", on_delete=models.PROTECT)
+    admin = models.ForeignKey("account.User", on_delete=models.PROTECT)
     courir = models.ForeignKey(
         "account.User", on_delete=models.PROTECT, related_name="orders_as_cashier"
     )
@@ -50,6 +54,24 @@ class OrderDetail(models.Model):
 
     quantity = models.PositiveIntegerField()
     subtotal = models.PositiveBigIntegerField()
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ["cart", "product"]
+
+    @property
+    def subtotal(self):
+        return (self.product.selling_price or 0) * self.quantity
 
 
 # Create your models here.

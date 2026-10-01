@@ -6,32 +6,20 @@ class Role(models.TextChoices):
     # Role lama ADMIN/COURIR sudah tidak sesuai requirement — diganti sesuai
     # stakeholder di requirement gathering (Owner, Kasir, Staf Gudang, Groomer,
     # Pelanggan). Role "Admin"/"Dokter" lama sudah dihapus per catatan revisi.
-    OWNER = "OWNER"
-    KASIR = "KASIR"
-    STAF_GUDANG = "STAF_GUDANG"
-    GROOMER = "GROOMER"
-    PELANGGAN = "PELANGGAN"
+    ADMIN = "ADMIN"
+    KURIR = "KURIR"
+    # ROLE PELANGGAN akan di hilangkan karena tidak termasuk auth_user
 
 
 class User(AbstractUser):
-    first_name = None
-    last_name = None
-    name = models.CharField(max_length=255, null=False, blank=False)
     role = models.CharField(max_length=20, choices=Role.choices, null=False)
-
-    @property
-    def isStaff(self):
-        """Staff internal = semua role selain pelanggan."""
-        return self.role != Role.PELANGGAN
+    phone_number = models.CharField(max_length=20)
 
 
 class Customer(models.Model):
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="customerProfile"
-    )
     name = models.CharField(max_length=255, null=False, blank=False)
-    phoneNumber = models.CharField(max_length=20, null=False, blank=False)
+    phone_number = models.CharField(max_length=20, null=False, blank=False)
     address = models.CharField(max_length=255, null=False, blank=False)
 
     def __str__(self):
-        return self.name
+        return f"{self.name}" f"{self.phone_number}" f"{self.address}"
