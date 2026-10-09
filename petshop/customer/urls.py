@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views  # Pastikan hanya meng-import views, BUKAN include
+from . import views
 
 app_name = "customer"
 

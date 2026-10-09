@@ -5,11 +5,9 @@ import urllib.parse
 import json
 
 def cart_page(request):
-    """Halaman keranjang belanja"""
     return render(request, 'customer/cart.html')
 
 def katalog_publik(request):
-    """Menampilkan katalog produk untuk publik (tanpa login)"""
     produk_tersedia = Product.objects.filter(
         is_active=True, 
         selling_price__isnull=False
@@ -20,12 +18,11 @@ def katalog_publik(request):
     })
 
 def form_pemesanan_publik(request):
-    """Form pemesanan untuk customer publik (tanpa login)"""
     if request.method == 'POST':
-        # Ambil data dari form - versi sederhana
+        # Ambil data dari form
         nama_customer = request.POST.get('nama')
         no_wa_customer = request.POST.get('no_wa')
-        alamat = request.POST.get('alamat')  # Satu field alamat lengkap
+        alamat = request.POST.get('alamat') 
         catatan = request.POST.get('catatan', '-')
         
         # Simpan data customer ke database (opsional)
@@ -76,5 +73,4 @@ def form_pemesanan_publik(request):
     return render(request, 'customer/order_form.html')
 
 def checkout_page(request):
-    """Halaman checkout modern"""
     return render(request, 'customer/checkout.html')
