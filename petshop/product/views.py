@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db import transaction
 from django.db.models import ProtectedError
-from .models import Category, Product, StockMutation, MutationType
+from .models import Category, Product, StockMutation, MutationType, InsufficientStock
 from .form import FormProduct, StockMutationForm, SellingPriceForm
 from account.models import Role
 from account.decorators import roleRequired
@@ -13,7 +12,7 @@ def manage_product(request):
     products = Product.objects.select_related("category").order_by("name")
     category = request.GET.get("category")
     q = request.GET.get("q")
-    if category:
+    if category and category.isdigit():
         products = products.filter(category_id=category)
     if q:
         products = products.filter(name__icontains=q)
@@ -59,7 +58,7 @@ def product_list(request):
 
 def productCatalog(request):
     productQueryset = (
-        Product.objects.filter(is_active=True, selling_price__isnull=False)
+        Product.objects.sellable()
         .select_related("category")
         .order_by("name")
     )
@@ -87,20 +86,19 @@ def add_stock_mutation(request):
     if request.method == "POST":
         form = StockMutationForm(request.POST)
         if form.is_valid():
-            with transaction.atomic():
-                mutation = form.save(commit=False)
-                mutation.createdBy = request.user
-                mutation.save()
-
-                product = mutation.product
-                if mutation.mutationType == MutationType.IN:
-                    product.stock += mutation.quantity
-                else:
-                    product.stock -= mutation.quantity
-                product.save(update_fields=["stock", "updated_at"])
-
-            messages.success(request, "Creat mutation stock success")
-            return redirect("product:product_list")
+            data = form.cleaned_data
+            try:
+                data["product"].apply_mutation(
+                    data["mutationType"],
+                    data["quantity"],
+                    user=request.user,
+                    note=data["note"],
+                )
+            except InsufficientStock as e:
+                form.add_error(None, str(e))
+            else:
+                messages.success(request, "Creat mutation stock success")
+                return redirect("product:product_list")
     else:
         form = StockMutationForm()
     return render(request, "product/add_stock_mutation.html", {"form": form})

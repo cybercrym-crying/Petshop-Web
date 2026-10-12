@@ -1,11 +1,10 @@
 from account.decorators import roleRequired
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db import transaction
 from django.db.models import F
-from product.models import Product
+from product.models import Product, InsufficientStock
 from account.models import Customer, User, Role
-from .models import Cart, CartItem
+from .models import Cart, CartItem, CheckoutError, PaymentMethod
 
 
 def _get_or_create_cart(user):
@@ -16,13 +15,13 @@ def _get_or_create_cart(user):
 @roleRequired(Role.ADMIN)
 def make_transaction(request):
     cart = _get_or_create_cart(request.user)
-    products = Product.objects.filter(is_active=True, selling_price__isnull=False)
+    products = Product.objects.sellable()
     q = request.GET.get("q")
     if q:
         products = products.filter(name__icontains=q)
 
     cart_items = cart.items.select_related("product")
-    cart_total = sum(item.subtotal for item in cart_items)
+    cart_total = cart.total
 
     return render(
         request,
@@ -32,7 +31,7 @@ def make_transaction(request):
             "cart_items": cart_items,
             "cart_total": cart_total,
             "customers": Customer.objects.all(),
-            "couriers": User.objects.filter(role=Role.KURIR),
+            "couriers": User.objects.filter(role=Role.COURIR),
         },
     )
 
@@ -73,26 +72,32 @@ def cancel_transaction(request):
 def submit_transaction(request):
     if request.method == "POST":
         cart = get_object_or_404(Cart, user=request.user)
-        items = list(cart.items.select_related("product"))
-        if not items:
-            messages.error(request, "Belum ada item di order.")
-            return redirect("transaction:make_transaction")
 
-        customer_id = request.POST.get("customer")
-        if not customer_id:
+        customer = Customer.objects.filter(pk=request.POST.get("customer") or None).first()
+        if customer is None:
             messages.error(request, "Pilih customer terlebih dahulu.")
             return redirect("transaction:make_transaction")
 
-        with transaction.atomic():
-            for item in items:
-                if item.quantity > item.product.stock:
-                    messages.error(request, f"Stok '{item.product.name}' tidak cukup.")
-                    return redirect("transaction:make_transaction")
-                item.product.stock -= item.quantity
-                item.product.save(update_fields=["stock"])
-            cart.delete()
+        paymentMethod = request.POST.get("payment_method")
+        if paymentMethod not in PaymentMethod.values:
+            messages.error(request, "Metode pembayaran tidak valid.")
+            return redirect("transaction:make_transaction")
 
-        messages.success(request, "Transaksi berhasil dibuat.")
+        courier = User.objects.filter(
+            pk=request.POST.get("courier") or None, role=Role.COURIR
+        ).first()
+
+        try:
+            cart.checkout(
+                customer=customer,
+                admin=request.user,
+                payment_method=paymentMethod,
+                courier=courier,
+            )
+        except (CheckoutError, InsufficientStock) as e:
+            messages.error(request, str(e))
+        else:
+            messages.success(request, "Transaksi berhasil dibuat.")
     return redirect("transaction:make_transaction")
 
 

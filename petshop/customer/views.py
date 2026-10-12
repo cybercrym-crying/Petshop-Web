@@ -11,7 +11,7 @@ def cart_page(request):
 
 def katalog_publik(request):
     produk_tersedia = (
-        Product.objects.filter(is_active=True, selling_price__isnull=False)
+        Product.objects.sellable()
         .select_related("category")
         .order_by("name")
     )
