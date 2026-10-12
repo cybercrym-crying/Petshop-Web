@@ -10,11 +10,6 @@ from product.models import Product
 
 User = get_user_model()
 
-ROLE_DASHBOARD_URL_NAME = {
-    Role.ADMIN: "staff_admin_dashboard",
-}
-
-
 def home(request):
     return render(request, "index.html")
 
@@ -24,10 +19,10 @@ def customerForm(request):
         form = CustomerForm(request.POST)
         if form.is_valid():
             name = form.cleaned_data.get("name")
-            phoneNumber = form.cleaned_data.get("phoneNumber")
+            phoneNumber = form.cleaned_data.get("phone_number")
             address = form.cleaned_data.get("address")
 
-            Customer.objects.create(name=name, phoneNumber=phoneNumber, address=address)
+            Customer.objects.create(name=name, phone_number=phoneNumber, address=address)
 
             return redirect("register_success")
     else:
@@ -42,10 +37,7 @@ def loginForm(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            dashboardUrlName = ROLE_DASHBOARD_URL_NAME.get(user.role)
-            if dashboardUrlName:
-                return redirect(dashboardUrlName)
-            return redirect("home")
+            return redirect(user.dashboard_url_name)
         else:
             errorMessage = "Invalid Credential"
             form = LoginForm()
@@ -95,7 +87,9 @@ def add_employee(request):
             form.save()
             messages.success(request, "Employee berhasil ditambahkan.")
         else:
-            messages.error(request, f"Gagal menyimpan employee {form}.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     return redirect("manage_account")
 
 
@@ -126,9 +120,13 @@ def add_customer(request):
 @roleRequired(Role.ADMIN)
 def edit_employee(request, pk):
     employee = get_object_or_404(User, pk=pk)
+    originalRole = employee.role
     if request.method == "POST":
         form = EmployeeForm(request.POST, instance=employee)
         if form.is_valid():
+            if employee == request.user and form.cleaned_data["role"] != originalRole:
+                messages.error(request, "Kamu tidak bisa mengubah role akunmu sendiri.")
+                return redirect("manage_account")
             form.save()
             messages.success(request, "Edit employee success")
         else:

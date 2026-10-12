@@ -48,6 +48,17 @@ class SellingPriceForm(forms.ModelForm):
         model = Product
         fields = ["selling_price"]
 
+    def clean_selling_price(self):
+        sellingPrice = self.cleaned_data.get("selling_price")
+        if (
+            sellingPrice is not None
+            and sellingPrice < self.instance.purchase_price
+        ):
+            raise forms.ValidationError(
+                "Harga jual tidak boleh lebih rendah dari harga beli."
+            )
+        return sellingPrice
+
 
 class StockMutationForm(forms.ModelForm):
     # Dipakai Staf Gudang untuk mencatat stok masuk/keluar.

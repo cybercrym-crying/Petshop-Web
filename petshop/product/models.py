@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 
@@ -24,7 +24,23 @@ class MutationType(models.TextChoices):
     OUT = "OUT", "Stok Keluar"
 
 
+class InsufficientStock(Exception):
+    def __init__(self, product, requested):
+        self.product = product
+        self.requested = requested
+        super().__init__(
+            f"Stok '{product.name}' tidak cukup. Stok saat ini: {product.stock}"
+        )
+
+
+class ProductQuerySet(models.QuerySet):
+    def sellable(self):
+        return self.filter(is_active=True, selling_price__isnull=False)
+
+
 class Product(models.Model):
+    objects = ProductQuerySet.as_manager()
+
     category = models.ForeignKey(Category, null=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=255, null=False, blank=False)
     purchase_price = models.PositiveBigIntegerField(null=False, blank=False)
@@ -38,6 +54,26 @@ class Product(models.Model):
     @property
     def isSellable(self):
         return self.is_active and self.selling_price is not None
+
+    def apply_mutation(self, mutation_type, quantity, user=None, note=""):
+        """Satu-satunya jalan ubah stok: kunci baris, cek, update, catat mutasi."""
+        with transaction.atomic():
+            locked = Product.objects.select_for_update().get(pk=self.pk)
+            if mutation_type == MutationType.OUT:
+                if quantity > locked.stock:
+                    raise InsufficientStock(locked, quantity)
+                locked.stock -= quantity
+            else:
+                locked.stock += quantity
+            locked.save(update_fields=["stock", "updated_at"])
+            self.stock = locked.stock
+            return StockMutation.objects.create(
+                product=locked,
+                mutationType=mutation_type,
+                quantity=quantity,
+                note=note,
+                createdBy=user,
+            )
 
     def __str__(self):
         return self.name
