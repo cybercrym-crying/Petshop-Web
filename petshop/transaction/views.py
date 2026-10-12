@@ -96,4 +96,11 @@ def submit_transaction(request):
     return redirect("transaction:make_transaction")
 
 
+@roleRequired(Role.ADMIN)
+def manage_transaction(request):
+    if request.method == "POST":
+        pass
+    return render(request, "transaction/manage_transaction.html")
+
+
 # Create your views here.

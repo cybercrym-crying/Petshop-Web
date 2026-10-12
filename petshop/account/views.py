@@ -81,7 +81,7 @@ def staff_admin_dashboard(request):
 def manage_account(request):
     context = {
         "active_tab": request.GET.get("tab", "employee"),
-        "employee": User.objects.filter(role__in=[Role.ADMIN, Role.KURIR]),
+        "employee": User.objects.filter(role__in=[Role.ADMIN, Role.COURIR]),
         "customers": Customer.objects.all(),
     }
     return render(request, "staff/admin/manage_account.html", context)
