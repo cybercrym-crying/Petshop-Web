@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
     "account.apps.AccountConfig",
     "product.apps.ProductConfig",
     "transaction.apps.TransactionConfig",
+    "customer.apps.CustomerConfig",
 ]
 
 MIDDLEWARE = [
@@ -119,7 +121,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 AUTH_USER_MODEL = "account.User"
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 # Email
