@@ -7,6 +7,11 @@ urlpatterns = [
     path(
         "staff/admin/make_transaction/", views.make_transaction, name="make_transaction"
     ),
+    path(
+        "staff/admin/manage_transaction/",
+        views.manage_transaction,
+        name="manage_transaction",
+    ),
     path("staff/admin/cart/add/<int:pk>/", views.add_to_cart, name="add_to_cart"),
     path(
         "staff/admin/cart/remove/<int:pk>/",

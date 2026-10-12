@@ -3,12 +3,8 @@ from django.contrib.auth.models import AbstractUser
 
 
 class Role(models.TextChoices):
-    # Role lama ADMIN/COURIR sudah tidak sesuai requirement — diganti sesuai
-    # stakeholder di requirement gathering (Owner, Kasir, Staf Gudang, Groomer,
-    # Pelanggan). Role "Admin"/"Dokter" lama sudah dihapus per catatan revisi.
     ADMIN = "ADMIN"
-    KURIR = "KURIR"
-    # ROLE PELANGGAN akan di hilangkan karena tidak termasuk auth_user
+    COURIR = "COURIR"
 
 
 class User(AbstractUser):
