@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.utils import choices
 from .models import Role, Customer
+from .phone import normalize_phone
 from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
@@ -15,6 +16,12 @@ class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = ["name", "phone_number", "address"]
+
+    def clean_phone_number(self):
+        try:
+            return normalize_phone(self.cleaned_data["phone_number"])
+        except ValueError as e:
+            raise forms.ValidationError(str(e))
 
 
 class EmployeeForm(forms.ModelForm):

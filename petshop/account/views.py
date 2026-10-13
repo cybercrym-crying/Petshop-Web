@@ -1,4 +1,6 @@
+from django.db.models import ProtectedError
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -73,7 +75,7 @@ def staff_admin_dashboard(request):
 def manage_account(request):
     context = {
         "active_tab": request.GET.get("tab", "employee"),
-        "employee": User.objects.filter(role__in=[Role.ADMIN, Role.COURIR]),
+        "employee": User.objects.filter(role__in=[Role.ADMIN, Role.COURIER]),
         "customers": Customer.objects.all(),
     }
     return render(request, "staff/admin/manage_account.html", context)
@@ -105,6 +107,16 @@ def delete_employee(request, pk):
     return redirect("manage_account")
 
 
+def _customer_tab():
+    return redirect(f"{reverse('manage_account')}?tab=customer")
+
+
+def _flash_form_errors(request, form):
+    for field, errors in form.errors.items():
+        for error in errors:
+            messages.error(request, f"{field}: {error}")
+
+
 @roleRequired(Role.ADMIN)
 def add_customer(request):
     if request.method == "POST":
@@ -113,8 +125,8 @@ def add_customer(request):
             form.save()
             messages.success(request, "Customer berhasil ditambahkan.")
         else:
-            messages.error(request, "Gagal menyimpan customer.")
-    return redirect("manage_account")
+            _flash_form_errors(request, form)
+    return _customer_tab()
 
 
 @roleRequired(Role.ADMIN)
@@ -143,14 +155,20 @@ def edit_customer(request, pk):
             form.save()
             messages.success(request, "Edit customer success.")
         else:
-            messages.error(request, f"Failed to edit customer {form.errors}.")
-    return redirect("manage_account")
+            _flash_form_errors(request, form)
+    return _customer_tab()
 
 
 @roleRequired(Role.ADMIN)
 def delete_customer(request, pk):
     if request.method == "POST":
         customer = get_object_or_404(Customer, pk=pk)
-        customer.delete()
-        messages.success(request, "Customer berhasil dihapus.")
-    return redirect("manage_account")
+        try:
+            customer.delete()
+            messages.success(request, "Customer berhasil dihapus.")
+        except ProtectedError:
+            messages.error(
+                request,
+                f"Customer '{customer.name}' tidak bisa dihapus karena sudah punya riwayat order.",
+            )
+    return _customer_tab()

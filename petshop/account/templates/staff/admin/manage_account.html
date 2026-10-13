@@ -5,10 +5,15 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Manage User</title>
-        <link href="{% static 'styles/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'styles/bootstrap5.min.css' %}?v=5.3.3" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
               rel="stylesheet" />
         <style>
+            /* Bootstrap lokal v4.1 belum punya utilitas gap-*; didefinisikan di sini. */
+            .gap-1 { gap: 0.25rem; }
+            .gap-2 { gap: 0.5rem; }
+            .gap-3 { gap: 1rem; }
+            .gap-4 { gap: 1.5rem; }
       :root {
         --purple: #8b5fe0;
         --purple-dk: #3d2c63;
@@ -295,8 +300,20 @@
                             data-bs-toggle="modal"
                             data-bs-target="#detailCustomer{{ cust.pk }}">
                             <td>{{ cust.name }}</td>
-                            <td>{{ cust.phone_number }}</td>
-                            <td>{{ cust.address }}</td>
+                            <td>
+                                {{ cust.phone_number }}
+                                <a href="{{ cust.whatsapp_url }}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   onclick="event.stopPropagation()">WA</a>
+                            </td>
+                            <td>
+                                {{ cust.address }}
+                                <a href="{{ cust.maps_url }}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   onclick="event.stopPropagation()">Maps</a>
+                            </td>
                         </tr>
                     {% empty %}
                         <tr>
@@ -351,7 +368,7 @@
                                     <label class="form-label-custom">Role</label>
                                     <select name="role" class="dark-input">
                                         <option value="ADMIN">Admin</option>
-                                        <option value="COURIR">Kurir</option>
+                                        <option value="COURIER">Kurir</option>
                                     </select>
                                 </div>
                             </div>
@@ -462,8 +479,8 @@
                                         <select name="role" class="dark-input">
                                             <option value="ADMIN"
                                                     {% if emp.role == "ADMIN" %}selected{% endif %}>Admin</option>
-                                            <option value="COURIR"
-                                                    {% if emp.role == "COURIR" %}selected{% endif %}>Kurir</option>
+                                            <option value="COURIER"
+                                                    {% if emp.role == "COURIER" %}selected{% endif %}>Kurir</option>
                                         </select>
                                     </div>
                                 </div>
@@ -525,6 +542,18 @@
                                                placeholder="08xxxxx"
                                                required />
                                     </div>
+                                </div>
+                                <div class="d-flex gap-2 mb-3">
+                                    <a href="{{ cust.whatsapp_url }}"
+                                       target="_blank"
+                                       rel="noopener"
+                                       class="btn-cancel"
+                                       style="text-decoration:none">Buka WhatsApp</a>
+                                    <a href="{{ cust.maps_url }}"
+                                       target="_blank"
+                                       rel="noopener"
+                                       class="btn-cancel"
+                                       style="text-decoration:none">Buka Google Maps</a>
                                 </div>
                                 <div class="d-flex gap-2 justify-content-end mt-4">
                                     <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>

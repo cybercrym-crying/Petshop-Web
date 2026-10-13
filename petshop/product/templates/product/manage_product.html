@@ -5,10 +5,10 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Manage Product</title>
-        <link href="{% static 'styles/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'styles/bootstrap5.min.css' %}?v=5.3.3" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
               rel="stylesheet" />
-        <link rel="stylesheet" href="{% static 'product/css/manage_product.css' %}">
+        <link rel="stylesheet" href="{% static 'product/css/manage_product.css' %}?v=20261013">
     </head>
     <body>
         <nav class="navbar-petadmin">
@@ -58,6 +58,7 @@
                            placeholder="Search"
                            aria-label="Cari produk" />
                 </form>
+                <a href="{% url 'product:product_list' %}" class="btn-cancel">Stok &amp; Harga</a>
                 <button class="btn-orange"
                         data-bs-toggle="modal"
                         data-bs-target="#addProductModal">+ Add product</button>

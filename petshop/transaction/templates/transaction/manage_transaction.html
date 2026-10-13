@@ -5,11 +5,11 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Manage Transaction</title>
-        <link href="{% static 'styles/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'styles/bootstrap5.min.css' %}?v=5.3.3" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
               rel="stylesheet" />
         <link rel="stylesheet"
-              href="{% static 'transaction/css/manage_transaction.css' %}">
+              href="{% static 'transaction/css/manage_transaction.css' %}?v=20261013">
     </head>
     <body>
         <nav class="navbar-petadmin">
@@ -62,7 +62,7 @@
                             <span class="badge-status status-{{ trx.payment_status|lower }}">{{ trx.get_payment_status_display }}</span>
                         </td>
                         <td data-label="Status">
-                            <span class="badge-status status-{{ trx.order_status|slugify }}">{{ trx.get_order_status_display }}</span>
+                            <span class="badge-status status-{{ trx.order_status|lower }}">{{ trx.get_order_status_display }}</span>
                         </td>
                         <td data-label="Date">{{ trx.date|date:"Y-m-d H:i:s" }}</td>
                     </tr>
@@ -90,7 +90,17 @@
                             <p class="section-label">Detail</p>
                             <div class="detail-field">
                                 <span class="detail-field-label">Customer</span>
-                                <span class="detail-field-value">{{ trx.customer.name }}</span>
+                                <span class="detail-field-value">
+                                    {{ trx.customer.name }}
+                                    <a href="{{ trx.customer.whatsapp_url }}" target="_blank" rel="noopener">WA</a>
+                                </span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">Address</span>
+                                <span class="detail-field-value">
+                                    {{ trx.customer.address }}
+                                    <a href="{{ trx.customer.maps_url }}" target="_blank" rel="noopener">Maps</a>
+                                </span>
                             </div>
                             <div class="detail-field">
                                 <span class="detail-field-label">Admin</span>
@@ -98,14 +108,14 @@
                             </div>
                             <div class="detail-field">
                                 <span class="detail-field-label">Courier</span>
-                                <span class="detail-field-value">{{ trx.courir.get_full_name|default:trx.courir.username|default:"-" }}</span>
+                                <span class="detail-field-value">{% if trx.courier %}{{ trx.courier.get_full_name|default:trx.courier.username }}{% else %}-{% endif %}</span>
                             </div>
                             <!-- Item -->
                             <p class="section-label mt-3">Items</p>
                             <ul class="item-list">
                                 {% for item in trx.details.all %}
                                     <li class="item-row">
-                                        <span class="item-name">{{ item.product.name|default:"Produk dihapus" }} x{{ item.quantity }}</span>
+                                        <span class="item-name">{{ item.product.name }} x{{ item.quantity }} @ Rp. {{ item.unit_price|floatformat:0 }}</span>
                                         <span>Rp. {{ item.subtotal|floatformat:0 }}</span>
                                     </li>
                                 {% endfor %}
@@ -122,28 +132,42 @@
                                 </div>
                                 <div class="detail-field">
                                     <span class="detail-field-label">Payment Status</span>
-                                    <select name="payment_status" class="select-status">
-                                        <option value="PENDING"
-                                                {% if trx.payment_status == "PENDING" %}selected{% endif %}>
-                                            Pending
-                                        </option>
-                                        <option value="SUCCESS"
-                                                {% if trx.payment_status == "SUCCESS" %}selected{% endif %}>
-                                            Success
-                                        </option>
-                                        <option value="FAILED"
-                                                {% if trx.payment_status == "FAILED" %}selected{% endif %}>
-                                            Failed
-                                        </option>
-                                    </select>
+                                    <span class="badge-status status-{{ trx.payment_status|lower }}">{{ trx.get_payment_status_display }}</span>
                                 </div>
                                 <div class="detail-field">
                                     <span class="detail-field-label">Order Status</span>
-                                    <span class="detail-field-value">{{ trx.get_order_status_display }}</span>
+                                    <span class="badge-status status-{{ trx.order_status|lower }}">{{ trx.get_order_status_display }}</span>
                                 </div>
-                                <div class="d-flex gap-2 justify-content-end mt-4">
-                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn-orange">Update Pay Status</button>
+                                {% if trx.is_open and not trx.courier %}
+                                    <div class="detail-field">
+                                        <span class="detail-field-label">Pilih Kurir</span>
+                                        <select name="courier" class="select-status">
+                                            <option value="">- Pilih Kurir -</option>
+                                            {% for c in couriers %}
+                                                <option value="{{ c.pk }}">{{ c.get_full_name|default:c.username }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
+                                <div class="action-row"
+                                     style="display:flex; flex-wrap:wrap; gap:0.6rem; justify-content:flex-end; margin-top:1.5rem">
+                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Close</button>
+                                    {% if trx.order_status != "CANCELLED" and trx.payment_status == "PENDING" %}
+                                        <button type="submit" name="action" value="paid" class="btn-orange">Tandai Lunas</button>
+                                    {% endif %}
+                                    {% if trx.order_status == "CONFIRMED" %}
+                                        <button type="submit" name="action" value="on_delivery" class="btn-orange">Kirim</button>
+                                    {% endif %}
+                                    {% if trx.is_open %}
+                                        <button type="submit" name="action" value="delivered" class="btn-orange">Selesai</button>
+                                        <button type="submit"
+                                                name="action"
+                                                value="cancel"
+                                                class="btn-cancel"
+                                                onclick="return confirm('Batalkan order ini? Stok akan dikembalikan.')">
+                                            Batalkan
+                                        </button>
+                                    {% endif %}
                                 </div>
                             </form>
                         </div>

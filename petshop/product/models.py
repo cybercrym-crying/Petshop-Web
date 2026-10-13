@@ -57,6 +57,8 @@ class Product(models.Model):
 
     def apply_mutation(self, mutation_type, quantity, user=None, note=""):
         """Satu-satunya jalan ubah stok: kunci baris, cek, update, catat mutasi."""
+        if quantity <= 0:
+            raise ValueError("Jumlah mutasi harus lebih dari 0.")
         with transaction.atomic():
             locked = Product.objects.select_for_update().get(pk=self.pk)
             if mutation_type == MutationType.OUT:
@@ -92,6 +94,14 @@ class StockMutation(models.Model):
     createdBy = models.ForeignKey(
         "account.User", null=True, blank=True, on_delete=models.SET_NULL
     )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantity__gt=0),
+                name="stockmutation_quantity_gt_0",
+            )
+        ]
 
     def __str__(self):
         return f"{self.product.name} {self.mutationType} {self.quantity}"

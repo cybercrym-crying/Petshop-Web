@@ -1,10 +1,27 @@
 from account.decorators import roleRequired
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import F
 from product.models import Product, InsufficientStock
 from account.models import Customer, User, Role
-from .models import Cart, CartItem, CheckoutError, PaymentMethod
+from .models import (
+    Cart,
+    CartItem,
+    CheckoutError,
+    InvalidTransition,
+    Order,
+    PaymentMethod,
+    PaymentStatus,
+)
+
+
+def _resolve_customer(post):
+    """Customer dipilih dari dropdown; customer baru ditambah lewat Manage Account."""
+    customer = Customer.objects.filter(pk=post.get("customer") or None).first()
+    if customer is None:
+        raise CheckoutError("Pilih customer terlebih dahulu.")
+    return customer
 
 
 def _get_or_create_cart(user):
@@ -31,7 +48,7 @@ def make_transaction(request):
             "cart_items": cart_items,
             "cart_total": cart_total,
             "customers": Customer.objects.all(),
-            "couriers": User.objects.filter(role=Role.COURIR),
+            "couriers": User.objects.filter(role=Role.COURIER),
         },
     )
 
@@ -61,6 +78,22 @@ def remove_from_cart(request, pk):
 
 
 @roleRequired(Role.ADMIN)
+def update_cart_quantity(request, pk):
+    if request.method == "POST":
+        cart = get_object_or_404(Cart, user=request.user)
+        try:
+            quantity = int(request.POST.get("quantity", ""))
+        except ValueError:
+            messages.error(request, "Jumlah harus berupa angka.")
+            return redirect("transaction:make_transaction")
+        try:
+            cart.set_quantity(get_object_or_404(cart.items, pk=pk).pk, quantity)
+        except InsufficientStock as e:
+            messages.error(request, str(e))
+    return redirect("transaction:make_transaction")
+
+
+@roleRequired(Role.ADMIN)
 def cancel_transaction(request):
     if request.method == "POST":
         Cart.objects.filter(user=request.user).delete()
@@ -73,9 +106,10 @@ def submit_transaction(request):
     if request.method == "POST":
         cart = get_object_or_404(Cart, user=request.user)
 
-        customer = Customer.objects.filter(pk=request.POST.get("customer") or None).first()
-        if customer is None:
-            messages.error(request, "Pilih customer terlebih dahulu.")
+        try:
+            customer = _resolve_customer(request.POST)
+        except CheckoutError as e:
+            messages.error(request, str(e))
             return redirect("transaction:make_transaction")
 
         paymentMethod = request.POST.get("payment_method")
@@ -84,7 +118,7 @@ def submit_transaction(request):
             return redirect("transaction:make_transaction")
 
         courier = User.objects.filter(
-            pk=request.POST.get("courier") or None, role=Role.COURIR
+            pk=request.POST.get("courier") or None, role=Role.COURIER
         ).first()
 
         try:
@@ -103,9 +137,53 @@ def submit_transaction(request):
 
 @roleRequired(Role.ADMIN)
 def manage_transaction(request):
-    if request.method == "POST":
-        pass
-    return render(request, "transaction/manage_transaction.html")
+    transactions = (
+        Order.objects.select_related("customer", "admin", "courier")
+        .prefetch_related("details__product")
+        .order_by("-date")
+    )
+    return render(
+        request,
+        "transaction/manage_transaction.html",
+        {
+            "transactions": transactions,
+            "couriers": User.objects.filter(role=Role.COURIER),
+        },
+    )
 
 
-# Create your views here.
+@roleRequired(Role.ADMIN)
+def update_status(request, pk):
+    if request.method != "POST":
+        return redirect("transaction:manage_transaction")
+
+    action = request.POST.get("action")
+    try:
+        with transaction.atomic():
+            order = get_object_or_404(Order.objects.select_for_update(), pk=pk)
+            if action == "paid":
+                order.mark_paid()
+                messages.success(request, f"Order #{order.pk} ditandai lunas.")
+            elif action == "on_delivery":
+                courier = User.objects.filter(
+                    pk=request.POST.get("courier") or None, role=Role.COURIER
+                ).first()
+                order.mark_on_delivery(courier)
+                messages.success(request, f"Order #{order.pk} sedang dikirim.")
+            elif action == "delivered":
+                order.mark_delivered()
+                messages.success(request, f"Order #{order.pk} selesai diantar.")
+            elif action == "cancel":
+                order.cancel()
+                messages.success(
+                    request, f"Order #{order.pk} dibatalkan, stok dikembalikan."
+                )
+                if order.payment_status == PaymentStatus.PAID:
+                    messages.warning(
+                        request, "Order sudah lunas: kembalikan dana ke customer."
+                    )
+            else:
+                messages.error(request, "Aksi tidak dikenal.")
+    except InvalidTransition as e:
+        messages.error(request, str(e))
+    return redirect("transaction:manage_transaction")

@@ -48,6 +48,10 @@ class SellingPriceForm(forms.ModelForm):
         model = Product
         fields = ["selling_price"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["selling_price"].widget.attrs["class"] = "dark-input"
+
     def clean_selling_price(self):
         sellingPrice = self.cleaned_data.get("selling_price")
         if (
@@ -63,9 +67,16 @@ class SellingPriceForm(forms.ModelForm):
 class StockMutationForm(forms.ModelForm):
     # Dipakai Staf Gudang untuk mencatat stok masuk/keluar.
 
+    quantity = forms.IntegerField(min_value=1)
+
     class Meta:
         model = StockMutation
         fields = ["product", "mutationType", "quantity", "note"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "dark-input"
 
     def clean(self):
         cleanedData = super().clean()

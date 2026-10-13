@@ -305,3 +305,9 @@ select.dark-input {
     width: 100%;
   }
 }
+
+/* Bootstrap lokal v4.1 belum punya utilitas gap-*; didefinisikan di sini. */
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+.gap-4 { gap: 1.5rem; }

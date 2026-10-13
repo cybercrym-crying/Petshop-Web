@@ -51,8 +51,13 @@ def add_product(request):
 @roleRequired(Role.ADMIN)
 def product_list(request):
     productQueryset = Product.objects.select_related("category").all().order_by("name")
+    recentMutations = StockMutation.objects.select_related(
+        "product", "createdBy"
+    ).order_by("-date", "-pk")[:20]
     return render(
-        request, "product/product_list.html", {"productList": productQueryset}
+        request,
+        "product/product_list.html",
+        {"productList": productQueryset, "recentMutations": recentMutations},
     )
 
 
@@ -100,7 +105,7 @@ def add_stock_mutation(request):
                 messages.success(request, "Creat mutation stock success")
                 return redirect("product:product_list")
     else:
-        form = StockMutationForm()
+        form = StockMutationForm(initial={"product": request.GET.get("product")})
     return render(request, "product/add_stock_mutation.html", {"form": form})
 
 
