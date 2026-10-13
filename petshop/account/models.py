@@ -1,10 +1,12 @@
+from urllib.parse import quote
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
 class Role(models.TextChoices):
     ADMIN = "ADMIN"
-    COURIR = "COURIR"
+    COURIER = "COURIER"
 
 
 class User(AbstractUser):
@@ -17,7 +19,7 @@ class User(AbstractUser):
 
     @property
     def is_courier(self):
-        return self.role == Role.COURIR
+        return self.role == Role.COURIER
 
     @property
     def dashboard_url_name(self):
@@ -26,8 +28,20 @@ class User(AbstractUser):
 
 class Customer(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
-    phone_number = models.CharField(max_length=20, null=False, blank=False)
+    phone_number = models.CharField(
+        max_length=20, null=False, blank=False, unique=True
+    )
     address = models.CharField(max_length=255, null=False, blank=False)
 
+    @property
+    def whatsapp_url(self):
+        number = self.phone_number
+        number = "62" + number[1:] if number.startswith("0") else number
+        return f"https://wa.me/{number}"
+
+    @property
+    def maps_url(self):
+        return f"https://www.google.com/maps/search/?api=1&query={quote(self.address)}"
+
     def __str__(self):
-        return f"{self.name}" f"{self.phone_number}" f"{self.address}"
+        return f"{self.name} ({self.phone_number})"

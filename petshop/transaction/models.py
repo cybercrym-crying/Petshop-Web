@@ -1,7 +1,7 @@
 from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
-from product.models import Product, MutationType
+from product.models import Product, MutationType, InsufficientStock
 from account.models import Customer, User
 
 
@@ -20,23 +20,22 @@ class PaymentMethod(models.TextChoices):
 
 class PaymentStatus(models.TextChoices):
     PENDING = "PENDING"
-    SUCCESS = "SUCCESS"
-    FAILED = "FAILED"
+    PAID = "PAID"
 
 
 class OrderStatus(models.TextChoices):
-    PENDING = "PENDING"
-    ON_DELIVERY = "ON DELIVERY"
-    SUCCESS = "SUCCESS"
-    FAILED = "FAILED"
+    CONFIRMED = "CONFIRMED"
+    ON_DELIVERY = "ON_DELIVERY"
+    DELIVERED = "DELIVERED"
+    CANCELLED = "CANCELLED"
 
 
 class Order(models.Model):
     admin = models.ForeignKey("account.User", on_delete=models.PROTECT)
-    courir = models.ForeignKey(
+    courier = models.ForeignKey(
         "account.User",
         on_delete=models.PROTECT,
-        related_name="orders_as_courir",
+        related_name="orders_as_courier",
         null=True,
         blank=True,
     )
@@ -44,7 +43,9 @@ class Order(models.Model):
         "account.Customer", on_delete=models.PROTECT, related_name="orders"
     )
     order_status = models.CharField(
-        max_length=20, choices=OrderStatus.choices, null=False, blank=False
+        max_length=20,
+        choices=OrderStatus.choices,
+        default=OrderStatus.CONFIRMED,
     )
     payment_method = models.CharField(max_length=50, choices=PaymentMethod.choices)
     payment_status = models.CharField(
@@ -54,13 +55,17 @@ class Order(models.Model):
     date = models.DateTimeField(default=timezone.now)
 
     _ALLOWED_TRANSITIONS = {
-        OrderStatus.PENDING: {
+        OrderStatus.CONFIRMED: {
             OrderStatus.ON_DELIVERY,
-            OrderStatus.SUCCESS,
-            OrderStatus.FAILED,
+            OrderStatus.DELIVERED,
+            OrderStatus.CANCELLED,
         },
-        OrderStatus.ON_DELIVERY: {OrderStatus.SUCCESS, OrderStatus.FAILED},
+        OrderStatus.ON_DELIVERY: {OrderStatus.DELIVERED, OrderStatus.CANCELLED},
     }
+
+    @property
+    def is_open(self):
+        return self.order_status in self._ALLOWED_TRANSITIONS
 
     def _move_to(self, new_status):
         if new_status not in self._ALLOWED_TRANSITIONS.get(self.order_status, set()):
@@ -69,27 +74,37 @@ class Order(models.Model):
             )
         self.order_status = new_status
 
-    def mark_on_delivery(self):
+    def mark_on_delivery(self, courier=None):
+        if courier is not None:
+            self.courier = courier
+        if self.courier_id is None:
+            raise InvalidTransition(f"Order #{self.pk}: pilih kurir dulu.")
         self._move_to(OrderStatus.ON_DELIVERY)
-        self.save(update_fields=["order_status"])
+        self.save(update_fields=["order_status", "courier"])
 
-    def mark_success(self):
-        self._move_to(OrderStatus.SUCCESS)
-        self.payment_status = PaymentStatus.SUCCESS
+    def mark_delivered(self):
+        self._move_to(OrderStatus.DELIVERED)
+        # CASH dibayar saat barang diterima; TRANSFER dikonfirmasi lewat mark_paid().
+        if self.payment_method == PaymentMethod.CASH:
+            self.payment_status = PaymentStatus.PAID
         self.save(update_fields=["order_status", "payment_status"])
+
+    def mark_paid(self):
+        if self.order_status == OrderStatus.CANCELLED:
+            raise InvalidTransition(f"Order #{self.pk} sudah dibatalkan.")
+        self.payment_status = PaymentStatus.PAID
+        self.save(update_fields=["payment_status"])
 
     @transaction.atomic
-    def mark_failed(self):
-        self._move_to(OrderStatus.FAILED)
-        self.payment_status = PaymentStatus.FAILED
-        self.save(update_fields=["order_status", "payment_status"])
+    def cancel(self):
+        self._move_to(OrderStatus.CANCELLED)
+        self.save(update_fields=["order_status"])
         for detail in self.details.select_related("product"):
-            if detail.product is not None:
-                detail.product.apply_mutation(
-                    MutationType.IN,
-                    detail.quantity,
-                    note=f"Order #{self.pk} gagal, stok dikembalikan",
-                )
+            detail.product.apply_mutation(
+                MutationType.IN,
+                detail.quantity,
+                note=f"Order #{self.pk} dibatalkan, stok dikembalikan",
+            )
 
 
 class OrderDetail(models.Model):
@@ -97,12 +112,19 @@ class OrderDetail(models.Model):
         Order, on_delete=models.CASCADE, related_name="details"
     )
 
-    product = models.ForeignKey(
-        "product.Product", on_delete=models.PROTECT, null=True, blank=True
-    )
+    product = models.ForeignKey("product.Product", on_delete=models.PROTECT)
 
     quantity = models.PositiveIntegerField()
+    unit_price = models.PositiveBigIntegerField()
     subtotal = models.PositiveBigIntegerField()
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantity__gt=0),
+                name="orderdetail_quantity_gt_0",
+            )
+        ]
 
 
 class Cart(models.Model):
@@ -113,6 +135,18 @@ class Cart(models.Model):
     def total(self):
         return sum(item.subtotal for item in self.items.select_related("product"))
 
+    def set_quantity(self, item_id, quantity):
+        """Atur jumlah item cart. quantity <= 0 menghapus item."""
+        item = self.items.select_related("product").get(pk=item_id)
+        if quantity <= 0:
+            item.delete()
+            return None
+        if quantity > item.product.stock:
+            raise InsufficientStock(item.product, quantity)
+        item.quantity = quantity
+        item.save(update_fields=["quantity"])
+        return item
+
     @transaction.atomic
     def checkout(self, customer, admin, payment_method, courier=None):
         """Ubah cart jadi Order. Gagal di item mana pun = semua di-rollback."""
@@ -122,9 +156,9 @@ class Cart(models.Model):
 
         order = Order.objects.create(
             admin=admin,
-            courir=courier,
+            courier=courier,
             customer=customer,
-            order_status=OrderStatus.PENDING,
+            order_status=OrderStatus.CONFIRMED,
             payment_method=payment_method,
         )
         total = 0
@@ -141,6 +175,7 @@ class Cart(models.Model):
                 transaction=order,
                 product=item.product,
                 quantity=item.quantity,
+                unit_price=item.product.selling_price,
                 subtotal=item.subtotal,
             )
             total += item.subtotal
@@ -158,6 +193,12 @@ class CartItem(models.Model):
 
     class Meta:
         unique_together = ["cart", "product"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantity__gt=0),
+                name="cartitem_quantity_gt_0",
+            )
+        ]
 
     @property
     def subtotal(self):

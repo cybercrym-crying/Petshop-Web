@@ -5,11 +5,11 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Make Transaction</title>
-        <link href="{% static 'styles/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'styles/bootstrap5.min.css' %}?v=5.3.3" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
               rel="stylesheet" />
         <link rel="stylesheet"
-              href="{% static 'transaction/css/make_transaction.css' %}">
+              href="{% static 'transaction/css/make_transaction.css' %}?v=20261013">
     </head>
     <body>
         <nav class="navbar-petadmin">
@@ -96,7 +96,20 @@
                     {% for item in cart_items %}
                         <div class="order-line">
                             <div>
-                                <div class="order-line-name">{{ item.product.name }} x{{ item.quantity }}</div>
+                                <div class="order-line-name">{{ item.product.name }}</div>
+                                <form method="post"
+                                      action="{% url 'transaction:update_cart_quantity' item.pk %}"
+                                      class="d-flex gap-1 align-items-center">
+                                    {% csrf_token %}
+                                    <input type="number"
+                                           name="quantity"
+                                           value="{{ item.quantity }}"
+                                           min="1"
+                                           max="{{ item.product.stock }}"
+                                           style="width: 4.5rem"
+                                           aria-label="Jumlah {{ item.product.name }}" />
+                                    <button type="submit" class="order-line-remove">Set</button>
+                                </form>
                                 <form method="post"
                                       action="{% url 'transaction:remove_from_cart' item.pk %}">
                                     {% csrf_token %}
@@ -136,8 +149,11 @@
                         <label for="customer">Customer</label>
                         <select id="customer" name="customer" class="order-input" required>
                             <option value="">- Select Customer -</option>
-                            {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}
+                            {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }} ({{ c.phone_number }})</option>{% endfor %}
                         </select>
+                        <small class="text-muted">
+                            Customer belum ada? <a href="{% url 'manage_account' %}?tab=customer">Tambah di Manage Account</a>
+                        </small>
                     </div>
                     <div class="order-actions">
                         <button type="submit"

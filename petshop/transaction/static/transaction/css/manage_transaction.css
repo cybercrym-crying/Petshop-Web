@@ -160,15 +160,19 @@ tr[data-row]:hover {
   padding: 0.25rem 0.65rem;
   border-radius: 0.4rem;
 }
-.status-success {
+.status-success,
+.status-paid,
+.status-delivered {
   background: #e3f5e9;
   color: #1f8a4c;
 }
-.status-pending {
+.status-pending,
+.status-confirmed {
   background: #fcefda;
   color: #8a5a0b;
 }
-.status-delivery {
+.status-delivery,
+.status-on_delivery {
   background: #eeeafb;
   color: #5b45a8;
 }
@@ -307,3 +311,9 @@ tr[data-row]:hover {
     font-weight: 600;
   }
 }
+
+/* Bootstrap lokal v4.1 belum punya utilitas gap-*; didefinisikan di sini. */
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+.gap-4 { gap: 1.5rem; }

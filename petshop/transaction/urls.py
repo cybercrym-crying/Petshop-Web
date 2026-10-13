@@ -12,7 +12,17 @@ urlpatterns = [
         views.manage_transaction,
         name="manage_transaction",
     ),
+    path(
+        "staff/admin/transaction/<int:pk>/status/",
+        views.update_status,
+        name="update_status",
+    ),
     path("staff/admin/cart/add/<int:pk>/", views.add_to_cart, name="add_to_cart"),
+    path(
+        "staff/admin/cart/update/<int:pk>/",
+        views.update_cart_quantity,
+        name="update_cart_quantity",
+    ),
     path(
         "staff/admin/cart/remove/<int:pk>/",
         views.remove_from_cart,

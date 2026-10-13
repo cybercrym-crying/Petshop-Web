@@ -9,7 +9,7 @@ class OrderForm(forms.ModelForm):
         model = Order
         fields = [
             "admin",
-            "courir",
+            "courier",
             "customer",
             "order_status",
             "payment_method",
@@ -25,4 +25,4 @@ class OrderDetailForm(forms.ModelForm):
 
     class Meta:
         model = OrderDetail
-        fields = ["transaction", "product", "quantity", "subtotal"]
+        fields = ["transaction", "product", "quantity", "unit_price", "subtotal"]

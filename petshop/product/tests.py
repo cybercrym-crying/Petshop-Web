@@ -69,3 +69,44 @@ class ManageProductFilterTests(TestCase):
         User.objects.create_user("adm", password="x", role=Role.ADMIN)
         self.client.login(username="adm", password="x")
         self.assertEqual(self.client.get("/staff/admin/manage_product/?category=abc").status_code, 200)
+
+
+class StockPagesTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user("adm", password="x", role=Role.ADMIN)
+        self.client.login(username="adm", password="x")
+        self.p = make_product(stock=5)
+
+    def test_pages_render(self):
+        for url in ["/list", f"/{self.p.pk}/price", "/stock-mutation", f"/stock-mutation?product={self.p.pk}"]:
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_record_stock_in_via_page(self):
+        self.client.post(
+            "/stock-mutation",
+            {"product": self.p.pk, "mutationType": "IN", "quantity": 4, "note": "restock"},
+        )
+        self.p.refresh_from_db()
+        self.assertEqual(self.p.stock, 9)
+        self.assertContains(self.client.get("/list"), "restock")
+
+    def test_out_over_stock_shows_error_and_keeps_stock(self):
+        r = self.client.post(
+            "/stock-mutation",
+            {"product": self.p.pk, "mutationType": "OUT", "quantity": 99, "note": ""},
+        )
+        self.assertEqual(r.status_code, 200)
+        self.p.refresh_from_db()
+        self.assertEqual(self.p.stock, 5)
+
+    def test_zero_quantity_rejected(self):
+        self.client.post(
+            "/stock-mutation",
+            {"product": self.p.pk, "mutationType": "IN", "quantity": 0, "note": ""},
+        )
+        self.assertEqual(StockMutation.objects.count(), 0)
+
+    def test_set_price_page_saves(self):
+        self.client.post(f"/{self.p.pk}/price", {"selling_price": 20000})
+        self.p.refresh_from_db()
+        self.assertEqual(self.p.selling_price, 20000)
