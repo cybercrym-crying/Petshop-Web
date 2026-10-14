@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Foto produk belum tersedia">
+  <rect width="400" height="300" fill="#f3e8ff"/>
+  <circle cx="200" cy="150" r="92" fill="#e9d5ff"/>
+  <g fill="#a78bfa" transform="translate(200 160)">
+    <ellipse cx="0" cy="22" rx="34" ry="28"/>
+    <ellipse cx="-44" cy="-14" rx="13" ry="17" transform="rotate(-18 -44 -14)"/>
+    <ellipse cx="-16" cy="-40" rx="13" ry="17" transform="rotate(-6 -16 -40)"/>
+    <ellipse cx="16" cy="-40" rx="13" ry="17" transform="rotate(6 16 -40)"/>
+    <ellipse cx="44" cy="-14" rx="13" ry="17" transform="rotate(18 44 -14)"/>
+  </g>
+</svg>

@@ -12,6 +12,7 @@ from product.models import Product
 
 User = get_user_model()
 
+
 def home(request):
     return render(request, "index.html")
 
@@ -24,7 +25,9 @@ def customerForm(request):
             phoneNumber = form.cleaned_data.get("phone_number")
             address = form.cleaned_data.get("address")
 
-            Customer.objects.create(name=name, phone_number=phoneNumber, address=address)
+            Customer.objects.create(
+                name=name, phone_number=phoneNumber, address=address
+            )
 
             return redirect("register_success")
     else:
@@ -54,8 +57,8 @@ def loginForm(request):
 def logoutForm(request):
     if request.method == "POST":
         logout(request)
-        return redirect("home")
-    return redirect("home")
+        return redirect("customer:katalog")
+    return redirect("customer:katalog")
 
 
 def customerDashboard(request):
@@ -87,7 +90,7 @@ def add_employee(request):
         form = EmployeeForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Employee berhasil ditambahkan.")
+            messages.success(request, "Add employee success")
         else:
             for field, errors in form.errors.items():
                 for error in errors:
@@ -100,10 +103,10 @@ def delete_employee(request, pk):
     if request.method == "POST":
         employee = get_object_or_404(User, pk=pk)
         if employee == request.user:
-            messages.error(request, "Kamu tidak bisa menghapus akunmu sendiri.")
+            messages.error(request, "You cannot delete your account.")
         else:
             employee.delete()
-            messages.success(request, "Employee berhasil dihapus.")
+            messages.success(request, "Delete employee success")
     return redirect("manage_account")
 
 
@@ -123,7 +126,7 @@ def add_customer(request):
         form = CustomerForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Customer berhasil ditambahkan.")
+            messages.success(request, "Add customer success.")
         else:
             _flash_form_errors(request, form)
     return _customer_tab()
@@ -137,7 +140,7 @@ def edit_employee(request, pk):
         form = EmployeeForm(request.POST, instance=employee)
         if form.is_valid():
             if employee == request.user and form.cleaned_data["role"] != originalRole:
-                messages.error(request, "Kamu tidak bisa mengubah role akunmu sendiri.")
+                messages.error(request, "You cannot change your account role.")
                 return redirect("manage_account")
             form.save()
             messages.success(request, "Edit employee success")
@@ -165,10 +168,10 @@ def delete_customer(request, pk):
         customer = get_object_or_404(Customer, pk=pk)
         try:
             customer.delete()
-            messages.success(request, "Customer berhasil dihapus.")
+            messages.success(request, "Delete customer success")
         except ProtectedError:
             messages.error(
                 request,
-                f"Customer '{customer.name}' tidak bisa dihapus karena sudah punya riwayat order.",
+                f"Customer '{customer.name}' because already have order.",
             )
     return _customer_tab()

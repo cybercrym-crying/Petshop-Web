@@ -11,9 +11,7 @@ def cart_page(request):
 
 def katalog_publik(request):
     produk_tersedia = (
-        Product.objects.sellable()
-        .select_related("category")
-        .order_by("name")
+        Product.objects.sellable().select_related("category").order_by("name")
     )
 
     return render(request, "customer/catalog.html", {"produk": produk_tersedia})
@@ -21,22 +19,18 @@ def katalog_publik(request):
 
 def form_pemesanan_publik(request):
     if request.method == "POST":
-        # Ambil data dari form
         nama_customer = request.POST.get("nama")
         no_wa_customer = request.POST.get("no_wa")
         alamat = request.POST.get("alamat")
         catatan = request.POST.get("catatan", "-")
 
-        # Simpan data customer ke database (opsional)
         Customer.objects.get_or_create(
             phone_number=no_wa_customer,
             defaults={"name": nama_customer, "address": alamat},
         )
 
-        # Ambil data cart
         cart_data = request.POST.get("cart_data", "")
 
-        # Buat pesan WhatsApp
         nomor_admin = "6281356703075"
 
         pesan = (
@@ -48,7 +42,6 @@ def form_pemesanan_publik(request):
             f"*Order Summary:*\n"
         )
 
-        # Proses data keranjang
         if cart_data:
             try:
                 cart_items = json.loads(cart_data)
@@ -77,4 +70,3 @@ def form_pemesanan_publik(request):
 
 def checkout_page(request):
     return render(request, "customer/checkout.html")
-

@@ -4,6 +4,7 @@
     --soft-purple: #f3e8ff;
     --bg-cream: #fdf8f3;
     --text-dark: #1f2937;
+    --accent-orange: #f97316;
 }
 
 body {
@@ -12,6 +13,8 @@ body {
     color: var(--text-dark);
     margin: 0;
     padding: 0;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 /* =========================================
@@ -47,7 +50,7 @@ body {
 
 .navbar-seelly .nav-link-custom:hover,
 .navbar-seelly .nav-link-custom.active {
-    color: #f97316;
+    color: var(--accent-orange);
 }
 
 .navbar-seelly .nav-link-custom.active::after {
@@ -57,7 +60,7 @@ body {
     left: 0;
     width: 100%;
     height: 2px;
-    background: #f97316;
+    background: var(--accent-orange);
 }
 
 .search-bar {
@@ -67,10 +70,12 @@ body {
     width: 250px;
     outline: none;
     background: #f9fafb;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search-bar:focus {
     border-color: var(--primary-purple);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
 .icon-btn {
@@ -92,7 +97,7 @@ body {
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #f97316;
+    background: var(--accent-orange);
     color: white;
     border-radius: 50%;
     width: 18px;
@@ -104,13 +109,29 @@ body {
 }
 
 /* =========================================
-   HERO SECTION (GRADIENT UNGU + LENGKUNGAN)
+   HERO SECTION
    ========================================= */
 .hero-section {
-    background: linear-gradient(135deg, #d8b4fe 0%, #e9d5ff 50%, #f3e8ff 100%);
-    padding: 80px 0;
-    border-radius: 0 0 40px 40px; /* Lengkungan halus di bagian bawah */
-    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    background:
+        url('../img/paw-pattern.svg'),
+        linear-gradient(135deg, #d8b4fe 0%, #e9d5ff 50%, #f3e8ff 100%);
+    padding: 70px 0 120px;
+    border-radius: 0 0 40px 40px;
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--primary-purple);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 18px;
 }
 
 .hero-section h1 {
@@ -126,6 +147,13 @@ body {
     color: #4b5563;
     margin-bottom: 30px;
     line-height: 1.6;
+}
+
+.hero-illustration {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    filter: drop-shadow(0 14px 24px rgba(124, 58, 237, 0.18));
 }
 
 .btn-shop-now {
@@ -149,6 +177,51 @@ body {
 }
 
 /* =========================================
+   HOW TO ORDER (menimpa bagian bawah hero)
+   ========================================= */
+.how-to {
+    position: relative;
+    z-index: 2;
+    margin-top: -64px;
+}
+
+.step-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 100%;
+    background: white;
+    border: 1px solid #f3f4f6;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.1);
+}
+
+.step-icon {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--soft-purple);
+    color: var(--primary-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.step-title {
+    font-weight: 700;
+    font-size: 0.98rem;
+}
+
+.step-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+/* =========================================
    CATEGORY SECTION
    ========================================= */
 .section-title {
@@ -167,14 +240,19 @@ body {
     align-items: center;
     justify-content: center;
     margin: 0 auto 15px;
-    font-size: 2.5rem;
-    transition: transform 0.3s, background 0.3s;
+    transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
     cursor: pointer;
 }
 
+.category-circle img {
+    width: 62px;
+    height: 62px;
+}
+
 .category-circle:hover {
-    transform: scale(1.1);
-    background: var(--primary-purple);
+    transform: translateY(-4px) scale(1.06);
+    background: #ddd0fb;
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
 }
 
 .category-name {
@@ -195,6 +273,8 @@ body {
     transition: transform 0.3s, box-shadow 0.3s;
     height: 100%;
     border: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card:hover {
@@ -203,13 +283,12 @@ body {
 }
 
 .product-photo {
+    position: relative;
     height: 200px;
     background: #f3f4f6;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #9ca3af;
-    font-size: 0.9rem;
     overflow: hidden;
 }
 
@@ -224,8 +303,39 @@ body {
     transform: scale(1.05);
 }
 
+.chip {
+    position: absolute;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    line-height: 1.2;
+}
+
+.chip-category {
+    top: 10px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--primary-purple);
+}
+
+.chip-stock {
+    bottom: 10px;
+    right: 10px;
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.chip-out {
+    background: #1f2937;
+    color: #fff;
+}
+
 .product-info {
     padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .product-name {
@@ -243,6 +353,7 @@ body {
 }
 
 .btn-add-cart {
+    margin-top: auto !important;
     background: var(--primary-purple);
     color: white;
     border: none;
@@ -263,6 +374,20 @@ body {
     transform: translateY(-2px);
 }
 
+.btn-add-cart:focus-visible,
+.btn-shop-now:focus-visible,
+.icon-btn:focus-visible {
+    outline: 3px solid var(--accent-orange);
+    outline-offset: 2px;
+}
+
+.btn-add-cart:disabled {
+    background: #d1d5db;
+    color: #6b7280;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .view-all {
     color: var(--primary-purple);
     font-weight: 600;
@@ -272,6 +397,46 @@ body {
 
 .view-all:hover {
     color: #6d28d9;
+}
+
+.empty-products {
+    text-align: center;
+    padding: 40px 0;
+    color: #6b7280;
+}
+
+.empty-products img {
+    width: 220px;
+    max-width: 70%;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+
+/* =========================================
+   TOAST
+   ========================================= */
+.toast-msg {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translate(-50%, 20px);
+    background: var(--text-dark);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 2000;
+    max-width: calc(100% - 32px);
+}
+
+.toast-msg.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
 }
 
 /* =========================================
@@ -326,8 +491,14 @@ body {
    RESPONSIVE (MOBILE)
    ========================================= */
 @media (max-width: 768px) {
+    .hero-section {
+        padding: 44px 0 100px;
+    }
     .hero-section h1 {
         font-size: 2.5rem;
+    }
+    .hero-illustration {
+        max-width: 340px;
     }
     .search-bar {
         width: 150px;
@@ -335,6 +506,56 @@ body {
     .category-circle {
         width: 80px;
         height: 80px;
-        font-size: 2rem;
+    }
+    .category-circle img {
+        width: 46px;
+        height: 46px;
+    }
+    .how-to {
+        margin-top: -56px;
+    }
+    .navbar-seelly .container {
+        gap: 8px;
+    }
+    .navbar-seelly .navbar-brand {
+        font-size: 1.15rem;
+        white-space: nowrap;
+    }
+    .search-bar {
+        width: 110px;
+        padding: 6px 14px;
+        font-size: 0.9rem;
+    }
+    #search-btn {
+        display: none;
+    }
+    .icon-btn {
+        margin-left: 12px;
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section h1 {
+        font-size: 2.1rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .navbar-seelly .navbar-brand {
+        font-size: 1.02rem;
+    }
+    .search-bar {
+        width: 84px;
+    }
+    .icon-btn[aria-label="Wishlist"] {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        scroll-behavior: auto !important;
     }
 }
