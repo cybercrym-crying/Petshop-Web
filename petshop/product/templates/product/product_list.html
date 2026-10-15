@@ -1,103 +1,150 @@
-{% load static %}
+{% load static rupiah %}
 <!DOCTYPE html>
 <html lang="id">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Product List</title>
+        <title>PetAdmin - Stok &amp; Harga</title>
         <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
               rel="stylesheet" />
         <link rel="stylesheet"
               href="{% static 'product/css/manage_product.css' %}?v=20261013">
+        <link rel="stylesheet"
+              href="{% static 'product/css/stock_list.css' %}?v=20261014">
     </head>
     <body>
         {% include "product/_page_header.html" %}
-        <main>
-            <p class="eyebrow">Dashboard</p>
-            <h1 class="page-title">Stok &amp; Harga</h1>
+        <main class="sl-main">
+            <div class="sl-head">
+                <div>
+                    <p class="eyebrow">Dashboard</p>
+                    <h1 class="page-title sl-title">Stok &amp; Harga</h1>
+                    <p class="sl-sub">
+                        {{ counts.all }} produk
+                        {% if restock_needed %}· <b>{{ restock_needed }} perlu restock</b>{% endif %}
+                    </p>
+                </div>
+                <div class="sl-actions">
+                    <a href="{% url 'product:manage_product' %}" class="sl-btn sl-btn-lg">Kelola Produk</a>
+                    <a href="{% url 'product:add_stock_mutation' %}" class="sl-btn sl-btn-lg is-orange">+ Catat Stok</a>
+                </div>
+            </div>
             {% include "product/_messages.html" %}
-            <div class="toolbar">
-                <a href="{% url 'product:manage_product' %}" class="btn-cancel">Kelola Produk</a>
-                <a href="{% url 'product:add_stock_mutation' %}" class="btn-orange">+ Catat Stok</a>
+            <nav class="sl-tiles" aria-label="Filter produk">
+                <a href="?{% if q %}q={{ q|urlencode }}{% endif %}"
+                   class="sl-tile t-all{% if not active_filter %} on{% endif %}">
+                    <span class="sl-tile-n">{{ counts.all }}</span>
+                    <span class="sl-tile-l">Semua produk</span>
+                </a>
+                <a href="?filter=low{% if q %}&q={{ q|urlencode }}{% endif %}"
+                   class="sl-tile t-low{% if active_filter == 'low' %} on{% endif %}">
+                    <span class="sl-tile-n">{{ counts.low }}</span>
+                    <span class="sl-tile-l">Stok menipis (≤ {{ low_threshold }})</span>
+                </a>
+                <a href="?filter=empty{% if q %}&q={{ q|urlencode }}{% endif %}"
+                   class="sl-tile t-empty{% if active_filter == 'empty' %} on{% endif %}">
+                    <span class="sl-tile-n">{{ counts.empty }}</span>
+                    <span class="sl-tile-l">Stok habis</span>
+                </a>
+                <a href="?filter=noprice{% if q %}&q={{ q|urlencode }}{% endif %}"
+                   class="sl-tile t-noprice{% if active_filter == 'noprice' %} on{% endif %}">
+                    <span class="sl-tile-n">{{ counts.noprice }}</span>
+                    <span class="sl-tile-l">Belum ada harga jual</span>
+                </a>
+            </nav>
+            <form method="get" class="sl-search" role="search">
+                {% if active_filter %}<input type="hidden" name="filter" value="{{ active_filter }}">{% endif %}
+                <input type="search"
+                       name="q"
+                       value="{{ q }}"
+                       placeholder="Cari nama produk"
+                       aria-label="Cari nama produk">
+                <button type="submit" class="sl-btn">Cari</button>
+                {% if q %}<a href="?{% if active_filter %}filter={{ active_filter }}{% endif %}" class="sl-btn">Reset</a>{% endif %}
+            </form>
+            <div class="sl-panel">
+                <div class="sl-scroll">
+                    <table class="sl-table">
+                        <thead>
+                            <tr>
+                                <th>Produk</th>
+                                <th class="num">Harga Beli</th>
+                                <th class="num">Harga Jual</th>
+                                <th>Stok</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in productList %}
+                                <tr class="{% if not p.is_active %}is-off{% endif %}">
+                                    <td data-label="Produk">
+                                        <div class="sl-name">{{ p.name }}</div>
+                                        <span class="sl-cat">{{ p.category.name }}</span>
+                                    </td>
+                                    <td data-label="Harga Beli" class="num">Rp {{ p.purchase_price|rupiah }}</td>
+                                    <td data-label="Harga Jual" class="num">
+                                        {% if p.selling_price is not None %}
+                                            <b>Rp {{ p.selling_price|rupiah }}</b>
+                                            <div class="sl-margin{% if p.margin < 0 %} neg{% endif %}">
+                                                Margin Rp {{ p.margin|rupiah }}
+                                            </div>
+                                        {% else %}
+                                            <span class="sl-noprice">Belum diset</span>
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Stok">
+                                        <span class="sl-stock s-{{ p.stock_state }}">
+                                            <i></i><b>{{ p.stock }}</b>
+                                            {% if p.stock_state == "empty" %}
+                                                Habis
+                                            {% elif p.stock_state == "low" %}
+                                                Menipis
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td data-label="Status">
+                                        <span class="sl-state{% if p.is_active %} on{% endif %}">{% if p.is_active %}Aktif{% else %}Nonaktif{% endif %}</span>
+                                    </td>
+                                    <td class="act">
+                                        <a href="{% url 'product:set_selling_price' p.pk %}"
+                                           class="sl-btn{% if p.selling_price is None %} is-primary{% endif %}">Set Harga</a>
+                                        <a href="{% url 'product:add_stock_mutation' %}?product={{ p.pk }}"
+                                           class="sl-btn{% if p.stock_state != 'ok' %} is-primary{% endif %}">Catat Stok</a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="sl-empty">
+                                        {% if q or active_filter %}Tidak ada produk yang cocok.{% else %}Belum ada produk.{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Produk</th>
-                            <th>Kategori</th>
-                            <th class="text-end">Harga Beli</th>
-                            <th class="text-end">Harga Jual</th>
-                            <th class="text-end">Stok</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in productList %}
-                            <tr>
-                                <td>{{ p.name }}</td>
-                                <td>{{ p.category.name }}</td>
-                                <td class="text-end">Rp. {{ p.purchase_price|floatformat:0 }}</td>
-                                <td class="text-end">
-                                    {% if p.selling_price is not None %}
-                                        Rp. {{ p.selling_price|floatformat:0 }}
-                                    {% else %}
-                                        <span class="text-muted">Belum diset</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-end">
-                                    <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% endif %}">{{ p.stock }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge-is-active">{% if p.is_active %}Aktif{% else %}Nonaktif{% endif %}</span>
-                                </td>
-                                <td class="text-end text-nowrap">
-                                    <a href="{% url 'product:set_selling_price' p.pk %}"
-                                       class="btn btn-sm btn-outline-secondary">Set Harga</a>
-                                    <a href="{% url 'product:add_stock_mutation' %}?product={{ p.pk }}"
-                                       class="btn btn-sm btn-outline-secondary">Catat Stok</a>
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="7" class="empty-state">Belum ada produk.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <h2 class="h5 mt-5">Riwayat Stok Terakhir</h2>
-            <div class="table-responsive">
-                <table class="table table-sm align-middle">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Produk</th>
-                            <th>Jenis</th>
-                            <th class="text-end">Jumlah</th>
-                            <th>Catatan</th>
-                            <th>Oleh</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for m in recentMutations %}
-                            <tr>
-                                <td>{{ m.date|date:"Y-m-d H:i" }}</td>
-                                <td>{{ m.product.name }}</td>
-                                <td>{{ m.get_mutationType_display }}</td>
-                                <td class="text-end">{{ m.quantity }}</td>
-                                <td>{{ m.note }}</td>
-                                <td>{% if m.createdBy %}{{ m.createdBy.username }}{% else %}-{% endif %}</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="6" class="empty-state">Belum ada riwayat stok.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <h2 class="sl-h2">Riwayat Stok Terakhir</h2>
+            <div class="sl-panel">
+                <ul class="sl-feed">
+                    {% for m in recentMutations %}
+                        <li>
+                            <span class="sl-dir {% if m.mutationType == 'IN' %}in{% else %}out{% endif %}"
+                                  aria-label="{{ m.get_mutationType_display }}">{% if m.mutationType == 'IN' %}+{% else %}−{% endif %}</span>
+                            <div class="sl-feed-body">
+                                <div class="sl-feed-name">{{ m.product.name }}</div>
+                                <div class="sl-feed-note">{{ m.note|default:"-" }}</div>
+                            </div>
+                            <div class="sl-feed-meta">
+                                <b class="{% if m.mutationType == 'IN' %}in{% else %}out{% endif %}">{% if m.mutationType == 'IN' %}+{% else %}−{% endif %}{{ m.quantity }}</b>
+                                <span>{{ m.date|date:"d M Y, H:i" }} · {% if m.createdBy %}{{ m.createdBy.username }}{% else %}-{% endif %}</span>
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="sl-empty">Belum ada riwayat stok.</li>
+                    {% endfor %}
+                </ul>
             </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

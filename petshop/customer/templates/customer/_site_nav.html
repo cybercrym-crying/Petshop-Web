@@ -1,0 +1,43 @@
+{% comment %}Navbar publik. Pakai: {% include "customer/_site_nav.html" with active="home" %}{% endcomment %}
+<nav class="navbar-seelly">
+    <div class="container d-flex align-items-center justify-content-between gap-3">
+        <a href="{% url 'customer:home' %}"
+           class="navbar-brand text-decoration-none">🐾 Seelly Petshop</a>
+        <div class="d-none d-md-flex align-items-center">
+            <a href="{% url 'customer:home' %}"
+               class="nav-link-custom{% if active == 'home' %} active{% endif %}">Home</a>
+            <a href="{% url 'customer:katalog' %}"
+               class="nav-link-custom{% if active == 'shop' %} active{% endif %}">Shop</a>
+            <a href="{% url 'customer:about' %}"
+               class="nav-link-custom{% if active == 'about' %} active{% endif %}">About Us</a>
+            <a href="#kontak" class="nav-link-custom">Contact Us</a>
+        </div>
+        <div class="d-flex align-items-center">
+            <form id="site-search"
+                  class="sx-search"
+                  action="{% url 'customer:katalog' %}"
+                  method="get"
+                  role="search">
+                <input type="search"
+                       name="q"
+                       id="product-search"
+                       class="search-bar"
+                       placeholder="Search products..."
+                       aria-label="Search products">
+                <button class="icon-btn" type="submit" aria-label="Search" id="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+            <button class="icon-btn" type="button" aria-label="Wishlist">
+                <i class="far fa-heart"></i>
+                <span class="badge-count">0</span>
+            </button>
+            <a class="icon-btn"
+               href="{% url 'customer:cart' %}"
+               aria-label="Cart">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="badge-count" id="cart-count">0</span>
+            </a>
+        </div>
+    </div>
+</nav>

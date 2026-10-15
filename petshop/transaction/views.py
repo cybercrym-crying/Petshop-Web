@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from account.decorators import roleRequired
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Count, F, Q, Sum
+from django.utils import timezone
 from product.models import Product, InsufficientStock
 from account.models import Customer, User, Role
 from .models import (
@@ -11,9 +14,21 @@ from .models import (
     CheckoutError,
     InvalidTransition,
     Order,
+    OrderStatus,
     PaymentMethod,
     PaymentStatus,
 )
+
+# Kolom board = status order. Kolom terbuka tampil semua; kolom selesai dibatasi.
+BOARD_COLUMNS = (
+    (OrderStatus.CONFIRMED, "confirmed", "Confirmed"),
+    (OrderStatus.ON_DELIVERY, "on-delivery", "On delivery"),
+    (OrderStatus.DELIVERED, "delivered", "Delivered"),
+    (OrderStatus.CANCELLED, "cancelled", "Cancelled"),
+)
+OPEN_STATUSES = (OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
+CLOSED_COLUMN_LIMIT = 12
+UNPAID_GRACE = timedelta(hours=1)
 
 
 def _resolve_customer(post):
@@ -137,16 +152,84 @@ def submit_transaction(request):
 
 @roleRequired(Role.ADMIN)
 def manage_transaction(request):
-    transactions = (
+    view = "list" if request.GET.get("view") == "list" else "board"
+    q = request.GET.get("q", "").strip()
+    only_unpaid = request.GET.get("payment") == "pending"
+
+    orders = (
         Order.objects.select_related("customer", "admin", "courier")
         .prefetch_related("details__product")
         .order_by("-date")
     )
+    if q:
+        cond = Q(customer__name__icontains=q)
+        digits = q.lstrip("#")
+        if digits.isdigit() and len(digits) <= 9:
+            cond |= Q(pk=int(digits))
+        orders = orders.filter(cond)
+    if only_unpaid:
+        orders = orders.filter(payment_status=PaymentStatus.PENDING).exclude(
+            order_status=OrderStatus.CANCELLED
+        )
+
+    cutoff = timezone.now() - UNPAID_GRACE
+
+    def flag_overdue(order):
+        # Transfer yang belum dibayar lewat 1 jam. CASH dibayar saat diantar,
+        # jadi belum lunas di awal itu normal dan tidak ditandai.
+        order.overdue = (
+            order.payment_status == PaymentStatus.PENDING
+            and order.payment_method == PaymentMethod.TRANSFER
+            and order.order_status != OrderStatus.CANCELLED
+            and order.date < cutoff
+        )
+        return order
+
+    columns = []
+    if view == "board":
+        for status, css, title in BOARD_COLUMNS:
+            qs = orders.filter(order_status=status)
+            count = qs.count()
+            is_open = status in OPEN_STATUSES
+            shown = [flag_overdue(o) for o in (qs if is_open else qs[:CLOSED_COLUMN_LIMIT])]
+            columns.append(
+                {
+                    "css": css,
+                    "title": title,
+                    "count": count,
+                    "orders": shown,
+                    "total": sum(o.total_payment for o in shown) if is_open else None,
+                    "hidden": count - len(shown),
+                }
+            )
+        transactions = [o for col in columns for o in col["orders"]]
+    else:
+        transactions = [flag_overdue(o) for o in orders]
+
+    active = Order.objects.filter(order_status__in=OPEN_STATUSES).aggregate(
+        n=Count("pk"), total=Sum("total_payment")
+    )
+    overdue_unpaid = (
+        Order.objects.filter(
+            payment_status=PaymentStatus.PENDING,
+            payment_method=PaymentMethod.TRANSFER,
+            date__lt=cutoff,
+        )
+        .exclude(order_status=OrderStatus.CANCELLED)
+        .count()
+    )
+
     return render(
         request,
         "transaction/manage_transaction.html",
         {
-            "transactions": transactions,
+            "view": view,
+            "q": q,
+            "only_unpaid": only_unpaid,
+            "columns": columns,
+            "transactions": transactions,  # dipakai tabel (list) dan modal detail
+            "active": active,
+            "overdue_unpaid": overdue_unpaid,
             "couriers": User.objects.filter(role=Role.COURIER),
         },
     )

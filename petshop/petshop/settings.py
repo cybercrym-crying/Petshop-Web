@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-gyt3u+$4+b06fx0h@vo9u+^=7mhk5dechvle8f*&w1d0g5bq)t"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["pbo.web.id", "www.petshop.pbo.web.id", "localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -133,6 +133,6 @@ MAILERS = {
     },
 }
 
-#HazeTest
+# HazeTest
 LOGIN_URL = "login_form"
 LOGIN_REDIRECT_URL = "home"

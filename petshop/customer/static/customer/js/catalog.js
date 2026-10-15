@@ -71,17 +71,25 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     });
 
+    // Pencarian: di halaman Shop disaring langsung di browser; di halaman lain form
+    // mengirim ?q= ke halaman Shop.
     const search = document.getElementById('product-search');
-    if (search) {
+    const searchForm = document.getElementById('site-search');
+    const onShop = !!document.getElementById('product-grid');
+    if (search && onShop) {
+        const q = new URLSearchParams(window.location.search).get('q');
+        if (q) {
+            search.value = q;
+            filterProducts();
+        }
         search.addEventListener('input', filterProducts);
-        search.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                filterProducts();
-                const grid = document.getElementById('produk');
-                if (grid) grid.scrollIntoView({ behavior: 'smooth' });
-            }
+    }
+    if (searchForm && onShop) {
+        searchForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            filterProducts();
+            const grid = document.getElementById('produk');
+            if (grid) grid.scrollIntoView({ behavior: 'smooth' });
         });
     }
-    const searchBtn = document.getElementById('search-btn');
-    if (searchBtn) searchBtn.addEventListener('click', filterProducts);
 });

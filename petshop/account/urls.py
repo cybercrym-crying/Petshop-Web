@@ -23,6 +23,11 @@ urlpatterns = [
     ),
     path("staff/admin/employee/add/", views.add_employee, name="add_employee"),
     path(
+        "staff/admin/employee/<int:pk>/",
+        views.employee_profile,
+        name="employee_profile",
+    ),
+    path(
         "staff/admin/employee/<int:pk>/edit/", views.edit_employee, name="edit_employee"
     ),
     path(

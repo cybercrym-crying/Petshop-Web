@@ -115,3 +115,97 @@ class CustomerLinksAndManageTests(TestCase):
         r = self.client.post(f"/staff/admin/customer/{c.pk}/delete/", follow=True)
         self.assertTrue(Customer.objects.filter(pk=c.pk).exists())
         self.assertContains(r, "riwayat order")
+
+
+class EmployeeProfileTests(TestCase):
+    def setUp(self):
+        from account.models import Customer
+
+        self.admin = User.objects.create_user(
+            "adm", password="x", role=Role.ADMIN, phone_number="0811", first_name="Ani", last_name="Admin"
+        )
+        self.courier = User.objects.create_user(
+            "bud", password="x", role=Role.COURIER, phone_number="0812-3456-7890",
+            first_name="Budi", last_name="Santoso",
+        )
+        self.customer = Customer.objects.create(name="Siti", phone_number="0899", address="x")
+        self.client.login(username="adm", password="x")
+
+    def order(self, courier=None, status="CONFIRMED"):
+        from transaction.models import Order
+
+        return Order.objects.create(
+            admin=self.admin, courier=courier, customer=self.customer,
+            payment_method="CASH", total_payment=50000, order_status=status,
+        )
+
+    def test_courier_profile_shows_stats_and_orders(self):
+        self.order(self.courier, "ON_DELIVERY")
+        self.order(self.courier, "DELIVERED")
+        self.order(self.courier, "DELIVERED")
+        r = self.client.get(f"/staff/admin/employee/{self.courier.pk}/")
+        self.assertEqual(r.status_code, 200)
+        by = {s["label"]: s["value"] for s in r.context["stats"]}
+        self.assertEqual(by, {"Assigned": 3, "On delivery": 1, "Delivered": 2})
+        self.assertEqual(len(r.context["recent_orders"]), 3)
+        self.assertContains(r, "Budi Santoso")
+        self.assertContains(r, "https://wa.me/6281234567890")
+        self.assertContains(r, "Rp 50.000")
+
+    def test_admin_profile_counts_orders_created(self):
+        self.order(None, "CONFIRMED")
+        self.order(None, "DELIVERED")
+        r = self.client.get(f"/staff/admin/employee/{self.admin.pk}/")
+        by = {s["label"]: s["value"] for s in r.context["stats"]}
+        self.assertEqual(by, {"Orders created": 2, "Still open": 1, "Delivered": 1})
+        self.assertTrue(r.context["is_self"])
+        self.assertNotContains(r, "Delete employee")  # tidak bisa hapus diri sendiri
+        self.assertContains(r, "You cannot change your own role.")
+
+    def test_unknown_employee_404_and_courier_forbidden(self):
+        self.assertEqual(self.client.get("/staff/admin/employee/9999/").status_code, 404)
+        self.client.logout()
+        self.client.login(username="bud", password="x")
+        self.assertEqual(
+            self.client.get(f"/staff/admin/employee/{self.courier.pk}/").status_code, 403
+        )
+
+    def post_edit(self, **extra):
+        data = {
+            "username": "bud", "first_name": "Budi", "last_name": "Baru",
+            "phone_number": "0812", "role": "COURIER", **extra,
+        }
+        return self.client.post(f"/staff/admin/employee/{self.courier.pk}/edit/", data)
+
+    def test_edit_from_profile_returns_to_profile(self):
+        profile = f"/staff/admin/employee/{self.courier.pk}/"
+        r = self.post_edit(next=profile)
+        self.assertRedirects(r, profile, fetch_redirect_response=False)
+        self.courier.refresh_from_db()
+        self.assertEqual(self.courier.last_name, "Baru")
+
+    def test_unsafe_next_is_ignored(self):
+        r = self.post_edit(next="https://evil.example.com/")
+        self.assertRedirects(r, "/staff/admin/manage_account", fetch_redirect_response=False)
+
+    def test_delete_employee_with_orders_is_blocked_not_crash(self):
+        self.order(self.courier, "DELIVERED")
+        profile = f"/staff/admin/employee/{self.courier.pk}/"
+        r = self.client.post(f"/staff/admin/employee/{self.courier.pk}/delete/", {"next": profile})
+        self.assertRedirects(r, profile, fetch_redirect_response=False)
+        self.assertTrue(User.objects.filter(pk=self.courier.pk).exists())
+        self.assertIn("riwayat order", [str(m) for m in get_messages(r.wsgi_request)][0])
+
+    def test_delete_employee_without_orders_works(self):
+        r = self.client.post(f"/staff/admin/employee/{self.courier.pk}/delete/")
+        self.assertRedirects(r, "/staff/admin/manage_account", fetch_redirect_response=False)
+        self.assertFalse(User.objects.filter(pk=self.courier.pk).exists())
+
+    def test_manage_account_links_to_profile_with_activity(self):
+        self.order(self.courier, "DELIVERED")
+        self.order(None, "CONFIRMED")
+        r = self.client.get("/staff/admin/manage_account")
+        self.assertContains(r, f"/staff/admin/employee/{self.courier.pk}/")
+        self.assertContains(r, "1 delivered")
+        self.assertContains(r, "2 orders created")
+        self.assertNotContains(r, "*********")

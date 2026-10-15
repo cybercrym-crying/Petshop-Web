@@ -5,7 +5,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Seelly Petshop - Catalog</title>
+        <title>Shop - Seelly Petshop</title>
         <link rel="icon"
               href="{% static 'customer/img/favicon.svg' %}"
               type="image/svg+xml">
@@ -13,131 +13,18 @@
               rel="stylesheet">
         <link rel="stylesheet"
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet">
         <link rel="stylesheet" href="{% static 'customer/css/catalog.css' %}?v=2">
+        <link rel="stylesheet" href="{% static 'customer/css/site.css' %}?v=2">
     </head>
-    <body>
-        <!-- NAVBAR -->
-        <nav class="navbar-seelly">
-            <div class="container d-flex align-items-center justify-content-between">
-                <a href="{% url 'customer:katalog' %}"
-                   class="navbar-brand text-decoration-none">🐾 Seelly Petshop</a>
-                <div class="d-none d-md-flex align-items-center">
-                    <a href="{% url 'customer:katalog' %}" class="nav-link-custom active">Home</a>
-                    <a href="#produk" class="nav-link-custom">Shop</a>
-                    <a href="#kategori" class="nav-link-custom">About Us</a>
-                    <a href="#kontak" class="nav-link-custom">Contact Us</a>
-                </div>
-                <div class="d-flex align-items-center">
-                    <input type="text"
-                           id="product-search"
-                           class="search-bar"
-                           placeholder="Search products..."
-                           aria-label="Search products">
-                    <button class="icon-btn" type="button" aria-label="Search" id="search-btn">
-                        <i class="fas fa-search"></i>
-                    </button>
-                    <button class="icon-btn" type="button" aria-label="Wishlist">
-                        <i class="far fa-heart"></i>
-                        <span class="badge-count">0</span>
-                    </button>
-                    <button class="icon-btn"
-                            type="button"
-                            aria-label="Cart"
-                            onclick="window.location.href='{% url 'customer:cart' %}'">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="badge-count" id="cart-count">0</span>
-                    </button>
-                </div>
-            </div>
-        </nav>
-        <!-- HERO SECTION -->
-        <section class="hero-section">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-6 hero-copy">
-                        <span class="hero-eyebrow"><i class="fas fa-paw"></i> Your pet's favourite shop</span>
-                        <h1>
-                            Everything your pet
-                            <br>
-                            needs in one place
-                        </h1>
-                        <p>
-                            food, toys, accessories
-                            <br>
-                            and more for your best friend
-                        </p>
-                        <a href="#produk" class="btn-shop-now">Shop Now</a>
-                    </div>
-                    <div class="col-lg-6 text-center mt-4 mt-lg-0">
-                        <img src="{% static 'customer/img/puppy.png' %}"
-                             class="hero-illustration"
-                             alt="A dog and a cat sitting beside a bowl of food">
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- HOW TO ORDER -->
-        <section class="container how-to" aria-label="How to order">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <div class="step-card">
-                        <span class="step-icon"><i class="fas fa-cart-shopping"></i></span>
-                        <div>
-                            <div class="step-title">1. Pick your products</div>
-                            <div class="step-text">Add what your pet needs to the cart.</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="step-card">
-                        <span class="step-icon"><i class="fab fa-whatsapp"></i></span>
-                        <div>
-                            <div class="step-title">2. Send via WhatsApp</div>
-                            <div class="step-text">Your order goes straight to our admin.</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="step-card">
-                        <span class="step-icon"><i class="fas fa-truck-fast"></i></span>
-                        <div>
-                            <div class="step-title">3. We confirm &amp; deliver</div>
-                            <div class="step-text">Pay and receive it at your door.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- Category  -->
-        <section class="container" id="kategori">
-            <h2 class="section-title text-right">Shop by Category</h2>
-            <div class="row g-4 justify-content-center text-center">
-                <div class="col-6 col-md-2">
-                    <div class="category-circle mx-auto">
-                        <img src="{% static 'customer/img/pet-food.png' %}" alt="">
-                    </div>
-                    <div class="category-name">Food</div>
-                </div>
-                <div class="col-6 col-md-2">
-                    <div class="category-circle mx-auto">
-                        <img src="{% static 'customer/img/pet-toys.png' %}" alt="">
-                    </div>
-                    <div class="category-name">Toys</div>
-                </div>
-                <div class="col-6 col-md-2">
-                    <div class="category-circle mx-auto">
-                        <img src="{% static 'customer/img/pet-drug.png' %}" alt="">
-                    </div>
-                    <div class="category-name">Health</div>
-                </div>
-                <div class="col-6 col-md-2">
-                    <div class="category-circle mx-auto">
-                        <img src="{% static 'customer/img/pet-accessories.png' %}" alt="">
-                    </div>
-                    <div class="category-name">Accessories</div>
-                </div>
-            </div>
-        </section>
+    <body class="sx">
+        {% include "customer/_site_nav.html" with active="shop" %}
+        <header class="container sx-pagehead">
+            <span class="sx-kicker"><i class="fas fa-paw"></i> Shop</span>
+            <h1 class="sx-h2 mb-1">Everything for Your Pet</h1>
+            <p class="sx-lead mb-0">Add products to your cart, then send your order through WhatsApp.</p>
+        </header>
         <!-- PRODUCT SECTION -->
         <section class="container" id="produk">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -189,30 +76,8 @@
             </div>
             <p id="no-results" class="text-center text-muted py-5 d-none">No products match your search.</p>
         </section>
-        <!-- FOOTER -->
-        <footer class="footer-seelly" id="kontak">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="footer-logo mb-3">🐾 Seelly Petshop</div>
-                        <div class="social-icons">
-                            <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        </div>
-                    </div>
-                    <div class="col-md-6 footer-contact text-md-end mt-3 mt-md-0">
-                        <h5>Contact Us</h5>
-                        <p><i class="fas fa-phone"></i> +62 123456789</p>
-                        <p><i class="fas fa-envelope"></i> SeellyPetshop@outlook.com</p>
-                    </div>
-                </div>
-                <hr>
-                <div class="text-center text-muted small">© 2026 Seelly Petshop. All rights reserved.</div>
-            </div>
-        </footer>
+        {% include "customer/_site_footer.html" %}
         <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
-        <script src="{% static 'customer/js/catalog.js' %}?v=2"></script>
+        <script src="{% static 'customer/js/catalog.js' %}?v=3"></script>
     </body>
 </html>
