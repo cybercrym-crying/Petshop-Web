@@ -110,3 +110,50 @@ class StockPagesTests(TestCase):
         self.client.post(f"/{self.p.pk}/price", {"selling_price": 20000})
         self.p.refresh_from_db()
         self.assertEqual(self.p.selling_price, 20000)
+
+
+class StockListFilterTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user("adm", password="x", role=Role.ADMIN)
+        self.client.login(username="adm", password="x")
+        self.ok = make_product(stock=50, name="Aman")
+        self.low = make_product(stock=3, name="Menipis")
+        self.empty = make_product(stock=0, name="Habis")
+        self.noprice = make_product(stock=20, selling_price=None, name="TanpaHarga")
+
+    def names(self, **params):
+        r = self.client.get("/list", params)
+        self.assertEqual(r.status_code, 200)
+        return [p.name for p in r.context["productList"]], r
+
+    def test_counts_and_restock_needed(self):
+        _, r = self.names()
+        self.assertEqual(
+            r.context["counts"], {"all": 4, "low": 1, "empty": 1, "noprice": 1}
+        )
+        self.assertEqual(r.context["restock_needed"], 2)
+
+    def test_filters(self):
+        self.assertEqual(self.names(filter="low")[0], ["Menipis"])
+        self.assertEqual(self.names(filter="empty")[0], ["Habis"])
+        self.assertEqual(self.names(filter="noprice")[0], ["TanpaHarga"])
+        self.assertEqual(len(self.names(filter="ngawur")[0]), 4)  # filter tak dikenal diabaikan
+
+    def test_search_combines_with_filter(self):
+        self.assertEqual(self.names(q="hab")[0], ["Habis"])
+        self.assertEqual(self.names(filter="low", q="hab")[0], [])
+
+    def test_margin_and_stock_state(self):
+        _, r = self.names()
+        by = {p.name: p for p in r.context["productList"]}
+        self.assertEqual(by["Aman"].margin, 5000)
+        self.assertIsNone(by["TanpaHarga"].margin)
+        self.assertEqual(by["Habis"].stock_state, "empty")
+        self.assertEqual(by["Menipis"].stock_state, "low")
+        self.assertEqual(by["Aman"].stock_state, "ok")
+
+    def test_non_admin_forbidden(self):
+        User.objects.create_user("cr", password="x", role=Role.COURIER)
+        self.client.logout()
+        self.client.login(username="cr", password="x")
+        self.assertEqual(self.client.get("/list").status_code, 403)

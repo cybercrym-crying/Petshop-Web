@@ -229,3 +229,13 @@ main {
     transform: none;
   }
 }
+
+/* --- HP: kartu dua kolom, ringkas --- */
+@media (max-width: 680px) {
+  .card-grid { grid-template-columns: 1fr 1fr !important; gap: 0.7rem !important; }
+  .dash-card { padding: 1rem; }
+  .dash-card .icon { margin-bottom: 0.6rem; }
+  .dash-card h3 { font-size: 1rem; margin-bottom: 0.15rem; }
+  .dash-card p { display: none; }
+  .dash-card .cta { font-size: 0.8rem; }
+}

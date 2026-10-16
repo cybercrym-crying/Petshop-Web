@@ -19,7 +19,6 @@ urlpatterns = [
         views.delete_product,
         name="delete_product",
     ),
-    path("catalog", views.productCatalog, name="product_catalog"),
     path("list", views.product_list, name="product_list"),
     path("<int:productId>/price", views.set_selling_price, name="set_selling_price"),
     path("stock-mutation", views.add_stock_mutation, name="add_stock_mutation"),

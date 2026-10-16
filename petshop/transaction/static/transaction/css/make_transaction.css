@@ -324,3 +324,20 @@ main {
 .gap-2 { gap: 0.5rem; }
 .gap-3 { gap: 1rem; }
 .gap-4 { gap: 1.5rem; }
+
+/* --- HP --- */
+.order-jump { display: none; }
+@media (max-width: 860px) {
+  .order-jump { position: fixed; left: 0.75rem; right: 0.75rem; bottom: 0.75rem; z-index: 20; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; min-height: 52px; padding: 0 1.1rem; border-radius: 999px; background: #241a38; color: #fff; text-decoration: none; font-size: 0.9rem; box-shadow: 0 10px 24px rgba(36, 26, 56, 0.35); }
+  .order-jump b { color: #f0a63c; white-space: nowrap; }
+  main { padding-bottom: 5rem; }
+}
+@media (max-width: 640px) {
+  main { padding: 1rem 0.9rem 5rem; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+  .product-photo { aspect-ratio: 1 / 1; }
+  .product-body { padding: 0.55rem 0.6rem 0.7rem; }
+  .product-name { font-size: 0.85rem; }
+  .badge-stock { font-size: 0.78rem; }
+  .filter-input { min-height: 44px; }
+}

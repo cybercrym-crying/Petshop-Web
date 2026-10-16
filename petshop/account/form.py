@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.utils import choices
-from .models import Role, Customer
+from .models import Customer
 from .phone import normalize_phone
 from django.contrib.auth.password_validation import validate_password
 

@@ -8,6 +8,8 @@
         <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
               rel="stylesheet" />
+        <link rel="stylesheet"
+              href="{% static 'css/staff/admin/employee.css' %}?v=20261014">
         <style>
             /* Bootstrap lokal v4.1 belum punya utilitas gap-*; didefinisikan di sini. */
             .gap-1 { gap: 0.25rem; }
@@ -228,15 +230,7 @@
         </style>
     </head>
     <body>
-        <nav class="navbar-petadmin">
-            <div class="brand">
-                <span class="brand-logo">L</span>
-                <a href="/staff/admin/dashboard">
-                    <span class="brand-name">PetAdmin</span>
-                </a>
-            </div>
-            <div class="pill-name">{{ request.user.get_full_name|default:"Name" }}</div>
-        </nav>
+        {% include "partials/staff_nav.html" %}
         <main>
             <p class="eyebrow">Dashboard</p>
             <h1 class="page-title">Manage User</h1>
@@ -253,31 +247,47 @@
                             data-bs-toggle="modal"
                             data-bs-target="#addEmployeeModal">+ Add Employee</button>
                 </div>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Password</th>
+                <table class="emp-table">
+                    <tr class="tbl-head">
+                        <th>Employee</th>
                         <th>Phone</th>
                         <th>Role</th>
+                        <th>Activity</th>
+                        <th></th>
                     </tr>
                     {% for emp in employee %}
-                        <tr data-row
-                            data-bs-toggle="modal"
-                            data-bs-target="#detailEmployee{{ emp.pk }}">
-                            <td>{{ emp.first_name }} {{ emp.last_name }}</td>
-                            <td class="status-hidden">*********</td>
-                            <td>{{ emp.phone_number }}</td>
+                        <tr data-row onclick="location.href='{% url 'employee_profile' emp.pk %}'">
                             <td>
+                                <div class="emp-cell">
+                                    <i class="emp-av tone-{{ emp.tone }}">{{ emp.initials }}</i>
+                                    <div>
+                                        <a class="emp-link"
+                                           href="{% url 'employee_profile' emp.pk %}"
+                                           onclick="event.stopPropagation()">{{ emp.display_name }}</a>
+                                        <div class="emp-user">@{{ emp.username }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Phone">{{ emp.phone_number }}</td>
+                            <td data-label="Role">
                                 {% if emp.role == "ADMIN" %}
                                     <span class="badge-role role-admin">Admin</span>
                                 {% else %}
                                     <span class="badge-role role-courier">Courier</span>
                                 {% endif %}
                             </td>
+                            <td class="emp-act" data-label="Activity">
+                                {% if emp.role == "COURIER" %}
+                                    {{ emp.delivered_count }} delivered
+                                {% else %}
+                                    {{ emp.created_count }} order{{ emp.created_count|pluralize }} created
+                                {% endif %}
+                            </td>
+                            <td class="emp-go" aria-hidden="true">&rsaquo;</td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-3">Belum ada data employee</td>
+                            <td colspan="5" class="text-center text-muted py-3">Belum ada data employee</td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -289,8 +299,8 @@
                             data-bs-toggle="modal"
                             data-bs-target="#addCustomerModal">+ Add Customer</button>
                 </div>
-                <table>
-                    <tr>
+                <table class="cust-table">
+                    <tr class="tbl-head">
                         <th>Name</th>
                         <th>Phone</th>
                         <th>Address</th>
@@ -299,15 +309,15 @@
                         <tr data-row
                             data-bs-toggle="modal"
                             data-bs-target="#detailCustomer{{ cust.pk }}">
-                            <td>{{ cust.name }}</td>
-                            <td>
+                            <td data-label="Name"><b>{{ cust.name }}</b></td>
+                            <td data-label="Phone">
                                 {{ cust.phone_number }}
                                 <a href="{{ cust.whatsapp_url }}"
                                    target="_blank"
                                    rel="noopener"
                                    onclick="event.stopPropagation()">WA</a>
                             </td>
-                            <td>
+                            <td data-label="Address">
                                 {{ cust.address }}
                                 <a href="{{ cust.maps_url }}"
                                    target="_blank"
@@ -420,89 +430,6 @@
                 </div>
             </div>
         </div>
-        <!-- update delete employee: satu modal per employee, diisi langsung oleh Django -->
-        {% for emp in employee %}
-            <div class="modal fade"
-                 id="detailEmployee{{ emp.pk }}"
-                 tabindex="-1"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-body p-4">
-                            <h2 class="modal-title-custom">Employee Details</h2>
-                            <p class="modal-sub">Update or delete employee data here</p>
-                            <form method="post" action="{% url 'edit_employee' emp.pk %}">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label class="form-label-custom">Username</label>
-                                    <input type="text"
-                                           name="username"
-                                           value="{{ emp.username }}"
-                                           class="dark-input"
-                                           required />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label-custom">First Name</label>
-                                    <input type="text"
-                                           name="first_name"
-                                           value="{{ emp.first_name }}"
-                                           class="dark-input"
-                                           required />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label-custom">Last Name</label>
-                                    <input type="text"
-                                           name="last_name"
-                                           value="{{ emp.last_name }}"
-                                           class="dark-input"
-                                           required />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label-custom">New Password</label>
-                                    <input type="password"
-                                           name="password"
-                                           class="dark-input"
-                                           placeholder="Kosongkan jika tidak diubah" />
-                                </div>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label-custom">Phone Number</label>
-                                        <input type="text"
-                                               name="phone_number"
-                                               value="{{ emp.phone_number }}"
-                                               class="dark-input"
-                                               placeholder="08xxxxx"
-                                               required />
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label-custom">Role</label>
-                                        <select name="role" class="dark-input">
-                                            <option value="ADMIN"
-                                                    {% if emp.role == "ADMIN" %}selected{% endif %}>Admin</option>
-                                            <option value="COURIER"
-                                                    {% if emp.role == "COURIER" %}selected{% endif %}>Kurir</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="d-flex gap-2 justify-content-end mt-4">
-                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit"
-                                            form="deleteEmployee{{ emp.pk }}"
-                                            class="btn btn-danger">Delete</button>
-                                    <button type="submit" class="btn-orange">Update</button>
-                                </div>
-                            </form>
-                            <form id="deleteEmployee{{ emp.pk }}"
-                                  method="post"
-                                  action="{% url 'delete_employee' emp.pk %}"
-                                  onsubmit="return confirm('Yakin hapus employee ini?')">
-                                {% csrf_token %}
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
         <!-- update delete customer: satu modal perstu customer, biar disi langsung oleh Django -->
         {% for cust in customers %}
             <div class="modal fade"

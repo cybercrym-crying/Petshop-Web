@@ -2,7 +2,6 @@ from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
 from product.models import Product, MutationType, InsufficientStock
-from account.models import Customer, User
 
 
 class CheckoutError(Exception):

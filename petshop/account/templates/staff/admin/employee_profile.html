@@ -1,0 +1,199 @@
+{% load static rupiah %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>PetAdmin - {{ emp.display_name }}</title>
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+              rel="stylesheet" />
+        <link rel="stylesheet"
+              href="{% static 'css/staff/admin/employee.css' %}?v=20261014">
+    </head>
+    <body class="pf-body">
+        {% include "partials/staff_nav.html" %}
+        <main class="pf-main">
+            <div class="pf-crumb">
+                <a class="pf-back" href="{% url 'manage_account' %}" aria-label="Back to Manage User">&lsaquo;</a>
+                <span class="pf-mut">Manage User / Employee /</span>
+                <b>{{ emp.display_name }}</b>
+            </div>
+            {% if messages %}
+                <div class="pf-messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                             role="alert">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="pf-banner"></div>
+            <div class="pf-grid">
+                <section class="pf-card pf-profile">
+                    <i class="pf-avatar emp-av tone-{{ emp.tone }}">{{ emp.initials }}</i>
+                    <div>
+                        <h1 class="pf-name">{{ emp.display_name }}</h1>
+                        <div class="pf-mut">@{{ emp.username }}</div>
+                        <div class="pf-tags">
+                            {% if is_courier %}
+                                <span class="pf-tag role-courier">Courier</span>
+                            {% else %}
+                                <span class="pf-tag role-admin">Admin</span>
+                            {% endif %}
+                            {% if emp.is_active %}
+                                <span class="pf-tag s-paid">Active</span>
+                            {% else %}
+                                <span class="pf-tag s-pending">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="pf-row">
+                            <span class="pf-mut">Phone</span>
+                            <span class="pf-phone">
+                                <b>{{ emp.phone_number|default:"-" }}</b>
+                                {% if wa_url %}<a class="pf-btn small" href="{{ wa_url }}" target="_blank" rel="noopener">WhatsApp</a>{% endif %}
+                            </span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-mut">Role</span><b>{% if is_courier %}Courier{% else %}Admin{% endif %}</b>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-mut">Joined</span><b>{{ emp.date_joined|date:"d M Y" }}</b>
+                        </div>
+                    </div>
+                    <div class="pf-stats">
+                        {% for st in stats %}
+                            <div>
+                                <div class="pf-stat-n {{ st.tone }}">{{ st.value }}</div>
+                                <div class="pf-mut">{{ st.label }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                <section class="pf-card pf-form">
+                    <h2 class="pf-h">Account Information</h2>
+                    <form method="post" action="{% url 'edit_employee' emp.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <div class="pf-two">
+                            <div class="pf-field">
+                                <label for="first_name">First name</label>
+                                <input id="first_name" name="first_name" value="{{ emp.first_name }}" required>
+                            </div>
+                            <div class="pf-field">
+                                <label for="last_name">Last name</label>
+                                <input id="last_name" name="last_name" value="{{ emp.last_name }}" required>
+                            </div>
+                        </div>
+                        <div class="pf-field">
+                            <label for="username">Username</label>
+                            <input id="username" name="username" value="{{ emp.username }}" required>
+                        </div>
+                        <div class="pf-two">
+                            <div class="pf-field">
+                                <label for="phone_number">Phone number</label>
+                                <input id="phone_number" name="phone_number" value="{{ emp.phone_number }}" placeholder="08xxxxx">
+                            </div>
+                            <div class="pf-field">
+                                <label for="role">Role</label>
+                                {% if is_self %}
+                                    <select id="role" disabled>
+                                        <option>{{ emp.get_role_display }}</option>
+                                    </select>
+                                    <input type="hidden" name="role" value="{{ emp.role }}">
+                                    <small class="pf-mut">You cannot change your own role.</small>
+                                {% else %}
+                                    <select id="role" name="role">
+                                        <option value="ADMIN" {% if emp.role == "ADMIN" %}selected{% endif %}>Admin</option>
+                                        <option value="COURIER" {% if emp.role == "COURIER" %}selected{% endif %}>Courier</option>
+                                    </select>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="pf-field">
+                            <label for="password">New password</label>
+                            <input id="password"
+                                   name="password"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   placeholder="Leave empty to keep the current password">
+                        </div>
+                        <div class="pf-actions">
+                            {% if not is_self %}
+                                <button type="submit"
+                                        form="deleteEmployee"
+                                        class="pf-delete">Delete employee</button>
+                            {% else %}
+                                <span></span>
+                            {% endif %}
+                            <span class="pf-btns">
+                                <a href="{% url 'manage_account' %}" class="pf-btn">Cancel</a>
+                                <button type="submit" class="pf-btn primary">Save changes</button>
+                            </span>
+                        </div>
+                    </form>
+                    {% if not is_self %}
+                        <form id="deleteEmployee"
+                              method="post"
+                              action="{% url 'delete_employee' emp.pk %}"
+                              onsubmit="return confirm('Yakin hapus employee ini?')">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                        </form>
+                    {% endif %}
+                </section>
+            </div>
+            <section class="pf-card pf-orders">
+                <div class="pf-orders-head">
+                    <h2 class="pf-h">{% if is_courier %}Recent deliveries{% else %}Recent orders created{% endif %}</h2>
+                </div>
+                <div class="pf-scroll">
+                    <table class="pf-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for o in recent_orders %}
+                                <tr>
+                                    <td>
+                                        <a class="pf-order" href="{% url 'transaction:manage_transaction' %}?q={{ o.pk }}">#{{ o.pk }}</a>
+                                    </td>
+                                    <td>{{ o.customer.name }}</td>
+                                    <td>
+                                        <b>Rp {{ o.total_payment|rupiah }}</b>
+                                    </td>
+                                    <td>
+                                        <span class="pf-tag s-{{ o.payment_status|lower }}">{{ o.get_payment_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="pf-tag s-{{ o.order_status|lower }}">{{ o.get_order_status_display }}</span>
+                                    </td>
+                                    <td class="pf-mut">{{ o.date|date:"d M, H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="pf-empty">Belum ada order.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    </body>
+</html>

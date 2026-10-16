@@ -48,26 +48,56 @@ def add_product(request):
     return redirect("product:manage_product")
 
 
+LOW_STOCK_THRESHOLD = 10  # stok 1..10 dianggap menipis, 0 = habis
+
+
 @roleRequired(Role.ADMIN)
 def product_list(request):
-    productQueryset = Product.objects.select_related("category").all().order_by("name")
+    q = request.GET.get("q", "").strip()
+    active_filter = request.GET.get("filter", "")
+
+    base = Product.objects.select_related("category").order_by("name")
+    low = base.filter(stock__gt=0, stock__lte=LOW_STOCK_THRESHOLD)
+    empty = base.filter(stock=0)
+    no_price = base.filter(selling_price__isnull=True)
+    counts = {
+        "all": base.count(),
+        "low": low.count(),
+        "empty": empty.count(),
+        "noprice": no_price.count(),
+    }
+
+    queryset = {"low": low, "empty": empty, "noprice": no_price}.get(active_filter, base)
+    if active_filter not in ("low", "empty", "noprice"):
+        active_filter = ""
+    if q:
+        queryset = queryset.filter(name__icontains=q)
+
+    products = list(queryset)
+    for p in products:
+        p.stock_state = (
+            "empty" if p.stock == 0 else "low" if p.stock <= LOW_STOCK_THRESHOLD else "ok"
+        )
+        p.margin = (
+            p.selling_price - p.purchase_price if p.selling_price is not None else None
+        )
+
     recentMutations = StockMutation.objects.select_related(
         "product", "createdBy"
     ).order_by("-date", "-pk")[:20]
     return render(
         request,
         "product/product_list.html",
-        {"productList": productQueryset, "recentMutations": recentMutations},
+        {
+            "productList": products,
+            "recentMutations": recentMutations,
+            "counts": counts,
+            "restock_needed": counts["low"] + counts["empty"],
+            "active_filter": active_filter,
+            "q": q,
+            "low_threshold": LOW_STOCK_THRESHOLD,
+        },
     )
-
-
-def productCatalog(request):
-    productQueryset = (
-        Product.objects.sellable()
-        .select_related("category")
-        .order_by("name")
-    )
-    return render(request, "product/catalog.html", {"productList": productQueryset})
 
 
 @roleRequired(Role.ADMIN)

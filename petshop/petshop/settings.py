@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -121,18 +120,6 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 AUTH_USER_MODEL = "account.User"
-# STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-
-MAILERS = {
-    "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
-    },
-}
-
-#HazeTest
 LOGIN_URL = "login_form"
-LOGIN_REDIRECT_URL = "home"

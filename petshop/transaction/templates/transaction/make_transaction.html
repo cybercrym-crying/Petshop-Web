@@ -1,4 +1,4 @@
-{% load static %}
+{% load static rupiah %}
 <!DOCTYPE html>
 <html lang="id">
     <head>
@@ -12,15 +12,7 @@
               href="{% static 'transaction/css/make_transaction.css' %}?v=20261013">
     </head>
     <body>
-        <nav class="navbar-petadmin">
-            <div class="brand">
-                <span class="brand-logo">L</span>
-                <a href="/staff/admin/dashboard">
-                    <span class="brand-name">PetAdmin</span>
-                </a>
-            </div>
-            <div class="pill-name">{{ request.user.get_full_name|default:"Name" }}</div>
-        </nav>
+        {% include "partials/staff_nav.html" %}
         <main>
             {% if messages %}
                 <div class="messages">
@@ -90,7 +82,7 @@
                     {% endfor %}
                 </div>
             </div>
-            <aside class="order-panel">
+            <aside class="order-panel" id="order-summary">
                 <h2 class="order-title">Order Summary</h2>
                 <div class="order-list">
                     {% for item in cart_items %}
@@ -166,6 +158,12 @@
                 </form>
             </aside>
         </main>
+        {% if cart_items %}
+            <a href="#order-summary" class="order-jump">
+                <span>{{ cart_items|length }} item{{ cart_items|length|pluralize }} · Rp {{ cart_total|rupiah }}</span>
+                <b>View order &darr;</b>
+            </a>
+        {% endif %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>
