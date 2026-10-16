@@ -1,0 +1,150 @@
+{% extends "customer/base.html" %}
+{% load static humanize %}
+{% block title %}{{ product.name }} - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container section">
+        <nav class="breadcrumb-seelly" aria-label="Breadcrumb">
+            <a href="{% url 'customer:home' %}">Home</a>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            <a href="{% url 'customer:shop' %}">Shop</a>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            <a href="{% url 'customer:shop' %}?category={{ product.category.name }}">{{ product.category }}</a>
+        </nav>
+        <div class="detail-grid">
+            <div class="detail-photo">
+                {% if product.photo %}
+                    <img src="{{ product.photo.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <img src="{% static 'customer/img/product-placeholder.svg' %}" alt="">
+                {% endif %}
+            </div>
+            <div class="detail-card">
+                <span class="chip chip-category static">{{ product.category }}</span>
+                <h1 class="detail-name">{{ product.name }}</h1>
+                <div class="detail-price">Rp {{ product.selling_price|intcomma }}</div>
+                {% if product.stock == 0 %}
+                    <p class="stock-note out">
+                        <i class="fas fa-circle-xmark" aria-hidden="true"></i> Out of stock
+                    </p>
+                {% elif product.stock <= 5 %}
+                    <p class="stock-note low">
+                        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Only {{ product.stock }} left
+                    </p>
+                {% else %}
+                    <p class="stock-note">
+                        <i class="fas fa-circle-check" aria-hidden="true"></i> In stock
+                    </p>
+                {% endif %}
+                <div class="detail-actions">
+                    <div class="qty-control" aria-label="Quantity">
+                        <button type="button" id="detail-minus" aria-label="Decrease quantity">−</button>
+                        <span id="detail-qty">1</span>
+                        <button type="button" id="detail-plus" aria-label="Increase quantity">+</button>
+                    </div>
+                    <button type="button"
+                            class="btn-primary-seelly btn-lg flex-fill"
+                            id="detail-add"
+                            data-add-to-cart
+                            data-use-detail-qty
+                            data-id="{{ product.id }}"
+                            data-name="{{ product.name }}"
+                            data-price="{{ product.selling_price }}"
+                            data-stock="{{ product.stock }}"
+                            data-url="{% url 'customer:product_detail' product.id %}"
+                            data-photo="{% if product.photo %}{{ product.photo.url }}{% endif %}"
+                            {% if product.stock == 0 %}disabled{% endif %}>
+                        <i class="fas fa-cart-plus" aria-hidden="true"></i>
+                        {% if product.stock == 0 %}
+                            Out of stock
+                        {% else %}
+                            Add to Cart
+                        {% endif %}
+                    </button>
+                    <button type="button"
+                            class="wishlist-btn inline"
+                            data-wishlist-toggle
+                            data-id="{{ product.id }}"
+                            data-name="{{ product.name }}"
+                            aria-pressed="false"
+                            aria-label="Add {{ product.name }} to wishlist">
+                        <i class="far fa-heart" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="info-strip">
+                    <div>
+                        <i class="fas fa-box" aria-hidden="true"></i>
+                        <span>Availability</span>
+                        <strong>{% if product.stock %}{{ product.stock }} in stock{% else %}Sold out{% endif %}</strong>
+                    </div>
+                    <div>
+                        <i class="fas fa-tag" aria-hidden="true"></i>
+                        <span>Category</span>
+                        <strong>{{ product.category }}</strong>
+                    </div>
+                    <div>
+                        <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                        <span>Order via</span>
+                        <strong>WhatsApp</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="detail-lower">
+            <section class="panel">
+                <h2 class="panel-title">Product Details</h2>
+                <dl class="detail-list">
+                    <div>
+                        <dt>Name</dt>
+                        <dd>{{ product.name }}</dd>
+                    </div>
+                    <div>
+                        <dt>Category</dt>
+                        <dd>{{ product.category }}</dd>
+                    </div>
+                    <div>
+                        <dt>Price</dt>
+                        <dd>Rp {{ product.selling_price|intcomma }}</dd>
+                    </div>
+                    <div>
+                        <dt>Stock</dt>
+                        <dd>{{ product.stock }}</dd>
+                    </div>
+                    <div>
+                        <dt>Listed on</dt>
+                        <dd>{{ product.created_at|date:"d M Y" }}</dd>
+                    </div>
+                </dl>
+            </section>
+            <section class="panel">
+                <h2 class="panel-title">Related Products</h2>
+                {% for item in related_products %}
+                    <a class="related-item"
+                       href="{% url 'customer:product_detail' item.id %}">
+                        <span class="related-photo">
+                            {% if item.photo %}
+                                <img src="{{ item.photo.url }}" alt="" loading="lazy">
+                            {% else %}
+                                <img src="{% static 'customer/img/product-placeholder.svg' %}"
+                                     alt=""
+                                     loading="lazy">
+                            {% endif %}
+                        </span>
+                        <span class="related-info">
+                            <span class="related-name">{{ item.name }}</span>
+                            <span class="related-price">Rp {{ item.selling_price|intcomma }}</span>
+                        </span>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </a>
+                {% empty %}
+                    <p class="muted">No related products yet.</p>
+                {% endfor %}
+            </section>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'customer/js/shop.js' %}"></script>
+{% endblock %}
