@@ -209,3 +209,59 @@ class EmployeeProfileTests(TestCase):
         self.assertContains(r, "1 delivered")
         self.assertContains(r, "2 orders created")
         self.assertNotContains(r, "*********")
+
+
+class MobileReadinessTests(TestCase):
+    """Perbaikan tampilan HP: header staff, referensi file statis, form login."""
+
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            "adm", password="x", role=Role.ADMIN, first_name="Ani", last_name="Admin"
+        )
+        self.client.login(username="adm", password="x")
+
+    def test_staff_pages_have_logout_in_header(self):
+        for url in (
+            "/staff/admin/manage_transaction/",
+            "/staff/admin/make_transaction/",
+            "/staff/admin/manage_product/",
+            "/staff/admin/manage_account",
+            "/list",
+            f"/staff/admin/employee/{self.admin.pk}/",
+        ):
+            r = self.client.get(url)
+            self.assertEqual(r.status_code, 200, url)
+            self.assertContains(r, 'action="/logout"', msg_prefix=url)
+            self.assertContains(r, "staff_nav.css", msg_prefix=url)
+
+    def test_login_page_uses_existing_bootstrap_and_orange_variable(self):
+        from django.contrib.staticfiles import finders
+
+        self.client.logout()
+        r = self.client.get("/login")
+        self.assertContains(r, "css/bootstrap.min.css")
+        self.assertNotContains(r, "styles/bootstrap.min.css")
+        self.assertNotContains(r, "--Employee")
+        self.assertContains(r, "--orange: #f0a63c")
+        self.assertTrue(finders.find("css/bootstrap.min.css"))
+
+    def test_account_tables_collapse_to_cards_on_phone(self):
+        r = self.client.get("/staff/admin/manage_account")
+        self.assertContains(r, 'class="emp-table"')
+        self.assertContains(r, 'class="cust-table"')
+        self.assertContains(r, 'data-label="Phone"')
+        self.assertContains(r, 'class="tbl-head"')
+
+    def test_all_static_references_in_live_templates_exist(self):
+        import glob
+        import re
+
+        from django.contrib.staticfiles import finders
+
+        missing = []
+        for path in glob.glob("*/templates/**/*.html", recursive=True):
+            text = open(path, encoding="utf-8").read()
+            for m in re.finditer(r"{%\s*static\s+['\"]([^'\"]+)['\"]", text):
+                if not finders.find(m.group(1)):
+                    missing.append((path, m.group(1)))
+        self.assertEqual(missing, [])

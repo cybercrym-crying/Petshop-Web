@@ -81,3 +81,19 @@ tr[data-row]:hover .emp-go { color: #5a3fc0; }
 
 @media (max-width: 900px) { .pf-grid { grid-template-columns: 1fr; margin-top: -40px; } }
 @media (max-width: 640px) { .pf-main { padding: 1rem; } .pf-two { grid-template-columns: 1fr; } .pf-grid, .pf-orders { padding-left: 0; padding-right: 0; margin-left: 0; margin-right: 0; } }
+
+/* --- Manage User di HP: baris tabel jadi kartu --- */
+@media (max-width: 640px) {
+  .emp-table, .cust-table { min-width: 0 !important; width: 100%; }
+  .emp-table, .emp-table tbody, .emp-table tr, .emp-table td,
+  .cust-table, .cust-table tbody, .cust-table tr, .cust-table td { display: block; width: 100%; }
+  .emp-table tr.tbl-head, .cust-table tr.tbl-head { display: none !important; }
+  .emp-table tr[data-row], .cust-table tr[data-row] { position: relative; padding: 0.9rem 1rem; margin-bottom: 0.7rem; background: #fff; border: 1px solid #e4dcf5; border-radius: 0.9rem; }
+  .emp-table td, .cust-table td { border: 0 !important; padding: 0.2rem 0 !important; text-align: left !important; }
+  .emp-table td[data-label]::before, .cust-table td[data-label]::before { content: attr(data-label); display: inline-block; min-width: 5.2rem; font-size: 0.75rem; font-weight: 600; color: #6b6180; }
+  .cust-table td[data-label="Name"]::before { display: none; }
+  .emp-table .emp-cell { margin-bottom: 0.4rem; }
+  .emp-table td.emp-go { position: absolute; right: 0.9rem; top: 1rem; width: auto; padding: 0 !important; }
+  .cust-table td a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 0.6rem; margin-left: 0.4rem; }
+  .pf-btn.small { min-height: 40px; }
+}

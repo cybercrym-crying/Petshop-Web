@@ -4,14 +4,12 @@ from django.db.models import Count, ProtectedError, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from .models import Customer, Role
 from .form import CustomerForm, LoginForm, EmployeeForm
 from .decorators import roleRequired
 from django.contrib import messages
 from django.utils.http import url_has_allowed_host_and_scheme
-from product.models import Product
 from transaction.models import Order, OrderStatus
 
 User = get_user_model()
@@ -48,28 +46,6 @@ def _next_url(request, default):
     return default
 
 
-def home(request):
-    return render(request, "index.html")
-
-
-def customerForm(request):
-    if request.method == "POST":
-        form = CustomerForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data.get("name")
-            phoneNumber = form.cleaned_data.get("phone_number")
-            address = form.cleaned_data.get("address")
-
-            Customer.objects.create(
-                name=name, phone_number=phoneNumber, address=address
-            )
-
-            return redirect("register_success")
-    else:
-        form = CustomerForm()
-    return render(request, "account/register.html", {"form": form})
-
-
 def loginForm(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -94,12 +70,6 @@ def logoutForm(request):
         logout(request)
         return redirect("customer:katalog")
     return redirect("customer:katalog")
-
-
-def customerDashboard(request):
-    return render(
-        request, "customer/dashboard.html", {"username": request.user.username}
-    )
 
 
 @roleRequired(Role.ADMIN)

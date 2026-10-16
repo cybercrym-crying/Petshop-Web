@@ -1,11 +1,11 @@
 <nav class="navbar-custom d-flex align-items-center justify-content-between">
-    <a href="{% url 'home' %}"
+    <a href="{% url 'customer:home' %}"
        class="fw-bold fs-4 text-decoration-none text-dark">Petshop</a>
     
     <div class="d-none d-md-flex align-items-center">
         <!-- Menu Publik (untuk semua orang) -->
         <a href="{% url 'customer:katalog' %}" class="nav-link-custom">Katalog Produk</a>
-        <a href="{% url 'customer:pesan' %}" class="nav-link-custom">Pesan via WA</a>
+        <a href="{% url 'customer:about' %}" class="nav-link-custom">About Us</a>
         
         <!-- Menu untuk User yang Sudah Login -->
         {% if user.is_authenticated %}

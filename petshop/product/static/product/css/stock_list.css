@@ -80,3 +80,9 @@ main.sl-main { max-width: 1240px; }
   .sl-table td[data-label]::before { content: attr(data-label); display: block; font-size: 0.72rem; color: #6b6180; font-weight: 600; }
   .sl-table td.act { padding-top: 0.6rem; }
 }
+
+@media (max-width: 640px) {
+  .sl-btn { min-height: 44px; }
+  .sl-cat { font-size: 0.78rem; }
+  .sl-search input[type="search"] { min-height: 44px; flex: 1 1 100%; }
+}

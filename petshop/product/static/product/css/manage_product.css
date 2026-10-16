@@ -311,3 +311,10 @@ select.dark-input {
 .gap-2 { gap: 0.5rem; }
 .gap-3 { gap: 1rem; }
 .gap-4 { gap: 1.5rem; }
+
+/* --- HP: foto produk 2 kolom --- */
+@media (max-width: 640px) {
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+  .product-photo { aspect-ratio: 1 / 1; }
+  .product-name { font-size: 0.85rem; }
+}

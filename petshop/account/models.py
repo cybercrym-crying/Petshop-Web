@@ -14,16 +14,8 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=20)
 
     @property
-    def is_admin(self):
-        return self.role == Role.ADMIN
-
-    @property
-    def is_courier(self):
-        return self.role == Role.COURIER
-
-    @property
     def dashboard_url_name(self):
-        return {Role.ADMIN: "staff_admin_dashboard"}.get(self.role, "home")
+        return {Role.ADMIN: "staff_admin_dashboard"}.get(self.role, "customer:home")
 
 
 class Customer(models.Model):

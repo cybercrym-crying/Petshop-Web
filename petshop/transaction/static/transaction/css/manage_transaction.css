@@ -379,3 +379,22 @@ main.wide { max-width: 1320px; }
 @media (max-width: 640px) { .bd-title { font-size: 1.9rem; } }
 .bd-card[data-modal] { cursor: pointer; transition: box-shadow 0.15s; }
 .bd-card[data-modal]:hover { box-shadow: 0 0 0 2px #b9a8ec, 0 6px 18px rgba(40, 30, 70, 0.1); }
+
+/* --- HP: tab tahap order, teks dan tombol lebih besar --- */
+.bd-tabs { display: none; }
+.bd-tag { font-size: 0.78rem; }
+.bd-time, .bd-method { font-size: 0.8rem; }
+.bd-lane-sum { font-size: 0.85rem; }
+@media (max-width: 720px) {
+  .list-head { display: none !important; }
+  .bd-tabs { display: flex; gap: 0.4rem; overflow-x: auto; margin-bottom: 0.8rem; padding-bottom: 2px; }
+  .bd-tab { flex: none; display: inline-flex; align-items: center; gap: 0.4rem; min-height: 44px; padding: 0 0.95rem; border: 1px solid #ddd5ef; border-radius: 999px; background: #fff; color: var(--purple-dk); font: 600 0.85rem "Inter", sans-serif; cursor: pointer; }
+  .bd-tab em { font-style: normal; font-size: 0.78rem; background: #efe9fb; border-radius: 999px; padding: 1px 0.5rem; }
+  .bd-tab.is-active { background: #5a3fc0; border-color: #5a3fc0; color: #fff; }
+  .bd-tab.is-active em { background: rgba(255, 255, 255, 0.22); }
+  .bd-board.bd-js { overflow-x: visible; }
+  .bd-board.bd-js .bd-lane { display: none; flex: 1 1 100%; width: 100%; }
+  .bd-board.bd-js .bd-lane.is-active { display: flex; }
+  .bd-btn { min-height: 44px; font-size: 0.85rem; }
+  .bd-seg a { min-height: 44px; }
+}

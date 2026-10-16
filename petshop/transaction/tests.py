@@ -355,3 +355,102 @@ class BoardViewTests(TestCase):
         self.client.logout()
         self.client.login(username="cr", password="x")
         self.assertEqual(self.client.get(self.URL).status_code, 403)
+
+
+class SeedDemoTests(TestCase):
+    def setUp(self):
+        # Foto contoh ditulis ke folder sementara, bukan ke media/ milik project.
+        import shutil
+        import tempfile
+
+        from django.test import override_settings
+
+        media = tempfile.mkdtemp()
+        override = override_settings(MEDIA_ROOT=media)
+        override.enable()
+        self.addCleanup(override.disable)
+        self.addCleanup(shutil.rmtree, media, True)
+
+    def run_seed(self, *args, **kw):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        out = StringIO()
+        call_command("seed_demo", *args, stdout=out, **kw)
+        return out.getvalue()
+
+    def test_refuses_when_debug_is_off(self):
+        from django.core.management.base import CommandError
+        from django.test import override_settings
+
+        with override_settings(DEBUG=False):
+            with self.assertRaises(CommandError):
+                self.run_seed()
+            self.run_seed(force=True, orders=2)  # --force mengizinkan
+        self.assertTrue(Product.objects.exists())
+
+    def test_seed_creates_realistic_data_through_real_rules(self):
+        from django.test import override_settings
+        from product.models import MutationType
+
+        with override_settings(DEBUG=True):
+            self.run_seed(orders=24)
+        self.assertEqual(User.objects.filter(username__startswith="demo_", role=Role.ADMIN).count(), 2)
+        self.assertEqual(User.objects.filter(username__startswith="demo_", role=Role.COURIER).count(), 3)
+        self.assertEqual(Customer.objects.count(), 10)
+        self.assertEqual(Product.objects.count(), 18)
+        self.assertEqual(Order.objects.count(), 24)
+        statuses = set(Order.objects.values_list("order_status", flat=True))
+        self.assertGreaterEqual(len(statuses), 3)  # campuran status
+        # variasi produk untuk menguji halaman stok
+        self.assertTrue(Product.objects.filter(stock=0).exists())
+        self.assertTrue(Product.objects.filter(selling_price__isnull=True).exists())
+        self.assertTrue(Product.objects.filter(is_active=False).exists())
+        self.assertTrue(Product.objects.exclude(photo="").exists())
+        # stok selalu sama dengan jumlah riwayat mutasi (tidak ada angka yang dikarang)
+        for p in Product.objects.all():
+            masuk = sum(m.quantity for m in p.mutations.filter(mutationType=MutationType.IN))
+            keluar = sum(m.quantity for m in p.mutations.filter(mutationType=MutationType.OUT))
+            self.assertEqual(p.stock, masuk - keluar, p.name)
+        # total tiap order = jumlah detailnya; kurir wajib ada untuk order yang sedang diantar
+        for o in Order.objects.all():
+            self.assertEqual(o.total_payment, sum(d.subtotal for d in o.details.all()))
+            if o.order_status in ("ON_DELIVERY", "DELIVERED"):
+                self.assertIsNotNone(o.courier)
+
+    def test_seed_can_login_and_pages_render(self):
+        from django.test import override_settings
+
+        with override_settings(DEBUG=True):
+            self.run_seed(orders=10, password="rahasia-123")
+        self.assertTrue(self.client.login(username="demo_admin", password="rahasia-123"))
+        for url in ("/staff/admin/manage_transaction/", "/list", "/staff/admin/manage_account"):
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_seed_is_idempotent_and_more_orders_adds(self):
+        from django.test import override_settings
+
+        with override_settings(DEBUG=True):
+            self.run_seed(orders=8)
+            counts = (User.objects.count(), Product.objects.count(), Customer.objects.count(), Order.objects.count())
+            self.run_seed(orders=8)
+            self.assertEqual(
+                counts,
+                (User.objects.count(), Product.objects.count(), Customer.objects.count(), Order.objects.count()),
+            )
+            self.run_seed(orders=5, more_orders=True)
+            self.assertEqual(Order.objects.count(), 13)
+
+    def test_reset_removes_only_demo_data(self):
+        from django.test import override_settings
+
+        mine = make_product("Produk Milikku", stock=3)
+        owner = User.objects.create_user("owner", password="x", role=Role.ADMIN)
+        with override_settings(DEBUG=True):
+            self.run_seed(orders=10)
+            self.run_seed(orders=6, reset=True)
+        self.assertEqual(Order.objects.count(), 6)  # order lama dihapus, 6 baru dibuat
+        self.assertTrue(Product.objects.filter(pk=mine.pk).exists())
+        self.assertTrue(User.objects.filter(pk=owner.pk).exists())
+        self.assertEqual(Product.objects.count(), 19)  # 18 demo + produk milikku

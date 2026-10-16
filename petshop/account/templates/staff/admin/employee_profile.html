@@ -12,13 +12,7 @@
               href="{% static 'css/staff/admin/employee.css' %}?v=20261014">
     </head>
     <body class="pf-body">
-        <nav class="pf-nav">
-            <div class="pf-brand">
-                <span class="pf-logo">L</span>
-                <a href="/staff/admin/dashboard">PetAdmin</a>
-            </div>
-            <div class="pf-pill">{{ request.user.get_full_name|default:request.user.username }}</div>
-        </nav>
+        {% include "partials/staff_nav.html" %}
         <main class="pf-main">
             <div class="pf-crumb">
                 <a class="pf-back" href="{% url 'manage_account' %}" aria-label="Back to Manage User">&lsaquo;</a>

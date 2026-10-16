@@ -100,15 +100,6 @@ def product_list(request):
     )
 
 
-def productCatalog(request):
-    productQueryset = (
-        Product.objects.sellable()
-        .select_related("category")
-        .order_by("name")
-    )
-    return render(request, "product/catalog.html", {"productList": productQueryset})
-
-
 @roleRequired(Role.ADMIN)
 def set_selling_price(request, productId):
     product = get_object_or_404(Product, id=productId)

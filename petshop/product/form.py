@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, Product, StockMutation, MutationType
+from .models import Product, StockMutation, MutationType
 
 
 class FormProduct(forms.ModelForm):

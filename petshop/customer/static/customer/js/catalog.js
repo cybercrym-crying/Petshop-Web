@@ -71,25 +71,58 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     });
 
-    // Pencarian: di halaman Shop disaring langsung di browser; di halaman lain form
-    // mengirim ?q= ke halaman Shop.
-    const search = document.getElementById('product-search');
-    const searchForm = document.getElementById('site-search');
+    // Pencarian: ada dua kotak (desktop dan menu HP) yang disinkronkan. Di halaman Shop produk
+    // disaring langsung di browser; di halaman lain form mengirim ?q= ke halaman Shop.
+    const inputs = document.querySelectorAll('.js-search');
+    const forms = document.querySelectorAll('.js-search-form');
+    const mainSearch = document.getElementById('product-search');
     const onShop = !!document.getElementById('product-grid');
-    if (search && onShop) {
+    function setQuery(value) {
+        inputs.forEach(function (i) { i.value = value; });
+    }
+    if (onShop) {
         const q = new URLSearchParams(window.location.search).get('q');
         if (q) {
-            search.value = q;
+            setQuery(q);
             filterProducts();
         }
-        search.addEventListener('input', filterProducts);
-    }
-    if (searchForm && onShop) {
-        searchForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            filterProducts();
-            const grid = document.getElementById('produk');
-            if (grid) grid.scrollIntoView({ behavior: 'smooth' });
+        inputs.forEach(function (input) {
+            input.addEventListener('input', function () {
+                setQuery(input.value);
+                filterProducts();
+            });
         });
+        forms.forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                filterProducts();
+                closeMenu();
+                const grid = document.getElementById('produk');
+                if (grid) grid.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    }
+
+    // Menu HP
+    const toggle = document.getElementById('nav-toggle');
+    const menu = document.getElementById('mobile-menu');
+    function closeMenu() {
+        if (!toggle || !menu) return;
+        menu.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open menu');
+        const icon = toggle.querySelector('i');
+        if (icon) icon.className = 'fas fa-bars';
+    }
+    if (toggle && menu) {
+        toggle.addEventListener('click', function () {
+            const open = menu.classList.toggle('is-open');
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+            const icon = toggle.querySelector('i');
+            if (icon) icon.className = open ? 'fas fa-times' : 'fas fa-bars';
+        });
+        menu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeMenu); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
     }
 });

@@ -12,15 +12,7 @@
               href="{% static 'product/css/manage_product.css' %}?v=20261013">
     </head>
     <body>
-        <nav class="navbar-petadmin">
-            <div class="brand">
-                <span class="brand-logo">L</span>
-                <a href="/staff/admin/dashboard">
-                    <span class="brand-name">PetAdmin</span>
-                </a>
-            </div>
-            <div class="pill-name">{{ request.user.get_full_name|default:"Name" }}</div>
-        </nav>
+        {% include "partials/staff_nav.html" %}
         <main>
             <p class="eyebrow">Dashboard</p>
             <h1 class="page-title">Manage Product</h1>

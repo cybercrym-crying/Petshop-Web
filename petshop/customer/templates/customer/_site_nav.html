@@ -1,6 +1,6 @@
 {% comment %}Navbar publik. Pakai: {% include "customer/_site_nav.html" with active="home" %}{% endcomment %}
-<nav class="navbar-seelly">
-    <div class="container d-flex align-items-center justify-content-between gap-3">
+<nav class="navbar-seelly sx-nav">
+    <div class="container d-flex align-items-center justify-content-between gap-2">
         <a href="{% url 'customer:home' %}"
            class="navbar-brand text-decoration-none">🐾 Seelly Petshop</a>
         <div class="d-none d-md-flex align-items-center">
@@ -14,14 +14,14 @@
         </div>
         <div class="d-flex align-items-center">
             <form id="site-search"
-                  class="sx-search"
+                  class="sx-search d-none d-md-flex js-search-form"
                   action="{% url 'customer:katalog' %}"
                   method="get"
                   role="search">
                 <input type="search"
                        name="q"
                        id="product-search"
-                       class="search-bar"
+                       class="search-bar js-search"
                        placeholder="Search products..."
                        aria-label="Search products">
                 <button class="icon-btn" type="submit" aria-label="Search" id="search-btn">
@@ -38,6 +38,38 @@
                 <i class="fas fa-shopping-cart"></i>
                 <span class="badge-count" id="cart-count">0</span>
             </a>
+            <button class="icon-btn d-md-none"
+                    type="button"
+                    id="nav-toggle"
+                    aria-label="Open menu"
+                    aria-expanded="false"
+                    aria-controls="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="sx-mobile-menu d-md-none">
+        <div class="container">
+            <form class="sx-search-m js-search-form"
+                  action="{% url 'customer:katalog' %}"
+                  method="get"
+                  role="search">
+                <input type="search"
+                       name="q"
+                       class="js-search"
+                       placeholder="Search products..."
+                       aria-label="Search products">
+                <button class="icon-btn" type="submit" aria-label="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+            <a href="{% url 'customer:home' %}"
+               class="sx-mlink{% if active == 'home' %} active{% endif %}">Home</a>
+            <a href="{% url 'customer:katalog' %}"
+               class="sx-mlink{% if active == 'shop' %} active{% endif %}">Shop</a>
+            <a href="{% url 'customer:about' %}"
+               class="sx-mlink{% if active == 'about' %} active{% endif %}">About Us</a>
+            <a href="#kontak" class="sx-mlink">Contact Us</a>
         </div>
     </div>
 </nav>

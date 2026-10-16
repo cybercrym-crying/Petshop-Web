@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-gyt3u+$4+b06fx0h@vo9u+^=7mhk5dechvle8f*&w1d0g5bq)t"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["pbo.web.id", "www.petshop.pbo.web.id", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -121,18 +120,6 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 AUTH_USER_MODEL = "account.User"
-# STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-
-MAILERS = {
-    "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
-    },
-}
-
-# HazeTest
 LOGIN_URL = "login_form"
-LOGIN_REDIRECT_URL = "home"

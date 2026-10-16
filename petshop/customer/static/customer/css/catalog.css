@@ -8,7 +8,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-cream);
     color: var(--text-dark);
     margin: 0;
@@ -48,13 +48,12 @@ body {
     transition: color 0.3s;
 }
 
-.navbar-seelly .nav-link-custom:hover,
-.navbar-seelly .nav-link-custom.active {
+.navbar-seelly .nav-link-custom:hover,.navbar-seelly .nav-link-custom.active {
     color: var(--accent-orange);
 }
 
 .navbar-seelly .nav-link-custom.active::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -5px;
     left: 0;
@@ -111,115 +110,10 @@ body {
 /* =========================================
    HERO SECTION
    ========================================= */
-.hero-section {
-    position: relative;
-    overflow: hidden;
-    background:
-        url('../img/paw-pattern.svg'),
-        linear-gradient(135deg, #d8b4fe 0%, #e9d5ff 50%, #f3e8ff 100%);
-    padding: 70px 0 120px;
-    border-radius: 0 0 40px 40px;
-}
-
-.hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.65);
-    color: var(--primary-purple);
-    font-weight: 600;
-    font-size: 0.85rem;
-    padding: 6px 14px;
-    border-radius: 999px;
-    margin-bottom: 18px;
-}
-
-.hero-section h1 {
-    font-size: 3.5rem;
-    font-weight: 800;
-    color: var(--text-dark);
-    line-height: 1.1;
-    margin-bottom: 20px;
-}
-
-.hero-section p {
-    font-size: 1.1rem;
-    color: #4b5563;
-    margin-bottom: 30px;
-    line-height: 1.6;
-}
-
-.hero-illustration {
-    width: 100%;
-    max-width: 520px;
-    height: auto;
-    filter: drop-shadow(0 14px 24px rgba(124, 58, 237, 0.18));
-}
-
-.btn-shop-now {
-    background: var(--primary-purple);
-    color: white;
-    padding: 12px 35px;
-    border-radius: 25px;
-    font-weight: 600;
-    border: none;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
-}
-
-.btn-shop-now:hover {
-    background: #6d28d9;
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
-}
 
 /* =========================================
    HOW TO ORDER (menimpa bagian bawah hero)
    ========================================= */
-.how-to {
-    position: relative;
-    z-index: 2;
-    margin-top: -64px;
-}
-
-.step-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    height: 100%;
-    background: white;
-    border: 1px solid #f3f4f6;
-    border-radius: 16px;
-    padding: 18px 20px;
-    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.1);
-}
-
-.step-icon {
-    flex: 0 0 auto;
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: var(--soft-purple);
-    color: var(--primary-purple);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.step-title {
-    font-weight: 700;
-    font-size: 0.98rem;
-}
-
-.step-text {
-    font-size: 0.85rem;
-    color: #6b7280;
-    line-height: 1.4;
-}
 
 /* =========================================
    CATEGORY SECTION
@@ -228,37 +122,6 @@ body {
     font-size: 1.8rem;
     font-weight: 700;
     margin: 50px 0 30px;
-    color: var(--text-dark);
-}
-
-.category-circle {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: var(--light-purple);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
-    cursor: pointer;
-}
-
-.category-circle img {
-    width: 62px;
-    height: 62px;
-}
-
-.category-circle:hover {
-    transform: translateY(-4px) scale(1.06);
-    background: #ddd0fb;
-    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
-}
-
-.category-name {
-    text-align: center;
-    font-weight: 600;
-    font-size: 1rem;
     color: var(--text-dark);
 }
 
@@ -374,9 +237,7 @@ body {
     transform: translateY(-2px);
 }
 
-.btn-add-cart:focus-visible,
-.btn-shop-now:focus-visible,
-.icon-btn:focus-visible {
+.btn-add-cart:focus-visible,.icon-btn:focus-visible {
     outline: 3px solid var(--accent-orange);
     outline-offset: 2px;
 }
@@ -491,29 +352,15 @@ body {
    RESPONSIVE (MOBILE)
    ========================================= */
 @media (max-width: 768px) {
-    .hero-section {
-        padding: 44px 0 100px;
-    }
-    .hero-section h1 {
-        font-size: 2.5rem;
-    }
-    .hero-illustration {
-        max-width: 340px;
-    }
+    
+    
+    
     .search-bar {
         width: 150px;
     }
-    .category-circle {
-        width: 80px;
-        height: 80px;
-    }
-    .category-circle img {
-        width: 46px;
-        height: 46px;
-    }
-    .how-to {
-        margin-top: -56px;
-    }
+    
+    
+    
     .navbar-seelly .container {
         gap: 8px;
     }
@@ -532,12 +379,6 @@ body {
     .icon-btn {
         margin-left: 12px;
         font-size: 1.15rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .hero-section h1 {
-        font-size: 2.1rem;
     }
 }
 

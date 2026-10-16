@@ -18,9 +18,9 @@ def make_product(name="Whiskas", stock=5, price=12000):
 
 class PublicPagesTests(TestCase):
     def test_urls(self):
-        self.assertEqual(reverse("customer:home"), "/customer/")
-        self.assertEqual(reverse("customer:katalog"), "/customer/shop/")
-        self.assertEqual(reverse("customer:about"), "/customer/about/")
+        self.assertEqual(reverse("customer:home"), "/")
+        self.assertEqual(reverse("customer:katalog"), "/shop/")
+        self.assertEqual(reverse("customer:about"), "/about/")
 
     def test_home_renders_with_real_images_not_vectors(self):
         r = self.client.get(reverse("customer:home"))
@@ -66,9 +66,9 @@ class PublicPagesTests(TestCase):
     def test_nav_links_between_pages_and_search_goes_to_shop(self):
         for name in ("customer:home", "customer:about", "customer:katalog"):
             r = self.client.get(reverse(name))
-            self.assertContains(r, 'href="/customer/shop/"')
-            self.assertContains(r, 'href="/customer/about/"')
-            self.assertContains(r, 'action="/customer/shop/"')
+            self.assertContains(r, 'href="/shop/"')
+            self.assertContains(r, 'href="/about/"')
+            self.assertContains(r, 'action="/shop/"')
             self.assertContains(r, 'id="cart-count"')
             self.assertContains(r, 'id="kontak"')  # tujuan tautan Contact Us
 
@@ -119,4 +119,61 @@ class DesignUpdateTests(TestCase):
 
     def test_about_breadcrumb_links_home(self):
         r = self.client.get(reverse("customer:about"))
-        self.assertContains(r, 'href="/customer/">Home</a> / About Us')
+        self.assertContains(r, 'href="/">Home</a> / About Us')
+
+
+class PublicMobileNavTests(TestCase):
+    def test_every_public_page_has_a_mobile_menu_with_all_links(self):
+        for name in ("customer:home", "customer:about", "customer:katalog"):
+            r = self.client.get(reverse(name))
+            self.assertContains(r, 'id="nav-toggle"')
+            self.assertContains(r, 'id="mobile-menu"')
+            html = r.content.decode()
+            menu = html[html.index('id="mobile-menu"'):]
+            for label in ("Home", "Shop", "About Us", "Contact Us"):
+                self.assertIn(f">{label}</a>", menu.split("</nav>")[0], f"{name}: {label}")
+
+    def test_shop_header_wraps_and_search_has_two_synced_inputs(self):
+        r = self.client.get(reverse("customer:katalog"))
+        self.assertEqual(r.content.decode().count('class="search-bar js-search"'), 1)
+        self.assertEqual(r.content.decode().count('class="js-search"'), 1)
+        self.assertContains(r, "flex-wrap gap-2 mb-4")
+
+
+class SiteAtRootTests(TestCase):
+    def test_root_is_the_new_home_and_old_home_is_gone(self):
+        from django.urls import NoReverseMatch
+
+        r = self.client.get("/")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Everything Your Pet Needs")
+        with self.assertRaises(NoReverseMatch):
+            reverse("home")  # rute home lama di app account sudah dihapus
+
+    def test_old_customer_prefix_redirects_permanently(self):
+        for old, new in (
+            ("/customer/", "/"),
+            ("/customer/shop/", "/shop/"),
+            ("/customer/about/", "/about/"),
+            ("/customer/cart", "/cart"),
+            ("/customer/shop/?q=whiskas", "/shop/?q=whiskas"),
+        ):
+            r = self.client.get(old)
+            self.assertEqual(r.status_code, 301, old)
+            self.assertEqual(r["Location"], new, old)
+
+    def test_removed_dead_routes_return_404(self):
+        for path in ("/catalog", "/pesan", "/dashboard"):
+            self.assertEqual(self.client.get(path).status_code, 404, path)
+
+    def test_forbidden_page_links_back_to_home(self):
+        User.objects.create_user("cr", password="x", role=Role.COURIER)
+        self.client.login(username="cr", password="x")
+        r = self.client.get("/staff/admin/dashboard")
+        self.assertEqual(r.status_code, 403)
+        self.assertContains(r, 'href="/"', status_code=403)
+
+    def test_courier_login_goes_to_public_home(self):
+        User.objects.create_user("kurir", password="x", role=Role.COURIER)
+        r = self.client.post("/login", {"username": "kurir", "password": "x"})
+        self.assertRedirects(r, "/", fetch_redirect_response=False)

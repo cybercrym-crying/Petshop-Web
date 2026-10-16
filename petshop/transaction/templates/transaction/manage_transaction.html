@@ -12,15 +12,7 @@
               href="{% static 'transaction/css/manage_transaction.css' %}?v=20261014b">
     </head>
     <body>
-        <nav class="navbar-petadmin">
-            <div class="brand">
-                <span class="brand-logo">L</span>
-                <a href="/staff/admin/dashboard">
-                    <span class="brand-name">PetAdmin</span>
-                </a>
-            </div>
-            <div class="pill-name">{{ request.user.get_full_name|default:request.user.username }}</div>
-        </nav>
+        {% include "partials/staff_nav.html" %}
         <main class="wide">
             <div class="bd-head">
                 <div>
@@ -79,7 +71,7 @@
             {% if view == "list" %}
                 <!-- Daftar ringkas: nama customer, admin, dan kurir hanya tampil di detail -->
                 <table>
-                    <tr>
+                    <tr class="list-head">
                         <th>Order</th>
                         <th>Items</th>
                         <th>Total</th>
@@ -109,9 +101,20 @@
                     {% endfor %}
                 </table>
             {% else %}
-                <div class="bd-board">
+                <div class="bd-tabs" role="tablist" aria-label="Order stages">
                     {% for col in columns %}
-                        <section class="bd-lane lane-{{ col.css }}" aria-label="{{ col.title }}">
+                        <button type="button"
+                                role="tab"
+                                class="bd-tab{% if forloop.first %} is-active{% endif %}"
+                                data-lane="{{ col.css }}"
+                                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                            {{ col.title }}<em>{{ col.count }}</em>
+                        </button>
+                    {% endfor %}
+                </div>
+                <div class="bd-board" id="bd-board">
+                    {% for col in columns %}
+                        <section class="bd-lane lane-{{ col.css }}{% if forloop.first %} is-active{% endif %}" data-lane="{{ col.css }}" aria-label="{{ col.title }}">
                             <header class="bd-lane-head">
                                 <span class="bd-lane-title">{{ col.title }}<em>{{ col.count }}</em></span>
                                 {% if col.total is not None %}<span class="bd-lane-sum">Rp {{ col.total|rupiah }}</span>{% endif %}
@@ -307,6 +310,28 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             window.bootstrap || document.write('<script src="{% static "js/bootstrap.bundle.min.js" %}"><\/script>');
+        </script>
+        <script>
+            // Tab tahap order untuk layar HP: tampilkan satu kolom sekali waktu (di desktop semua kolom terlihat).
+            (function () {
+                var board = document.getElementById("bd-board");
+                var tabs = document.querySelectorAll(".bd-tab");
+                if (!board || !tabs.length) return;
+                board.classList.add("bd-js");
+                tabs.forEach(function (tab) {
+                    tab.addEventListener("click", function () {
+                        var lane = tab.dataset.lane;
+                        tabs.forEach(function (t) {
+                            var on = t === tab;
+                            t.classList.toggle("is-active", on);
+                            t.setAttribute("aria-selected", on ? "true" : "false");
+                        });
+                        board.querySelectorAll(".bd-lane").forEach(function (l) {
+                            l.classList.toggle("is-active", l.dataset.lane === lane);
+                        });
+                    });
+                });
+            })();
         </script>
         <script>
             // Klik di mana saja pada kartu membuka detail order (tombol/link/form di dalam kartu tetap berfungsi sendiri).
