@@ -1,0 +1,127 @@
+{% extends "customer/base.html" %}
+{% load static %}
+{% block title %}Seelly Petshop - Everything your pet needs{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}">
+{% endblock %}
+{% block content %}
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-copy">
+                <span class="hero-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> Your pet's favourite shop</span>
+                <h1>
+                    Everything your pet
+                    <br>
+                    needs in one place
+                </h1>
+                <p>Food, toys, accessories and more for your best friend.</p>
+                <div class="hero-actions">
+                    <a href="{% url 'customer:shop' %}" class="btn-primary-seelly btn-lg">Shop Now</a>
+                    <a href="#how-to-order" class="btn-ghost">How to order</a>
+                </div>
+            </div>
+            <div class="hero-art">
+                <img src="{% static 'customer/img/puppy.png' %}"
+                     alt="A dog and a cat sitting beside a bowl of food"
+                     width="450"
+                     height="637">
+            </div>
+        </div>
+    </section>
+    <!-- CATEGORIES -->
+    <section class="container section" id="categories">
+        <div class="section-head">
+            <h2 class="section-title">Shop by Category</h2>
+        </div>
+        <div class="category-row">
+            {% for category in categories %}
+                <a class="category-item"
+                   href="{% url 'customer:shop' %}?category={{ category.code }}">
+                    <span class="category-circle"><img src="{% static category.image %}" alt="" loading="lazy"></span>
+                    <span class="category-name">{{ category.label }}</span>
+                    <span class="category-count">{{ category.count }} product{{ category.count|pluralize }}</span>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- POPULAR PRODUCT -->
+    <section class="container section" id="popular">
+        <div class="section-head">
+            <h2 class="section-title">Popular Product</h2>
+            <a href="{% url 'customer:shop' %}" class="view-all">view all <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+        <div class="carousel">
+            <button type="button" class="carousel-btn prev" id="popular-prev" aria-label="Previous products">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <div class="carousel-track" id="popular-track">
+                {% for item in popular_products %}
+                    {% include "customer/_product_card.html" %}
+                {% empty %}
+                    <p class="muted">No products available yet.</p>
+                {% endfor %}
+            </div>
+            <button type="button" class="carousel-btn next" id="popular-next" aria-label="Next products">
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- HOW TO ORDER -->
+    <section class="container section" id="how-to-order" aria-label="How to order">
+        <div class="section-head">
+            <h2 class="section-title">How to Order</h2>
+        </div>
+        <div class="steps">
+            <div class="step-card">
+                <span class="step-icon"><i class="fas fa-cart-shopping" aria-hidden="true"></i></span>
+                <div>
+                    <h3>1. Pick your products</h3>
+                    <p>Add what your pet needs to the cart.</p>
+                </div>
+            </div>
+            <div class="step-card">
+                <span class="step-icon"><i class="fab fa-whatsapp" aria-hidden="true"></i></span>
+                <div>
+                    <h3>2. Send via WhatsApp</h3>
+                    <p>Your order goes straight to our admin.</p>
+                </div>
+            </div>
+            <div class="step-card">
+                <span class="step-icon"><i class="fas fa-truck-fast" aria-hidden="true"></i></span>
+                <div>
+                    <h3>3. We confirm &amp; deliver</h3>
+                    <p>Pay and receive it at your door.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ABOUT -->
+    <section class="container section" id="about">
+        <div class="about-card">
+            <div>
+                <h2 class="section-title">About Seelly Petshop</h2>
+                <p>
+                    We are a neighbourhood petshop that wants every pet to eat well, play often and stay healthy.
+                    Browse our range, send your order on WhatsApp, and our team will confirm the total and arrange delivery.
+                </p>
+            </div>
+            <ul class="about-points">
+                <li>
+                    <i class="fas fa-circle-check" aria-hidden="true"></i> Carefully selected products
+                </li>
+                <li>
+                    <i class="fas fa-circle-check" aria-hidden="true"></i> Friendly help on WhatsApp
+                </li>
+                <li>
+                    <i class="fas fa-circle-check" aria-hidden="true"></i> Fast, careful delivery
+                </li>
+            </ul>
+        </div>
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'customer/js/shop.js' %}"></script>
+{% endblock %}
