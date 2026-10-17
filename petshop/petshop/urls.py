@@ -9,6 +9,7 @@ urlpatterns = [
     path("", include("account.urls")),
     path("", include("product.urls")),
     path("", include("transaction.urls")),
+    path("", include("courier.urls")),
     # Alamat lama situs customer (/customer/...) dialihkan permanen ke alamat baru (/...).
     path("customer/", RedirectView.as_view(url="/", permanent=True, query_string=True)),
     path(

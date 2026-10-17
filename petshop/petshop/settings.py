@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "product.apps.ProductConfig",
     "transaction.apps.TransactionConfig",
     "customer.apps.CustomerConfig",
+    "courier.apps.CourierConfig",
 ]
 
 MIDDLEWARE = [

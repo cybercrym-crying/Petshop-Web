@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courier History</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; background: #f4f7fb; color: #1f2937; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { background: #f9fafb; }
+        .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+        .badge.delivered { background: #dcfce7; color: #15803d; }
+        .btn { text-decoration: none; display: inline-block; padding: 8px 12px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #1f2937; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <h2>Courier History</h2>
+            <p><a href="{% url 'courier:dashboard' %}" class="btn">Back to dashboard</a></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in history_orders %}
+                        <tr>
+                            <td>#{{ order.pk }}</td>
+                            <td>{{ order.customer.name }}</td>
+                            <td><span class="badge {{ order.order_status|lower }}">{{ order.get_order_status_display }}</span></td>
+                            <td>{{ order.date|date:"Y-m-d H:i" }}</td>
+                            <td><a href="{% url 'courier:order_detail' order.pk %}" class="btn">Open</a></td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">Belum ada riwayat pengiriman.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
