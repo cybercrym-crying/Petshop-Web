@@ -11,7 +11,7 @@ venv/
 
 # Secrets & Configuration
 .env
-
+pyrightconfig.json
 # Media / Uploads
 media/
 
@@ -20,3 +20,9 @@ CLAUDE.md
 
 #MigrationReset
 reset_db.sh
+
+#Testing
+petshop-testing/
+
+#database
+db.sqlite3

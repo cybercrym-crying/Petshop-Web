@@ -4,6 +4,12 @@
  * Peran: bg = latar, tx = teks, bd = garis tepi. Aktif lewat <html data-theme="dark">. */
 html[data-theme="dark"] {
   color-scheme: dark;
+  /* Selaraskan variabel Bootstrap dengan palet admin (baris tabel, form, border) */
+  --bs-body-bg: #1d2236;
+  --bs-body-color: #e4e8fb;
+  --bs-secondary-color: rgba(205, 212, 240, 0.72);
+  --bs-tertiary-bg: #242a42;
+  --bs-border-color: #2f3650;
   --t-bd-cbd5e0: #3a4260;
   --t-bd-d1c5e8: #3a3560;
   --t-bd-d1fae5: #305a44;

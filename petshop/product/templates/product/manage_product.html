@@ -5,17 +5,20 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Manage Product</title>
-        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
-              rel="stylesheet" />
+        <!-- Bootstrap CSS -->
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <!-- Bootstrap Icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
+        <!-- Google Fonts: Plus Jakarta Sans -->
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <link rel="stylesheet" href="{% static 'product/css/manage_product.css' %}">
+        <link rel="stylesheet" href="{% static 'product/css/manage_product.css' %}?v=dm1">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
         <main class="container-fluid px-xl-5 px-4 py-4">
+            <!-- Header -->
             <div class="page-header animate-fade-up" style="animation-delay: 0s;">
                 <p class="eyebrow">Dashboard</p>
                 <h1 class="page-title">Manage Product</h1>
