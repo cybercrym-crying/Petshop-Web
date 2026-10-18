@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import ProtectedError
 from .models import Category, Product, StockMutation, MutationType, InsufficientStock
 from .form import FormProduct, StockMutationForm, SellingPriceForm
@@ -31,15 +32,16 @@ def add_product(request):
     if request.method == "POST":
         form = FormProduct(request.POST, request.FILES)
         if form.is_valid():
-            product = form.save()
-            if product.stock > 0:
-                StockMutation.objects.create(
-                    product=product,
-                    mutationType=MutationType.IN,
-                    quantity=product.stock,
-                    note="Stok awal saat produk dibuat",
-                    createdBy=request.user,
-                )
+            with transaction.atomic():
+                product = form.save()
+                if product.stock > 0:
+                    StockMutation.objects.create(
+                        product=product,
+                        mutationType=MutationType.IN,
+                        quantity=product.stock,
+                        note="Stok awal saat produk dibuat",
+                        createdBy=request.user,
+                    )
             messages.success(request, f"Produk '{product.name}' berhasil ditambahkan")
         else:
             for field, errors in form.errors.items():

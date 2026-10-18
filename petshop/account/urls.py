@@ -5,9 +5,6 @@ urlpatterns = [
     # --- Publik, tidak perlu login ---
     path("login", views.loginForm, name="login_form"),
     path("logout", views.logoutForm, name="logout"),
-    # --- Staff: perlu login + role check, sengaja di prefix /staff/
-    # (bukan /admin/) supaya tidak bentrok dengan Django admin bawaan yang
-    # tetap ada di /admin/ untuk superuser). ---
     path(
         "staff/admin/dashboard",
         views.staff_admin_dashboard,
@@ -24,6 +21,7 @@ urlpatterns = [
         views.employee_profile,
         name="employee_profile",
     ),
+    path("customer/<int:pk>/", views.customer_profile, name="customer_profile"),
     path(
         "staff/admin/employee/<int:pk>/edit/", views.edit_employee, name="edit_employee"
     ),

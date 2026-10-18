@@ -1,4 +1,4 @@
-{% load static humanize %}
+{% load static rupiah customer_extras %}
 <article class="product-card" data-product-id="{{ item.id }}">
     <div class="product-photo">
         <a href="{% url 'customer:product_detail' item.id %}"
@@ -12,11 +12,11 @@
                      loading="lazy">
             {% endif %}
         </a>
-        <span class="chip chip-category">{{ item.category }}</span>
+        <span class="chip chip-category">{{ item.category.name|kategori }}</span>
         {% if item.stock == 0 %}
-            <span class="chip chip-stock chip-out">Out of stock</span>
+            <span class="chip chip-stock chip-out">Stok habis</span>
         {% elif item.stock <= 5 %}
-            <span class="chip chip-stock">Only {{ item.stock }} left</span>
+            <span class="chip chip-stock">Sisa {{ item.stock }}</span>
         {% endif %}
         <button type="button"
                 class="wishlist-btn"
@@ -24,7 +24,7 @@
                 data-id="{{ item.id }}"
                 data-name="{{ item.name }}"
                 aria-pressed="false"
-                aria-label="Add {{ item.name }} to wishlist">
+                aria-label="Tambah {{ item.name }} ke favorit">
             <i class="far fa-heart" aria-hidden="true"></i>
         </button>
     </div>
@@ -32,7 +32,7 @@
         <h3 class="product-name">
             <a href="{% url 'customer:product_detail' item.id %}">{{ item.name }}</a>
         </h3>
-        <div class="product-price">Rp {{ item.selling_price|intcomma }}</div>
+        <div class="product-price">Rp {{ item.selling_price|default:"0"|rupiah }}</div>
         <button type="button"
                 class="btn-add-cart"
                 data-add-to-cart
@@ -45,9 +45,9 @@
                 {% if item.stock == 0 %}disabled{% endif %}>
             <i class="fas fa-cart-plus" aria-hidden="true"></i>
             {% if item.stock == 0 %}
-                Out of stock
+                Stok habis
             {% else %}
-                Add to Cart
+                Tambah ke Keranjang
             {% endif %}
         </button>
     </div>

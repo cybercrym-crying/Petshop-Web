@@ -1,0 +1,83 @@
+{% load static %}
+{% load rupiah customer_extras %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Belanja - Seelly Petshop</title>
+        <link rel="icon"
+              href="{% static 'customer/img/favicon.svg' %}"
+              type="image/svg+xml">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+              rel="stylesheet">
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'customer/css/catalog.css' %}?v=2">
+        <link rel="stylesheet" href="{% static 'customer/css/site.css' %}?v=4">
+    </head>
+    <body class="sx">
+        {% include "customer/_site_nav.html" with active="shop" %}
+        <header class="container sx-pagehead">
+            <span class="sx-kicker"><i class="fas fa-paw"></i> Belanja</span>
+            <h1 class="sx-h2 mb-1">Semua untuk Hewan Kesayangan</h1>
+            <p class="sx-lead mb-0">Tambahkan produk ke keranjang, lalu kirim pesanan lewat WhatsApp.</p>
+        </header>
+        <!-- PRODUCT SECTION -->
+        <section class="container" id="produk">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+                <h2 class="section-title mb-0">Produk Populer</h2>
+                <a href="{% url 'customer:cart' %}" class="view-all">Lihat Keranjang <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="row g-4" id="product-grid">
+                {% for item in produk %}
+                    <div class="col-6 col-md-3 product-col" data-name="{{ item.name|lower }}">
+                        <div class="product-card">
+                            <div class="product-photo">
+                                {% if item.photo %}
+                                    <img src="{{ item.photo.url }}" alt="{{ item.name }}" loading="lazy">
+                                {% else %}
+                                    <img src="{% static 'customer/img/product-placeholder.svg' %}"
+                                         alt=""
+                                         loading="lazy">
+                                {% endif %}
+                                <span class="chip chip-category">{{ item.category.name|kategori }}</span>
+                                {% if item.stock == 0 %}
+                                    <span class="chip chip-stock chip-out">Stok habis</span>
+                                {% elif item.stock <= 5 %}
+                                    <span class="chip chip-stock">Sisa {{ item.stock }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name">{{ item.name }}</div>
+                                <div class="product-price">Rp {{ item.selling_price|default:"0"|rupiah }}</div>
+                                <button type="button"
+                                        class="btn-add-cart mt-2"
+                                        data-id="{{ item.id }}"
+                                        data-name="{{ item.name }}"
+                                        data-price="{{ item.selling_price|default:0 }}"
+                                        data-photo="{% if item.photo %}{{ item.photo.url }}{% endif %}"
+                                        {% if item.stock == 0 %}disabled{% endif %}>
+                                    <i class="fas fa-cart-plus me-1"></i> {% if item.stock == 0 %}Stok habis{% else %}Tambah ke Keranjang{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="empty-products">
+                            <img src="{% static 'customer/img/product-placeholder.svg' %}" alt="">
+                            <p>Belum ada produk. Silakan cek lagi nanti!</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <p id="no-results" class="text-center text-muted py-5 d-none">Tidak ada produk yang cocok dengan pencarian.</p>
+        </section>
+        {% include "customer/_site_footer.html" %}
+        <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
+        <script src="{% static 'customer/js/catalog.js' %}?v=4"></script>
+    </body>
+</html>

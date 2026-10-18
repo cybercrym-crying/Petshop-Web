@@ -1,25 +1,30 @@
-{% load static %}
+{% load static rupiah humanize %}
 <!DOCTYPE html>
 <html lang="id">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Manage Product</title>
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
               rel="stylesheet" />
-        <link rel="stylesheet"
-              href="{% static 'product/css/manage_product.css' %}?v=20261013">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet" />
+        <link rel="stylesheet" href="{% static 'product/css/manage_product.css' %}">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
-        <main>
-            <p class="eyebrow">Dashboard</p>
-            <h1 class="page-title">Manage Product</h1>
+        <main class="container-fluid px-xl-5 px-4 py-4">
+            <div class="page-header animate-fade-up" style="animation-delay: 0s;">
+                <p class="eyebrow">Dashboard</p>
+                <h1 class="page-title">Manage Product</h1>
+            </div>
+            <!-- Messages Area (Disatukan di atas) -->
             {% if messages %}
-                <div class="messages">
+                <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
                     {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
                              role="alert">
                             {{ message }}
                             <button type="button"
@@ -30,13 +35,16 @@
                     {% endfor %}
                 </div>
             {% endif %}
-            <div class="toolbar">
-                <form method="get" action="{% url 'product:manage_product' %}">
+            <!-- Toolbar (Search, Filter, Buttons) -->
+            <div class="toolbar animate-fade-up" style="animation-delay: 0.2s;">
+                <form method="get"
+                      action="{% url 'product:manage_product' %}"
+                      class="filter-group">
                     <select name="category"
                             class="filter-input filter-category"
                             aria-label="Filter kategori"
-                            onchange="this.form.submit()">
-                        <option value="">Category</option>
+                            data-autosubmit>
+                        <option value="">All Categories</option>
                         {% for cat in categories %}
                             <option value="{{ cat.pk }}"
                                     {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>
@@ -48,99 +56,125 @@
                            name="q"
                            value="{{ request.GET.q }}"
                            class="filter-input filter-search"
-                           placeholder="Search"
+                           placeholder="Search product name..."
                            aria-label="Cari produk" />
                 </form>
-                <a href="{% url 'product:product_list' %}" class="btn-cancel">Stok &amp; Harga</a>
-                <button class="btn-orange"
-                        data-bs-toggle="modal"
-                        data-bs-target="#addProductModal">+ Add product</button>
+                <div class="btn-action-group">
+                    <a href="{% url 'product:product_list' %}" class="btn-cancel">
+                        <i class="bi bi-box-seam me-1"></i> Stok &amp; Harga
+                    </a>
+                    <button class="btn-orange"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addProductModal">
+                        <i class="bi bi-plus-lg me-1"></i> Add Product
+                    </button>
+                </div>
             </div>
-            <div class="product-grid">
+            <!-- Product Grid -->
+            <div class="row g-4 product-grid">
                 {% for p in products %}
-                    <div class="product-card"
-                         data-bs-toggle="modal"
-                         data-bs-target="#detailProduct{{ p.pk }}">
-                        <div class="product-photo">
-                            {% if p.photo %}
-                                <img src="{{ p.photo.url }}" alt="{{ p.name }}" />
-                            {% else %}
-                                Photo
-                            {% endif %}
-                        </div>
-                        <div class="product-body">
-                            <p class="product-name">{{ p.name }}</p>
-                            <p class="product-selling-price">
-                                {% if p.selling_price %}
-                                    Rp. {{ p.selling_price|floatformat:0 }}
+                    <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+                        <!-- Kartu Produk dengan class animasi -->
+                        <article class="product-card animate-fade-up"
+                                 data-bs-toggle="modal"
+                                 data-bs-target="#detailProduct{{ p.pk }}">
+                            <div class="product-photo">
+                                {% if p.photo %}
+                                    <img src="{{ p.photo.url }}" alt="{{ p.name }}" />
                                 {% else %}
-                                    Harga belum diset
+                                    <i class="bi bi-image text-muted opacity-50" style="font-size: 3rem;"></i>
                                 {% endif %}
-                            </p>
-                            <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% endif %}">Stock {{ p.stock }}</span>
-                            <span class="badge-is-active {% if p.is_active %}active{% else %}inactive{% endif %}">
-                                {% if p.is_active %}Active{% else %}Not Active{% endif %}
-                            </span>
-                        </div>
+                            </div>
+                            <div class="product-body">
+                                <h3 class="product-name">{{ p.name }}</h3>
+                                <div class="product-selling-price">
+                                    {% if p.selling_price %}
+                                        Rp {{ p.selling_price|floatformat:0|intcomma }}
+                                    {% else %}
+                                        <span class="fs-6 text-muted fw-normal">Harga belum diset</span>
+                                    {% endif %}
+                                </div>
+                                <div class="badges-wrapper">
+                                    <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% else %}good{% endif %}">
+                                        Stock {{ p.stock }}
+                                    </span>
+                                    <span class="badge-is-active {% if p.is_active %}active{% else %}inactive{% endif %}">
+                                        {% if p.is_active %}Active{% else %}Not Active{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 {% empty %}
-                    <div class="empty-state">
-                        {% if request.GET.q or request.GET.category %}
-                            Tidak ada produk yang cocok dengan filter.
-                        {% else %}
-                            Belum ada produk. Klik "+ Add product" untuk menambahkan.
-                        {% endif %}
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="bi bi-box-seam d-block mb-3" style="font-size: 3rem;"></i>
+                            {% if request.GET.q or request.GET.category %}
+                                <h5 class="fw-bold mb-0">Tidak ada produk yang cocok dengan filter.</h5>
+                                <p class="mt-2">Coba sesuaikan kata kunci atau kategori pencarian Anda.</p>
+                            {% else %}
+                                <h5 class="fw-bold mb-0">Belum ada produk.</h5>
+                                <p class="mt-2">Klik tombol "+ Add Product" di atas untuk menambahkan produk pertama Anda.</p>
+                            {% endif %}
+                        </div>
                     </div>
                 {% endfor %}
             </div>
         </main>
-        <!-- Tambah produk baru -->
+        <!-- Modal: Add Product -->
         <div class="modal fade"
              id="addProductModal"
              tabindex="-1"
              aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
-                    <div class="modal-body p-4">
-                        <h2 class="modal-title-custom">Add New Product</h2>
-                        <p class="modal-sub">Fill in the product details here</p>
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h2 class="modal-title-custom">Add New Product</h2>
+                                <p class="modal-sub">Fill in the product details here</p>
+                            </div>
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
                         <form method="post"
                               action="{% url 'product:add_product' %}"
                               enctype="multipart/form-data">
                             {% csrf_token %}
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label class="form-label-custom" for="add-name">Product Name</label>
-                                <input type="text" id="add-name" name="name" class="dark-input" required />
+                                <input type="text"
+                                       id="add-name"
+                                       name="name"
+                                       class="dark-input"
+                                       required
+                                       placeholder="Contoh: Whiskas Tuna 1Kg" />
                             </div>
-                            <div class="row g-3 mb-3">
-                                <div class="col-6">
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
                                     <label class="form-label-custom" for="add-category">Category</label>
                                     <select id="add-category" name="category" class="dark-input" required>
+                                        <option value="" selected disabled>- Select Category -</option>
                                         {% for cat in categories %}
-                                            <option value="{{ cat.pk }}">{{ cat }}</option>
+                                            <option value="{{ cat.pk }}">{{ cat.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-6">
-                                    <label class="form-label-custom" for="add-stock">Stock</label>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="add-stock">Initial Stock</label>
                                     <input type="number"
                                            id="add-stock"
                                            name="stock"
                                            min="0"
                                            class="dark-input"
-                                           required />
+                                           required
+                                           placeholder="0" />
                                 </div>
                             </div>
-                            <div class="row g-3 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label-custom" for="add-price">Selling Price (Rp)</label>
-                                    <input type="number"
-                                           id="add-selling-price"
-                                           name="selling_price"
-                                           min="0"
-                                           class="dark-input" />
-                                </div>
-                                <div class="col-6">
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
                                     <label class="form-label-custom"
                                            for="add-purchase-price">Purchase Price (Rp)</label>
                                     <input type="number"
@@ -148,59 +182,78 @@
                                            name="purchase_price"
                                            min="0"
                                            class="dark-input"
-                                           required />
+                                           required
+                                           placeholder="Modal beli" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="add-selling-price">Selling Price (Rp)</label>
+                                    <input type="number"
+                                           id="add-selling-price"
+                                           name="selling_price"
+                                           min="0"
+                                           class="dark-input"
+                                           placeholder="Harga jual (opsional)" />
                                 </div>
                             </div>
-                            <div class="row g-3 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label-custom" for="add-photo">Photo</label>
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="add-photo">Product Photo</label>
                                     <input type="file"
                                            id="add-photo"
                                            name="photo"
                                            accept="image/*"
-                                           class="dark-input" />
+                                           class="dark-input"
+                                           style="padding: 9px 16px" />
                                 </div>
-                                <div class="col-6">
-                                    <label class="form-label-custom" for="add-is-active">Is Active</label>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="add-is-active">Status</label>
                                     <select id="add-is-active" name="is_active" class="dark-input" required>
-                                        <option value="true">Active</option>
+                                        <option value="true" selected>Active</option>
                                         <option value="false">Not Active</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="d-flex gap-2 justify-content-end mt-4">
+                            <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
                                 <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn-orange">Save</button>
+                                <button type="submit" class="btn-orange px-5">Save Product</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Detail untuk produk -->
+        <!-- Modal: Detail / Edit Product -->
         {% for p in products %}
             <div class="modal fade"
                  id="detailProduct{{ p.pk }}"
                  tabindex="-1"
                  aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
-                        <div class="modal-body p-4">
-                            <h2 class="modal-title-custom">Product Details</h2>
-                            <p class="modal-sub">Update or delete product data here</p>
-                            <div class="photo-preview">
+                        <div class="modal-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h2 class="modal-title-custom">Product Details</h2>
+                                    <p class="modal-sub">Update or delete product data here</p>
+                                </div>
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="photo-preview shadow-sm">
                                 {% if p.photo %}
                                     <img src="{{ p.photo.url }}" alt="{{ p.name }}" />
                                 {% else %}
-                                    Photo
+                                    <i class="bi bi-image text-muted opacity-50" style="font-size: 3rem;"></i>
                                 {% endif %}
                             </div>
                             <form method="post"
                                   action="{% url 'product:edit_product' p.pk %}"
                                   enctype="multipart/form-data">
                                 {% csrf_token %}
-                                <div class="mb-3">
-                                    <label class="form-label-custom" for="detail-name-{{ p.pk }}">Name</label>
+                                <div class="mb-4">
+                                    <label class="form-label-custom" for="detail-name-{{ p.pk }}">Product Name</label>
                                     <input type="text"
                                            id="detail-name-{{ p.pk }}"
                                            name="name"
@@ -208,31 +261,8 @@
                                            class="dark-input"
                                            required />
                                 </div>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label-custom"
-                                               for="detail-selling-price-{{ p.pk }}">Selling Price (Rp)</label>
-                                        <input type="number"
-                                               id="detail-selling-price-{{ p.pk }}"
-                                               name="selling_price"
-                                               value="{{ p.selling_price|default_if_none:'' }}"
-                                               min="0"
-                                               class="dark-input" />
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label-custom"
-                                               for="detail-purchase-price-{{ p.pk }}">Purchase Price (Rp)</label>
-                                        <input type="number"
-                                               id="detail-purchase-price-{{ p.pk }}"
-                                               name="purchase_price"
-                                               value="{{ p.purchase_price }}"
-                                               min="0"
-                                               class="dark-input"
-                                               required />
-                                    </div>
-                                </div>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-6">
+                                <div class="row g-4 mb-4">
+                                    <div class="col-md-6">
                                         <label class="form-label-custom"
                                                for="detail-category-{{ p.pk }}">Category</label>
                                         <select id="detail-category-{{ p.pk }}"
@@ -247,31 +277,56 @@
                                             {% endfor %}
                                         </select>
                                     </div>
-                                    <div class="col-6">
-                                        <label class="form-label-custom" for="detail-stock-{{ p.pk }}">Stock</label>
+                                    <div class="col-md-6">
+                                        <label class="form-label-custom"
+                                               for="detail-stock-{{ p.pk }}">Stock (Current)</label>
                                         <input type="number"
                                                id="detail-stock-{{ p.pk }}"
                                                name="stock"
                                                value="{{ p.stock }}"
                                                min="0"
-                                               class="dark-input"
+                                               class="dark-input fw-bold"
                                                readonly
-                                               title="Stok diubah lewat mutasi stok, bukan di sini" />
+                                               title="Stok diubah lewat form Mutasi Stok, bukan di sini" />
                                     </div>
                                 </div>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-6">
+                                <div class="row g-4 mb-4">
+                                    <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-photo-{{ p.pk }}">Change photo</label>
+                                               for="detail-purchase-price-{{ p.pk }}">Purchase Price (Rp)</label>
+                                        <input type="number"
+                                               id="detail-purchase-price-{{ p.pk }}"
+                                               name="purchase_price"
+                                               value="{{ p.purchase_price }}"
+                                               min="0"
+                                               class="dark-input"
+                                               required />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label-custom"
+                                               for="detail-selling-price-{{ p.pk }}">Selling Price (Rp)</label>
+                                        <input type="number"
+                                               id="detail-selling-price-{{ p.pk }}"
+                                               name="selling_price"
+                                               value="{{ p.selling_price|default_if_none:'' }}"
+                                               min="0"
+                                               class="dark-input" />
+                                    </div>
+                                </div>
+                                <div class="row g-4 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label-custom"
+                                               for="detail-photo-{{ p.pk }}">Change Photo</label>
                                         <input type="file"
                                                id="detail-photo-{{ p.pk }}"
                                                name="photo"
                                                accept="image/*"
-                                               class="dark-input" />
+                                               class="dark-input"
+                                               style="padding: 9px 16px" />
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-is-active-{{ p.pk }}">Is Active</label>
+                                               for="detail-is-active-{{ p.pk }}">Status</label>
                                         <select id="detail-is-active-{{ p.pk }}"
                                                 name="is_active"
                                                 class="dark-input"
@@ -282,18 +337,21 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="d-flex gap-2 justify-content-end mt-4">
+                                <div class="d-flex flex-wrap gap-2 justify-content-end mt-5 border-top pt-4">
                                     <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
                                     <button type="submit"
                                             form="deleteProduct{{ p.pk }}"
-                                            class="btn-delete">Delete</button>
-                                    <button type="submit" class="btn-orange">Update</button>
+                                            class="btn-delete me-auto">
+                                        <i class="bi bi-trash3 me-1"></i> Delete
+                                    </button>
+                                    <button type="submit" class="btn-orange px-4">Update Product</button>
                                 </div>
                             </form>
+                            <!-- Form Hapus (Terpisah) -->
                             <form id="deleteProduct{{ p.pk }}"
                                   method="post"
                                   action="{% url 'product:delete_product' p.pk %}"
-                                  onsubmit="return confirm('Are you sure delete this product {{ p.name }}?')">
+                                  data-confirm="Apakah Anda yakin ingin menghapus produk '{{ p.name }}'?">
                                 {% csrf_token %}
                             </form>
                         </div>
@@ -301,18 +359,7 @@
                 </div>
             </div>
         {% endfor %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
-                     role="alert">
-                    {{ message }}
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert"
-                            aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{% static 'js/common.js' %}"></script>
     </body>
 </html>

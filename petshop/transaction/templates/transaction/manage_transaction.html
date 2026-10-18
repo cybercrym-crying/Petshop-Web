@@ -1,41 +1,41 @@
-{% load static rupiah %}
+{% load static rupiah humanize %}
 <!DOCTYPE html>
 <html lang="id">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Manage Transaction</title>
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        <!-- Bootstrap CSS -->
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <!-- Bootstrap Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <!-- Google Fonts: Plus Jakarta Sans -->
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <link rel="stylesheet"
-              href="{% static 'transaction/css/manage_transaction.css' %}?v=20261014b">
+        <link rel="stylesheet" href="{% static 'transaction/css/manage_transaction.css' %}">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
-        <main class="wide">
-            <div class="bd-head">
+        <main class="container-fluid px-xl-5 px-4 py-4">
+            <!-- Header -->
+            <div class="page-header animate-fade-up" style="animation-delay: 0s;">
                 <div>
                     <p class="eyebrow">Dashboard</p>
-                    <h1 class="page-title bd-title">Manage Transaction</h1>
-                    <p class="bd-sub">
-                        {{ active.n }} active order{{ active.n|pluralize }} · Rp {{ active.total|rupiah }}
+                    <h1 class="page-title">Manage Transaction</h1>
+                    <p class="page-subtitle">
+                        {{ active.n }} active order{{ active.n|pluralize }} · Total Rp {{ active.total|rupiah|intcomma }}
                     </p>
                 </div>
-                <div class="bd-actions">
-                    <div class="bd-seg" role="group" aria-label="Tampilan">
-                        <a href="?view=board{% if q %}&q={{ q|urlencode }}{% endif %}{% if only_unpaid %}&payment=pending{% endif %}"
-                           class="{% if view == 'board' %}on{% endif %}">Board</a>
-                        <a href="?view=list{% if q %}&q={{ q|urlencode }}{% endif %}{% if only_unpaid %}&payment=pending{% endif %}"
-                           class="{% if view == 'list' %}on{% endif %}">List</a>
-                    </div>
-                    <a href="{% url 'transaction:make_transaction' %}" class="btn-orange bd-add">+ Add Transaction</a>
-                </div>
+                <a href="{% url 'transaction:make_transaction' %}" class="btn-add-trx">
+                    <i class="bi bi-plus-lg"></i> Add Transaction
+                </a>
             </div>
+            <!-- Alerts & Messages -->
             {% if messages %}
-                <div class="messages">
+                <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
                     {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-3 shadow-sm border-0"
                              role="alert">
                             {{ message }}
                             <button type="button"
@@ -46,178 +46,198 @@
                     {% endfor %}
                 </div>
             {% endif %}
-            {% if only_unpaid %}
-                <div class="bd-alert">
-                    <span>Showing unpaid orders only.</span>
-                    <a href="?view={{ view }}" class="bd-alert-link">Clear filter</a>
-                </div>
-            {% elif overdue_unpaid %}
-                <div class="bd-alert">
-                    <span><b>{{ overdue_unpaid }} transfer order{{ overdue_unpaid|pluralize }}</b> still unpaid after 1 hour.</span>
-                    <a href="?view={{ view }}&payment=pending" class="bd-alert-link">Show unpaid</a>
+            {% if overdue_unpaid %}
+                <div class="alert alert-danger border-0 rounded-3 shadow-sm mb-4 d-flex justify-content-between align-items-center animate-fade-up"
+                     style="animation-delay: 0.1s">
+                    <span><i class="bi bi-exclamation-triangle me-2"></i> <b>{{ overdue_unpaid }} transfer order{{ overdue_unpaid|pluralize }}</b> belum dibayar lebih dari 1 jam.</span>
                 </div>
             {% endif %}
-            <form method="get" class="bd-search" role="search">
-                <input type="hidden" name="view" value="{{ view }}">
-                {% if only_unpaid %}<input type="hidden" name="payment" value="pending">{% endif %}
+            <!-- Search Form -->
+            <form method="get"
+                  class="search-container animate-fade-up"
+                  style="animation-delay: 0.2s"
+                  role="search">
                 <input type="search"
                        name="q"
                        value="{{ q }}"
-                       placeholder="Search order # or customer"
-                       aria-label="Search order number or customer">
-                <button type="submit" class="bd-btn">Search</button>
-                {% if q %}<a href="?view={{ view }}{% if only_unpaid %}&payment=pending{% endif %}" class="bd-btn">Reset</a>{% endif %}
+                       class="search-input"
+                       placeholder="Search order ID or customer name..."
+                       aria-label="Search">
+                <button type="submit" class="btn-search">Search</button>
+                {% if q %}
+                    <a href="?" class="btn btn-light border rounded-pill px-4 pt-2">Reset</a>
+                {% endif %}
             </form>
-            {% if view == "list" %}
-                <!-- Daftar ringkas: nama customer, admin, dan kurir hanya tampil di detail -->
-                <table>
-                    <tr class="list-head">
-                        <th>Order</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th>Payment</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                    </tr>
-                    {% for trx in transactions %}
-                        <tr data-row
-                            data-bs-toggle="modal"
-                            data-bs-target="#detailTransaction{{ trx.pk }}">
-                            <td data-label="Order" class="cust-name">#{{ trx.pk }}</td>
-                            <td data-label="Items">{{ trx.details.count }} Items</td>
-                            <td data-label="Total">Rp {{ trx.total_payment|rupiah }}</td>
-                            <td data-label="Payment">
-                                <span class="badge-status status-{{ trx.payment_status|lower }}">{{ trx.get_payment_status_display }}</span>
-                            </td>
-                            <td data-label="Status">
-                                <span class="badge-status status-{{ trx.order_status|lower }}">{{ trx.get_order_status_display }}</span>
-                            </td>
-                            <td data-label="Date">{{ trx.date|date:"Y-m-d H:i:s" }}</td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="6" class="empty-state">Belum ada transaksi.</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% else %}
-                <div class="bd-tabs" role="tablist" aria-label="Order stages">
-                    {% for col in columns %}
-                        <button type="button"
+            <!-- KATEGORI TABS -->
+            <ul class="nav nav-pills category-tabs animate-fade-up"
+                style="animation-delay: 0.3s"
+                id="boardTabs"
+                role="tablist">
+                {% for col in columns %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if forloop.first %}active{% endif %}"
+                                id="tab-{{ col.css }}"
+                                data-bs-toggle="pill"
+                                data-bs-target="#pane-{{ col.css }}"
+                                type="button"
                                 role="tab"
-                                class="bd-tab{% if forloop.first %} is-active{% endif %}"
-                                data-lane="{{ col.css }}"
+                                aria-controls="pane-{{ col.css }}"
                                 aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
-                            {{ col.title }}<em>{{ col.count }}</em>
+                            {{ col.title }}
+                            <span class="tab-badge">{{ col.count }}</span>
                         </button>
-                    {% endfor %}
-                </div>
-                <div class="bd-board" id="bd-board">
-                    {% for col in columns %}
-                        <section class="bd-lane lane-{{ col.css }}{% if forloop.first %} is-active{% endif %}" data-lane="{{ col.css }}" aria-label="{{ col.title }}">
-                            <header class="bd-lane-head">
-                                <span class="bd-lane-title">{{ col.title }}<em>{{ col.count }}</em></span>
-                                {% if col.total is not None %}<span class="bd-lane-sum">Rp {{ col.total|rupiah }}</span>{% endif %}
-                            </header>
+                    </li>
+                {% endfor %}
+            </ul>
+            <!-- KONTEN TAB -->
+            <div class="tab-content" id="boardTabsContent">
+                {% for col in columns %}
+                    <div class="tab-pane fade {% if forloop.first %}show active{% endif %}"
+                         id="pane-{{ col.css }}"
+                         role="tabpanel"
+                         aria-labelledby="tab-{{ col.css }}">
+                        <div class="d-flex justify-content-between align-items-center mb-3 px-1 animate-fade-up"
+                             style="animation-delay: 0s">
+                            <span class="text-muted fw-semibold"
+                                  style="font-size: 0.9rem">Menampilkan {{ col.orders|length }} dari {{ col.count }} transaksi</span>
+                            {% if col.total is not None %}
+                                <span class="fw-bold"
+                                      style="color: #2B3674">Subtotal: Rp {{ col.total|rupiah|intcomma }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="row g-4">
                             {% for trx in col.orders %}
-                                <article class="bd-card{% if trx.order_status == 'CANCELLED' %} is-dim{% endif %}"
-                                         data-modal="#detailTransaction{{ trx.pk }}">
-                                    <div class="bd-card-top">
-                                        <span class="bd-id">#{{ trx.pk }}</span>
-                                        <span class="bd-time{% if trx.overdue %} is-overdue{% endif %}">{{ trx.date|timesince }} ago{% if trx.overdue %} · overdue{% endif %}</span>
-                                    </div>
-                                    <div class="bd-cust">{{ trx.customer.name }}</div>
-                                    <div class="bd-line">
-                                        <span>{{ trx.details.count }} item{{ trx.details.count|pluralize }}</span>
-                                        <b>Rp {{ trx.total_payment|rupiah }}</b>
-                                    </div>
-                                    <div class="bd-tags">
-                                        {% if trx.order_status == 'CANCELLED' %}
-                                            <span class="bd-tag t-void">Void</span>
-                                        {% elif trx.payment_status == 'PAID' %}
-                                            <span class="bd-tag t-paid">Paid</span>
+                                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                    <!-- Animasi masuk untuk setiap kartu -->
+                                    <article class="order-card animate-fade-up {% if trx.order_status == 'CANCELLED' %}is-dim{% endif %}"
+                                             data-modal="#detailTransaction{{ trx.pk }}">
+                                        <div class="card-header-min">
+                                            <span class="order-id">#{{ trx.pk }}</span>
+                                            <span class="order-time {% if trx.overdue %}is-overdue{% endif %}">
+                                                {{ trx.date|timesince }} ago {% if trx.overdue %}· overdue{% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="customer-name">{{ trx.customer.name }}</div>
+                                        <div class="card-details">
+                                            <span>{{ trx.details.count }} item{{ trx.details.count|pluralize }}</span>
+                                            <span class="card-price">Rp {{ trx.total_payment|rupiah|intcomma }}</span>
+                                        </div>
+                                        <div class="card-tags">
+                                            {% if trx.order_status == "CANCELLED" %}
+                                                <span class="bd-tag t-void">Void</span>
+                                            {% elif trx.payment_status == "PAID" %}
+                                                <span class="bd-tag t-paid">Paid</span>
+                                            {% else %}
+                                                <span class="bd-tag t-unpaid">Unpaid</span>
+                                            {% endif %}
+                                            <span class="bd-method">{{ trx.get_payment_method_display }}</span>
+                                        </div>
+                                        {% if trx.courier %}
+                                            <div class="courier-info">
+                                                <i class="courier-avatar">{{ trx.courier.get_full_name|default:trx.courier.username|slice:":1"|upper }}</i>
+                                                {{ trx.courier.get_full_name|default:trx.courier.username }}
+                                            </div>
                                         {% else %}
-                                            <span class="bd-tag t-unpaid">Unpaid</span>
+                                            <div class="courier-info opacity-50">
+                                                <i class="courier-avatar bg-transparent border border-secondary text-secondary"><i class="bi bi-person"></i></i>
+                                                No courier assigned
+                                            </div>
                                         {% endif %}
-                                        <span class="bd-method">{{ trx.get_payment_method_display }}</span>
-                                    </div>
-                                    {% if trx.courier %}
-                                        <div class="bd-courier">
-                                            <i class="bd-av">{{ trx.courier.get_full_name|default:trx.courier.username|slice:":1"|upper }}</i>
-                                            {{ trx.courier.get_full_name|default:trx.courier.username }}
-                                        </div>
-                                    {% else %}
-                                        <div class="bd-courier is-none">
-                                            <i class="bd-av">+</i>
-                                            Unassigned
-                                        </div>
-                                    {% endif %}
-                                    <div class="bd-card-btns">
-                                        {% if trx.order_status == 'CONFIRMED' %}
-                                            {% if trx.courier %}
-                                                <form method="post" action="{% url 'transaction:update_status' trx.pk %}">
+                                        <!-- Actions -->
+                                        <div class="mt-auto pt-2 border-top border-light">
+                                            {% if trx.order_status == "CONFIRMED" %}
+                                                {% if trx.courier %}
+                                                    <form method="post"
+                                                          action="{% url 'transaction:update_status' trx.pk %}"
+                                                          data-stop-propagation>
+                                                        {% csrf_token %}
+                                                        <button type="submit"
+                                                                name="action"
+                                                                value="on_delivery"
+                                                                class="btn-card-action is-primary">Send Package</button>
+                                                    </form>
+                                                {% else %}
+                                                    <button type="button"
+                                                            class="btn-card-action is-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                            data-stop-propagation>Assign Courier</button>
+                                                {% endif %}
+                                            {% elif trx.order_status == "ON_DELIVERY" %}
+                                                <form method="post"
+                                                      action="{% url 'transaction:update_status' trx.pk %}"
+                                                      data-stop-propagation>
                                                     {% csrf_token %}
-                                                    <button type="submit" name="action" value="on_delivery" class="bd-btn is-primary">Send</button>
+                                                    <button type="submit"
+                                                            name="action"
+                                                            value="delivered"
+                                                            class="btn-card-action is-primary">Mark Delivered</button>
                                                 </form>
                                             {% else %}
                                                 <button type="button"
-                                                        class="bd-btn is-primary"
+                                                        class="btn-card-action"
                                                         data-bs-toggle="modal"
-                                                        data-bs-target="#detailTransaction{{ trx.pk }}">Assign courier</button>
+                                                        data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                        data-stop-propagation>View Details</button>
                                             {% endif %}
-                                        {% elif trx.order_status == 'ON_DELIVERY' %}
-                                            <form method="post" action="{% url 'transaction:update_status' trx.pk %}">
-                                                {% csrf_token %}
-                                                <button type="submit" name="action" value="delivered" class="bd-btn is-primary">Mark delivered</button>
-                                            </form>
-                                        {% endif %}
-                                        <button type="button"
-                                                class="bd-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#detailTransaction{{ trx.pk }}">Details</button>
-                                    </div>
-                                </article>
+                                        </div>
+                                    </article>
+                                </div>
                             {% empty %}
-                                <p class="bd-empty">No orders</p>
+                                <div class="col-12">
+                                    <div class="empty-state-minimal">
+                                        <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                                        <p class="mb-0">Tidak ada transaksi di kategori <b>{{ col.title }}</b> saat ini.</p>
+                                    </div>
+                                </div>
                             {% endfor %}
-                            {% if col.hidden %}
-                                <p class="bd-more">
-                                    Latest {{ col.orders|length }} of {{ col.count }} ·
-                                    <a href="?view=list{% if q %}&q={{ q|urlencode }}{% endif %}">see all in List</a>
-                                </p>
-                            {% endif %}
-                        </section>
-                    {% endfor %}
-                </div>
-            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </main>
-        <!-- Detail transaction -->
+        <!-- Modal Details -->
         {% for trx in transactions %}
             <div class="modal fade"
                  id="detailTransaction{{ trx.pk }}"
                  tabindex="-1"
                  aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
+                    <div class="modal-content shadow-lg">
                         <div class="modal-body p-4">
-                            <div class="modal-header-custom">
-                                <p class="modal-cust-name">Order #{{ trx.pk }}</p>
-                                <p class="modal-cust-date">{{ trx.date|date:"Y-m-d H:i:s" }}</p>
+                            <div class="modal-header-custom d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 class="modal-cust-name">Order #{{ trx.pk }}</h4>
+                                    <small class="text-muted">{{ trx.date|date:"Y-m-d H:i:s" }}</small>
+                                </div>
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                             </div>
-                            <!-- Pihak yang terlibat -->
-                            <p class="section-label">Detail</p>
+                            <h6 class="text-uppercase text-muted fw-bold mb-3"
+                                style="font-size: 0.8rem;
+                                       letter-spacing: 1px">Information</h6>
                             <div class="detail-field">
                                 <span class="detail-field-label">Customer</span>
                                 <span class="detail-field-value">
                                     {{ trx.customer.name }}
-                                    <a href="{{ trx.customer.whatsapp_url }}" target="_blank" rel="noopener">WA</a>
+                                    <br>
+                                    <a href="{{ trx.customer.whatsapp_url }}"
+                                       class="text-success text-decoration-none fw-normal"
+                                       target="_blank"
+                                       rel="noopener"><i class="bi bi-whatsapp"></i> Chat WA</a>
                                 </span>
                             </div>
                             <div class="detail-field">
                                 <span class="detail-field-label">Address</span>
                                 <span class="detail-field-value">
                                     {{ trx.customer.address }}
-                                    <a href="{{ trx.customer.maps_url }}" target="_blank" rel="noopener">Maps</a>
+                                    <br>
+                                    <a href="{{ trx.customer.maps_url }}"
+                                       class="text-primary text-decoration-none fw-normal"
+                                       target="_blank"
+                                       rel="noopener"><i class="bi bi-geo-alt"></i> Maps</a>
                                 </span>
                             </div>
                             <div class="detail-field">
@@ -228,21 +248,27 @@
                                 <span class="detail-field-label">Courier</span>
                                 <span class="detail-field-value">{% if trx.courier %}{{ trx.courier.get_full_name|default:trx.courier.username }}{% else %}-{% endif %}</span>
                             </div>
-                            <!-- Item -->
-                            <p class="section-label mt-3">Items</p>
-                            <ul class="item-list">
+                            <h6 class="text-uppercase text-muted fw-bold mt-4 mb-3"
+                                style="font-size: 0.8rem;
+                                       letter-spacing: 1px">Items</h6>
+                            <div class="mb-3">
                                 {% for item in trx.details.all %}
-                                    <li class="item-row">
-                                        <span class="item-name">{{ item.product.name }} x{{ item.quantity }} @ Rp {{ item.unit_price|rupiah }}</span>
-                                        <span>Rp {{ item.subtotal|rupiah }}</span>
-                                    </li>
+                                    <div class="d-flex justify-content-between align-items-center mb-2"
+                                         style="font-size: 0.9rem">
+                                        <div class="fw-medium text-dark">{{ item.product.name }} <span class="text-muted">x{{ item.quantity }}</span></div>
+                                        <div class="fw-semibold">Rp {{ item.subtotal|rupiah|intcomma }}</div>
+                                    </div>
                                 {% endfor %}
-                            </ul>
-                            <div class="total-row">
-                                <span>Total</span>
-                                <span>Rp {{ trx.total_payment|rupiah }}</span>
                             </div>
-                            <form method="post" action="{% url 'transaction:update_status' trx.pk %}">
+                            <div class="d-flex justify-content-between align-items-center pt-3 mt-3 border-top"
+                                 style="border-color: #E2E8F0 !important">
+                                <span class="fw-bold text-secondary">Total</span>
+                                <span class="fw-bold fs-5"
+                                      style="color: #5c418c">Rp {{ trx.total_payment|rupiah|intcomma }}</span>
+                            </div>
+                            <form method="post"
+                                  action="{% url 'transaction:update_status' trx.pk %}"
+                                  class="mt-4">
                                 {% csrf_token %}
                                 <div class="detail-field">
                                     <span class="detail-field-label">Payment Method</span>
@@ -250,16 +276,16 @@
                                 </div>
                                 <div class="detail-field">
                                     <span class="detail-field-label">Payment Status</span>
-                                    <span class="badge-status status-{{ trx.payment_status|lower }}">{{ trx.get_payment_status_display }}</span>
+                                    <span><span class="badge {% if trx.payment_status == 'PAID' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} px-2">{{ trx.get_payment_status_display }}</span></span>
                                 </div>
                                 <div class="detail-field">
                                     <span class="detail-field-label">Order Status</span>
-                                    <span class="badge-status status-{{ trx.order_status|lower }}">{{ trx.get_order_status_display }}</span>
+                                    <span><span class="badge bg-secondary-subtle text-secondary px-2">{{ trx.get_order_status_display }}</span></span>
                                 </div>
                                 {% if trx.is_open and not trx.courier %}
-                                    <div class="detail-field">
-                                        <span class="detail-field-label">Pilih Kurir</span>
-                                        <select name="courier" class="select-status">
+                                    <div class="mt-3">
+                                        <label class="form-label text-muted small fw-bold">Pilih Kurir</label>
+                                        <select name="courier" class="form-select border-light shadow-sm">
                                             <option value="">- Pilih Kurir -</option>
                                             {% for c in couriers %}
                                                 <option value="{{ c.pk }}">{{ c.get_full_name|default:c.username }}</option>
@@ -267,37 +293,34 @@
                                         </select>
                                     </div>
                                 {% endif %}
-                                <div class="action-row"
-                                     style="display:flex;
-                                            flex-wrap:wrap;
-                                            gap:0.6rem;
-                                            justify-content:flex-end;
-                                            margin-top:1.5rem">
-                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Close</button>
+                                <div class="d-flex flex-wrap gap-2 justify-content-end mt-4 pt-3 border-top">
+                                    <button type="button"
+                                            class="btn btn-light fw-semibold text-secondary"
+                                            data-bs-dismiss="modal">Close</button>
                                     {% if trx.order_status != "CANCELLED" and trx.payment_status == "PENDING" %}
                                         <button type="submit"
                                                 name="action"
                                                 value="paid"
-                                                class="btn-orange">Tandai Lunas</button>
+                                                class="btn btn-warning fw-bold text-dark">Tandai Lunas</button>
                                     {% endif %}
                                     {% if trx.order_status == "CONFIRMED" %}
                                         <button type="submit"
                                                 name="action"
                                                 value="on_delivery"
-                                                class="btn-orange">Kirim</button>
+                                                class="btn btn-primary fw-bold"
+                                                style="background-color: #5c418c;
+                                                       border: none">Kirim</button>
                                     {% endif %}
                                     {% if trx.is_open %}
                                         <button type="submit"
                                                 name="action"
                                                 value="delivered"
-                                                class="btn-orange">Selesai</button>
+                                                class="btn btn-success fw-bold">Selesai</button>
                                         <button type="submit"
                                                 name="action"
                                                 value="cancel"
-                                                class="btn-cancel"
-                                                onclick="return confirm('Batalkan order ini? Stok akan dikembalikan.')">
-                                            Batalkan
-                                        </button>
+                                                class="btn btn-danger fw-bold"
+                                                data-confirm="Batalkan order ini? Stok akan dikembalikan.">Batalkan</button>
                                     {% endif %}
                                 </div>
                             </form>
@@ -306,42 +329,8 @@
                 </div>
             </div>
         {% endfor %}
-        <!-- Bootstrap JS: CDN dulu (sama seperti halaman Manage User), file lokal sebagai cadangan. -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            window.bootstrap || document.write('<script src="{% static "js/bootstrap.bundle.min.js" %}"><\/script>');
-        </script>
-        <script>
-            // Tab tahap order untuk layar HP: tampilkan satu kolom sekali waktu (di desktop semua kolom terlihat).
-            (function () {
-                var board = document.getElementById("bd-board");
-                var tabs = document.querySelectorAll(".bd-tab");
-                if (!board || !tabs.length) return;
-                board.classList.add("bd-js");
-                tabs.forEach(function (tab) {
-                    tab.addEventListener("click", function () {
-                        var lane = tab.dataset.lane;
-                        tabs.forEach(function (t) {
-                            var on = t === tab;
-                            t.classList.toggle("is-active", on);
-                            t.setAttribute("aria-selected", on ? "true" : "false");
-                        });
-                        board.querySelectorAll(".bd-lane").forEach(function (l) {
-                            l.classList.toggle("is-active", l.dataset.lane === lane);
-                        });
-                    });
-                });
-            })();
-        </script>
-        <script>
-            // Klik di mana saja pada kartu membuka detail order (tombol/link/form di dalam kartu tetap berfungsi sendiri).
-            document.querySelectorAll(".bd-card[data-modal]").forEach(function (card) {
-                card.addEventListener("click", function (e) {
-                    if (e.target.closest("a, button, form, input, select, textarea, label")) return;
-                    var modal = document.querySelector(card.dataset.modal);
-                    if (modal && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modal).show();
-                });
-            });
-        </script>
+        <script src="{% static 'transaction/js/manage_transaction.js' %}"></script>
+        <script src="{% static 'js/common.js' %}"></script>
     </body>
 </html>

@@ -1,112 +1,121 @@
-{% extends "customer/base.html" %}
 {% load static %}
-{% block title %}Checkout - Seelly Petshop{% endblock %}
-{% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/cart.css' %}">
-{% endblock %}
-{% block content %}
-    <div class="container section">
-        <h1 class="page-title">
-            <i class="fas fa-bag-shopping" aria-hidden="true"></i> Checkout
-        </h1>
-        <div id="checkout-empty" class="empty-state" hidden>
-            <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-            <h2>Your cart is empty</h2>
-            <p>Add some products before checking out.</p>
-            <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">Start Shopping</a>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seelly Petshop - Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'customer/css/checkout.css' %}">
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="checkout-header">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a href="{% url 'customer:home' %}" class="logo text-decoration-none">
+                <i class="fas fa-paw"></i> Seelly Petshop
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-link text-decoration-none" data-href="{% url 'customer:cart' %}">
+                    <i class="fas fa-shopping-cart fa-lg" style="color: var(--primary-purple);"></i>
+                </button>
+            </div>
         </div>
-        <form id="checkout-form"
-              class="row g-4"
-              action="{% url 'customer:place_order' %}"
-              method="post"
-              novalidate
-              hidden>
-            {% csrf_token %}
-            <div class="col-lg-7">
-                <div class="form-card">
-                    <h2 class="card-title">
-                        <i class="fas fa-location-dot" aria-hidden="true"></i> Delivery Information
-                    </h2>
-                    <div class="field">
-                        <label for="field-name">Full Name <span class="req">*</span></label>
-                        <input id="field-name"
-                               type="text"
-                               name="name"
-                               autocomplete="name"
-                               maxlength="255"
-                               required
-                               placeholder="Enter your full name">
-                        <p class="field-error" data-error-for="name"></p>
-                    </div>
-                    <div class="field">
-                        <label for="field-phone">Phone / WhatsApp Number <span class="req">*</span></label>
-                        <input id="field-phone"
-                               type="tel"
-                               name="phone"
-                               autocomplete="tel"
-                               inputmode="tel"
-                               required
-                               placeholder="081234567890">
-                        <p class="field-error" data-error-for="phone"></p>
-                    </div>
-                    <div class="field">
-                        <label for="field-address">Address <span class="req">*</span></label>
-                        <textarea id="field-address"
-                                  name="address"
-                                  rows="3"
-                                  maxlength="255"
-                                  autocomplete="street-address"
-                                  required
-                                  placeholder="Street, RT/RW, village, district, city, postal code"></textarea>
-                        <p class="field-hint">Example: Jl. Merdeka No. 123, RT 001/RW 002, Sukamaju, Bandung Wetan, Bandung 40115</p>
-                        <p class="field-error" data-error-for="address"></p>
-                    </div>
-                    <div class="field">
-                        <label for="field-note">Note for the seller (optional)</label>
-                        <input id="field-note"
-                               type="text"
-                               name="note"
-                               maxlength="200"
-                               placeholder="e.g. Please call before delivery">
-                    </div>
-                </div>
-                <div class="form-card">
-                    <h2 class="card-title">
-                        <i class="fas fa-credit-card" aria-hidden="true"></i> Payment Method
-                    </h2>
-                    <div class="payment-options">
-                        {% for method in payment_methods %}
-                            <label class="payment-option">
-                                <input type="radio"
-                                       name="payment_method"
-                                       value="{{ method }}"
-                                       {% if forloop.first %}checked{% endif %}>
-                                <span class="payment-radio" aria-hidden="true"></span>
-                                <span>{{ method }}</span>
-                            </label>
-                        {% endfor %}
-                    </div>
-                    <p class="field-error" data-error-for="payment_method"></p>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <div class="summary-card">
-                    <h2 class="summary-title">Order Summary</h2>
-                    <div id="order-items"></div>
-                    <div class="summary-row total">
-                        <span>Total</span><span id="total-price">Rp 0</span>
-                    </div>
-                    <p class="field-hint">Shipping cost will be confirmed by our admin on WhatsApp.</p>
-                    <p class="form-alert" id="form-alert" role="alert" hidden></p>
-                    <button type="submit" class="btn-whatsapp btn-lg w-100" id="btn-place-order">
-                        <i class="fab fa-whatsapp" aria-hidden="true"></i> Place Order via WhatsApp
-                    </button>
-                    <a href="{% url 'customer:cart' %}" class="summary-link">Back to cart</a>
-                </div>
-            </div>
-        </form>
     </div>
-{% endblock %}
-{% block extra_js %}
+
+    <div class="checkout-container">
+        <h1 class="checkout-title">
+            <i class="far fa-clock"></i> Checkout
+        </h1>
+        
+        <div class="row">
+            <!-- Left Column: Delivery & Payment -->
+            <div class="col-lg-7">
+                <!-- Informasi Pengiriman -->
+                <div class="delivery-section">
+                    <div class="section-title">
+                        <i class="fas fa-map-marker-alt" style="color: var(--primary-purple);"></i>
+                        Informasi Pengiriman
+                    </div>
+                    
+                    <form id="checkout-form">
+                        <div class="mb-3">
+                            <label class="form-label">Nama Lengkap *</label>
+                            <input type="text" name="nama" class="form-control" required placeholder="Masukkan nama lengkap">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nomor Telepon *</label>
+                            <input type="tel" name="no_wa" class="form-control" required placeholder="081234567890">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Alamat *</label>
+                            <textarea name="alamat" class="form-control" rows="3" required placeholder="Masukkan alamat lengkap (Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Kode Pos)"></textarea>
+                            <small class="text-muted">Contoh: Jl. Merdeka No. 123, RT 001/RW 002, Kel. Sukamaju, Kec. Bandung Wetan, Kota Bandung, 40115</small>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Metode Pembayaran -->
+                <div class="payment-section">
+                    <div class="section-title">
+                        <i class="fas fa-credit-card" style="color: var(--primary-purple);"></i>
+                        Metode Pembayaran
+                    </div>
+                    
+                    <div class="payment-option">
+                        <input type="radio" name="payment_method" id="cod" value="Bayar di Tempat (COD)" checked>
+                        <label for="cod">Bayar di Tempat (COD)</label>
+                    </div>
+                    
+                    <div class="payment-option">
+                        <input type="radio" name="payment_method" id="transfer" value="Transfer Bank">
+                        <label for="transfer">Transfer Bank</label>
+                    </div>
+                    
+                    <div class="payment-option">
+                        <input type="radio" name="payment_method" id="ewallet" value="E-Wallet">
+                        <label for="ewallet">E-Wallet (GoPay/OVO/DANA)</label>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn-place-order" data-place-order>
+                    <i class="fab fa-whatsapp"></i> Pesan via WhatsApp
+                </button>
+            </div>
+            
+            <!-- Right Column: Ringkasan Pesanan -->
+            <div class="col-lg-5">
+                <div class="summary-section">
+                    <div class="section-title">
+                        <i class="fas fa-shopping-cart" style="color: var(--primary-purple);"></i>
+                        Ringkasan Pesanan
+                    </div>
+                    
+                    <div id="order-items">
+                    </div>
+                    
+                    <div id="empty-cart" class="empty-cart-message" style="display: none;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p class="text-muted">Keranjang Anda kosong</p>
+                        <a href="{% url 'customer:shop' %}" class="btn btn-primary mt-3" style="background: var(--primary-purple); border: none;">Mulai Belanja</a>
+                    </div>
+                    
+                    <div class="total-section">
+                        <div class="total-row">
+                            <span>Total</span>
+                            <span id="total-price">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'customer/js/checkout.js' %}"></script>
-{% endblock %}
+    <script src="{% static 'js/common.js' %}"></script>
+</body>
+</html>
