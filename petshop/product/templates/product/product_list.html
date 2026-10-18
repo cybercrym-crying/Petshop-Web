@@ -5,66 +5,13 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Stok &amp; Harga</title>
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+              rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <style>
-            body { background-color: #FAFAFC; font-family: 'Plus Jakarta Sans', sans-serif; color: #2B3674; }
-
-            /* Animasi */
-            @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
-            .animate-fade-up { opacity: 0; animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-            /* Tipografi */
-            .eyebrow { color: #8c73c2; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.2rem; }
-            .page-title { color: #2B3674; font-weight: 800; margin-bottom: 0.2rem; }
-
-            /* Komponen Tombol (Sama dengan manage_product) */
-            .btn-orange { background: linear-gradient(135deg, #FF9000, #FF7300); color: white; border: none; border-radius: 50px; padding: 10px 24px; font-weight: 700; box-shadow: 0 4px 15px rgba(255, 115, 0, 0.25); transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;}
-            .btn-orange:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255, 115, 0, 0.35); color: white; }
-            .btn-cancel { background-color: #ffffff; color: #5c418c; border: 1px solid #E2E8F0; border-radius: 50px; padding: 10px 24px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center;}
-            .btn-cancel:hover { background-color: #f3f0f8; border-color: #d1c5e8; color: #4a3473; transform: translateY(-2px); }
-
-            /* Toolbar & Pencarian */
-            .filter-input { border-radius: 50px; border: 1px solid #E2E8F0; padding: 10px 24px; background-color: #ffffff; color: #4a5568; transition: all 0.3s ease; width: 100%; max-width: 350px;}
-            .filter-input:focus { outline: none; border-color: #8c73c2; box-shadow: 0 4px 15px rgba(140, 115, 194, 0.1); transform: translateY(-1px); }
-
-            /* Kartu Statistik / Filter */
-            .stat-tile { background-color: #ffffff; border-radius: 20px; border: 2px solid transparent; padding: 20px; text-decoration: none; display: flex; flex-direction: column; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-            .stat-tile:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(92, 65, 140, 0.08); }
-            .stat-tile.active { border-color: #8c73c2; background-color: #fcfbfe; }
-            .stat-num { font-size: 2rem; font-weight: 800; color: #2B3674; line-height: 1; margin-bottom: 8px; }
-            .stat-label { font-size: 0.9rem; font-weight: 600; color: #718096; }
-
-            /* Wadah Tabel (Card Custom) */
-            .card-custom { background-color: #ffffff; border-radius: 20px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
-            .table-custom { margin-bottom: 0; }
-            .table-custom th { background-color: #F8FAFC; color: #4a5568; font-weight: 700; border-bottom: 2px solid #E2E8F0; padding: 16px 20px; white-space: nowrap; }
-            .table-custom td { padding: 16px 20px; vertical-align: middle; border-bottom: 1px solid #E2E8F0; color: #2d3748; }
-            .table-custom tbody tr:hover { background-color: #F8FAFC; }
-
-            /* Badge sama seperti manage_product */
-            .badge-stock, .badge-is-active { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1px solid transparent; display: inline-block;}
-            .badge-stock.empty { background-color: #FFF0F0; color: #E31A1A; border-color: #FEE2E2; }
-            .badge-stock.low { background-color: #FFF8E5; color: #E5A500; border-color: #FEF3C7; }
-            .badge-stock.good { background-color: #E8FCF1; color: #05A660; border-color: #D1FAE5; }
-            .badge-is-active.active { background-color: #F0FDF4; color: #166534; border-color: #DCFCE7; }
-            .badge-is-active.inactive { background-color: #F8FAFC; color: #64748B; border-color: #E2E8F0; }
-
-            /* Riwayat Feed */
-            .feed-item { display: flex; align-items: flex-start; gap: 15px; padding: 15px 20px; border-bottom: 1px solid #E2E8F0; }
-            .feed-item:last-child { border-bottom: none; }
-            .feed-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; flex-shrink: 0; }
-            .feed-icon.in { background-color: #E8FCF1; color: #05A660; }
-            .feed-icon.out { background-color: #FFF0F0; color: #E31A1A; }
-
-            .btn-sm-action { padding: 6px 16px; font-size: 0.85rem; border-radius: 50px; text-decoration: none; font-weight: 600; border: 1px solid #E2E8F0; color: #4a5568; transition: all 0.2s;}
-            .btn-sm-action:hover { background: #8c73c2; color: #fff; border-color: #8c73c2; }
-            .btn-sm-action.primary { border-color: #FF9000; color: #FF9000; }
-            .btn-sm-action.primary:hover { background: #FF9000; color: white; }
-        </style>
+        <link rel="stylesheet" href="{% static 'product/css/product_list.css' %}">
     </head>
     <body>
         {% include "product/_page_header.html" %}

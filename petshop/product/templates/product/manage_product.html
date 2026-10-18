@@ -5,300 +5,17 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Manage Product</title>
-        <!-- Bootstrap CSS -->
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
-        <!-- Bootstrap Icons -->
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+              rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
-        <!-- Google Fonts: Plus Jakarta Sans -->
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <style>
-        body {
-            background-color: #FAFAFC;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #2B3674;
-            overflow-x: hidden;
-        }
-
-        /* --- MOTION & ANIMATIONS --- */
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(30px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-up {
-            opacity: 0;
-            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* Staggered Delays untuk Grid Produk */
-        .product-grid > div:nth-child(1) .animate-fade-up { animation-delay: 0.05s; }
-        .product-grid > div:nth-child(2) .animate-fade-up { animation-delay: 0.10s; }
-        .product-grid > div:nth-child(3) .animate-fade-up { animation-delay: 0.15s; }
-        .product-grid > div:nth-child(4) .animate-fade-up { animation-delay: 0.20s; }
-        .product-grid > div:nth-child(5) .animate-fade-up { animation-delay: 0.25s; }
-        .product-grid > div:nth-child(6) .animate-fade-up { animation-delay: 0.30s; }
-        .product-grid > div:nth-child(7) .animate-fade-up { animation-delay: 0.35s; }
-        .product-grid > div:nth-child(8) .animate-fade-up { animation-delay: 0.40s; }
-        .product-grid > div:nth-child(n+9) .animate-fade-up { animation-delay: 0.45s; }
-
-        /* --- HEADER & TYPOGRAPHY --- */
-        .page-header {
-            margin-bottom: 2rem;
-        }
-        .eyebrow {
-            color: #8c73c2;
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.2rem;
-        }
-        .page-title {
-            color: #2B3674;
-            font-weight: 800;
-            margin-bottom: 0.2rem;
-        }
-
-        /* --- TOOLBAR (FILTERS & ACTIONS) --- */
-        .toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            flex-grow: 1;
-            max-width: 600px;
-        }
-
-        .filter-input {
-            border-radius: 50px;
-            border: 1px solid #E2E8F0;
-            padding: 10px 20px;
-            background-color: #ffffff;
-            color: #4a5568;
-            transition: all 0.3s ease;
-        }
-        .filter-input:focus {
-            outline: none;
-            border-color: #8c73c2;
-            box-shadow: 0 4px 15px rgba(140, 115, 194, 0.1);
-            transform: translateY(-1px);
-        }
-        .filter-search { flex-grow: 1; min-width: 200px; }
-
-        .btn-action-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .btn-orange {
-            background: linear-gradient(135deg, #FF9000, #FF7300);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 10px 24px;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(255, 115, 0, 0.25);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .btn-orange:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(255, 115, 0, 0.35);
-            color: white;
-        }
-        .btn-orange:active { transform: translateY(1px) scale(0.98); }
-
-        .btn-cancel {
-            background-color: #ffffff;
-            color: #5c418c;
-            border: 1px solid #E2E8F0;
-            border-radius: 50px;
-            padding: 10px 24px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        .btn-cancel:hover {
-            background-color: #f3f0f8;
-            border-color: #d1c5e8;
-            color: #4a3473;
-            transform: translateY(-2px);
-        }
-
-        /* --- PRODUCT CARDS --- */
-        .product-card {
-            background-color: #ffffff;
-            border-radius: 20px;
-            border: 1px solid #E2E8F0;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        .product-card:hover {
-            border-color: #8c73c2;
-            box-shadow: 0 15px 35px rgba(92, 65, 140, 0.08);
-            transform: translateY(-8px);
-        }
-        .product-card:active { transform: translateY(-2px) scale(0.98); }
-
-        .product-photo {
-            height: 200px;
-            background-color: #ffffff;
-            border-bottom: 1px solid #E2E8F0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            overflow: hidden;
-        }
-        .product-photo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: transform 0.5s ease;
-        }
-        .product-card:hover .product-photo img {
-            transform: scale(1.05); /* Zoom in halus saat dihover */
-        }
-
-        .product-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .product-name {
-            font-weight: 700;
-            color: #2B3674;
-            font-size: 1.05rem;
-            margin-bottom: 8px;
-            line-height: 1.3;
-        }
-
-        .product-selling-price {
-            font-weight: 800;
-            color: #5c418c;
-            font-size: 1.15rem;
-            margin-bottom: 15px;
-        }
-
-        .badges-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: auto;
-        }
-
-        .badge-stock, .badge-is-active {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            border: 1px solid transparent;
-        }
-
-        /* Pewarnaan Badge Stok */
-        .badge-stock.empty { background-color: #FFF0F0; color: #E31A1A; border-color: #FEE2E2; }
-        .badge-stock.low { background-color: #FFF8E5; color: #E5A500; border-color: #FEF3C7; }
-        .badge-stock.good { background-color: #E8FCF1; color: #05A660; border-color: #D1FAE5; }
-
-        /* Pewarnaan Badge Status Aktif */
-        .badge-is-active.active { background-color: #F0FDF4; color: #166534; border-color: #DCFCE7; }
-        .badge-is-active.inactive { background-color: #F8FAFC; color: #64748B; border-color: #E2E8F0; }
-
-        /* --- EMPTY STATE --- */
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            background: #ffffff;
-            border-radius: 20px;
-            border: 1px dashed #cbd5e0;
-            color: #a0aec0;
-            width: 100%;
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        /* --- MODALS --- */
-        .modal.fade .modal-dialog {
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
-            transform: translateY(30px) scale(0.95);
-        }
-        .modal.show .modal-dialog { transform: translateY(0) scale(1); }
-        .modal-content { border-radius: 24px; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .modal-body { padding: 30px; }
-
-        .modal-title-custom { font-size: 1.5rem; font-weight: 800; color: #2B3674; margin-bottom: 5px; }
-        .modal-sub { color: #718096; font-size: 0.95rem; margin-bottom: 25px; }
-
-        .form-label-custom { font-weight: 600; color: #4a5568; font-size: 0.9rem; margin-bottom: 8px; }
-
-        .dark-input {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid #E2E8F0;
-            background-color: #F8FAFC;
-            color: #2d3748;
-            transition: all 0.3s ease;
-        }
-        .dark-input:focus {
-            outline: none;
-            background-color: #ffffff;
-            border-color: #8c73c2;
-            box-shadow: 0 0 0 4px rgba(140, 115, 194, 0.1);
-        }
-        .dark-input[readonly] { background-color: #EDF2F7; cursor: not-allowed; opacity: 0.8; }
-
-        .btn-delete {
-            background-color: #FFF0F0;
-            color: #E31A1A;
-            border: 1px solid #FEE2E2;
-            border-radius: 50px;
-            padding: 10px 24px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        .btn-delete:hover { background-color: #FEE2E2; color: #B91C1C; transform: translateY(-2px); }
-
-        .photo-preview {
-            width: 100%;
-            height: 180px;
-            background-color: #F8FAFC;
-            border-radius: 16px;
-            border: 1px dashed #cbd5e0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            overflow: hidden;
-            padding: 10px;
-        }
-        .photo-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        </style>
+        <link rel="stylesheet" href="{% static 'product/css/manage_product.css' %}">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
         <main class="container-fluid px-xl-5 px-4 py-4">
-            <!-- Header -->
             <div class="page-header animate-fade-up" style="animation-delay: 0s;">
                 <p class="eyebrow">Dashboard</p>
                 <h1 class="page-title">Manage Product</h1>
@@ -326,7 +43,7 @@
                     <select name="category"
                             class="filter-input filter-category"
                             aria-label="Filter kategori"
-                            onchange="this.form.submit()">
+                            data-autosubmit>
                         <option value="">All Categories</option>
                         {% for cat in categories %}
                             <option value="{{ cat.pk }}"
@@ -634,7 +351,7 @@
                             <form id="deleteProduct{{ p.pk }}"
                                   method="post"
                                   action="{% url 'product:delete_product' p.pk %}"
-                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk \'{{ p.name }}\'?')">
+                                  data-confirm="Apakah Anda yakin ingin menghapus produk '{{ p.name }}'?">
                                 {% csrf_token %}
                             </form>
                         </div>
@@ -643,5 +360,6 @@
             </div>
         {% endfor %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{% static 'js/common.js' %}"></script>
     </body>
 </html>

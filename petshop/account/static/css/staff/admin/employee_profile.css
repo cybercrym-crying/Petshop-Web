@@ -1,0 +1,59 @@
+            body { background-color: #FAFAFC; font-family: 'Plus Jakarta Sans', sans-serif; color: #2B3674; }
+
+            /* Animasi */
+            @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+            .animate-fade-up { opacity: 0; animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+            /* Breadcrumb */
+            .pf-crumb { font-size: 0.9rem; margin-bottom: 20px; font-weight: 600; }
+            .pf-crumb a { color: #8c73c2; text-decoration: none; transition: color 0.2s; }
+            .pf-crumb a:hover { color: #5c418c; text-decoration: underline; }
+            .pf-crumb span { color: #a0aec0; margin: 0 5px; }
+
+            /* Cards */
+            .card-custom { background-color: #ffffff; border-radius: 20px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; padding: 25px;}
+
+            /* Profil Kiri */
+            .emp-av { width: 80px; height: 80px; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 2.2rem; font-style: normal; margin-bottom: 15px; }
+            .tone-1 { background: #E8FCF1; color: #05A660; }
+            .tone-2 { background: #FFF0F0; color: #E31A1A; }
+            .tone-3 { background: #FFF8E5; color: #E5A500; }
+            .tone-4 { background: #eeeafb; color: #5b45a8; }
+            .tone-5 { background: #E0F2FE; color: #0284C7; }
+
+            .badge-role { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1px solid transparent; display: inline-block; }
+            .role-admin { background-color: #FFF8E5; color: #E5A500; border-color: #FEF3C7; }
+            .role-courier { background-color: #F0FDF4; color: #166534; border-color: #DCFCE7; }
+            .status-active { background-color: #F0FDF4; color: #166534; border-color: #DCFCE7; }
+            .status-inactive { background-color: #F8FAFC; color: #64748B; border-color: #E2E8F0; }
+
+            .stat-box { background: #f8fafc; border-radius: 12px; padding: 15px; border: 1px solid #E2E8F0; text-align: center; }
+            .stat-box .num { font-size: 1.5rem; font-weight: 800; color: #2B3674; margin-bottom: 3px; }
+            .stat-box .lbl { font-size: 0.8rem; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;}
+
+            /* Form Input Kanan */
+            .form-label-custom { font-weight: 600; color: #4a5568; font-size: 0.9rem; margin-bottom: 8px; }
+            .dark-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #E2E8F0; background-color: #F8FAFC; color: #2d3748; transition: all 0.3s ease; }
+            .dark-input:focus { outline: none; background-color: #ffffff; border-color: #8c73c2; box-shadow: 0 0 0 4px rgba(140, 115, 194, 0.1); }
+            .dark-input:disabled { background-color: #e2e8f0; opacity: 1; cursor: not-allowed;}
+
+            /* Tombol */
+            .btn-orange { background: linear-gradient(135deg, #FF9000, #FF7300); color: white; border: none; border-radius: 50px; padding: 10px 24px; font-weight: 700; box-shadow: 0 4px 15px rgba(255, 115, 0, 0.25); transition: all 0.3s ease; text-decoration: none;}
+            .btn-orange:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255, 115, 0, 0.35); color: white; }
+            .btn-cancel { background-color: #ffffff; color: #5c418c; border: 1px solid #E2E8F0; border-radius: 50px; padding: 10px 24px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; }
+            .btn-cancel:hover { background-color: #f3f0f8; border-color: #d1c5e8; color: #4a3473; transform: translateY(-2px); }
+            .btn-danger-custom { background-color: #FFF0F0; color: #E31A1A; border: 1px solid #FEE2E2; border-radius: 50px; padding: 10px 24px; font-weight: 600; transition: all 0.3s ease; border: none;}
+            .btn-danger-custom:hover { background-color: #FEE2E2; color: #B91C1C; transform: translateY(-2px); }
+
+            /* Tabel Bawah */
+            .table-custom { margin-bottom: 0; }
+            .table-custom th { background-color: #F8FAFC; color: #4a5568; font-weight: 700; border-bottom: 2px solid #E2E8F0; padding: 16px 20px; white-space: nowrap; }
+            .table-custom td { padding: 16px 20px; vertical-align: middle; border-bottom: 1px solid #E2E8F0; color: #2d3748; }
+            .table-custom tbody tr:hover { background-color: #F8FAFC; }
+            .order-link { color: #8c73c2; font-weight: 700; text-decoration: none; transition: color 0.2s;}
+            .order-link:hover { color: #5c418c; text-decoration: underline; }
+
+            /* Lencana Status Order */
+            .s-paid, .s-delivered { background-color: #E8FCF1; color: #05A660; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;}
+            .s-pending, .s-process { background-color: #FFF8E5; color: #E5A500; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;}
+            .s-canceled { background-color: #FFF0F0; color: #E31A1A; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;

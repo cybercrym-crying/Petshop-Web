@@ -60,8 +60,7 @@ class PublicPagesTests(TestCase):
         r = self.client.get(reverse("customer:shop"))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Whiskas 70g")
-        self.assertContains(r, 'id="product-grid"')
-        self.assertContains(r, 'class="nav-link-custom active">Belanja')
+        self.assertContains(r, 'class="nav-link-item active">Belanja')
 
     def test_nav_links_between_pages_and_search_goes_to_shop(self):
         for name in ("customer:home", "customer:about", "customer:shop"):
@@ -124,7 +123,7 @@ class DesignUpdateTests(TestCase):
 
 class PublicMobileNavTests(TestCase):
     def test_every_public_page_has_a_mobile_menu_with_all_links(self):
-        for name in ("customer:home", "customer:about", "customer:shop"):
+        for name in ("customer:home", "customer:about"):
             r = self.client.get(reverse(name))
             self.assertContains(r, 'id="nav-toggle"')
             self.assertContains(r, 'id="mobile-menu"')
@@ -133,11 +132,14 @@ class PublicMobileNavTests(TestCase):
             for label in ("Beranda", "Belanja", "Tentang Kami", "Hubungi Kami"):
                 self.assertIn(f">{label}</a>", menu.split("</nav>")[0], f"{name}: {label}")
 
-    def test_shop_header_wraps_and_search_has_two_synced_inputs(self):
+    def test_shop_has_menu_toggle_and_all_nav_links(self):
         r = self.client.get(reverse("customer:shop"))
-        self.assertEqual(r.content.decode().count('class="search-bar js-search"'), 1)
-        self.assertEqual(r.content.decode().count('class="js-search"'), 1)
-        self.assertContains(r, "flex-wrap gap-2 mb-4")
+        self.assertContains(r, 'id="nav-toggle"')
+        self.assertContains(r, 'id="nav-links"')
+        html = r.content.decode()
+        nav = html[html.index('id="nav-links"'):].split("</div>")[0]
+        for label in ("Beranda", "Belanja", "Tentang Kami", "Hubungi Kami"):
+            self.assertIn(f">{label}</a>", nav, label)
 
 
 class SiteAtRootTests(TestCase):
@@ -183,7 +185,8 @@ class WorkingSiteTests(TestCase):
     """Penjaga untuk bug yang ditemukan: rute rusak, nama URL tidak cocok, dan dua Home."""
 
     LIVE_TEMPLATES = (
-        "home.html", "about.html", "catalog.html", "cart.html", "checkout.html",
+        "home.html", "about.html", "home_shop.html", "product_detail.html",
+        "_product_card.html", "base.html", "cart.html", "checkout.html",
         "_site_nav.html", "_site_footer.html",
     )
 
@@ -204,7 +207,10 @@ class WorkingSiteTests(TestCase):
         self.assertTrue(names, "tidak ada tag url yang ditemukan")
         for n in sorted(names):
             try:
-                reverse(n)
+                try:
+                    reverse(n)
+                except NoReverseMatch:
+                    reverse(n, args=[1])  # rute dengan parameter (mis. detail produk)
             except NoReverseMatch:
                 self.fail(f"nama URL '{n}' dipakai template tapi tidak ada di urls.py")
 
@@ -248,3 +254,58 @@ class CategoryLabelTests(TestCase):
         self.assertEqual(kategori("EQUIPMENT"), "Perlengkapan")
         self.assertEqual(kategori("ACCESSORIES"), "Aksesori")
         self.assertEqual(kategori("LAINNYA"), "Lainnya")
+
+
+class HomeShopTests(TestCase):
+    """Belanja (/shop/) menampilkan Home Shop: hero, kategori, produk populer."""
+
+    def test_belanja_links_point_to_shop_and_shop_renders_home_shop(self):
+        r = self.client.get(reverse("customer:shop"))
+        self.assertTemplateUsed(r, "customer/home_shop.html")
+        self.assertTemplateNotUsed(r, "customer/catalog.html")
+        for name in ("customer:home", "customer:about", "customer:cart"):
+            self.assertContains(self.client.get(reverse(name)), 'href="/shop/"')
+
+    def test_sections_and_context(self):
+        make_product("Whiskas 70g")
+        r = self.client.get(reverse("customer:shop"))
+        for marker in ('class="hero"', 'id="categories"', 'id="popular"', 'id="how-to-order"'):
+            self.assertContains(r, marker)
+        self.assertEqual([c["code"] for c in r.context["categories"]], ["FOOD"])
+        self.assertEqual(r.context["categories"][0]["count"], 1)
+        self.assertEqual([p.name for p in r.context["popular_products"]], ["Whiskas 70g"])
+        self.assertIsNone(r.context["results"])
+        self.assertContains(r, "Belanja per Kategori")
+
+    def test_category_card_links_to_filter(self):
+        make_product()
+        self.assertContains(
+            self.client.get("/shop/"), 'href="/shop/?category=FOOD#produk"'
+        )
+
+    def test_search_and_category_filter(self):
+        make_product("Whiskas 70g")
+        make_product("Royal Canin")
+        r = self.client.get("/shop/", {"q": "whiskas"})
+        self.assertEqual([p.name for p in r.context["results"]], ["Whiskas 70g"])
+        self.assertContains(r, 'id="product-grid"')
+        r = self.client.get("/shop/", {"category": "food"})
+        self.assertEqual(len(r.context["results"]), 2)
+        r = self.client.get("/shop/", {"category": "ACCESSORIES"})
+        self.assertEqual(r.context["results"], [])
+        self.assertContains(r, "Tidak ada produk yang cocok")
+
+    def test_wishlist_mode(self):
+        make_product()
+        r = self.client.get("/shop/", {"wishlist": "1"})
+        self.assertContains(r, "data-wishlist-mode")
+        self.assertContains(r, 'id="wishlist-empty"')
+
+    def test_product_detail(self):
+        p = make_product("Whiskas 70g", price=12000)
+        r = self.client.get(reverse("customer:product_detail", args=[p.id]))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Whiskas 70g")
+        self.assertContains(r, "Rp 12.000")
+        self.assertContains(r, '<html lang="id">')
+        self.assertEqual(self.client.get("/produk/99999/").status_code, 404)

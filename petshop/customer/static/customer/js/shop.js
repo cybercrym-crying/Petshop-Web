@@ -74,7 +74,7 @@
       if (empty) empty.hidden = visible > 0;
       grid.hidden = visible === 0;
       var sub = document.getElementById("shop-sub");
-      if (sub && visible > 0) sub.textContent = visible + " saved product" + (visible === 1 ? "" : "s");
+      if (sub && visible > 0) sub.textContent = visible + " produk favorit";
       else if (sub) sub.textContent = "";
     }
 

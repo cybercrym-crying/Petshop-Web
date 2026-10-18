@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE>
+<html>
+    <head>
+        <title>Customer Dashboard</title>
+        <link rel="stylesheet" href="{% static 'styles/dashboard_customer.css' %}" />
+    </head>
+    <body>
+        <h1>Welcome To The Petshop {{ username }}</h1>
+        <img src="{% static 'images/kura kura.jpg' %}" alt="Logo" />
+        <form method = "post" action = "{% url 'logout' %}">
+            {% csrf_token %}
+            <button type='submit'>Logout</button>
+            <a href='/'>Cancel</a>
+        </form>
+    </form>
+</body>
+</html>

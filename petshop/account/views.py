@@ -75,9 +75,8 @@ def logoutForm(request):
 
 @roleRequired(Role.ADMIN)
 def staff_admin_dashboard(request):
-    return render(
-        request, "staff/admin/dashboard.html", {"username": request.user.username}
-    )
+    # Menu admin sekarang ada di sidebar; halaman awal admin = Manage User.
+    return redirect("manage_account")
 
 
 @roleRequired(Role.ADMIN)
@@ -99,7 +98,7 @@ def manage_account(request):
         "employee": [_decorate_employee(e) for e in employees],
         "customers": Customer.objects.all(),
     }
-    return render(request, "staff/admin/manage_account.html", context)
+    return render(request, "account/manage_account.html", context)
 
 
 @roleRequired(Role.ADMIN)
@@ -137,7 +136,7 @@ def employee_profile(request, pk):
         ]
     return render(
         request,
-        "staff/admin/employee_profile.html",
+        "account/employee_profile.html",
         {
             "emp": emp,
             "is_courier": is_courier,
@@ -173,7 +172,7 @@ def customer_profile(request, pk):
         "stats": stats,
     }
 
-    return render(request, "staff/admin/customer_profile.html", context)
+    return render(request, "account/customer_profile.html", context)
 
 
 @roleRequired(Role.ADMIN)

@@ -63,7 +63,7 @@ ROOT_URLCONF = "petshop.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],  # template bersama: base.html, 403.html, partials/
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -123,6 +123,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = "static/"
+# File static bersama (Bootstrap, common.js) ada di <project>/static/.
+# File static tiap app ada di <app>/static/<app>/ dan ditemukan otomatis.
+STATICFILES_DIRS = [BASE_DIR / "static"]
+# Tujuan `python manage.py collectstatic` saat deploy (jangan diedit manual).
+STATIC_ROOT = BASE_DIR / "staticfiles"
 AUTH_USER_MODEL = "account.User"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"

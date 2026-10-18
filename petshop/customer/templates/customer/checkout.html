@@ -18,7 +18,7 @@
                 <i class="fas fa-paw"></i> Seelly Petshop
             </a>
             <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-link text-decoration-none" onclick="window.location.href='{% url 'customer:cart' %}'">
+                <button class="btn btn-link text-decoration-none" data-href="{% url 'customer:cart' %}">
                     <i class="fas fa-shopping-cart fa-lg" style="color: var(--primary-purple);"></i>
                 </button>
             </div>
@@ -82,7 +82,7 @@
                     </div>
                 </div>
                 
-                <button type="button" class="btn-place-order" onclick="placeOrder(event)">
+                <button type="button" class="btn-place-order" data-place-order>
                     <i class="fab fa-whatsapp"></i> Pesan via WhatsApp
                 </button>
             </div>
@@ -116,5 +116,6 @@
     </div>
 
     <script src="{% static 'customer/js/checkout.js' %}"></script>
+    <script src="{% static 'js/common.js' %}"></script>
 </body>
 </html>

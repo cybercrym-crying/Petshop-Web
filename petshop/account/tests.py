@@ -232,18 +232,23 @@ class MobileReadinessTests(TestCase):
             r = self.client.get(url)
             self.assertEqual(r.status_code, 200, url)
             self.assertContains(r, 'action="/logout"', msg_prefix=url)
-            self.assertContains(r, "staff_nav.css", msg_prefix=url)
+            self.assertContains(r, "staff_sidebar.css", msg_prefix=url)
+            self.assertContains(r, 'id="staffSidebar"', msg_prefix=url)
 
     def test_login_page_uses_existing_bootstrap_and_orange_variable(self):
         from django.contrib.staticfiles import finders
 
         self.client.logout()
         r = self.client.get("/login")
-        self.assertContains(r, "css/bootstrap.min.css")
+        self.assertContains(r, "vendor/bootstrap/css/bootstrap.min.css")
         self.assertNotContains(r, "styles/bootstrap.min.css")
-        self.assertNotContains(r, "--Employee")
-        self.assertContains(r, "--orange: #f0a63c")
-        self.assertTrue(finders.find("css/bootstrap.min.css"))
+        self.assertTrue(finders.find("vendor/bootstrap/css/bootstrap.min.css"))
+        # CSS login kini ada di file static (bukan <style> di HTML).
+        self.assertContains(r, "account/css/login.css")
+        with open(finders.find("account/css/login.css"), encoding="utf-8") as fh:
+            css = fh.read()
+        self.assertNotIn("--Employee", css)
+        self.assertIn("--orange: #f0a63c", css)
 
     def test_account_tables_collapse_to_cards_on_phone(self):
         r = self.client.get("/staff/admin/manage_account")
@@ -259,7 +264,10 @@ class MobileReadinessTests(TestCase):
         from django.contrib.staticfiles import finders
 
         missing = []
-        for path in glob.glob("*/templates/**/*.html", recursive=True):
+        # template tiap app (<app>/templates/) dan template bersama (templates/)
+        paths = glob.glob("*/templates/**/*.html", recursive=True)
+        paths += glob.glob("templates/**/*.html", recursive=True)
+        for path in paths:
             text = open(path, encoding="utf-8").read()
             for m in re.finditer(r"{%\s*static\s+['\"]([^'\"]+)['\"]", text):
                 if not finders.find(m.group(1)):
@@ -303,4 +311,90 @@ class LoginNextAndSelfPasswordTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.admin.refresh_from_db()
         self.assertTrue(self.admin.check_password("NewPass98765!y"))
-        self.assertEqual(self.client.get("/staff/admin/dashboard").status_code, 200)
+        self.assertEqual(self.client.get("/staff/admin/manage_account").status_code, 200)
+
+
+    def test_dashboard_redirects_to_manage_account(self):
+        self.client.login(username="boss", password="Pass12345!x")
+        r = self.client.get("/staff/admin/dashboard")
+        self.assertRedirects(r, "/staff/admin/manage_account", fetch_redirect_response=False)
+
+    def test_admin_pages_render_sidebar(self):
+        self.client.login(username="boss", password="Pass12345!x")
+        r = self.client.get("/staff/admin/manage_account")
+        self.assertContains(r, 'id="staffSidebar"')
+
+    def test_admin_pages_have_dark_mode_toggle(self):
+        self.client.login(username="boss", password="Pass12345!x")
+        for url in ("/staff/admin/manage_account", "/staff/admin/make_transaction/", "/list"):
+            r = self.client.get(url)
+            self.assertContains(r, "data-staff-theme-toggle", msg_prefix=url)
+            self.assertContains(r, "staff_theme.css", msg_prefix=url)
+
+    def test_dark_theme_vars_are_defined_for_admin_css(self):
+        """Tiap variabel --t-* yang dipakai CSS admin harus punya cadangan terang; nilai gelap ada di staff_theme.css."""
+        import glob
+        import re
+
+        theme = open("account/static/account/css/staff_theme.css", encoding="utf-8").read()
+        defined = set(re.findall(r"(--t-[a-z]+-[0-9a-f]+):", theme))
+        self.assertTrue(defined)
+        used = set()
+        for path in glob.glob("*/static/*/css/*.css"):
+            used |= set(re.findall(r"var\((--t-[a-z]+-[0-9a-f]+),#[0-9a-fA-F]+\)", open(path, encoding="utf-8").read()))
+        self.assertTrue(defined <= used, sorted(defined - used))
+
+
+class StaticStructureTests(TestCase):
+    """Penjaga struktur: CSS/JS tidak boleh kembali ke dalam HTML, dan static tiap app diberi namespace."""
+
+    def live_templates(self):
+        import glob
+
+        paths = glob.glob("*/templates/**/*.html", recursive=True)
+        paths += glob.glob("templates/**/*.html", recursive=True)
+        return [p for p in paths if not p.startswith("_unused")]
+
+    def test_no_inline_style_or_script_blocks_in_templates(self):
+        import re
+
+        found = []
+        for path in self.live_templates():
+            text = open(path, encoding="utf-8").read()
+            for m in re.finditer(r"<(style|script)\b([^>]*)>(.*?)</\1>", text, re.S):
+                if m.group(1) == "script" and "src=" in m.group(2):
+                    continue
+                if m.group(3).strip():
+                    found.append((path, m.group(1)))
+        self.assertEqual(found, [], "pindahkan kode ke file di <app>/static/<app>/")
+
+    def test_no_inline_event_handler_attributes(self):
+        import re
+
+        found = []
+        for path in self.live_templates():
+            text = open(path, encoding="utf-8").read()
+            found += [(path, m) for m in re.findall(r"\son(?:click|submit|change)=", text)]
+        self.assertEqual(found, [], "pakai data-confirm / data-href / data-autosubmit (static/js/common.js)")
+
+    def test_app_static_files_are_namespaced(self):
+        import glob
+        import os
+
+        bad = []
+        for path in glob.glob("*/static/**/*", recursive=True):
+            if not os.path.isfile(path):
+                continue
+            app, _, rest = path.partition("/static/")
+            if not rest.startswith(app + "/"):
+                bad.append(path)
+        self.assertEqual(bad, [], "file static app harus di <app>/static/<app>/...")
+
+    def test_shared_static_and_templates_live_at_project_level(self):
+        from django.contrib.staticfiles import finders
+        from django.template.loader import get_template
+
+        for name in ("vendor/bootstrap/css/bootstrap.min.css", "js/common.js", "account/css/staff_sidebar.css", "account/js/staff_sidebar.js", "css/base.css"):
+            self.assertTrue(finders.find(name), name)
+        for name in ("base.html", "403.html", "partials/navbar.html", "partials/staff_nav.html"):
+            get_template(name)

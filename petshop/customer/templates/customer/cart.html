@@ -20,7 +20,7 @@
                 </a>
                 <div class="d-flex align-items-center">
                     <button class="btn btn-link text-decoration-none"
-                            onclick="window.location.href='{% url 'customer:shop' %}'">
+                            data-href="{% url 'customer:shop' %}">
                         <i class="fas fa-shopping-cart fa-lg"
                            style="color: var(--primary-purple)"></i>
                         <span class="badge-count"
@@ -75,6 +75,7 @@
             </div>
         </div>
         <script src="{% static 'customer/js/cart.js' %}"></script>
+        <script src="{% static 'js/common.js' %}"></script>
     </body>
 </html>
 

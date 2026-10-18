@@ -109,3 +109,7 @@ function placeOrder(event) {
 // Render on page load
 document.addEventListener("DOMContentLoaded", renderOrderSummary);
 
+// Tombol "Pesan via WhatsApp" (dulu onclick="placeOrder(event)" di HTML)
+document.addEventListener("click", function (event) {
+  if (event.target.closest("[data-place-order]")) placeOrder(event);
+});

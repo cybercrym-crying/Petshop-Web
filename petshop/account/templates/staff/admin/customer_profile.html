@@ -1,511 +1,192 @@
 {% load static rupiah %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>PetAdmin - {{ customer.name }}</title>
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        background-color: #fafafc;
-        font-family: "Plus Jakarta Sans", sans-serif;
-        color: #2b3674;
-      }
-
-      /* Animasi */
-      @keyframes fadeInUp {
-        0% {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        100% {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .animate-fade-up {
-        opacity: 0;
-        animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-
-      /* Breadcrumb */
-      .pf-crumb {
-        font-size: 0.9rem;
-        margin-bottom: 20px;
-        font-weight: 600;
-      }
-      .pf-crumb a {
-        color: #8c73c2;
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      .pf-crumb a:hover {
-        color: #5c418c;
-        text-decoration: underline;
-      }
-      .pf-crumb span {
-        color: #a0aec0;
-        margin: 0 5px;
-      }
-
-      /* Cards */
-      .card-custom {
-        background-color: #ffffff;
-        border-radius: 20px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-        overflow: hidden;
-        padding: 25px;
-      }
-
-      /* Profil Kiri */
-      .cust-av {
-        width: 80px;
-        height: 80px;
-        border-radius: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 2.2rem;
-        background: #e0f2fe;
-        color: #0284c7;
-        margin-bottom: 15px;
-      }
-
-      .stat-box {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 15px;
-        border: 1px solid #e2e8f0;
-        text-align: center;
-      }
-      .stat-box .num {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #2b3674;
-        margin-bottom: 3px;
-      }
-      .stat-box .lbl {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #718096;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      /* Form Input Kanan */
-      .form-label-custom {
-        font-weight: 600;
-        color: #4a5568;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-      }
-      .dark-input {
-        width: 100%;
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        background-color: #f8fafc;
-        color: #2d3748;
-        transition: all 0.3s ease;
-      }
-      .dark-input:focus {
-        outline: none;
-        background-color: #ffffff;
-        border-color: #8c73c2;
-        box-shadow: 0 0 0 4px rgba(140, 115, 194, 0.1);
-      }
-
-      /* Tombol */
-      .btn-orange {
-        background: linear-gradient(135deg, #ff9000, #ff7300);
-        color: white;
-        border: none;
-        border-radius: 50px;
-        padding: 10px 24px;
-        font-weight: 700;
-        box-shadow: 0 4px 15px rgba(255, 115, 0, 0.25);
-        transition: all 0.3s ease;
-        text-decoration: none;
-        cursor: pointer;
-      }
-      .btn-orange:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(255, 115, 0, 0.35);
-        color: white;
-      }
-      .btn-cancel {
-        background-color: #ffffff;
-        color: #5c418c;
-        border: 1px solid #e2e8f0;
-        border-radius: 50px;
-        padding: 10px 24px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .btn-cancel:hover {
-        background-color: #f3f0f8;
-        border-color: #d1c5e8;
-        color: #4a3473;
-        transform: translateY(-2px);
-      }
-      .btn-danger-custom {
-        background-color: #fff0f0;
-        color: #e31a1a;
-        border: 1px solid #fee2e2;
-        border-radius: 50px;
-        padding: 10px 24px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        border: none;
-      }
-      .btn-danger-custom:hover {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        transform: translateY(-2px);
-      }
-
-      /* Tabel Bawah */
-      .table-custom {
-        margin-bottom: 0;
-      }
-      .table-custom th {
-        background-color: #f8fafc;
-        color: #4a5568;
-        font-weight: 700;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 16px 20px;
-        white-space: nowrap;
-      }
-      .table-custom td {
-        padding: 16px 20px;
-        vertical-align: middle;
-        border-bottom: 1px solid #e2e8f0;
-        color: #2d3748;
-      }
-      .table-custom tbody tr:hover {
-        background-color: #f8fafc;
-      }
-      .order-link {
-        color: #8c73c2;
-        font-weight: 700;
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      .order-link:hover {
-        color: #5c418c;
-        text-decoration: underline;
-      }
-
-      /* Lencana Status Order */
-      .s-paid,
-      .s-delivered {
-        background-color: #e8fcf1;
-        color: #05a660;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 700;
-      }
-      .s-pending,
-      .s-process {
-        background-color: #fff8e5;
-        color: #e5a500;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 700;
-      }
-      .s-canceled {
-        background-color: #fff0f0;
-        color: #e31a1a;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 700;
-      }
-    </style>
-  </head>
-  <body>
-    {% include "partials/staff_nav.html" %}
-
-    <main class="container-fluid px-xl-5 px-4 py-4">
-      <!-- Breadcrumb -->
-      <div class="pf-crumb animate-fade-up" style="animation-delay: 0s">
-        <a href="{% url 'manage_account' %}?tab=customer"
-          ><i class="bi bi-arrow-left me-1"></i> Manage User</a
-        >
-        <span>/</span> Customer <span>/</span>
-        <span class="text-dark fw-bold">{{ customer.name }}</span>
-      </div>
-
-      {% if messages %}
-      <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s">
-        {% for message in messages %}
-        <div
-          class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
-          role="alert"
-        >
-          {{ message }}
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close"
-          ></button>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <div class="row g-4 mb-4">
-        <!-- KIRI: Profil Ringkas -->
-        <div
-          class="col-12 col-xl-4 animate-fade-up"
-          style="animation-delay: 0.2s"
-        >
-          <div class="card-custom h-100 text-center text-xl-start">
-            <div
-              class="d-flex flex-column align-items-center align-items-xl-start"
-            >
-              <div class="cust-av"><i class="bi bi-person-fill"></i></div>
-              <h2 class="fw-bold mb-3" style="color: #2b3674">
-                {{ customer.name }}
-              </h2>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>PetAdmin - {{ customer.name }}</title>
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'css/staff/admin/customer_profile.css' %}"
+              rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet" />
+        <style></style>
+    </head>
+    <body>
+        {% include "partials/staff_nav.html" %}
+        <main class="container-fluid px-xl-5 px-4 py-4">
+            <!-- Breadcrumb -->
+            <div class="pf-crumb animate-fade-up" style="animation-delay: 0s">
+                <a href="{% url 'manage_account' %}?tab=customer"><i class="bi bi-arrow-left me-1"></i> Manage User</a>
+                <span>/</span> Customer <span>/</span>
+                <span class="text-dark fw-bold">{{ customer.name }}</span>
             </div>
-
-            <hr class="text-muted opacity-25" />
-
-            <div class="mb-3">
-              <small class="text-muted fw-bold text-uppercase d-block mb-1"
-                >Phone Number</small
-              >
-              <span class="fw-bold fs-6"
-                >{{ customer.phone_number|default:"-" }}</span
-              >
-              {% if customer.whatsapp_url %}
-              <a
-                href="{{ customer.whatsapp_url }}"
-                target="_blank"
-                rel="noopener"
-                class="ms-2 badge bg-success text-decoration-none py-1 px-2"
-                ><i class="bi bi-whatsapp"></i> Chat</a
-              >
-              {% endif %}
-            </div>
-            <div class="mb-4">
-              <small class="text-muted fw-bold text-uppercase d-block mb-1"
-                >Alamat Lengkap</small
-              >
-              <span class="fw-bold fs-6"
-                >{{ customer.address|default:"-" }}</span
-              >
-              {% if customer.maps_url %}
-              <a
-                href="{{ customer.maps_url }}"
-                target="_blank"
-                rel="noopener"
-                class="d-block mt-2 badge bg-primary text-decoration-none py-1 px-2"
-                style="width: fit-content"
-                ><i class="bi bi-geo-alt"></i> Buka di Maps</a
-              >
-              {% endif %}
-            </div>
-
-            <!-- Statistik Opsional (Misal total pesanan pelanggan jika ada variabel stats) -->
-            {% if stats %}
-            <div class="row g-2 mt-auto">
-              {% for st in stats %}
-              <div class="col-6">
-                <div class="stat-box">
-                  <div class="num text-primary">{{ st.value }}</div>
-                  <div class="lbl">{{ st.label }}</div>
+            {% if messages %}
+                <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
+                             role="alert">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
                 </div>
-              </div>
-              {% endfor %}
-            </div>
             {% endif %}
-          </div>
-        </div>
-
-        <!-- KANAN: Form Edit Akun Pelanggan -->
-        <div
-          class="col-12 col-xl-8 animate-fade-up"
-          style="animation-delay: 0.3s"
-        >
-          <div class="card-custom h-100">
-            <h4 class="fw-bold mb-4" style="color: #2b3674">
-              <i class="bi bi-person-lines-fill me-2"></i> Informasi Pelanggan
-            </h4>
-            <form method="post" action="{% url 'edit_customer' customer.pk %}">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.path }}" />
-
-              <div class="mb-4">
-                <label class="form-label-custom" for="name">Nama Lengkap</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value="{{ customer.name }}"
-                  class="dark-input"
-                  required
-                />
-              </div>
-
-              <div class="mb-4">
-                <label class="form-label-custom" for="phone_number"
-                  >Phone Number</label
-                >
-                <input
-                  type="text"
-                  id="phone_number"
-                  name="phone_number"
-                  value="{{ customer.phone_number }}"
-                  class="dark-input"
-                  placeholder="08xxxxx"
-                  required
-                />
-              </div>
-
-              <div class="mb-5">
-                <label class="form-label-custom" for="address"
-                  >Alamat Pengiriman</label
-                >
-                <textarea
-                  id="address"
-                  name="address"
-                  rows="4"
-                  class="dark-input"
-                  required
-                >
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-xl-4 animate-fade-up" style="animation-delay: 0.2s">
+                    <div class="card-custom h-100 text-center text-xl-start">
+                        <div class="d-flex flex-column align-items-center align-items-xl-start">
+                            <div class="cust-av">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <h2 class="fw-bold mb-3" style="color: #2b3674">{{ customer.name }}</h2>
+                        </div>
+                        <hr class="text-muted opacity-25" />
+                        <div class="mb-3">
+                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Phone Number</small>
+                            <span class="fw-bold fs-6">{{ customer.phone_number|default:"-" }}</span>
+                            {% if customer.whatsapp_url %}
+                                <a href="{{ customer.whatsapp_url }}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="ms-2 badge bg-success text-decoration-none py-1 px-2"><i class="bi bi-whatsapp"></i> Chat</a>
+                            {% endif %}
+                        </div>
+                        <div class="mb-4">
+                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Alamat Lengkap</small>
+                            <span class="fw-bold fs-6">{{ customer.address|default:"-" }}</span>
+                            {% if customer.maps_url %}
+                                <a href="{{ customer.maps_url }}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="d-block mt-2 badge bg-primary text-decoration-none py-1 px-2"
+                                   style="width: fit-content"><i class="bi bi-geo-alt"></i> Buka di Maps</a>
+                            {% endif %}
+                        </div>
+                        <!-- Statistik Opsional (Misal total pesanan pelanggan jika ada variabel stats) -->
+                        {% if stats %}
+                            <div class="row g-2 mt-auto">
+                                {% for st in stats %}
+                                    <div class="col-6">
+                                        <div class="stat-box">
+                                            <div class="num text-primary">{{ st.value }}</div>
+                                            <div class="lbl">{{ st.label }}</div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- KANAN: Form Edit Akun Pelanggan -->
+                <div class="col-12 col-xl-8 animate-fade-up" style="animation-delay: 0.3s">
+                    <div class="card-custom h-100">
+                        <h4 class="fw-bold mb-4" style="color: #2b3674">
+                            <i class="bi bi-person-lines-fill me-2"></i> Informasi Pelanggan
+                        </h4>
+                        <form method="post" action="{% url 'edit_customer' customer.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}" />
+                            <div class="mb-4">
+                                <label class="form-label-custom" for="name">Nama Lengkap</label>
+                                <input type="text"
+                                       id="name"
+                                       name="name"
+                                       value="{{ customer.name }}"
+                                       class="dark-input"
+                                       required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label-custom" for="phone_number">Phone Number</label>
+                                <input type="text"
+                                       id="phone_number"
+                                       name="phone_number"
+                                       value="{{ customer.phone_number }}"
+                                       class="dark-input"
+                                       placeholder="08xxxxx"
+                                       required />
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label-custom" for="address">Alamat Pengiriman</label>
+                                <textarea id="address" name="address" rows="4" class="dark-input" required>
 {{ customer.address }}</textarea>
-              </div>
-
-              <div
-                class="d-flex flex-wrap gap-3 justify-content-end mt-4 pt-4 border-top"
-              >
-                <button
-                  type="submit"
-                  form="deleteCustomer"
-                  class="btn-danger-custom me-auto"
-                >
-                  <i class="bi bi-person-x me-1"></i> Hapus Pelanggan
-                </button>
-                <a
-                  href="{% url 'manage_account' %}?tab=customer"
-                  class="btn-cancel"
-                  >Batal</a
-                >
-                <button type="submit" class="btn-orange px-4">
-                  Simpan Perubahan
-                </button>
-              </div>
-            </form>
-
-            <form
-              id="deleteCustomer"
-              method="post"
-              action="{% url 'delete_customer' customer.pk %}"
-              onsubmit="
+                            </div>
+                            <div class="d-flex flex-wrap gap-3 justify-content-end mt-4 pt-4 border-top">
+                                <button type="submit" form="deleteCustomer" class="btn-danger-custom me-auto">
+                                    <i class="bi bi-person-x me-1"></i> Hapus Pelanggan
+                                </button>
+                                <a href="{% url 'manage_account' %}?tab=customer" class="btn-cancel">Batal</a>
+                                <button type="submit" class="btn-orange px-4">Simpan Perubahan</button>
+                            </div>
+                        </form>
+                        <form id="deleteCustomer"
+                              method="post"
+                              action="{% url 'delete_customer' customer.pk %}"
+                              onsubmit="
                 return confirm(
                   'Apakah Anda yakin ingin menghapus data pelanggan ini secara permanen?',
                 );
-              "
-            >
-              {% csrf_token %}
-              <input
-                type="hidden"
-                name="next"
-                value="{% url 'manage_account' %}?tab=customer"
-              />
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- TABEL BAWAH: Riwayat Pembelian Pelanggan -->
-      <h4
-        class="fw-bold mb-3 mt-5 animate-fade-up"
-        style="animation-delay: 0.4s; color: #2b3674"
-      >
-        <i class="bi bi-bag-check me-2"></i> Riwayat Pesanan
-      </h4>
-      <div
-        class="card-custom p-0 animate-fade-up"
-        style="animation-delay: 0.5s"
-      >
-        <div class="table-responsive">
-          <table class="table table-custom">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Total Pembayaran</th>
-                <th>Status Bayar</th>
-                <th>Status Order</th>
-                <th>Tanggal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for o in recent_orders %}
-              <tr>
-                <td>
-                  <a
-                    class="order-link"
-                    href="{% url 'transaction:manage_transaction' %}?q={{ o.pk }}"
-                    >#{{ o.pk }}</a
-                  >
-                </td>
-                <td class="fw-bold" style="color: #2b3674">
-                  Rp {{ o.total_payment|rupiah }}
-                </td>
-                <td>
-                  <span class="s-{{ o.payment_status|lower }}"
-                    >{{ o.get_payment_status_display }}</span
-                  >
-                </td>
-                <td>
-                  <span class="s-{{ o.order_status|lower }}"
-                    >{{ o.get_order_status_display }}</span
-                  >
-                </td>
-                <td class="text-muted fw-semibold">
-                  {{ o.date|date:"d M Y, H:i" }}
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="5" class="text-center py-5">
-                  <i
-                    class="bi bi-receipt text-muted opacity-50"
-                    style="font-size: 3rem"
-                  ></i>
-                  <h5 class="fw-bold mt-3 text-dark">
-                    Belum ada riwayat pesanan
-                  </h5>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </main>
-
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-  </body>
+              ">
+                            {% csrf_token %}
+                            <input type="hidden"
+                                   name="next"
+                                   value="{% url 'manage_account' %}?tab=customer" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- TABEL BAWAH: Riwayat Pembelian Pelanggan -->
+            <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
+                style="animation-delay: 0.4s;
+                       color: #2b3674">
+                <i class="bi bi-bag-check me-2"></i> Riwayat Pesanan
+            </h4>
+            <div class="card-custom p-0 animate-fade-up" style="animation-delay: 0.5s">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Total Pembayaran</th>
+                                <th>Status Bayar</th>
+                                <th>Status Order</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for o in recent_orders %}
+                                <tr>
+                                    <td>
+                                        <a class="order-link"
+                                           href="{% url 'transaction:manage_transaction' %}?q={{ o.pk }}">#{{ o.pk }}</a>
+                                    </td>
+                                    <td class="fw-bold" style="color: #2b3674">Rp {{ o.total_payment|rupiah }}</td>
+                                    <td>
+                                        <span class="s-{{ o.payment_status|lower }}">{{ o.get_payment_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="s-{{ o.order_status|lower }}">{{ o.get_order_status_display }}</span>
+                                    </td>
+                                    <td class="text-muted fw-semibold">{{ o.date|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <i class="bi bi-receipt text-muted opacity-50" style="font-size: 3rem"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">Belum ada riwayat pesanan</h5>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    </body>
 </html>

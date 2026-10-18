@@ -6,273 +6,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Manage Transaction</title>
         <!-- Bootstrap CSS -->
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
         <!-- Bootstrap Icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
         <!-- Google Fonts: Plus Jakarta Sans -->
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <style>
-        body {
-            background-color: #FAFAFC;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #2B3674;
-            overflow-x: hidden;
-        }
-
-        /* --- MOTION & ANIMATIONS --- */
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(30px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Kelas untuk memicu animasi masuk */
-        .animate-fade-up {
-            opacity: 0;
-            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* Staggered Delays (Agar kartu muncul berurutan) */
-        .row > div:nth-child(1) .animate-fade-up { animation-delay: 0.05s; }
-        .row > div:nth-child(2) .animate-fade-up { animation-delay: 0.10s; }
-        .row > div:nth-child(3) .animate-fade-up { animation-delay: 0.15s; }
-        .row > div:nth-child(4) .animate-fade-up { animation-delay: 0.20s; }
-        .row > div:nth-child(5) .animate-fade-up { animation-delay: 0.25s; }
-        .row > div:nth-child(6) .animate-fade-up { animation-delay: 0.30s; }
-        .row > div:nth-child(7) .animate-fade-up { animation-delay: 0.35s; }
-        .row > div:nth-child(8) .animate-fade-up { animation-delay: 0.40s; }
-        .row > div:nth-child(n+9) .animate-fade-up { animation-delay: 0.45s; }
-
-        /* Bootstrap Tab Pane Override (Animasi saat pindah tab) */
-        .tab-pane.fade {
-            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: translateY(10px);
-        }
-        .tab-pane.fade.show { transform: translateY(0); }
-
-
-        /* --- HEADER & ACTIONS --- */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .eyebrow {
-            color: #8c73c2;
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.2rem;
-        }
-
-        .page-title {
-            color: #2B3674;
-            font-weight: 800;
-            margin-bottom: 0.2rem;
-        }
-
-        .page-subtitle {
-            color: #718096;
-            font-size: 0.95rem;
-            margin-bottom: 0;
-        }
-
-        /* --- BUTTONS --- */
-        .btn-add-trx {
-            background-color: #5c418c;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 10px 24px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(92, 65, 140, 0.2);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .btn-add-trx:hover {
-            background-color: #4a3473;
-            color: white;
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(92, 65, 140, 0.3);
-        }
-        .btn-add-trx:active { transform: translateY(1px) scale(0.98); } /* Efek membal saat ditekan */
-
-        /* --- SEARCH BAR --- */
-        .search-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 2rem;
-            max-width: 450px;
-        }
-        .search-input {
-            border-radius: 50px;
-            border: 1px solid #E2E8F0;
-            padding: 10px 20px;
-            flex-grow: 1;
-            background-color: #ffffff;
-            transition: all 0.3s ease;
-        }
-        .search-input:focus {
-            outline: none;
-            border-color: #8c73c2;
-            box-shadow: 0 4px 20px rgba(140, 115, 194, 0.15);
-            transform: translateY(-1px);
-        }
-        .btn-search {
-            background-color: #ffffff;
-            border: 1px solid #E2E8F0;
-            border-radius: 50px;
-            padding: 0 24px;
-            font-weight: 600;
-            color: #4a5568;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .btn-search:hover {
-            background-color: #f8f9fa;
-            border-color: #cbd5e0;
-            transform: translateY(-2px);
-        }
-        .btn-search:active { transform: scale(0.95); }
-
-        /* --- TABS KATEGORI --- */
-        .category-tabs {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #E2E8F0;
-        }
-        .category-tabs::-webkit-scrollbar { height: 4px; }
-        .category-tabs::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
-
-        .nav-pills .nav-link {
-            border-radius: 50px;
-            color: #718096;
-            font-weight: 600;
-            padding: 8px 20px;
-            border: 1px solid transparent;
-            background-color: transparent;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            white-space: nowrap;
-        }
-        .nav-pills .nav-link:hover {
-            color: #5c418c;
-            background-color: #f3f0f8;
-            transform: translateY(-1px);
-        }
-        .nav-pills .nav-link.active {
-            background-color: #ffffff;
-            color: #5c418c;
-            border-color: #E2E8F0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transform: translateY(-2px); /* Tampilan tab aktif sedikit mengangkat */
-        }
-        .tab-badge {
-            background-color: #E2E8F0;
-            color: #4a5568;
-            border-radius: 50px;
-            padding: 2px 8px;
-            font-size: 0.75rem;
-            margin-left: 6px;
-            transition: all 0.3s ease;
-        }
-        .nav-link.active .tab-badge {
-            background-color: #5c418c;
-            color: #ffffff;
-        }
-
-        /* --- ORDER CARDS --- */
-        .order-card {
-            background-color: #ffffff;
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid #E2E8F0;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Transisi lebih fluid */
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        .order-card:hover {
-            border-color: #8c73c2;
-            box-shadow: 0 12px 30px rgba(92, 65, 140, 0.08);
-            transform: translateY(-6px); /* Mengangkat lebih tinggi */
-        }
-        .order-card:active {
-            transform: translateY(-2px) scale(0.98); /* Menciut saat diklik */
-        }
-        .order-card.is-dim { opacity: 0.6; }
-
-        .card-header-min { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .order-id { color: #2B3674; font-weight: 800; font-size: 1.1rem; }
-        .order-time { font-size: 0.8rem; color: #a0aec0; }
-        .order-time.is-overdue { color: #e53e3e; font-weight: 600; }
-        .customer-name { font-weight: 700; color: #2d3748; margin-bottom: 15px; font-size: 1rem; }
-        .card-details { margin-bottom: 15px; font-size: 0.9rem; color: #718096; flex-grow: 1; }
-        .card-price { font-weight: 800; color: #5c418c; font-size: 1.1rem; display: block; margin-top: 4px; }
-        .card-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
-        .bd-tag { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
-
-        .t-paid { background-color: #F0FDF4; color: #166534; border: 1px solid #DCFCE7; }
-        .t-unpaid { background-color: #FFFBEB; color: #B45309; border: 1px solid #FEF3C7; }
-        .t-void { background-color: #FEF2F2; color: #991B1B; border: 1px solid #FEE2E2; }
-        .bd-method { color: #718096; font-size: 0.8rem; display: flex; align-items: center; border: 1px solid #E2E8F0; padding: 4px 10px; border-radius: 6px; }
-
-        .courier-info { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #4a5568; margin-bottom: 15px; }
-        .courier-avatar { width: 24px; height: 24px; border-radius: 50%; background-color: #f3f0f8; color: #5c418c; display: flex; align-items: center; justify-content: center; font-style: normal; font-weight: 700; font-size: 0.75rem; }
-
-        .btn-card-action {
-            width: 100%;
-            background-color: #ffffff;
-            border: 1px solid #E2E8F0;
-            color: #4a5568;
-            padding: 10px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            margin-top: auto;
-        }
-        .btn-card-action:hover { background-color: #f8f9fa; border-color: #cbd5e0; }
-        .btn-card-action.is-primary { background-color: #5c418c; color: white; border: none; }
-        .btn-card-action.is-primary:hover { background-color: #4a3473; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(92, 65, 140, 0.2); }
-        .btn-card-action:active { transform: scale(0.96); }
-
-        .empty-state-minimal {
-            text-align: center;
-            padding: 60px 20px;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px dashed #E2E8F0;
-            color: #a0aec0;
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* Modal Customization (Fade & Slide UP) */
-        .modal.fade .modal-dialog {
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
-            transform: translateY(30px) scale(0.95);
-        }
-        .modal.show .modal-dialog {
-            transform: translateY(0) scale(1);
-        }
-        .modal-content { border-radius: 20px; border: none; }
-        .modal-header-custom { border-bottom: 1px solid #E2E8F0; padding-bottom: 15px; margin-bottom: 15px; }
-        .modal-cust-name { font-size: 1.25rem; font-weight: 800; color: #2B3674; margin-bottom: 0; }
-        .detail-field { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
-        .detail-field-label { color: #718096; }
-        .detail-field-value { font-weight: 600; color: #2d3748; text-align: right; }
-        </style>
+        <link rel="stylesheet" href="{% static 'transaction/css/manage_transaction.css' %}">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
@@ -408,7 +149,7 @@
                                                 {% if trx.courier %}
                                                     <form method="post"
                                                           action="{% url 'transaction:update_status' trx.pk %}"
-                                                          onclick="event.stopPropagation();">
+                                                          data-stop-propagation>
                                                         {% csrf_token %}
                                                         <button type="submit"
                                                                 name="action"
@@ -420,12 +161,12 @@
                                                             class="btn-card-action is-primary"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#detailTransaction{{ trx.pk }}"
-                                                            onclick="event.stopPropagation();">Assign Courier</button>
+                                                            data-stop-propagation>Assign Courier</button>
                                                 {% endif %}
                                             {% elif trx.order_status == "ON_DELIVERY" %}
                                                 <form method="post"
                                                       action="{% url 'transaction:update_status' trx.pk %}"
-                                                      onclick="event.stopPropagation();">
+                                                      data-stop-propagation>
                                                     {% csrf_token %}
                                                     <button type="submit"
                                                             name="action"
@@ -437,7 +178,7 @@
                                                         class="btn-card-action"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#detailTransaction{{ trx.pk }}"
-                                                        onclick="event.stopPropagation();">View Details</button>
+                                                        data-stop-propagation>View Details</button>
                                             {% endif %}
                                         </div>
                                     </article>
@@ -579,7 +320,7 @@
                                                 name="action"
                                                 value="cancel"
                                                 class="btn btn-danger fw-bold"
-                                                onclick="return confirm('Batalkan order ini? Stok akan dikembalikan.')">Batalkan</button>
+                                                data-confirm="Batalkan order ini? Stok akan dikembalikan.">Batalkan</button>
                                     {% endif %}
                                 </div>
                             </form>
@@ -589,29 +330,7 @@
             </div>
         {% endfor %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-        document.querySelectorAll(".order-card[data-modal]").forEach(function (card) {
-            card.addEventListener("click", function (e) {
-                if (e.target.closest("a, button, form, input, select, textarea, label")) return;
-                var modal = document.querySelector(card.dataset.modal);
-                if (modal && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modal).show();
-            });
-        });
-
-        // Trigger animasi ulang saat tab diganti (Optional, agar setiap pindah tab kartunya muncul lagi)
-        var tabEls = document.querySelectorAll('button[data-bs-toggle="pill"]');
-        tabEls.forEach(function(tabEl) {
-            tabEl.addEventListener('shown.bs.tab', function (event) {
-                var targetId = event.target.getAttribute("data-bs-target");
-                var cards = document.querySelectorAll(targetId + ' .animate-fade-up');
-
-                cards.forEach(function(card) {
-                    card.style.animation = 'none';
-                    card.offsetHeight; /* Trigger reflow */
-                    card.style.animation = null;
-                });
-            });
-        });
-        </script>
+        <script src="{% static 'transaction/js/manage_transaction.js' %}"></script>
+        <script src="{% static 'js/common.js' %}"></script>
     </body>
 </html>

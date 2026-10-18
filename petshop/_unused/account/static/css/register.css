@@ -1,0 +1,20 @@
+button {
+  background-color: #392f;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+textarea {
+  width: 100%;
+  padding: 5px;
+  margin: 10px 0 20px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  border: solid 2px #fdd;
+}
