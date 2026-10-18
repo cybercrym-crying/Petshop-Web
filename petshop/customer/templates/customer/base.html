@@ -42,9 +42,9 @@
                 <div class="nav-links" id="nav-links">
                     <a href="{% url 'customer:home' %}"
                        class="nav-link-item {% if active_page == 'home' %}active{% endif %}">Home</a>
-                    <a href="{% url 'customer:home_shop' %}"
+                    <a href="{% url 'customer:shop' %}"
                        class="nav-link-item {% if active_page == 'shop' %}active{% endif %}">Shop</a>
-                    <a href="{% url 'customer:home' %}#about" class="nav-link-item">About Us</a>
+                    <a href="{% url 'customer:about' %}" class="nav-link-item">About Us</a>
                     <a href="#contact" class="nav-link-item">Contact Us</a>
                 </div>
                 <div class="nav-actions">

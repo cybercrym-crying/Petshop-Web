@@ -4,34 +4,103 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Catat Stok</title>
+        <title>PetAdmin - Catat Stok Mutasi</title>
         <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <link rel="stylesheet"
-              href="{% static 'product/css/manage_product.css' %}?v=20261013">
+        <style>
+            body {
+                background-color: #FAFAFC;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                color: #2B3674;
+            }
+
+            /* Animasi */
+            @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+            .animate-fade-up { opacity: 0; animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+            /* Tipografi */
+            .eyebrow { color: #8c73c2; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.2rem; }
+            .page-title { color: #2B3674; font-weight: 800; margin-bottom: 0.2rem; font-size: 2rem;}
+
+            /* Komponen Wadah Form (Card Custom) */
+            .form-wrapper {
+                background-color: #ffffff;
+                border-radius: 24px;
+                padding: 40px;
+                border: none;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            /* Komponen Input (Sama dengan dark-input di manage_product) */
+            .form-label-custom { font-weight: 600; color: #4a5568; font-size: 0.95rem; margin-bottom: 8px; }
+
+            .custom-form input, .custom-form select, .custom-form textarea {
+                width: 100%;
+                padding: 12px 16px;
+                border-radius: 12px;
+                border: 1px solid #E2E8F0;
+                background-color: #F8FAFC;
+                color: #2d3748;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                transition: all 0.3s ease;
+            }
+            .custom-form input:focus, .custom-form select:focus, .custom-form textarea:focus {
+                outline: none;
+                background-color: #ffffff;
+                border-color: #8c73c2;
+                box-shadow: 0 0 0 4px rgba(140, 115, 194, 0.1);
+            }
+
+            /* Tombol Sama dengan manage_product */
+            .btn-orange { background: linear-gradient(135deg, #FF9000, #FF7300); color: white; border: none; border-radius: 50px; padding: 12px 30px; font-weight: 700; box-shadow: 0 4px 15px rgba(255, 115, 0, 0.25); transition: all 0.3s ease; text-decoration: none; text-align: center;}
+            .btn-orange:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255, 115, 0, 0.35); color: white; }
+            .btn-cancel { background-color: #ffffff; color: #5c418c; border: 1px solid #E2E8F0; border-radius: 50px; padding: 12px 30px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; text-align: center;}
+            .btn-cancel:hover { background-color: #f3f0f8; border-color: #d1c5e8; color: #4a3473; transform: translateY(-2px); }
+        </style>
     </head>
     <body>
         {% include "product/_page_header.html" %}
-        <main>
-            <p class="eyebrow">Stok &amp; Harga</p>
-            <h1 class="page-title">Catat Stok</h1>
-            {% include "product/_messages.html" %}
-            <form method="post" class="mt-3" style="max-width: 28rem">
-                {% csrf_token %}
-                {% for error in form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
-                {% for field in form %}
-                    <div class="mb-3">
-                        <label class="form-label-custom" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        <main class="container-fluid px-xl-5 px-4 py-5">
+            <div class="text-center mb-5 animate-fade-up" style="animation-delay: 0s;">
+                <p class="eyebrow"><i class="bi bi-box-seam me-1"></i> Manajemen Inventaris</p>
+                <h1 class="page-title">Catat Mutasi Stok</h1>
+                <p class="text-muted fw-medium">Tambahkan stok produk yang masuk atau kurangi stok yang keluar / rusak.</p>
+            </div>
+            <div class="animate-fade-up" style="animation-delay: 0.1s;">{% include "product/_messages.html" %}</div>
+            <div class="form-wrapper animate-fade-up" style="animation-delay: 0.2s;">
+                <form method="post" class="custom-form">
+                    {% csrf_token %}
+                    {% for error in form.non_field_errors %}
+                        <div class="alert alert-danger rounded-4 fw-semibold border-0 shadow-sm"><i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}</div>
+                    {% endfor %}
+                    <div class="row g-4">
+                        {% for field in form %}
+                            <div class="col-12 {% if field.name == 'quantity' or field.name == 'mutationType' %}col-md-6{% endif %}">
+                                <label class="form-label-custom"
+                                       for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-2 fw-semibold"><i class="bi bi-info-circle-fill me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                                {% if field.help_text %}
+                                    <small class="text-muted d-block mt-2 fw-medium">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
-                <div class="d-flex gap-2 mt-4">
-                    <a href="{% url 'product:product_list' %}" class="btn-cancel">Batal</a>
-                    <button type="submit" class="btn-orange">Simpan</button>
-                </div>
-            </form>
+                    <div class="d-flex flex-column flex-sm-row gap-3 mt-5 pt-4 border-top">
+                        <a href="{% url 'product:product_list' %}"
+                           class="btn-cancel flex-grow-1"><i class="bi bi-arrow-left me-2"></i> Kembali</a>
+                        <button type="submit"
+                                class="btn-orange flex-grow-1"><i class="bi bi-check2-circle me-2"></i> Simpan Mutasi</button>
+                    </div>
+                </form>
+            </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>

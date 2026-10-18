@@ -265,3 +265,42 @@ class MobileReadinessTests(TestCase):
                 if not finders.find(m.group(1)):
                     missing.append((path, m.group(1)))
         self.assertEqual(missing, [])
+
+
+class LoginNextAndSelfPasswordTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            "boss", password="Pass12345!x", role=Role.ADMIN, phone_number="0811111111"
+        )
+
+    def test_login_redirects_to_next_when_safe(self):
+        r = self.client.post(
+            "/login?next=/staff/admin/manage_product/",
+            {"username": "boss", "password": "Pass12345!x"},
+        )
+        self.assertRedirects(r, "/staff/admin/manage_product/", fetch_redirect_response=False)
+
+    def test_login_ignores_external_next(self):
+        r = self.client.post(
+            "/login?next=https://evil.example/",
+            {"username": "boss", "password": "Pass12345!x"},
+        )
+        self.assertRedirects(r, "/staff/admin/dashboard", fetch_redirect_response=False)
+
+    def test_changing_own_password_keeps_you_logged_in(self):
+        self.client.login(username="boss", password="Pass12345!x")
+        r = self.client.post(
+            f"/staff/admin/employee/{self.admin.pk}/edit/",
+            {
+                "username": "boss",
+                "first_name": "",
+                "last_name": "",
+                "phone_number": "0811111111",
+                "role": "ADMIN",
+                "password": "NewPass98765!y",
+            },
+        )
+        self.assertEqual(r.status_code, 302)
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.check_password("NewPass98765!y"))
+        self.assertEqual(self.client.get("/staff/admin/dashboard").status_code, 200)

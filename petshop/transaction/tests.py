@@ -454,3 +454,36 @@ class SeedDemoTests(TestCase):
         self.assertTrue(Product.objects.filter(pk=mine.pk).exists())
         self.assertTrue(User.objects.filter(pk=owner.pk).exists())
         self.assertEqual(Product.objects.count(), 19)  # 18 demo + produk milikku
+
+
+class AddToCartLimitsTests(TestCase):
+    def setUp(self):
+        from account.models import Role, User
+        from product.models import Category, Product
+
+        self.admin = User.objects.create_user("adm2", password="x", role=Role.ADMIN)
+        self.client.force_login(self.admin)
+        cat, _ = Category.objects.get_or_create(name=Category.FOOD)
+        self.product = Product.objects.create(
+            category=cat, name="Limited", purchase_price=1, selling_price=2, stock=2
+        )
+
+    def add(self, product):
+        return self.client.post(f"/staff/admin/cart/add/{product.pk}/")
+
+    def test_cannot_add_more_than_stock(self):
+        from transaction.models import CartItem
+
+        for _ in range(4):
+            self.add(self.product)
+        self.assertEqual(CartItem.objects.get(product=self.product).quantity, 2)
+
+    def test_unsellable_product_is_not_addable(self):
+        from product.models import Product
+        from transaction.models import CartItem
+
+        hidden = Product.objects.create(
+            category=self.product.category, name="No price", purchase_price=1, stock=3
+        )
+        self.assertEqual(self.add(hidden).status_code, 404)
+        self.assertFalse(CartItem.objects.filter(product=hidden).exists())

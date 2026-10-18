@@ -1,115 +1,111 @@
-/* Checkout page: shows the order summary and sends the order to WhatsApp. */
-(function () {
-  "use strict";
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
 
-  var Store = window.Store;
-  var form = document.getElementById("checkout-form");
-  var alertBox = document.getElementById("form-alert");
-  var submitButton = document.getElementById("btn-place-order");
-  var submitLabel = submitButton.innerHTML;
+function formatRupiah(angka) {
+  return (
+    "Rp " +
+    parseInt(angka)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  );
+}
 
-  function renderSummary() {
-    var cart = Store.getCart();
-    var isEmpty = cart.length === 0;
+function renderOrderSummary() {
+  let cart = JSON.parse(localStorage.getItem("petshop_cart")) || [];
+  let orderItemsContainer = document.getElementById("order-items");
+  let emptyCart = document.getElementById("empty-cart");
 
-    form.hidden = isEmpty;
-    document.getElementById("checkout-empty").hidden = !isEmpty;
+  orderItemsContainer.innerHTML = "";
 
-    document.getElementById("order-items").innerHTML = cart
-      .map(function (item) {
-        return (
-          '<div class="order-item">' +
-            "<div>" +
-              '<div class="item-name">' + Store.escapeHtml(item.name) + "</div>" +
-              '<div class="item-details">' + item.quantity + " × " + Store.formatRupiah(item.price) + "</div>" +
-            "</div>" +
-            '<div class="item-price">' + Store.formatRupiah(item.price * item.quantity) + "</div>" +
-          "</div>"
-        );
-      })
-      .join("");
-    document.getElementById("total-price").textContent = Store.formatRupiah(Store.cartTotal());
-  }
+  if (cart.length === 0) {
+    emptyCart.style.display = "block";
+    document.querySelector(".total-section").style.display = "none";
+    document.querySelector(".btn-place-order").style.display = "none";
+  } else {
+    emptyCart.style.display = "none";
+    document.querySelector(".total-section").style.display = "block";
+    document.querySelector(".btn-place-order").style.display = "flex";
 
-  function clearErrors() {
-    form.querySelectorAll("[data-error-for]").forEach(function (element) { element.textContent = ""; });
-    form.querySelectorAll(".invalid").forEach(function (element) { element.classList.remove("invalid"); });
-    alertBox.hidden = true;
-  }
+    let total = 0;
 
-  function showErrors(errors) {
-    Object.keys(errors).forEach(function (field) {
-      var target = form.querySelector('[data-error-for="' + field + '"]');
-      var input = form.elements[field];
-      if (target) target.textContent = errors[field];
-      if (input && input.classList) input.classList.add("invalid");
+    cart.forEach((item, index) => {
+      let subtotal = item.price * item.quantity;
+      total += subtotal;
+
+      orderItemsContainer.innerHTML += `
+                <div class="order-item">
+                    <div>
+                        <div class="item-name">${escapeHtml(item.name)}</div>
+                        <div class="item-details">${item.quantity} x ${formatRupiah(item.price)}</div>
+                    </div>
+                    <div class="item-price">${formatRupiah(subtotal)}</div>
+                </div>
+            `;
     });
-    if (errors.cart) {
-      alertBox.textContent = errors.cart;
-      alertBox.hidden = false;
-    }
-    var firstInvalid = form.querySelector(".invalid");
-    if (firstInvalid) firstInvalid.focus();
+
+    document.getElementById("total-price").textContent = formatRupiah(total);
+  }
+}
+
+function placeOrder(event) {
+  if (event) event.preventDefault();
+
+  let cart = JSON.parse(localStorage.getItem("petshop_cart")) || [];
+
+  if (cart.length === 0) {
+    alert("Keranjang belanja Anda kosong!");
+    return;
   }
 
-  function validateLocally() {
-    var errors = {};
-    if (!form.elements.name.value.trim()) errors.name = "Please enter your full name.";
-    if (!/^\+?[\d\s().-]{9,20}$/.test(form.elements.phone.value.trim())) {
-      errors.phone = "Please enter a valid phone number, e.g. 081234567890.";
-    }
-    if (!form.elements.address.value.trim()) errors.address = "Please enter your delivery address.";
-    return errors;
-  }
+  // Get form data
+  let form = document.getElementById("checkout-form");
+  let formData = new FormData(form);
 
-  function setBusy(busy) {
-    submitButton.disabled = busy;
-    submitButton.innerHTML = busy ? '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Sending…' : submitLabel;
-  }
+  let nama = formData.get("nama");
+  let no_wa = formData.get("no_wa");
+  let alamat = formData.get("alamat");
+  let payment_method = document.querySelector(
+    'input[name="payment_method"]:checked',
+  ).value;
 
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
-    clearErrors();
-
-    var errors = validateLocally();
-    if (Object.keys(errors).length) {
-      showErrors(errors);
-      return;
-    }
-
-    var cart = Store.getCart();
-    var data = new FormData(form);
-    data.set(
-      "cart_data",
-      JSON.stringify(cart.map(function (item) { return { id: item.id, quantity: item.quantity }; }))
+  // Validate form
+  if (!nama || !no_wa || !alamat) {
+    alert(
+      "Mohon isi semua kolom wajib (Nama, Nomor Telepon, dan Alamat)!",
     );
+    return;
+  }
 
-    setBusy(true);
-    fetch(form.action, {
-      method: "POST",
-      body: data,
-      credentials: "same-origin",
-      headers: { "X-Requested-With": "XMLHttpRequest" }
-    })
-      .then(function (response) {
-        return response.json().then(function (body) { return { ok: response.ok, body: body }; });
-      })
-      .then(function (result) {
-        if (result.ok && result.body.ok) {
-          Store.clearCart();
-          Store.showToast("Opening WhatsApp…");
-          window.location.href = result.body.whatsapp_url;
-          return;
-        }
-        setBusy(false);
-        showErrors(result.body.errors || { cart: "Something went wrong. Please try again." });
-      })
-      .catch(function () {
-        setBusy(false);
-        showErrors({ cart: "Could not reach the server. Please check your connection and try again." });
-      });
+  // Build WhatsApp message
+  let nomor_admin = "6281356703075";
+
+  let pesan = `Halo Kak, mau order barang dong\n\n`;
+  pesan += `*Format Pemesanan*\n`;
+  pesan += `• Nama Lengkap: ${nama}\n`;
+  pesan += `• No. HP/WA: ${no_wa}\n`;
+  pesan += `• Alamat Lengkap: ${alamat}\n`;
+  pesan += `• Metode Pembayaran: ${payment_method}\n\n`;
+  pesan += `*Ringkasan Pesanan:*\n`;
+
+  let total = 0;
+  cart.forEach((item) => {
+    let subtotal = item.price * item.quantity;
+    total += subtotal;
+    pesan += `- ${item.name} - ${item.quantity}x (${formatRupiah(item.price)}) = ${formatRupiah(subtotal)}\n`;
   });
 
-  window.addEventListener("pageshow", renderSummary);
-  document.addEventListener("DOMContentLoaded", renderSummary);
-})();
+  pesan += `\n*Total Estimasi: ${formatRupiah(total)}*\n`;
+  pesan += `\nMohon info total biaya + ongkirnya ya kak. Terima kasih!`;
+
+  // Redirect to WhatsApp
+  let url = `https://wa.me/${nomor_admin}?text=${encodeURIComponent(pesan)}`;
+  window.open(url, "_blank");
+
+  localStorage.removeItem("petshop_cart");
+  renderOrderSummary();
+}
+
+// Render on page load
+document.addEventListener("DOMContentLoaded", renderOrderSummary);
+

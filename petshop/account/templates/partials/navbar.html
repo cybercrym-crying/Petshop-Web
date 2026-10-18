@@ -4,8 +4,8 @@
     
     <div class="d-none d-md-flex align-items-center">
         <!-- Menu Publik (untuk semua orang) -->
-        <a href="{% url 'customer:katalog' %}" class="nav-link-custom">Katalog Produk</a>
-        <a href="{% url 'customer:about' %}" class="nav-link-custom">About Us</a>
+        <a href="{% url 'customer:shop' %}" class="nav-link-custom">Katalog Produk</a>
+        <a href="{% url 'customer:about' %}" class="nav-link-custom">Tentang Kami</a>
         
         <!-- Menu untuk User yang Sudah Login -->
         {% if user.is_authenticated %}
@@ -20,14 +20,14 @@
     
     <div class="d-flex align-items-center gap-2">
         {% if user.is_authenticated %}
-            <span class="text-muted" style="font-size: 0.85rem;">Hi, {{ user.username }}</span>
+            <span class="text-muted" style="font-size: 0.85rem;">Halo, {{ user.username }}</span>
             <form method="post" action="{% url 'logout' %}" class="d-inline">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill">Logout</button>
+                <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill">Keluar</button>
             </form>
         {% else %}
             <a href="{% url 'login_form' %}"
-               class="btn btn-brand btn-sm rounded-pill px-3">Login</a>
+               class="btn btn-brand btn-sm rounded-pill px-3">Masuk</a>
         {% endif %}
     </div>
 </nav>

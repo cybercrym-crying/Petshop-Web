@@ -3,16 +3,20 @@ from product.models import Product
 from account.models import Customer
 from transaction.models import Order, OrderStatus
 
+# Nomor WhatsApp admin (format internasional tanpa +), dipakai tombol kontak dan pesanan.
 ADMIN_WA_NUMBER = "6281356703075"
 WA_LINK = f"https://wa.me/{ADMIN_WA_NUMBER}"
 WA_DISPLAY = "+62 813-5670-3075"
 
-# untuk promom di halaman
+
+# Banner promo di Home. Isi dengan promo yang benar-benar berlaku, atau ubah jadi None
+# untuk menyembunyikannya (banner "Ready to Order" akan tampil sebagai gantinya).
 SPECIAL_OFFER = {
-    "title": "Get 20% OFF on Selected Pet Products",
-    "text": "Premium brands, your pet's favorite items, at a special price!",
+    "title": "Diskon 20% untuk Produk Pilihan",
+    "text": "Merek premium, barang favorit hewan kesayangan Anda, dengan harga spesial!",
 }
-STORE_ADDRESS = "Samarinda, Jl Jakarta Gg 19B"
+# Alamat toko di bagian "Visit Us" halaman About. Kosongkan untuk menyembunyikannya.
+STORE_ADDRESS = ""
 
 
 def _site_context(**extra):
@@ -40,7 +44,7 @@ def cart_page(request):
     return render(request, "customer/cart.html")
 
 
-def katalog_publik(request):
+def shop(request):
     produk_tersedia = (
         Product.objects.sellable().select_related("category").order_by("name")
     )

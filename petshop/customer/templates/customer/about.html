@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>About Us - Seelly Petshop</title>
+        <title>Tentang Kami - Seelly Petshop</title>
         <link rel="icon"
               href="{% static 'customer/img/favicon.svg' %}"
               type="image/svg+xml">
@@ -15,7 +15,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
               rel="stylesheet">
         <link rel="stylesheet" href="{% static 'customer/css/catalog.css' %}?v=2">
-        <link rel="stylesheet" href="{% static 'customer/css/site.css' %}?v=3">
+        <link rel="stylesheet" href="{% static 'customer/css/site.css' %}?v=4">
     </head>
     <body class="sx">
         {% include "customer/_site_nav.html" with active="about" %}
@@ -24,21 +24,21 @@
                 <div class="row align-items-center g-4">
                     <div class="col-lg-6">
                         <div class="sx-crumb">
-                            <a href="{% url 'customer:home' %}">Home</a> / About Us
+                            <a href="{% url 'customer:home' %}">Beranda</a> / Tentang Kami
                         </div>
                         <h1>
-                            Our Story:
+                            Kisah Kami:
                             <br>
-                            <span>Care That Comes from the Heart</span>
+                            <span>Perawatan yang Datang dari Hati</span>
                         </h1>
-                        <p>Seelly Petshop is a pet shop built by animal lovers, for animal lovers.</p>
+                        <p>Seelly Petshop adalah toko hewan yang dibangun oleh pecinta hewan, untuk pecinta hewan.</p>
                     </div>
                     <div class="col-lg-6">
                         <div class="sx-hero-photo">
                             <img src="{% static 'customer/img/about-hero.jpg' %}"
                                  width="860"
                                  height="533"
-                                 alt="A giant tortoise walking on grass">
+                                 alt="Kura-kura raksasa berjalan di atas rumput">
                         </div>
                     </div>
                 </div>
@@ -52,39 +52,39 @@
                         <img src="{% static 'customer/img/about-collage.jpg' %}"
                              width="1200"
                              height="900"
-                             alt="A corgi with a bowl of dry food, a cat toy and pet medicine">
+                             alt="Corgi dengan semangkuk makanan kering, mainan kucing, dan obat hewan">
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <span class="sx-kicker"><i class="fas fa-paw"></i> Who We Are</span>
+                    <span class="sx-kicker"><i class="fas fa-paw"></i> Siapa Kami</span>
                     <h2 class="sx-h2">
-                        More Than a Pet Shop,
+                        Lebih dari Sekadar Toko Hewan,
                         <br>
-                        We Are Animal Lovers
+                        Kami Pecinta Hewan
                     </h2>
                     <p class="sx-lead">
-                        We believe every pet is part of the family. That is why we choose our products carefully and answer your questions honestly.
+                        Kami percaya setiap hewan adalah bagian dari keluarga. Karena itu kami memilih produk dengan hati-hati dan menjawab pertanyaan Anda dengan jujur.
                     </p>
                     <p class="sx-lead">
-                        Ordering is simple: pick what you need, send it through WhatsApp, and we confirm and deliver it to your door.
+                        Memesan itu mudah: pilih yang dibutuhkan, kirim lewat WhatsApp, lalu kami konfirmasi dan antar sampai rumah.
                     </p>
                     <div class="row g-3 mt-2">
                         <div class="col-4">
                             <div class="sx-stat">
                                 <b>{{ stats.products }}</b>
-                                <span>Products</span>
+                                <span>Produk</span>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="sx-stat">
                                 <b>{{ stats.orders }}</b>
-                                <span>Orders delivered</span>
+                                <span>Pesanan terkirim</span>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="sx-stat">
                                 <b>{{ stats.customers }}</b>
-                                <span>Customers</span>
+                                <span>Pelanggan</span>
                             </div>
                         </div>
                     </div>
@@ -97,18 +97,18 @@
                 <div class="col-md-5">
                     <div class="sx-vision">
                         <span class="sx-feat-icon light"><i class="fas fa-eye"></i></span>
-                        <h3>Our Vision</h3>
-                        <p>To be the pet shop families trust for quality products, honest advice, and happy, healthy pets.</p>
+                        <h3>Visi Kami</h3>
+                        <p>Menjadi toko hewan yang dipercaya keluarga untuk produk berkualitas, saran yang jujur, serta hewan yang sehat dan bahagia.</p>
                     </div>
                 </div>
                 <div class="col-md-7">
                     <div class="sx-mission">
                         <span class="sx-feat-icon"><i class="fas fa-flag"></i></span>
-                        <h3>Our Mission</h3>
+                        <h3>Misi Kami</h3>
                         <ul>
-                            <li>Offer quality products for every stage of a pet's life.</li>
-                            <li>Give friendly, honest service you can rely on.</li>
-                            <li>Make ordering simple and delivery dependable.</li>
+                            <li>Menyediakan produk berkualitas untuk setiap tahap kehidupan hewan.</li>
+                            <li>Memberikan layanan yang ramah dan jujur yang bisa diandalkan.</li>
+                            <li>Membuat pemesanan mudah dan pengiriman dapat diandalkan.</li>
                         </ul>
                     </div>
                 </div>
@@ -118,15 +118,15 @@
         <section class="container sx-section pt-0" aria-labelledby="values-title">
             <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
                 <div>
-                    <span class="sx-kicker"><i class="fas fa-paw"></i> Our Values</span>
-                    <h2 class="sx-h2 mb-1" id="values-title">What We Believe In</h2>
-                    <p class="sx-lead mb-0">Promises that guide everything we do, every single day.</p>
+                    <span class="sx-kicker"><i class="fas fa-paw"></i> Nilai Kami</span>
+                    <h2 class="sx-h2 mb-1" id="values-title">Yang Kami Yakini</h2>
+                    <p class="sx-lead mb-0">Janji yang memandu semua yang kami lakukan, setiap hari.</p>
                 </div>
                 <div class="sx-rail-nav">
-                    <button type="button" id="rail-prev" class="sx-rail-btn" aria-label="Previous values" disabled>
+                    <button type="button" id="rail-prev" class="sx-rail-btn" aria-label="Nilai sebelumnya" disabled>
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <button type="button" id="rail-next" class="sx-rail-btn" aria-label="Next values">
+                    <button type="button" id="rail-next" class="sx-rail-btn" aria-label="Nilai berikutnya">
                         <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -135,47 +135,47 @@
                  id="values-rail"
                  tabindex="0"
                  role="region"
-                 aria-label="Our values, scroll sideways">
+                 aria-label="Nilai-nilai kami, geser ke samping">
                     <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-quality.jpg' %}" width="600" height="600" loading="lazy" alt="A pouch of Whiskas cat food">
+                        <img src="{% static 'customer/img/val-quality.jpg' %}" width="600" height="600" loading="lazy" alt="Sekantong makanan kucing Whiskas">
                         <div class="sx-vp-body">
-                            <h3>Trusted Quality</h3>
-                            <p>We offer products and services we trust for pets and partners alike.</p>
+                            <h3>Kualitas Terpercaya</h3>
+                            <p>Kami menawarkan produk dan layanan yang kami percayai, untuk hewan maupun mitra.</p>
                         </div>
                     </article>
                     <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-care.jpg' %}" width="600" height="600" loading="lazy" alt="A corgi sitting and looking up">
+                        <img src="{% static 'customer/img/val-care.jpg' %}" width="600" height="600" loading="lazy" alt="Corgi duduk menatap ke atas">
                         <div class="sx-vp-body">
-                            <h3>Caring Service</h3>
-                            <p>Our team is friendly, patient, and passionate about animal care.</p>
+                            <h3>Layanan Penuh Perhatian</h3>
+                            <p>Tim kami ramah, sabar, dan bersemangat merawat hewan.</p>
                         </div>
                     </article>
                     <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-order.jpg' %}" width="600" height="600" loading="lazy" alt="A black leather dog collar">
+                        <img src="{% static 'customer/img/val-order.jpg' %}" width="600" height="600" loading="lazy" alt="Kalung anjing kulit hitam">
                         <div class="sx-vp-body">
-                            <h3>Convenient Ordering</h3>
-                            <p>Easy online ordering, simple confirmation, and delivery to your home.</p>
+                            <h3>Pemesanan Mudah</h3>
+                            <p>Pemesanan online yang mudah, konfirmasi sederhana, dan pengiriman sampai rumah.</p>
                         </div>
                     </article>
                     <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-happy.jpg' %}" width="600" height="600" loading="lazy" alt="A giant tortoise on grass">
+                        <img src="{% static 'customer/img/val-happy.jpg' %}" width="600" height="600" loading="lazy" alt="Kura-kura raksasa di atas rumput">
                         <div class="sx-vp-body">
-                            <h3>Happy Pets</h3>
-                            <p>Healthy pets, happy families. That is our promise to you.</p>
+                            <h3>Hewan Bahagia</h3>
+                            <p>Hewan sehat, keluarga bahagia. Itu janji kami.</p>
                         </div>
                     </article>
                     <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-health.jpg' %}" width="600" height="600" loading="lazy" alt="Assorted pet medicine tablets and capsules">
+                        <img src="{% static 'customer/img/val-health.jpg' %}" width="600" height="600" loading="lazy" alt="Aneka tablet dan kapsul obat hewan">
                         <div class="sx-vp-body">
-                            <h3>Healthy Choices</h3>
-                            <p>Care products to keep your pet in good shape, year-round.</p>
+                            <h3>Pilihan Sehat</h3>
+                            <p>Produk perawatan agar hewan peliharaan tetap prima sepanjang tahun.</p>
                         </div>
                     </article>
                     <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-essentials.jpg' %}" width="600" height="600" loading="lazy" alt="A bowl of dry pet food">
+                        <img src="{% static 'customer/img/val-essentials.jpg' %}" width="600" height="600" loading="lazy" alt="Semangkuk makanan kering hewan">
                         <div class="sx-vp-body">
-                            <h3>Everyday Essentials</h3>
-                            <p>From the daily bowl to playtime, we stock what pets use every day.</p>
+                            <h3>Kebutuhan Sehari-hari</h3>
+                            <p>Dari mangkuk makan sampai waktu bermain, kami menyediakan yang dipakai hewan setiap hari.</p>
                         </div>
                     </article>
             </div>
@@ -184,15 +184,15 @@
         <section class="container pb-5">
             <div class="sx-cta">
                 <div>
-                    <span class="sx-kicker light"><i class="fas fa-paw"></i> Come say hello</span>
-                    <h2>Visit Us or Get in Touch</h2>
+                    <span class="sx-kicker light"><i class="fas fa-paw"></i> Sapa Kami</span>
+                    <h2>Kunjungi Kami atau Hubungi Kami</h2>
                     {% if store_address %}<p class="mb-1">{{ store_address }}</p>{% endif %}
-                    <p>Have a question about a product or an order? Message us on WhatsApp.</p>
+                    <p>Ada pertanyaan tentang produk atau pesanan? Kirim pesan lewat WhatsApp.</p>
                 </div>
                 <a href="{{ wa_link }}"
                    target="_blank"
                    rel="noopener"
-                   class="sx-btn-light"><i class="fab fa-whatsapp"></i> Contact Us</a>
+                   class="sx-btn-light"><i class="fab fa-whatsapp"></i> Hubungi Kami</a>
             </div>
         </section>
         {% include "customer/_site_footer.html" %}
