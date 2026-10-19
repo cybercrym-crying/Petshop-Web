@@ -157,3 +157,42 @@ class StockListFilterTests(TestCase):
         self.client.logout()
         self.client.login(username="cr", password="x")
         self.assertEqual(self.client.get("/list").status_code, 403)
+
+
+class PetTypeConditionTests(TestCase):
+    def test_defaults_for_existing_style_products(self):
+        p = make_product()
+        self.assertEqual((p.pet_type, p.condition), ("ALL", "NEW"))
+
+    def test_migration_created_new_categories(self):
+        codes = set(Category.objects.values_list("name", flat=True))
+        self.assertTrue({"HEALTHCARE", "TOYS", "GROOMING"} <= codes)
+
+    def _data(self, **extra):
+        cat, _ = Category.objects.get_or_create(name=Category.FOOD)
+        return {"category": cat.pk, "name": "Whiskas", "purchase_price": 1000, "selling_price": 2000,
+                "stock": 3, "is_active": "true", **extra}
+
+    def test_form_defaults_when_fields_are_missing(self):
+        from .form import FormProduct
+
+        form = FormProduct(self._data())
+        self.assertTrue(form.is_valid(), form.errors)
+        p = form.save()
+        self.assertEqual((p.pet_type, p.condition), ("ALL", "NEW"))
+
+    def test_form_saves_pet_type_and_condition_and_rejects_unknown(self):
+        from .form import FormProduct
+
+        p = FormProduct(self._data(pet_type="CAT", condition="USED")).save()
+        self.assertEqual((p.pet_type, p.condition), ("CAT", "USED"))
+        self.assertFalse(FormProduct(self._data(pet_type="NAGA")).is_valid())
+
+    def test_admin_pages_offer_pet_type_and_condition(self):
+        User.objects.create_user("adm", password="x", role=Role.ADMIN)
+        self.client.login(username="adm", password="x")
+        make_product()
+        r = self.client.get("/staff/admin/manage_product/")
+        self.assertContains(r, 'name="pet_type"', count=2)  # form tambah + 1 form edit
+        self.assertContains(r, 'name="condition"', count=2)
+        self.assertContains(r, "Hamster")

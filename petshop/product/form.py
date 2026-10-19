@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, StockMutation, MutationType
+from .models import MutationType, PetType, Product, ProductCondition, StockMutation
 
 
 class FormProduct(forms.ModelForm):
@@ -12,6 +12,8 @@ class FormProduct(forms.ModelForm):
             "purchase_price",
             "selling_price",
             "stock",
+            "pet_type",
+            "condition",
             "is_active",
             "photo",
         ]
@@ -21,10 +23,19 @@ class FormProduct(forms.ModelForm):
         self.fields["stock"].help_text = (
             "Stok awal saat produk pertama kali ditambahkan"
         )
+        # Hewan tujuan & kondisi opsional di form: kosong = ALL / NEW (bawaan model).
+        self.fields["pet_type"].required = False
+        self.fields["condition"].required = False
         # Stok hanya diisi saat produk baru dibuat.
         # Perubahan stok sesudahnya wajib lewat StockMutation supaya tercatat.
         if self.instance.pk:
             self.fields["stock"].disabled = True
+
+    def clean_pet_type(self):
+        return self.cleaned_data.get("pet_type") or PetType.ALL
+
+    def clean_condition(self):
+        return self.cleaned_data.get("condition") or ProductCondition.NEW
 
     def clean(self):
         cleaned_data = super().clean()

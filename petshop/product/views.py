@@ -2,7 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import ProtectedError
-from .models import Category, Product, StockMutation, MutationType, InsufficientStock
+from .models import (
+    Category,
+    InsufficientStock,
+    MutationType,
+    PetType,
+    Product,
+    ProductCondition,
+    StockMutation,
+)
 from .form import FormProduct, StockMutationForm, SellingPriceForm
 from account.models import Role
 from account.decorators import roleRequired
@@ -23,6 +31,8 @@ def manage_product(request):
         {
             "products": products,
             "categories": Category.objects.all(),
+            "pet_types": PetType.choices,
+            "conditions": ProductCondition.choices,
         },
     )
 

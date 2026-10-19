@@ -461,3 +461,34 @@
     .carousel-btn { display: none; }
     .carousel-track .product-card { flex-basis: 70%; }
 }
+/* ---------- halaman produk berfilter (mengikuti mockup) ---------- */
+
+.shop-layout { grid-template-columns: 270px minmax(0, 1fr); }
+.shop-count { margin: 2px 0 0; font-size: 0.82rem; color: var(--muted); }
+.product-grid-shop { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1399.98px) { .product-grid-shop { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 991.98px) { .shop-layout { grid-template-columns: 1fr; } }
+@media (max-width: 767.98px) { .product-grid-shop { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 380px) { .product-grid-shop { grid-template-columns: 1fr; } }
+
+.filter-panel { border-color: var(--purple-300); }
+details.filter-group > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+details.filter-group > summary::-webkit-details-marker { display: none; }
+details.filter-group > summary i { color: var(--purple-600); font-size: 0.8rem; transition: transform 0.2s; }
+details.filter-group:not([open]) > summary i { transform: rotate(180deg); }
+details.filter-group > summary:focus-visible { outline: 3px solid var(--purple-500); outline-offset: 2px; border-radius: 6px; }
+.price-group legend { font-size: 1rem; font-weight: 700; }
+
+.empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 40px 16px; text-align: center; color: var(--muted); }
+.empty-state img { width: 120px; opacity: 0.8; }
+.empty-state p { margin: 0; }

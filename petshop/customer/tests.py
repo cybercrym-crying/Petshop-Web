@@ -9,10 +9,10 @@ from product.models import Category, Product
 from transaction.models import Order
 
 
-def make_product(name="Whiskas", stock=5, price=12000):
-    category, _ = Category.objects.get_or_create(name=Category.FOOD)
+def make_product(name="Whiskas", stock=5, price=12000, cat=Category.FOOD, **extra):
+    category, _ = Category.objects.get_or_create(name=cat)
     return Product.objects.create(
-        category=category, name=name, purchase_price=7000, selling_price=price, stock=stock
+        category=category, name=name, purchase_price=7000, selling_price=price, stock=stock, **extra
     )
 
 
@@ -279,9 +279,11 @@ class HomeShopTests(TestCase):
 
     def test_category_card_links_to_filter(self):
         make_product()
-        self.assertContains(
-            self.client.get("/shop/"), 'href="/shop/?category=FOOD#produk"'
-        )
+        self.assertContains(self.client.get("/shop/"), 'href="/produk/?category=FOOD"')
+
+    def test_belanja_sekarang_opens_filter_page(self):
+        r = self.client.get("/shop/")
+        self.assertContains(r, 'href="/produk/" class="btn-primary-seelly btn-lg">Belanja Sekarang')
 
     def test_search_and_category_filter(self):
         make_product("Whiskas 70g")
@@ -309,3 +311,93 @@ class HomeShopTests(TestCase):
         self.assertContains(r, "Rp 12.000")
         self.assertContains(r, '<html lang="id">')
         self.assertEqual(self.client.get("/produk/99999/").status_code, 404)
+
+
+class ProductsPageTests(TestCase):
+    """/produk/: filter jenis hewan, kategori, harga, kondisi + urutan (tombol Belanja Sekarang)."""
+
+    def setUp(self):
+        self.kitten = make_product("Royal Canin Kitten", price=92000, pet_type="CAT")
+        self.puppy = make_product("Pro Plan Puppy", price=145000, pet_type="DOG")
+        self.generic = make_product("Sisir Bulu", price=25000, cat=Category.GROOMING)  # semua hewan
+        self.used = make_product("Kandang Bekas", price=60000, pet_type="CAT", condition="USED", cat=Category.EQUIPMENT)
+
+    def names(self, **params):
+        r = self.client.get(reverse("customer:products"), params)
+        self.assertEqual(r.status_code, 200)
+        return [p.name for p in r.context["products"]]
+
+    def test_page_renders_filter_groups_and_cards(self):
+        r = self.client.get("/produk/")
+        self.assertTemplateUsed(r, "customer/products.html")
+        for marker in ("Jenis Hewan", "Kategori", "Harga", "Kondisi", 'id="sort-select"', "Terapkan Filter"):
+            self.assertContains(r, marker)
+        self.assertContains(r, "Tambah ke Keranjang")
+        self.assertEqual(r.context["title"], "Semua Produk")
+        self.assertEqual(r.context["total"], 4)
+
+    def test_pet_filter_keeps_all_pet_products(self):
+        self.assertEqual(sorted(self.names(pet="CAT")), ["Kandang Bekas", "Royal Canin Kitten", "Sisir Bulu"])
+        self.assertEqual(sorted(self.names(pet=["CAT", "DOG"])), sorted(p.name for p in Product.objects.all()))
+
+    def test_category_condition_and_price_filters(self):
+        self.assertEqual(self.names(category="FOOD", pet="DOG"), ["Pro Plan Puppy"])
+        self.assertEqual(self.names(condition="USED"), ["Kandang Bekas"])
+        self.assertEqual(sorted(self.names(min_price="30000", max_price="100000")), ["Kandang Bekas", "Royal Canin Kitten"])
+        # min > max ditukar, nilai ngawur diabaikan
+        self.assertEqual(len(self.names(min_price="100000", max_price="30000")), 2)
+        self.assertEqual(len(self.names(min_price="abc", pet="NAGA")), 4)
+
+    def test_sort_options(self):
+        self.assertEqual(self.names(sort="price_asc")[0], "Sisir Bulu")
+        self.assertEqual(self.names(sort="price_desc")[0], "Pro Plan Puppy")
+        self.assertEqual(self.names(sort="name")[0], "Kandang Bekas")
+        self.assertEqual(len(self.names(sort="ngawur")), 4)
+
+    def test_popular_sort_counts_sold_units_and_ignores_cancelled(self):
+        from transaction.models import OrderDetail, OrderStatus
+
+        admin = User.objects.create_user("adm", password="x", role=Role.ADMIN)
+        cust = Customer.objects.create(name="Budi", phone_number="0812", address="x")
+
+        def order(status, product, qty):
+            o = Order.objects.create(
+                admin=admin, customer=cust, payment_method="CASH", total_payment=1000, order_status=status
+            )
+            OrderDetail.objects.create(transaction=o, product=product, quantity=qty, unit_price=1000, subtotal=1000 * qty)
+
+        order(OrderStatus.DELIVERED, self.puppy, 3)
+        order(OrderStatus.CANCELLED, self.kitten, 50)
+        self.assertEqual(self.names()[0], "Pro Plan Puppy")
+
+    def test_heading_follows_selection(self):
+        r = self.client.get("/produk/", {"category": "FOOD", "pet": "CAT"})
+        self.assertEqual(r.context["title"], "Makanan Kucing")
+        self.assertEqual(r.context["blurb"], "Makanan sehat dan lezat untuk kucing kesayangan Anda.")
+        self.assertEqual(self.client.get("/produk/", {"pet": "DOG"}).context["title"], "Produk untuk Anjing")
+        self.assertEqual(self.client.get("/produk/", {"q": "sisir"}).context["title"], "Hasil pencarian “sisir”")
+
+    def test_empty_result_and_reset_link(self):
+        r = self.client.get("/produk/", {"condition": "USED", "category": "FOOD"})
+        self.assertContains(r, "Tidak ada produk yang cocok dengan filter Anda.")
+        self.assertContains(r, "Atur ulang semua")
+
+    def test_pagination_keeps_filters(self):
+        for i in range(14):
+            make_product(f"Snack {i:02d}", price=5000 + i, pet_type="CAT")
+        r = self.client.get("/produk/", {"pet": "CAT", "sort": "name"})
+        self.assertEqual(len(r.context["products"]), 12)
+        self.assertContains(r, "pet=CAT&amp;sort=name&amp;page=2")
+        self.assertEqual(len(self.client.get("/produk/", {"pet": "CAT", "page": 2}).context["products"]), 5)
+
+    def test_hidden_and_unpriced_products_are_not_listed(self):
+        make_product("Tanpa Harga", price=None)
+        make_product("Nonaktif", is_active=False)
+        self.assertEqual(len(self.names()), 4)
+
+    def test_page_is_indonesian_and_has_nav(self):
+        html = self.client.get("/produk/").content.decode()
+        self.assertIn('<html lang="id">', html)
+        for english in ("Add to Cart", "Pet Type", "Apply Filters", "Sort by"):
+            self.assertNotIn(english, html)
+        self.assertIn('href="/shop/"', html)

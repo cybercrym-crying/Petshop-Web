@@ -200,6 +200,24 @@
                             </div>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
+                                    <label class="form-label-custom" for="add-pet-type">Pet Type</label>
+                                    <select id="add-pet-type" name="pet_type" class="dark-input">
+                                        {% for value, label in pet_types %}
+                                            <option value="{{ value }}"{% if value == "ALL" %} selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="add-condition">Condition</label>
+                                    <select id="add-condition" name="condition" class="dark-input">
+                                        {% for value, label in conditions %}
+                                            <option value="{{ value }}"{% if value == "NEW" %} selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
                                     <label class="form-label-custom" for="add-photo">Product Photo</label>
                                     <input type="file"
                                            id="add-photo"
@@ -314,6 +332,24 @@
                                                value="{{ p.selling_price|default_if_none:'' }}"
                                                min="0"
                                                class="dark-input" />
+                                    </div>
+                                </div>
+                                <div class="row g-4 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label-custom" for="detail-pet-type-{{ p.pk }}">Pet Type</label>
+                                        <select id="detail-pet-type-{{ p.pk }}" name="pet_type" class="dark-input">
+                                            {% for value, label in pet_types %}
+                                                <option value="{{ value }}"{% if value == p.pet_type %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label-custom" for="detail-condition-{{ p.pk }}">Condition</label>
+                                        <select id="detail-condition-{{ p.pk }}" name="condition" class="dark-input">
+                                            {% for value, label in conditions %}
+                                                <option value="{{ value }}"{% if value == p.condition %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="row g-4 mb-4">
