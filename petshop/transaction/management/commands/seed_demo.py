@@ -65,10 +65,10 @@ PRODUCTS = [
     ("Friskies Seafood 1kg", Category.FOOD, 33000, 41000, 30, None, True),
     ("Makanan Ikan Hias 100g", Category.FOOD, 8000, 12000, 40, None, True),
     ("Mangkuk Makan Anti-Tumpah", Category.EQUIPMENT, 25000, 38000, 22, "customer/img/pet-food.png", True),
-    ("Mainan Kucing Felt", Category.EQUIPMENT, 12000, 20000, 35, "customer/img/pet-toys.png", True),
+    ("Mainan Kucing Felt", Category.TOYS, 12000, 20000, 35, "customer/img/pet-toys.png", True),
     ("Tempat Pasir Kucing + Sekop", Category.EQUIPMENT, 55000, 79000, 8, None, True),  # menipis
-    ("Sisir Bulu Hewan", Category.EQUIPMENT, 15000, 25000, 27, None, True),
-    ("Vitamin Bulu Sehat 60 Tablet", Category.EQUIPMENT, 45000, 65000, 15, "customer/img/pet-drug.png", True),
+    ("Sisir Bulu Hewan", Category.GROOMING, 15000, 25000, 27, None, True),
+    ("Vitamin Bulu Sehat 60 Tablet", Category.HEALTHCARE, 45000, 65000, 15, "customer/img/pet-drug.png", True),
     ("Pasir Kucing Gumpal 5L", Category.EQUIPMENT, 42000, 55000, 0, None, True),  # habis
     ("Kandang Travel Kecil", Category.EQUIPMENT, 180000, None, 6, None, True),  # harga belum diset
     ("Kalung Kulit Anjing", Category.ACCESSORIES, 35000, 55000, 14, "customer/img/pet-accessories.png", True),
@@ -76,6 +76,21 @@ PRODUCTS = [
     ("Tali Tuntun 1.5m", Category.ACCESSORIES, 18000, 30000, 25, None, True),
     ("Hoodie Hewan Kecil", Category.ACCESSORIES, 40000, 65000, 10, None, False),  # nonaktif
 ]
+# Jenis hewan tujuan untuk produk demo; yang tidak tercantum = semua hewan (ALL).
+PET_TYPES = {
+    "Royal Canin Kitten 400g": "CAT",
+    "Whiskas Pouch Tuna 85g": "CAT",
+    "Pedigree Adult Beef 1.5kg": "DOG",
+    "Me-O Tuna Dewasa 1.2kg": "CAT",
+    "Pro Plan Puppy 1kg": "DOG",
+    "Friskies Seafood 1kg": "CAT",
+    "Makanan Ikan Hias 100g": "FISH",
+    "Mainan Kucing Felt": "CAT",
+    "Tempat Pasir Kucing + Sekop": "CAT",
+    "Pasir Kucing Gumpal 5L": "CAT",
+    "Kalung Kulit Anjing": "DOG",
+    "Harness Kucing Adjustable": "CAT",
+}
 PRODUCT_NAMES = [p[0] for p in PRODUCTS]
 CUSTOMER_PHONES = [c[1] for c in CUSTOMERS]
 
@@ -175,8 +190,13 @@ class Command(BaseCommand):
                     "purchase_price": buy,
                     "selling_price": sell,
                     "is_active": active,
+                    "pet_type": PET_TYPES.get(name, "ALL"),
                 },
             )
+            if not created and product.pet_type == "ALL" and name in PET_TYPES:
+                # Data demo lama (sebelum ada jenis hewan) dilengkapi, tanpa menimpa yang sudah diubah admin.
+                product.pet_type = PET_TYPES[name]
+                product.save(update_fields=["pet_type", "updated_at"])
             if created and stock > 0:
                 # Stok masuk lewat apply_mutation supaya riwayat stok ikut tercatat.
                 product.apply_mutation(

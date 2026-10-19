@@ -1,0 +1,132 @@
+body {
+  background-color: #fafafc;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: #2b3674;
+  margin: 0;
+}
+
+.text-brand {
+  color: #8c73c2 !important;
+}
+
+.navbar-custom {
+  background: #ffffff;
+  padding: 12px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.brand-logo {
+  background: linear-gradient(135deg, #8c73c2, #5c418c);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+.brand-name {
+  color: #2b3674;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.5px;
+}
+
+.pf-crumb {
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.pf-crumb a {
+  color: #8c73c2;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.pf-crumb a:hover {
+  color: #5c418c;
+  text-decoration: underline;
+}
+.pf-crumb span {
+  color: #a0aec0;
+  margin: 0 5px;
+}
+
+.card-custom {
+  background-color: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+.table-custom {
+  margin-bottom: 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-custom th {
+  background-color: #f8fafc;
+  color: #4a5568;
+  font-weight: 700;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 16px 20px;
+  white-space: nowrap;
+  text-align: left;
+}
+.table-custom td {
+  padding: 16px 20px;
+  vertical-align: middle;
+  border-bottom: 1px solid #e2e8f0;
+  color: #2d3748;
+}
+.table-custom tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.badge-status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.badge-status.delivered {
+  background: #e8fcf1;
+  color: #05a660;
+  border-color: #d1fae5;
+}
+
+.btn-sm-action {
+  background: #f8fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-sm-action:hover {
+  background: #8c73c2;
+  border-color: #8c73c2;
+  color: white;
+}

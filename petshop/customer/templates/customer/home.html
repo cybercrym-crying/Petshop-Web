@@ -31,7 +31,8 @@
                             Semua Kebutuhan Hewan Peliharaan, Ada di <span>Satu Tempat</span>
                         </h1>
                         <p>Makanan, mainan, perawatan kesehatan, dan aksesori untuk sahabat berbulu kesayangan. Pesan dalam hitungan menit, kami antar sampai rumah.</p>
-                        <a href="{% url 'customer:shop' %}" class="sx-btn-outline">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
+                        <a href="{% url 'customer:shop' %}"
+                           class="sx-btn-outline">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
                     </div>
                     <div class="col-lg-5 text-center">
                         <img src="{% static 'customer/img/hero-corgi.png' %}"
@@ -65,7 +66,8 @@
                     <p class="sx-lead">
                         Di Seelly Petshop, kami memperlakukan setiap hewan seperti keluarga. Kami memilih produk yang juga akan kami berikan untuk hewan kami sendiri, dan dengan senang hati membantu Anda menemukan yang paling cocok.
                     </p>
-                    <a href="{% url 'customer:about' %}" class="sx-btn-solid">Selengkapnya <i class="fas fa-arrow-right"></i></a>
+                    <a href="{% url 'customer:about' %}"
+                       class="sx-btn-solid">Selengkapnya <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </section>
@@ -139,12 +141,18 @@
         <section class="container sx-section pt-0">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6">
-                    <div class="sx-photo">
-                        <img src="{% static 'customer/img/why-us.jpg' %}"
-                             width="1000"
-                             height="900"
-                             loading="lazy"
-                             alt="Kura-kura raksasa berjalan di atas rumput">
+                    <div class="sx-photo w-100 h-100">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127641.87522501066!2d116.7511488!3d-1.2407519!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2df14710964d9c91%3A0xcaec01bf9e658744!2sBalikpapan%2C%20Kota%20Balikpapan%2C%20Kalimantan%20Timur!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid"
+                                width="100%"
+                                height="100%"
+                                style="border: 0;
+                                       border-radius: 24px;
+                                       min-height: 450px;
+                                       box-shadow: 0 10px 30px rgba(0,0,0,0.08)"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -190,7 +198,8 @@
                         <h2>{{ offer.title }}</h2>
                         <p>{{ offer.text }}</p>
                     </div>
-                    <a href="{% url 'customer:shop' %}" class="sx-btn-light">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
+                    <a href="{% url 'customer:shop' %}"
+                       class="sx-btn-light">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
                 </div>
             {% else %}
                 <div class="sx-cta">
@@ -199,7 +208,8 @@
                         <h2>Siap Memesan untuk Hewan Kesayangan?</h2>
                         <p>Pilih produk dan kirim pesanan lewat WhatsApp. Kami akan mengonfirmasi total dan pengirimannya.</p>
                     </div>
-                    <a href="{% url 'customer:shop' %}" class="sx-btn-light">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
+                    <a href="{% url 'customer:shop' %}"
+                       class="sx-btn-light">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
                 </div>
             {% endif %}
         </section>

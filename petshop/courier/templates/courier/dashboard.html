@@ -1,107 +1,153 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Courier Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'courier/css/style.css' %}">
-</head>
-<body>
-  <header class="topbar">
-    <div class="topbar__inner">
-      <a class="brand" href="{% url 'courier:dashboard' %}">
-        <span class="brand__logo">L</span>
-        <span class="brand__name">Courir</span>
-      </a>
-
-      <div class="user-pill" data-user-name>{{ request.user.get_full_name|default:request.user.username }}</div>
-    </div>
-  </header>
-
-  <main class="page">
-    <p class="page__label">Dashboard</p>
-    <h1 class="page__title">Welcome back again, <span data-user-name>{{ request.user.get_full_name|default:request.user.username }}</span>!</h1>
-
-    <section class="stats" aria-label="Ringkasan pengiriman">
-      <a class="card stat-card" href="#pending" data-stat="pending">
-        <span class="stat-card__value" data-stat-value>{{ total_active }}</span>
-        <span class="stat-card__label">Pending Delivery</span>
-      </a>
-
-      <a class="card stat-card" href="{% url 'courier:history' %}" data-stat="history">
-        <span class="stat-card__value" data-stat-value>{{ total_delivered }}</span>
-        <span class="stat-card__label">Delivery History</span>
-      </a>
-    </section>
-
-    <ul class="orders" id="pending">
-      {% for order in active_orders %}
-        <li>
-          <article class="card order-card" data-order-id="{{ order.pk }}" data-detail-url="{% url 'courier:order_detail' order.pk %}" tabindex="0">
-            <h2 class="order-card__name">{{ order.customer.name }}</h2>
-            <p class="order-card__address">{{ order.customer.address }}</p>
-
-            <dl class="order-card__details">
-              <div class="order-card__row">
-                <dt>Phone</dt>
-                <dd>{{ order.customer.phone_number }}</dd>
-              </div>
-              <div class="order-card__row">
-                <dt>Items</dt>
-                <dd>{{ order.details.count }} Items</dd>
-              </div>
-              <div class="order-card__row">
-                <dt>Total</dt>
-                <dd>Rp {{ order.total_payment }} {% if order.payment_method == 'CASH' %}(COD){% else %}({{ order.get_payment_method_display }}){% endif %}</dd>
-              </div>
-            </dl>
-          </article>
-        </li>
-      {% empty %}
-        <li>
-          <p class="orders__empty">Belum ada pesanan.</p>
-        </li>
-      {% endfor %}
-    </ul>
-  </main>
-
-  <dialog class="modal" id="order-modal" aria-labelledby="order-modal-title">
-    <div class="modal__body">
-      <h2 class="modal__title" id="order-modal-title" data-field="customer">Nama Pelanggan</h2>
-      <p class="modal__date" data-field="date">0000-00-00 00:00:00</p>
-
-      <p class="modal__label">Items</p>
-      <ul class="modal__items" data-field="items"></ul>
-
-      <div class="modal__row">
-        <span class="modal__label">Total</span>
-        <span class="modal__value" data-field="total">Rp 0</span>
-      </div>
-      <div class="modal__row">
-        <span class="modal__label">Payment Type</span>
-        <span class="modal__value" data-field="payment">-</span>
-      </div>
-
-      <p class="modal__address" data-field="address">Alamat</p>
-
-      <div class="modal__actions">
-        <button type="button" class="btn btn--cancel" data-action="cancel">Close</button>
-        <a href="{% url 'courier:dashboard' %}" class="btn btn--confirm">Open Detail</a>
-      </div>
-    </div>
-  </dialog>
-
-  <template id="order-item-template">
-    <li class="modal__item">
-      <span class="modal__item-name"></span>
-      <span class="modal__item-price"></span>
-    </li>
-  </template>
-
-  <script src="{% static 'courier/js/script.js' %}"></script>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Courier Dashboard - PetAdmin</title>
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'courier/css/dashboard.css' %}">
+    </head>
+    <body>
+        <nav class="navbar-custom">
+            <a class="brand-group" href="{% url 'courier:dashboard' %}">
+                <span class="brand-logo"><i class="bi bi-box-seam-fill"></i></span>
+                <span class="brand-name">Courier</span>
+            </a>
+            <div class="nav-right">
+                <div class="user-pill d-none d-sm-flex" data-user-name>
+                    <i class="bi bi-person-circle fs-5 text-secondary"></i>
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </div>
+                <form method="post" action="{% url 'logout' %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn-logout"><i class="bi bi-box-arrow-right me-1 d-none d-sm-inline"></i> Logout</button>
+                </form>
+            </div>
+        </nav>
+        <main class="container-fluid px-xl-5 px-4 py-5">
+            <div class="animate-fade-up" style="animation-delay: 0s;">
+                <p class="eyebrow"><i class="bi bi-speedometer2 me-1"></i> Dashboard</p>
+                <h1 class="page-title">Welcome back again, <span data-user-name class="text-brand">{{ request.user.get_full_name|default:request.user.username }}</span>!</h1>
+            </div>
+            <section class="row g-4 mb-5 animate-fade-up"
+                     style="animation-delay: 0.1s"
+                     aria-label="Ringkasan pengiriman">
+                <div class="col-12 col-md-6">
+                    <a class="stat-box" href="#pending" data-stat="pending">
+                        <div class="stat-icon pending">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div>
+                            <div class="num" data-stat-value>{{ total_active }}</div>
+                            <div class="lbl">Pending Delivery</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-12 col-md-6">
+                    <a class="stat-box"
+                       href="{% url 'courier:history' %}"
+                       data-stat="history">
+                        <div class="stat-icon history">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+                        <div>
+                            <div class="num" data-stat-value>{{ total_delivered }}</div>
+                            <div class="lbl">Delivery History</div>
+                        </div>
+                    </a>
+                </div>
+            </section>
+            <h4 class="fw-bold mb-4 animate-fade-up"
+                style="animation-delay: 0.2s;
+                       color: #2B3674">Active Deliveries</h4>
+            <ul class="orders animate-fade-up"
+                id="pending"
+                style="animation-delay: 0.3s">
+                {% for order in active_orders %}
+                    <li>
+                        <article class="order-card"
+                                 data-order-id="{{ order.pk }}"
+                                 data-detail-url="{% url 'courier:order_detail' order.pk %}"
+                                 tabindex="0">
+                            <h2 class="order-card__name">{{ order.customer.name }}</h2>
+                            <p class="order-card__address"><i class="bi bi-geo-alt me-1 text-brand"></i> {{ order.customer.address }}</p>
+                            <dl class="order-card__details">
+                                <div class="order-card__row">
+                                    <dt>Phone</dt>
+                                    <dd>
+                                        {{ order.customer.phone_number }}
+                                    </dd>
+                                </div>
+                                <div class="order-card__row">
+                                    <dt>Items</dt>
+                                    <dd>
+                                        {{ order.details.count }} Items
+                                    </dd>
+                                </div>
+                                <div class="order-card__row">
+                                    <dt>Total</dt>
+                                    <dd class="text-brand">Rp {{ order.total_payment }} {% if order.payment_method == "CASH" %}(COD){% else %}({{ order.get_payment_method_display }}){% endif %}</dd>
+                                </div>
+                            </dl>
+                        </article>
+                    </li>
+                {% empty %}
+                    <li style="width: 100%;">
+                        <div class="text-center py-5 rounded-4 border"
+                             style="background: #ffffff;
+                                    border-color: #E2E8F0">
+                            <i class="bi bi-inbox text-muted opacity-50" style="font-size: 3rem;"></i>
+                            <h5 class="fw-bold mt-3 text-dark">Tidak Ada Pengiriman</h5>
+                            <p class="text-muted">Saat ini Anda tidak memiliki antrean pesanan untuk dikirim.</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </main>
+        <!-- Modal Dialog -->
+        <dialog class="modal" id="order-modal" aria-labelledby="order-modal-title">
+            <div class="modal__body">
+                <h2 class="modal__title" id="order-modal-title" data-field="customer">Nama Pelanggan</h2>
+                <p class="modal__date" data-field="date">0000-00-00 00:00:00</p>
+                <span class="modal__label">Daftar Barang</span>
+                <ul class="modal__items" data-field="items">
+                </ul>
+                <div class="modal__row">
+                    <span class="text-muted fw-bold">Total Pembayaran</span>
+                    <span class="fs-4 text-brand" data-field="total">Rp 0</span>
+                </div>
+                <div class="modal__row" style="margin-bottom: 0;">
+                    <span class="text-muted fw-bold fs-6">Payment Type</span>
+                    <span class="badge bg-light text-dark border" data-field="payment">-</span>
+                </div>
+                <p class="modal__address" data-field="address">Alamat</p>
+                <div class="modal__actions">
+                    <button type="button" class="btn--cancel" data-action="cancel">Tutup</button>
+                    <a href="#" class="btn--confirm" id="modal-confirm-btn">Lihat Detail</a>
+                </div>
+            </div>
+        </dialog>
+        <template id="order-item-template">
+            <li class="modal__item">
+                <span class="modal__item-name"></span>
+                <span class="modal__item-price"></span>
+            </li>
+        </template>
+        <script src="{% static 'courier/js/script.js' %}"></script>
+        <script>
+        document.addEventListener('click', function(e) {
+            const card = e.target.closest('.order-card');
+            if(card) {
+                const url = card.getAttribute('data-detail-url');
+                document.getElementById('modal-confirm-btn').setAttribute('href', url);
+            }
+        });
+        </script>
+    </body>
 </html>

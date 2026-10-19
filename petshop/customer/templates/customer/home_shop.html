@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Belanja - Seelly Petshop{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}">
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=2">
 {% endblock %}
 {% block content %}
     {% if results is not None %}
@@ -39,7 +39,7 @@
                 </h1>
                 <p>Makanan, mainan, aksesori, dan lainnya untuk sahabat terbaik Anda.</p>
                 <div class="hero-actions">
-                    <a href="#popular" class="btn-primary-seelly btn-lg">Belanja Sekarang</a>
+                    <a href="{% url 'customer:products' %}" class="btn-primary-seelly btn-lg">Belanja Sekarang</a>
                     <a href="#how-to-order" class="btn-ghost">Cara Memesan</a>
                 </div>
             </div>
@@ -59,7 +59,7 @@
         <div class="category-row">
             {% for category in categories %}
                 <a class="category-item"
-                   href="{% url 'customer:shop' %}?category={{ category.code }}#produk">
+                   href="{% url 'customer:products' %}?category={{ category.code }}">
                     <span class="category-circle"><img src="{% static category.image %}" alt="" loading="lazy"></span>
                     <span class="category-name">{{ category.label }}</span>
                     <span class="category-count">{{ category.count }} produk</span>
@@ -73,7 +73,7 @@
     <section class="container section" id="popular">
         <div class="section-head">
             <h2 class="section-title">Produk Populer</h2>
-            <a href="{% url 'customer:cart' %}" class="view-all">Lihat Keranjang <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <a href="{% url 'customer:products' %}" class="view-all">Lihat Semua Produk <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
         </div>
         <div class="carousel">
             <button type="button" class="carousel-btn prev" id="popular-prev" aria-label="Produk sebelumnya">

@@ -6,17 +6,40 @@ class Category(models.Model):
     FOOD = "FOOD"
     EQUIPMENT = "EQUIPMENT"
     ACCESSORIES = "ACCESSORIES"
+    HEALTHCARE = "HEALTHCARE"
+    TOYS = "TOYS"
+    GROOMING = "GROOMING"
 
     CATEGORY_CHOICES = [
         (FOOD, "Food"),
         (EQUIPMENT, "Equipment"),
         (ACCESSORIES, "Accessories"),
+        (HEALTHCARE, "Healthcare"),
+        (TOYS, "Toys"),
+        (GROOMING, "Grooming"),
     ]
 
     name = models.CharField(max_length=64, choices=CATEGORY_CHOICES, unique=True)
 
     def __str__(self):
         return self.get_name_display()
+
+
+class PetType(models.TextChoices):
+    """Hewan yang dituju produk. ALL = cocok untuk semua hewan (muncul di filter hewan mana pun)."""
+
+    ALL = "ALL", "All pets"
+    CAT = "CAT", "Cat"
+    DOG = "DOG", "Dog"
+    BIRD = "BIRD", "Bird"
+    RABBIT = "RABBIT", "Rabbit"
+    FISH = "FISH", "Fish"
+    HAMSTER = "HAMSTER", "Hamster"
+
+
+class ProductCondition(models.TextChoices):
+    NEW = "NEW", "New"
+    USED = "USED", "Used"
 
 
 class MutationType(models.TextChoices):
@@ -46,6 +69,12 @@ class Product(models.Model):
     purchase_price = models.PositiveBigIntegerField(null=False, blank=False)
     selling_price = models.PositiveBigIntegerField(null=True, blank=True)
     stock = models.PositiveIntegerField(null=False, default=0)
+    pet_type = models.CharField(
+        max_length=16, choices=PetType.choices, default=PetType.ALL
+    )
+    condition = models.CharField(
+        max_length=8, choices=ProductCondition.choices, default=ProductCondition.NEW
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
