@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Courier Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'courier/css/style.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="{% url 'courier:dashboard' %}">
+        <span class="brand__logo">L</span>
+        <span class="brand__name">Courir</span>
+      </a>
+
+      <div class="user-pill" data-user-name>{{ request.user.get_full_name|default:request.user.username }}</div>
+    </div>
+  </header>
+
+  <main class="page">
+    <p class="page__label">Dashboard</p>
+    <h1 class="page__title">Welcome back again, <span data-user-name>{{ request.user.get_full_name|default:request.user.username }}</span>!</h1>
+
+    <section class="stats" aria-label="Ringkasan pengiriman">
+      <a class="card stat-card" href="#pending" data-stat="pending">
+        <span class="stat-card__value" data-stat-value>{{ total_active }}</span>
+        <span class="stat-card__label">Pending Delivery</span>
+      </a>
+
+      <a class="card stat-card" href="{% url 'courier:history' %}" data-stat="history">
+        <span class="stat-card__value" data-stat-value>{{ total_delivered }}</span>
+        <span class="stat-card__label">Delivery History</span>
+      </a>
+    </section>
+
+    <ul class="orders" id="pending">
+      {% for order in active_orders %}
+        <li>
+          <article class="card order-card" data-order-id="{{ order.pk }}" data-detail-url="{% url 'courier:order_detail' order.pk %}" tabindex="0">
+            <h2 class="order-card__name">{{ order.customer.name }}</h2>
+            <p class="order-card__address">{{ order.customer.address }}</p>
+
+            <dl class="order-card__details">
+              <div class="order-card__row">
+                <dt>Phone</dt>
+                <dd>{{ order.customer.phone_number }}</dd>
+              </div>
+              <div class="order-card__row">
+                <dt>Items</dt>
+                <dd>{{ order.details.count }} Items</dd>
+              </div>
+              <div class="order-card__row">
+                <dt>Total</dt>
+                <dd>Rp {{ order.total_payment }} {% if order.payment_method == 'CASH' %}(COD){% else %}({{ order.get_payment_method_display }}){% endif %}</dd>
+              </div>
+            </dl>
+          </article>
+        </li>
+      {% empty %}
+        <li>
+          <p class="orders__empty">Belum ada pesanan.</p>
+        </li>
+      {% endfor %}
+    </ul>
+  </main>
+
+  <dialog class="modal" id="order-modal" aria-labelledby="order-modal-title">
+    <div class="modal__body">
+      <h2 class="modal__title" id="order-modal-title" data-field="customer">Nama Pelanggan</h2>
+      <p class="modal__date" data-field="date">0000-00-00 00:00:00</p>
+
+      <p class="modal__label">Items</p>
+      <ul class="modal__items" data-field="items"></ul>
+
+      <div class="modal__row">
+        <span class="modal__label">Total</span>
+        <span class="modal__value" data-field="total">Rp 0</span>
+      </div>
+      <div class="modal__row">
+        <span class="modal__label">Payment Type</span>
+        <span class="modal__value" data-field="payment">-</span>
+      </div>
+
+      <p class="modal__address" data-field="address">Alamat</p>
+
+      <div class="modal__actions">
+        <button type="button" class="btn btn--cancel" data-action="cancel">Close</button>
+        <a href="{% url 'courier:dashboard' %}" class="btn btn--confirm">Open Detail</a>
+      </div>
+    </div>
+  </dialog>
+
+  <template id="order-item-template">
+    <li class="modal__item">
+      <span class="modal__item-name"></span>
+      <span class="modal__item-price"></span>
+    </li>
+  </template>
+
+  <script src="{% static 'courier/js/script.js' %}"></script>
+</body>
+</html>

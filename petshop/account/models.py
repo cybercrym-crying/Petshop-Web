@@ -15,7 +15,10 @@ class User(AbstractUser):
 
     @property
     def dashboard_url_name(self):
-        return {Role.ADMIN: "staff_admin_dashboard"}.get(self.role, "customer:home")
+        return {
+            Role.ADMIN: "staff_admin_dashboard",
+            Role.COURIER: "courier:dashboard",
+        }.get(self.role, "customer:home")
 
 
 class Customer(models.Model):
