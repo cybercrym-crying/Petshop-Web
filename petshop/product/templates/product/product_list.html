@@ -5,119 +5,149 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Stok &amp; Harga</title>
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <link rel="stylesheet"
-              href="{% static 'product/css/manage_product.css' %}?v=20261013">
-        <link rel="stylesheet"
-              href="{% static 'product/css/stock_list.css' %}?v=20261014">
+        <link rel="stylesheet" href="{% static 'product/css/product_list.css' %}?v=dm1">
     </head>
     <body>
         {% include "product/_page_header.html" %}
-        <main class="sl-main">
-            <div class="sl-head">
+        <main class="container-fluid px-xl-5 px-4 py-4">
+            <!-- Header (Disamakan dengan manage_product) -->
+            <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 animate-fade-up"
+                 style="animation-delay: 0s">
                 <div>
                     <p class="eyebrow">Dashboard</p>
-                    <h1 class="page-title sl-title">Stok &amp; Harga</h1>
-                    <p class="sl-sub">
-                        {{ counts.all }} produk
-                        {% if restock_needed %}· <b>{{ restock_needed }} perlu restock</b>{% endif %}
+                    <h1 class="page-title">Stok &amp; Harga</h1>
+                    <p class="text-muted mt-1 fw-medium mb-0">
+                        {{ counts.all }} total produk tersimpan.
+                        {% if restock_needed %}<span class="text-danger ms-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> <b>{{ restock_needed }} perlu restock</b></span>{% endif %}
                     </p>
                 </div>
-                <div class="sl-actions">
-                    <a href="{% url 'product:manage_product' %}" class="sl-btn sl-btn-lg">Kelola Produk</a>
-                    <a href="{% url 'product:add_stock_mutation' %}" class="sl-btn sl-btn-lg is-orange">+ Catat Stok</a>
+                <div class="d-flex gap-2 mt-3 mt-md-0">
+                    <a href="{% url 'product:manage_product' %}"
+                       class="btn-cancel"><i class="bi bi-box-seam me-2"></i> Kelola Produk</a>
+                    <a href="{% url 'product:add_stock_mutation' %}"
+                       class="btn-orange"><i class="bi bi-plus-lg me-2"></i> Catat Stok</a>
                 </div>
             </div>
             {% include "product/_messages.html" %}
-            <nav class="sl-tiles" aria-label="Filter produk">
-                <a href="?{% if q %}q={{ q|urlencode }}{% endif %}"
-                   class="sl-tile t-all{% if not active_filter %} on{% endif %}">
-                    <span class="sl-tile-n">{{ counts.all }}</span>
-                    <span class="sl-tile-l">Semua produk</span>
-                </a>
-                <a href="?filter=low{% if q %}&q={{ q|urlencode }}{% endif %}"
-                   class="sl-tile t-low{% if active_filter == 'low' %} on{% endif %}">
-                    <span class="sl-tile-n">{{ counts.low }}</span>
-                    <span class="sl-tile-l">Stok menipis (≤ {{ low_threshold }})</span>
-                </a>
-                <a href="?filter=empty{% if q %}&q={{ q|urlencode }}{% endif %}"
-                   class="sl-tile t-empty{% if active_filter == 'empty' %} on{% endif %}">
-                    <span class="sl-tile-n">{{ counts.empty }}</span>
-                    <span class="sl-tile-l">Stok habis</span>
-                </a>
-                <a href="?filter=noprice{% if q %}&q={{ q|urlencode }}{% endif %}"
-                   class="sl-tile t-noprice{% if active_filter == 'noprice' %} on{% endif %}">
-                    <span class="sl-tile-n">{{ counts.noprice }}</span>
-                    <span class="sl-tile-l">Belum ada harga jual</span>
-                </a>
-            </nav>
-            <form method="get" class="sl-search" role="search">
-                {% if active_filter %}<input type="hidden" name="filter" value="{{ active_filter }}">{% endif %}
-                <input type="search"
-                       name="q"
-                       value="{{ q }}"
-                       placeholder="Cari nama produk"
-                       aria-label="Cari nama produk">
-                <button type="submit" class="sl-btn">Cari</button>
-                {% if q %}<a href="?{% if active_filter %}filter={{ active_filter }}{% endif %}" class="sl-btn">Reset</a>{% endif %}
-            </form>
-            <div class="sl-panel">
-                <div class="sl-scroll">
-                    <table class="sl-table">
+            <!-- Statistik & Filter Tiles -->
+            <div class="row g-3 mb-4 animate-fade-up" style="animation-delay: 0.1s;">
+                <div class="col-6 col-xl-3">
+                    <a href="?{% if q %}q={{ q|urlencode }}{% endif %}"
+                       class="stat-tile {% if not active_filter %}active{% endif %}">
+                        <div class="stat-num">{{ counts.all }}</div>
+                        <div class="stat-label"><i class="bi bi-boxes me-1"></i> Semua Produk</div>
+                    </a>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <a href="?filter=low{% if q %}&q={{ q|urlencode }}{% endif %}"
+                       class="stat-tile {% if active_filter == 'low' %}active{% endif %}">
+                        <div class="stat-num text-warning">{{ counts.low }}</div>
+                        <div class="stat-label"><i class="bi bi-graph-down-arrow me-1"></i> Stok Menipis</div>
+                    </a>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <a href="?filter=empty{% if q %}&q={{ q|urlencode }}{% endif %}"
+                       class="stat-tile {% if active_filter == 'empty' %}active{% endif %}">
+                        <div class="stat-num text-danger">{{ counts.empty }}</div>
+                        <div class="stat-label"><i class="bi bi-x-circle me-1"></i> Stok Habis</div>
+                    </a>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <a href="?filter=noprice{% if q %}&q={{ q|urlencode }}{% endif %}"
+                       class="stat-tile {% if active_filter == 'noprice' %}active{% endif %}">
+                        <div class="stat-num text-secondary">{{ counts.noprice }}</div>
+                        <div class="stat-label"><i class="bi bi-tag-fill me-1"></i> Belum Ada Harga</div>
+                    </a>
+                </div>
+            </div>
+            <!-- Toolbar Pencarian -->
+            <div class="d-flex flex-wrap gap-3 align-items-center mb-4 animate-fade-up"
+                 style="animation-delay: 0.2s">
+                <form method="get"
+                      class="d-flex flex-grow-1 gap-2"
+                      style="max-width: 500px"
+                      role="search">
+                    {% if active_filter %}<input type="hidden" name="filter" value="{{ active_filter }}">{% endif %}
+                    <input type="search"
+                           name="q"
+                           value="{{ q }}"
+                           class="filter-input"
+                           placeholder="Cari nama produk..."
+                           aria-label="Cari">
+                    <button type="submit"
+                            class="btn-cancel border-0 shadow-sm"
+                            style="background-color: white">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    {% if q %}<a href="?{% if active_filter %}filter={{ active_filter }}{% endif %}"
+   class="btn-cancel text-danger border-0">Reset</a>{% endif %}
+                </form>
+            </div>
+            <!-- Tabel Produk -->
+            <div class="card-custom animate-fade-up mb-5"
+                 style="animation-delay: 0.3s">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover">
                         <thead>
                             <tr>
-                                <th>Produk</th>
-                                <th class="num">Harga Beli</th>
-                                <th class="num">Harga Jual</th>
-                                <th>Stok</th>
+                                <th>Informasi Produk</th>
+                                <th>Harga Beli</th>
+                                <th>Harga Jual</th>
+                                <th>Ketersediaan</th>
                                 <th>Status</th>
-                                <th></th>
+                                <th class="text-end">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for p in productList %}
-                                <tr class="{% if not p.is_active %}is-off{% endif %}">
-                                    <td data-label="Produk">
-                                        <div class="sl-name">{{ p.name }}</div>
-                                        <span class="sl-cat">{{ p.category.name }}</span>
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark" style="font-size: 1.05rem;">{{ p.name }}</div>
+                                        <small class="text-muted fw-semibold">{{ p.category.name }}</small>
                                     </td>
-                                    <td data-label="Harga Beli" class="num">Rp {{ p.purchase_price|rupiah }}</td>
-                                    <td data-label="Harga Jual" class="num">
+                                    <td class="fw-medium text-muted">Rp {{ p.purchase_price|rupiah }}</td>
+                                    <td>
                                         {% if p.selling_price is not None %}
-                                            <b>Rp {{ p.selling_price|rupiah }}</b>
-                                            <div class="sl-margin{% if p.margin < 0 %} neg{% endif %}">
+                                            <div class="fw-bold"
+                                                 style="color: #5c418c">Rp {{ p.selling_price|rupiah }}</div>
+                                            <small class="fw-semibold {% if p.margin < 0 %}text-danger{% else %}text-success{% endif %}">
                                                 Margin Rp {{ p.margin|rupiah }}
-                                            </div>
+                                            </small>
                                         {% else %}
-                                            <span class="sl-noprice">Belum diset</span>
+                                            <span class="badge bg-light text-secondary border border-secondary-subtle">Belum diset</span>
                                         {% endif %}
                                     </td>
-                                    <td data-label="Stok">
-                                        <span class="sl-stock s-{{ p.stock_state }}">
-                                            <i></i><b>{{ p.stock }}</b>
-                                            {% if p.stock_state == "empty" %}
-                                                Habis
-                                            {% elif p.stock_state == "low" %}
-                                                Menipis
-                                            {% endif %}
+                                    <td>
+                                        <span class="badge-stock {% if p.stock_state == 'empty' %}empty{% elif p.stock_state == 'low' %}low{% else %}good{% endif %}">
+                                            {{ p.stock }} Unit
+                                            {% if p.stock_state == "empty" %} (Habis){% elif p.stock_state == "low" %} (Menipis){% endif %}
                                         </span>
                                     </td>
-                                    <td data-label="Status">
-                                        <span class="sl-state{% if p.is_active %} on{% endif %}">{% if p.is_active %}Aktif{% else %}Nonaktif{% endif %}</span>
+                                    <td>
+                                        <span class="badge-is-active {% if p.is_active %}active{% else %}inactive{% endif %}">
+                                            {% if p.is_active %}Aktif{% else %}Nonaktif{% endif %}
+                                        </span>
                                     </td>
-                                    <td class="act">
-                                        <a href="{% url 'product:set_selling_price' p.pk %}"
-                                           class="sl-btn{% if p.selling_price is None %} is-primary{% endif %}">Set Harga</a>
-                                        <a href="{% url 'product:add_stock_mutation' %}?product={{ p.pk }}"
-                                           class="sl-btn{% if p.stock_state != 'ok' %} is-primary{% endif %}">Catat Stok</a>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <a href="{% url 'product:set_selling_price' p.pk %}"
+                                               class="btn-sm-action {% if p.selling_price is None %}primary{% endif %}">Set Harga</a>
+                                            <a href="{% url 'product:add_stock_mutation' %}?product={{ p.pk }}"
+                                               class="btn-sm-action {% if p.stock_state != 'ok' %}primary{% endif %}">+ Stok</a>
+                                        </div>
                                     </td>
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="6" class="sl-empty">
-                                        {% if q or active_filter %}Tidak ada produk yang cocok.{% else %}Belum ada produk.{% endif %}
+                                    <td colspan="6" class="text-center py-5">
+                                        <i class="bi bi-inbox text-muted opacity-50" style="font-size: 3rem;"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">Data tidak ditemukan</h5>
+                                        <p class="text-muted">{% if q or active_filter %}Tidak ada produk yang cocok dengan pencarian Anda.{% else %}Belum ada data produk di sistem.{% endif %}</p>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -125,26 +155,40 @@
                     </table>
                 </div>
             </div>
-            <h2 class="sl-h2">Riwayat Stok Terakhir</h2>
-            <div class="sl-panel">
-                <ul class="sl-feed">
+            <!-- Riwayat Mutasi Terakhir -->
+            <h4 class="fw-bold mb-3 animate-fade-up"
+                style="animation-delay: 0.4s;
+                       color: #2B3674">Riwayat Stok Terakhir</h4>
+            <div class="card-custom animate-fade-up" style="animation-delay: 0.5s;">
+                <div class="feed-wrapper">
                     {% for m in recentMutations %}
-                        <li>
-                            <span class="sl-dir {% if m.mutationType == 'IN' %}in{% else %}out{% endif %}"
-                                  aria-label="{{ m.get_mutationType_display }}">{% if m.mutationType == 'IN' %}+{% else %}−{% endif %}</span>
-                            <div class="sl-feed-body">
-                                <div class="sl-feed-name">{{ m.product.name }}</div>
-                                <div class="sl-feed-note">{{ m.note|default:"-" }}</div>
+                        <div class="feed-item">
+                            <div class="feed-icon {% if m.mutationType == 'IN' %}in{% else %}out{% endif %}">
+                                {% if m.mutationType == "IN" %}
+                                    <i class="bi bi-arrow-down-left"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-up-right"></i>
+                                {% endif %}
                             </div>
-                            <div class="sl-feed-meta">
-                                <b class="{% if m.mutationType == 'IN' %}in{% else %}out{% endif %}">{% if m.mutationType == 'IN' %}+{% else %}−{% endif %}{{ m.quantity }}</b>
-                                <span>{{ m.date|date:"d M Y, H:i" }} · {% if m.createdBy %}{{ m.createdBy.username }}{% else %}-{% endif %}</span>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="fw-bold mb-1">{{ m.product.name }}</h6>
+                                    <b class="fs-5 {% if m.mutationType == 'IN' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if m.mutationType == "IN" %}+{% else %}−{% endif %}{{ m.quantity }}
+                                    </b>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-muted fw-medium">{{ m.note|default:"Tidak ada catatan" }}</small>
+                                    <small class="text-muted fw-semibold">
+                                        <i class="bi bi-clock me-1"></i> {{ m.date|date:"d M Y, H:i" }} • {% if m.createdBy %}{{ m.createdBy.username }}{% else %}Sistem{% endif %}
+                                    </small>
+                                </div>
                             </div>
-                        </li>
+                        </div>
                     {% empty %}
-                        <li class="sl-empty">Belum ada riwayat stok.</li>
+                        <div class="text-center py-4 text-muted fw-medium">Belum ada riwayat pergerakan stok saat ini.</div>
                     {% endfor %}
-                </ul>
+                </div>
             </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,0 +1,111 @@
+/* Mode gelap area admin.
+ * CSS halaman admin memakai variabel --t-<peran>-<hex> dengan nilai terang sebagai cadangan
+ * (mis. var(--t-bg-ffffff,#ffffff)). Di sini nilai gelapnya. Ubah satu baris = ubah semua pemakaiannya.
+ * Peran: bg = latar, tx = teks, bd = garis tepi. Aktif lewat <html data-theme="dark">. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  /* Selaraskan variabel Bootstrap dengan palet admin (baris tabel, form, border) */
+  --bs-body-bg: #1d2236;
+  --bs-body-color: #e4e8fb;
+  --bs-secondary-color: rgba(205, 212, 240, 0.72);
+  --bs-tertiary-bg: #242a42;
+  --bs-border-color: #2f3650;
+  --t-bd-cbd5e0: #3a4260;
+  --t-bd-d1c5e8: #3a3560;
+  --t-bd-d1fae5: #305a44;
+  --t-bd-d9d0ee: #3a3560;
+  --t-bd-dcfce7: #305a3e;
+  --t-bd-ddd5ef: #36325a;
+  --t-bd-e2e8f0: #2f3650;
+  --t-bd-e4dcf5: #2f2c52;
+  --t-bd-eae3f7: #2f2c52;
+  --t-bd-f1edf9: #2a2848;
+  --t-bd-fee2e2: #5a3030;
+  --t-bd-fef3c7: #5a5130;
+  --t-bg-cbd5e0: #3a4260;
+  --t-bg-d8f0e2: #1f3f2c;
+  --t-bg-e0f2fe: #223644;
+  --t-bg-e2e8f0: #2e3550;
+  --t-bg-e3f5e9: #21432c;
+  --t-bg-e8e5ee: #2c3050;
+  --t-bg-e8fcf1: #224532;
+  --t-bg-e9dffb: #2e2342;
+  --t-bg-e9e3fa: #2c2442;
+  --t-bg-edf2f7: #2a3050;
+  --t-bg-eeeafb: #2c2544;
+  --t-bg-efeafb: #2e2544;
+  --t-bg-f0fdf4: #23472e;
+  --t-bg-f1edf9: #2a3050;
+  --t-bg-f3eefc: #262c48;
+  --t-bg-f3f0f8: #262c48;
+  --t-bg-f4e1e1: #422121;
+  --t-bg-f4f7fe: #12151f;
+  --t-bg-f7f3fe: #262c48;
+  --t-bg-f8f9fa: #242a42;
+  --t-bg-f8fafc: #242a42;
+  --t-bg-fadcdc: #422121;
+  --t-bg-faf8fe: #242a42;
+  --t-bg-fafafc: #12151f;
+  --t-bg-fbeccb: #3f351f;
+  --t-bg-fbf3ec: #14172a;
+  --t-bg-fcefd2: #403620;
+  --t-bg-fcefda: #423521;
+  --t-bg-fcfbfe: #161a28;
+  --t-bg-fde8e8: #462222;
+  --t-bg-fee2e2: #442222;
+  --t-bg-fef2f2: #482323;
+  --t-bg-fff0f0: #482323;
+  --t-bg-fff8e5: #453c22;
+  --t-bg-fffbeb: #474023;
+  --t-bg-ffffff: #1d2236;
+  --t-tx-0284c7: #5cc0f0;
+  --t-tx-05a660: #3fd58a;
+  --t-tx-166534: #6fdc9b;
+  --t-tx-17653b: #6fdc9b;
+  --t-tx-1f8a4c: #5fd48a;
+  --t-tx-2b3674: #e4e8fb;
+  --t-tx-2d3748: #e2e8f0;
+  --t-tx-3f2799: #b8a8ff;
+  --t-tx-4318ff: #7b86ff;
+  --t-tx-4a3473: #c4b3f0;
+  --t-tx-4a5568: #b7c0d4;
+  --t-tx-4f4868: #b8b2d0;
+  --t-tx-5b45a8: #b3a2f0;
+  --t-tx-5c418c: #b9a3ef;
+  --t-tx-64748b: #9aa8c0;
+  --t-tx-6b6180: #a79fc0;
+  --t-tx-6e4a00: #f5c76a;
+  --t-tx-718096: #9aa6bd;
+  --t-tx-7a5200: #f5c76a;
+  --t-tx-8a1b1b: #ff9b9b;
+  --t-tx-8a5a0b: #f5c76a;
+  --t-tx-8a8098: #9a93ad;
+  --t-tx-8a84a3: #9d98b8;
+  --t-tx-8c73c2: #a48ddb;
+  --t-tx-991b1b: #ff9b9b;
+  --t-tx-9b1c1c: #ff9b9b;
+  --t-tx-b42318: #ff8f85;
+  --t-tx-b45309: #f0a45a;
+  --t-tx-b91c1c: #ff8a8a;
+  --t-tx-e31a1a: #ff6b6b;
+  --t-tx-e53e3e: #ff7878;
+  --t-tx-e5a500: #f2c14e;
+}
+
+/* Kelas Bootstrap yang warnanya tetap (tidak ikut data-bs-theme) */
+html[data-theme="dark"] .text-dark { color: #e4e8fb !important; }
+html[data-theme="dark"] .text-secondary { color: #aab3c9 !important; }
+html[data-theme="dark"] .bg-white { background-color: #1d2236 !important; }
+html[data-theme="dark"] .bg-light { background-color: #242a42 !important; }
+html[data-theme="dark"] .border-light { border-color: #2f3650 !important; }
+html[data-theme="dark"] .btn-light {
+  --bs-btn-color: #e4e8fb; --bs-btn-bg: #242a42; --bs-btn-border-color: #2f3650;
+  --bs-btn-hover-color: #fff; --bs-btn-hover-bg: #2e3552; --bs-btn-hover-border-color: #3a4260;
+  --bs-btn-active-color: #fff; --bs-btn-active-bg: #343c5c; --bs-btn-active-border-color: #3a4260;
+}
+
+/* Inline style di template */
+html[data-theme="dark"] [style*="color: #2b3674" i],
+html[data-theme="dark"] [style*="color:#2b3674" i] { color: #e4e8fb !important; }
+html[data-theme="dark"] [style*="color: #5c418c" i] { color: #b9a3ef !important; }
+html[data-theme="dark"] [style*="border-color: #e2e8f0" i] { border-color: #2f3650 !important; }

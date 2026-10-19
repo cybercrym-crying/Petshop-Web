@@ -1,75 +1,108 @@
-/* Cart page: lists the items saved in the browser and lets the customer edit them. */
-(function () {
-  "use strict";
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
 
-  var Store = window.Store;
+function formatRupiah(angka) { 
+    return 'Rp ' + parseInt(angka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
+}
 
-  function itemHtml(item) {
-    var photo = Store.safeUrl(item.photo);
-    var url = Store.safeUrl(item.url);
-    var name = Store.escapeHtml(item.name);
-    var image = photo
-      ? '<img src="' + Store.escapeHtml(photo) + '" alt="">'
-      : '<i class="fas fa-paw" aria-hidden="true"></i>';
-    var nameHtml = url
-      ? '<a class="cart-name" href="' + Store.escapeHtml(url) + '">' + name + "</a>"
-      : '<span class="cart-name">' + name + "</span>";
-    var atLimit = item.quantity >= Store.stockOf(item);
+function renderCart() {
+    let cart = JSON.parse(localStorage.getItem('petshop_cart')) || [];
+    let tbody = document.getElementById('cart-items');
+    let emptyMsg = document.getElementById('empty-cart');
+    tbody.innerHTML = '';
 
-    return (
-      '<article class="cart-item" data-id="' + Store.escapeHtml(item.id) + '">' +
-        '<div class="cart-photo">' + image + "</div>" +
-        '<div class="cart-info">' + nameHtml +
-          '<div class="cart-unit">' + Store.formatRupiah(item.price) + " each</div>" +
-        "</div>" +
-        '<div class="qty-control" aria-label="Quantity of ' + name + '">' +
-          '<button type="button" data-action="minus" aria-label="Decrease quantity"' + (item.quantity <= 1 ? " disabled" : "") + ">−</button>" +
-          "<span>" + item.quantity + "</span>" +
-          '<button type="button" data-action="plus" aria-label="Increase quantity"' + (atLimit ? " disabled" : "") + ">+</button>" +
-        "</div>" +
-        '<div class="cart-subtotal">' + Store.formatRupiah(item.price * item.quantity) + "</div>" +
-        '<button type="button" class="cart-remove" data-action="remove" aria-label="Remove ' + name + '">' +
-          '<i class="fas fa-trash" aria-hidden="true"></i></button>' +
-      "</article>"
-    );
-  }
+    if (cart.length === 0) {
+        emptyMsg.style.display = 'block';
+        document.querySelector('.cart-table').style.display = 'none';
+        document.querySelector('.summary-card').style.display = 'none';
+    } else {
+        emptyMsg.style.display = 'none';
+        document.querySelector('.cart-table').style.display = 'table';
+        document.querySelector('.summary-card').style.display = 'block';
+        
+        cart.forEach((item, index) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="cart-item-photo">
+                                ${item.photo ? `<img src="${item.photo}" alt="foto">` : '<span>Foto</span>'}
+                            </div>
+                            <span class="fw-semibold">${escapeHtml(item.name)}</span>
+                        </div>
+                    </td>
+                    <td>${formatRupiah(item.price)}</td>
+                    <td>
+                        <div class="quantity-control">
+                            <button class="qty-minus" data-index="${index}">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="qty-plus" data-index="${index}">+</button>
+                        </div>
+                    </td>
+                    <td class="fw-bold">${formatRupiah(item.price * item.quantity)}</td>
+                    <td><button class="btn-delete" data-index="${index}"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `;
+        });
 
-  function render() {
-    var cart = Store.getCart();
-    var list = document.getElementById("cart-items");
-    var empty = document.getElementById("empty-cart");
-    var summary = document.getElementById("cart-summary-col");
-    var isEmpty = cart.length === 0;
-
-    list.innerHTML = cart.map(itemHtml).join("");
-    list.hidden = isEmpty;
-    empty.hidden = !isEmpty;
-    summary.hidden = isEmpty;
-
-    var total = Store.formatRupiah(Store.cartTotal());
-    document.getElementById("summary-items").textContent = Store.cartCount();
-    document.getElementById("subtotal").textContent = total;
-    document.getElementById("total").textContent = total;
-  }
-
-  document.addEventListener("click", function (event) {
-    var button = event.target.closest("[data-action]");
-    var row = event.target.closest(".cart-item");
-    if (!button || !row) return;
-
-    var id = row.dataset.id;
-    var item = Store.getCart().filter(function (entry) { return String(entry.id) === id; })[0];
-    if (!item) return;
-
-    if (button.dataset.action === "plus") Store.setQuantity(id, item.quantity + 1);
-    if (button.dataset.action === "minus") Store.setQuantity(id, item.quantity - 1);
-    if (button.dataset.action === "remove") {
-      Store.removeItem(id);
-      Store.showToast("Removed " + item.name);
+        // Tambahkan event listener setelah elemen dibuat
+        document.querySelectorAll('.qty-minus').forEach(btn => {
+            btn.addEventListener('click', function() { updateQty(this.dataset.index, -1); });
+        });
+        document.querySelectorAll('.qty-plus').forEach(btn => {
+            btn.addEventListener('click', function() { updateQty(this.dataset.index, 1); });
+        });
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function() { deleteItem(this.dataset.index); });
+        });
     }
-    render();
-  });
+    updateSummary();
+    updateCartCount();
+}
 
-  window.addEventListener("storage", render);
-  document.addEventListener("DOMContentLoaded", render);
-})();
+function updateQty(index, change) {
+    let cart = JSON.parse(localStorage.getItem('petshop_cart')) || [];
+    cart[index].quantity += change;
+    if (cart[index].quantity <= 0) cart.splice(index, 1);
+    localStorage.setItem('petshop_cart', JSON.stringify(cart));
+    renderCart();
+}
+
+function deleteItem(index) {
+    let cart = JSON.parse(localStorage.getItem('petshop_cart')) || [];
+    cart.splice(index, 1);
+    localStorage.setItem('petshop_cart', JSON.stringify(cart));
+    renderCart();
+}
+
+function updateSummary() {
+    let cart = JSON.parse(localStorage.getItem('petshop_cart')) || [];
+    let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    document.getElementById('subtotal').textContent = formatRupiah(subtotal);
+    document.getElementById('total').textContent = formatRupiah(subtotal + (cart.length > 0 ? 10000 : 0));
+}
+
+function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('petshop_cart')) || [];
+    let total = cart.reduce((sum, item) => sum + item.quantity, 0);
+    let badge = document.getElementById('cart-count');
+    if (badge) badge.textContent = total;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderCart();
+
+    // Tangani tombol checkout dengan membaca data attribute dari HTML
+    const checkoutBtn = document.getElementById('btn-checkout');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', function() {
+            let cart = JSON.parse(localStorage.getItem('petshop_cart')) || [];
+            if (cart.length === 0) { 
+                alert('Keranjang Anda masih kosong!'); 
+                return; 
+            }
+            window.location.href = this.getAttribute('data-checkout-url');
+        });
+    }
+});

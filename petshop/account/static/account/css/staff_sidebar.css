@@ -1,0 +1,61 @@
+/* Token warna sidebar. Terang = default; gelap lewat <html data-theme="dark"> (diatur staff_sidebar.js). */
+:root {
+  --ss-bg: #f3eefc; --ss-border: #e4dcf5; --ss-text: #1c1730; --ss-muted: #5b4f7a;
+  --ss-brand: #6a3fc4; --ss-brand-ink: #fff; --ss-logo-bg: #e9dffb; --ss-hover: #e9dffb;
+  --ss-active: #7a4dd0; --ss-active-ink: #fff; --ss-outline: #1c1730;
+}
+html[data-theme="dark"] {
+  --ss-bg: #161a2b; --ss-border: #2a3050; --ss-text: #e4e8fb; --ss-muted: #9aa3c4;
+  --ss-brand: #b9a3ef; --ss-brand-ink: #161a2b; --ss-logo-bg: #2d2a52; --ss-hover: #262c48;
+  --ss-active: #7a4dd0; --ss-active-ink: #fff; --ss-outline: #aab3d6;
+}
+
+/* Sidebar admin yang bisa ditutup. Bekerja di halaman mana pun yang meng-include-nya setelah <body>. */
+.staff-sidebar, .staff-sidebar *, .staff-topbar, .staff-topbar * { box-sizing: border-box; }
+.staff-sidebar, .staff-topbar { font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+body:has(.staff-sidebar) { transition: padding-left 0.2s ease; }
+
+/* Topbar: tombol buka menu (selalu di HP, di desktop hanya saat sidebar ditutup) */
+.staff-topbar { position: sticky; top: 0; z-index: 1020; display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; background: var(--ss-bg); border-bottom: 1px solid var(--ss-border); }
+.staff-burger, .staff-close { width: 44px; height: 44px; flex: none; display: inline-flex; align-items: center; justify-content: center; border: 1.5px solid var(--ss-brand); border-radius: 12px; background: transparent; color: var(--ss-brand); cursor: pointer; transition: background 0.15s, color 0.15s; }
+.staff-burger { font-size: 1.5rem; }
+.staff-close { font-size: 1rem; margin-left: auto; }
+.staff-burger:hover, .staff-close:hover { background: var(--ss-brand); color: var(--ss-brand-ink); }
+.staff-burger:focus-visible, .staff-close:focus-visible, .staff-link:focus-visible, .staff-logout:focus-visible { outline: 3px solid #f0a63c; outline-offset: 2px; }
+
+/* Sidebar (default = tertutup) */
+.staff-sidebar { position: fixed; top: 0; bottom: 0; left: 0; z-index: 1040; width: 264px; max-width: 85vw; display: flex; flex-direction: column; padding: 1.25rem 0.875rem; overflow-y: auto; background: var(--ss-bg); border-right: 1px solid var(--ss-border); transform: translateX(-100%); visibility: hidden; transition: transform 0.2s ease, visibility 0s linear 0.2s; }
+html.staff-open .staff-sidebar { transform: none; visibility: visible; transition: transform 0.2s ease; }
+.staff-backdrop { position: fixed; inset: 0; z-index: 1035; background: rgba(28, 23, 48, 0.45); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+html.staff-open .staff-backdrop { opacity: 1; pointer-events: auto; }
+
+.staff-brand { display: flex; align-items: center; gap: 0.6rem; padding: 0 0.25rem 1rem 0.5rem; }
+.staff-logo { width: 36px; height: 36px; flex: none; border-radius: 50%; background: var(--ss-logo-bg); color: var(--ss-brand); display: flex; align-items: center; justify-content: center; font-weight: 800; }
+.staff-brand-name { font-weight: 800; font-size: 1.15rem; color: var(--ss-brand); }
+.staff-nav { display: flex; flex-direction: column; }
+.staff-group { margin: 0; padding: 1rem 0.6rem 0.35rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ss-muted); }
+.staff-link { display: flex; align-items: center; gap: 0.75rem; min-height: 44px; padding: 0 0.75rem; border-radius: 12px; color: var(--ss-text); font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: background 0.15s; }
+.staff-link i { font-size: 1.15rem; flex: none; }
+.staff-link:hover { background: var(--ss-hover); color: var(--ss-text); }
+.staff-link.is-active { background: var(--ss-active); color: var(--ss-active-ink); }
+.staff-foot { margin-top: auto; padding-top: 1.1rem; border-top: 1px solid var(--ss-border); display: flex; flex-direction: column; gap: 0.6rem; }
+.staff-who { border: 1.5px solid var(--ss-outline); border-radius: 999px; padding: 0.5rem 1rem; text-align: center; font-weight: 700; font-size: 0.9rem; color: var(--ss-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.staff-logout-form { margin: 0; display: flex; flex-direction: column; }
+.staff-logout { min-height: 44px; border: 1.5px solid var(--ss-brand); border-radius: 999px; background: transparent; color: var(--ss-brand); font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.staff-logout:hover { background: var(--ss-brand); color: var(--ss-brand-ink); }
+
+/* Desktop: terbuka secara default, konten bergeser; bisa ditutup (html.staff-collapsed) */
+@media (min-width: 992px) {
+  .staff-backdrop { display: none; }
+  html:not(.staff-collapsed) .staff-sidebar { transform: none; visibility: visible; transition: transform 0.2s ease; }
+  html:not(.staff-collapsed) body:has(.staff-sidebar) { padding-left: 264px; }
+  html:not(.staff-collapsed) .staff-topbar { display: none; }
+}
+
+/* Tombol mode gelap */
+.staff-theme { min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: 1.5px solid var(--ss-border); border-radius: 999px; background: transparent; color: var(--ss-text); font: 600 0.9rem "Plus Jakarta Sans", system-ui, sans-serif; cursor: pointer; transition: background 0.15s; }
+.staff-theme:hover { background: var(--ss-hover); }
+.staff-theme:focus-visible { outline: 3px solid #f0a63c; outline-offset: 2px; }
+.staff-theme-icon { margin-left: auto; font-size: 1.15rem; }
+.staff-theme-icon .bi { pointer-events: none; }
+html:not([data-theme="dark"]) .when-dark, html[data-theme="dark"] .when-light { display: none !important; }

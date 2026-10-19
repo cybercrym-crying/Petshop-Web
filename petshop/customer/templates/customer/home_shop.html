@@ -1,122 +1,144 @@
 {% extends "customer/base.html" %}
 {% load static %}
-{% block title %}Seelly Petshop - Everything your pet needs{% endblock %}
+{% block title %}Belanja - Seelly Petshop{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}">
 {% endblock %}
 {% block content %}
+    {% if results is not None %}
+        <!-- HASIL FILTER / PENCARIAN / FAVORIT -->
+        <section class="container section" id="produk" aria-label="{{ results_title }}">
+            <div class="section-head">
+                <h2 class="section-title">{{ results_title }}</h2>
+                <a href="{% url 'customer:shop' %}" class="view-all">Kembali ke Belanja <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <p class="muted" id="shop-sub">{{ results|length }} produk</p>
+            <div class="product-grid"
+                 id="product-grid"
+                 {% if wishlist_mode %}data-wishlist-mode{% endif %}>
+                {% for item in results %}
+                    {% include "customer/_product_card.html" %}
+                {% empty %}
+                    <p class="muted">Tidak ada produk yang cocok.</p>
+                {% endfor %}
+            </div>
+            {% if wishlist_mode %}
+                <p class="muted" id="wishlist-empty" hidden>Belum ada produk favorit. Tekan ikon hati pada produk untuk menyimpannya.</p>
+            {% endif %}
+        </section>
+    {% endif %}
     <!-- HERO -->
     <section class="hero">
         <div class="container hero-grid">
             <div class="hero-copy">
-                <span class="hero-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> Your pet's favourite shop</span>
+                <span class="hero-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> Toko favorit hewan kesayangan Anda</span>
                 <h1>
-                    Everything your pet
+                    Semua kebutuhan hewan
                     <br>
-                    needs in one place
+                    peliharaan di satu tempat
                 </h1>
-                <p>Food, toys, accessories and more for your best friend.</p>
+                <p>Makanan, mainan, aksesori, dan lainnya untuk sahabat terbaik Anda.</p>
                 <div class="hero-actions">
-                    <a href="{% url 'customer:shop' %}" class="btn-primary-seelly btn-lg">Shop Now</a>
-                    <a href="#how-to-order" class="btn-ghost">How to order</a>
+                    <a href="#popular" class="btn-primary-seelly btn-lg">Belanja Sekarang</a>
+                    <a href="#how-to-order" class="btn-ghost">Cara Memesan</a>
                 </div>
             </div>
             <div class="hero-art">
                 <img src="{% static 'customer/img/puppy.png' %}"
-                     alt="A dog and a cat sitting beside a bowl of food"
+                     alt="Anjing dan kucing duduk di samping mangkuk makanan"
                      width="450"
                      height="637">
             </div>
         </div>
     </section>
-    <!-- CATEGORIES -->
+    <!-- KATEGORI -->
     <section class="container section" id="categories">
         <div class="section-head">
-            <h2 class="section-title">Shop by Category</h2>
+            <h2 class="section-title">Belanja per Kategori</h2>
         </div>
         <div class="category-row">
             {% for category in categories %}
                 <a class="category-item"
-                   href="{% url 'customer:shop' %}?category={{ category.code }}">
+                   href="{% url 'customer:shop' %}?category={{ category.code }}#produk">
                     <span class="category-circle"><img src="{% static category.image %}" alt="" loading="lazy"></span>
                     <span class="category-name">{{ category.label }}</span>
-                    <span class="category-count">{{ category.count }} product{{ category.count|pluralize }}</span>
+                    <span class="category-count">{{ category.count }} produk</span>
                 </a>
+            {% empty %}
+                <p class="muted">Belum ada kategori.</p>
             {% endfor %}
         </div>
     </section>
-
-    <!-- POPULAR PRODUCT -->
+    <!-- PRODUK POPULER -->
     <section class="container section" id="popular">
         <div class="section-head">
-            <h2 class="section-title">Popular Product</h2>
-            <a href="{% url 'customer:shop' %}" class="view-all">view all <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <h2 class="section-title">Produk Populer</h2>
+            <a href="{% url 'customer:cart' %}" class="view-all">Lihat Keranjang <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
         </div>
         <div class="carousel">
-            <button type="button" class="carousel-btn prev" id="popular-prev" aria-label="Previous products">
+            <button type="button" class="carousel-btn prev" id="popular-prev" aria-label="Produk sebelumnya">
                 <i class="fas fa-chevron-left" aria-hidden="true"></i>
             </button>
             <div class="carousel-track" id="popular-track">
                 {% for item in popular_products %}
                     {% include "customer/_product_card.html" %}
                 {% empty %}
-                    <p class="muted">No products available yet.</p>
+                    <p class="muted">Belum ada produk. Silakan cek lagi nanti!</p>
                 {% endfor %}
             </div>
-            <button type="button" class="carousel-btn next" id="popular-next" aria-label="Next products">
+            <button type="button" class="carousel-btn next" id="popular-next" aria-label="Produk berikutnya">
                 <i class="fas fa-chevron-right" aria-hidden="true"></i>
             </button>
         </div>
     </section>
-
-    <!-- HOW TO ORDER -->
-    <section class="container section" id="how-to-order" aria-label="How to order">
+    <!-- CARA MEMESAN -->
+    <section class="container section" id="how-to-order" aria-label="Cara memesan">
         <div class="section-head">
-            <h2 class="section-title">How to Order</h2>
+            <h2 class="section-title">Cara Memesan</h2>
         </div>
         <div class="steps">
             <div class="step-card">
                 <span class="step-icon"><i class="fas fa-cart-shopping" aria-hidden="true"></i></span>
                 <div>
-                    <h3>1. Pick your products</h3>
-                    <p>Add what your pet needs to the cart.</p>
+                    <h3>1. Pilih produk</h3>
+                    <p>Masukkan kebutuhan hewan Anda ke keranjang.</p>
                 </div>
             </div>
             <div class="step-card">
                 <span class="step-icon"><i class="fab fa-whatsapp" aria-hidden="true"></i></span>
                 <div>
-                    <h3>2. Send via WhatsApp</h3>
-                    <p>Your order goes straight to our admin.</p>
+                    <h3>2. Kirim lewat WhatsApp</h3>
+                    <p>Pesanan Anda langsung masuk ke admin kami.</p>
                 </div>
             </div>
             <div class="step-card">
                 <span class="step-icon"><i class="fas fa-truck-fast" aria-hidden="true"></i></span>
                 <div>
-                    <h3>3. We confirm &amp; deliver</h3>
-                    <p>Pay and receive it at your door.</p>
+                    <h3>3. Kami konfirmasi &amp; antar</h3>
+                    <p>Bayar dan terima pesanan di depan pintu Anda.</p>
                 </div>
             </div>
         </div>
     </section>
-    <!-- ABOUT -->
+    <!-- TENTANG -->
     <section class="container section" id="about">
         <div class="about-card">
             <div>
-                <h2 class="section-title">About Seelly Petshop</h2>
+                <h2 class="section-title">Tentang Seelly Petshop</h2>
                 <p>
-                    We are a neighbourhood petshop that wants every pet to eat well, play often and stay healthy.
-                    Browse our range, send your order on WhatsApp, and our team will confirm the total and arrange delivery.
+                    Kami toko hewan yang ingin setiap hewan makan dengan baik, bermain, dan tetap sehat.
+                    Lihat produk kami, kirim pesanan lewat WhatsApp, dan tim kami akan mengonfirmasi total serta mengatur pengantaran.
                 </p>
             </div>
             <ul class="about-points">
                 <li>
-                    <i class="fas fa-circle-check" aria-hidden="true"></i> Carefully selected products
+                    <i class="fas fa-circle-check" aria-hidden="true"></i> Produk dipilih dengan cermat
                 </li>
                 <li>
-                    <i class="fas fa-circle-check" aria-hidden="true"></i> Friendly help on WhatsApp
+                    <i class="fas fa-circle-check" aria-hidden="true"></i> Dibantu ramah lewat WhatsApp
                 </li>
                 <li>
-                    <i class="fas fa-circle-check" aria-hidden="true"></i> Fast, careful delivery
+                    <i class="fas fa-circle-check" aria-hidden="true"></i> Pengantaran cepat dan hati-hati
                 </li>
             </ul>
         </div>

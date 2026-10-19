@@ -71,13 +71,20 @@ def make_transaction(request):
 @roleRequired(Role.ADMIN)
 def add_to_cart(request, pk):
     if request.method == "POST":
-        product = get_object_or_404(Product, pk=pk)
+        product = get_object_or_404(Product.objects.sellable(), pk=pk)
         cart = _get_or_create_cart(request.user)
         if product.stock <= 0:
             messages.error(request, f"Stok '{product.name}' habis.")
         else:
             item, created = CartItem.objects.get_or_create(cart=cart, product=product)
             if not created:
+                if item.quantity >= product.stock:
+                    messages.error(
+                        request,
+                        f"Stok '{product.name}' hanya {product.stock}, "
+                        "semuanya sudah ada di keranjang.",
+                    )
+                    return redirect("transaction:make_transaction")
                 item.quantity = F("quantity") + 1
                 item.save(update_fields=["quantity"])
             messages.success(request, f"'{product.name}' ditambahkan.")

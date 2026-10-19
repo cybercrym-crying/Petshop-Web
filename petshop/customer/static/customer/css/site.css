@@ -163,3 +163,10 @@ a.icon-btn { text-decoration: none; display: inline-flex; align-items: center; j
     .sx-stat span { font-size: 0.8rem; }
     .sx-btn-outline, .sx-btn-solid, .sx-btn-light { min-height: 48px; }
 }
+
+/* label menu bahasa Indonesia lebih panjang: jaga tetap satu baris dan muat di lebar 1200 */
+.navbar-seelly .nav-link-custom { white-space: nowrap; }
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .navbar-seelly .nav-link-custom { margin-left: 1rem; }
+    .sx-search .search-bar { width: 190px; }
+}
