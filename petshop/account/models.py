@@ -23,9 +23,7 @@ class User(AbstractUser):
 
 class Customer(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
-    phone_number = models.CharField(
-        max_length=20, null=False, blank=False, unique=True
-    )
+    phone_number = models.CharField(max_length=20, null=False, blank=False, unique=True)
     address = models.CharField(max_length=255, null=False, blank=False)
 
     @property

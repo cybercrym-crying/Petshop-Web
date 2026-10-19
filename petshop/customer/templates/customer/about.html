@@ -14,45 +14,50 @@
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
               rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'customer/css/catalog.css' %}?v=2">
-        <link rel="stylesheet" href="{% static 'customer/css/site.css' %}?v=4">
+        <!-- Panggil CSS Global dan CSS Khusus About -->
+        <link rel="stylesheet" href="{% static 'customer/css/home.css' %}?v=5">
+        <link rel="stylesheet" href="{% static 'customer/css/about.css' %}?v=1">
     </head>
     <body class="sx">
         {% include "customer/_site_nav.html" with active="about" %}
-        <header class="sx-hero-wrap">
-            <div class="sx-hero sx-hero-about">
-                <div class="row align-items-center g-4">
+        <!-- HERO SECTION (Sesuai Mockup Layout) -->
+        <header class="about-hero-section">
+            <div class="container">
+                <div class="row align-items-center">
                     <div class="col-lg-6">
-                        <div class="sx-crumb">
-                            <a href="{% url 'customer:home' %}">Beranda</a> / Tentang Kami
+                        <div class="about-hero-content">
+                            <div class="about-breadcrumb">
+                                <a href="{% url 'customer:home' %}">Beranda</a> / Tentang Kami
+                            </div>
+                            <h1 class="about-hero-title">
+                                Kisah Kami:
+                                <br>
+                                <span>Perawatan yang Datang
+                                    <br>
+                                dari Hati</span>
+                            </h1>
+                            <p class="about-hero-subtext">
+                                Di Seelly Petshop, setiap hewan peliharaan diperlakukan seperti keluarga. Tujuan kami sederhana: membantu menjaga hewan peliharaan tetap sehat dan bahagia.
+                            </p>
                         </div>
-                        <h1>
-                            Kisah Kami:
-                            <br>
-                            <span>Perawatan yang Datang dari Hati</span>
-                        </h1>
-                        <p>Seelly Petshop adalah toko hewan yang dibangun oleh pecinta hewan, untuk pecinta hewan.</p>
                     </div>
                     <div class="col-lg-6">
-                        <div class="sx-hero-photo">
+                        <div class="about-hero-img-wrap">
+                            <!-- Ganti dengan foto kura-kura/toko Anda yang beresolusi pas -->
                             <img src="{% static 'customer/img/about-hero.jpg' %}"
-                                 width="860"
-                                 height="533"
-                                 alt="Kura-kura raksasa berjalan di atas rumput">
+                                 alt="Tampilan Toko atau Hewan Peliharaan">
                         </div>
                     </div>
                 </div>
             </div>
         </header>
-        <!-- WHO WE ARE -->
-        <section class="container sx-section">
-            <div class="row align-items-center g-5">
+        <!-- WHO WE ARE SECTION -->
+        <section class="container mb-5">
+            <div class="row g-5 align-items-center">
                 <div class="col-lg-6">
-                    <div class="sx-photo">
+                    <div class="about-hero-img-wrap" style="background-color: #d1d5db;">
                         <img src="{% static 'customer/img/about-collage.jpg' %}"
-                             width="1200"
-                             height="900"
-                             alt="Corgi dengan semangkuk makanan kering, mainan kucing, dan obat hewan">
+                             alt="Kolase foto hewan">
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -62,29 +67,27 @@
                         <br>
                         Kami Pecinta Hewan
                     </h2>
-                    <p class="sx-lead">
-                        Kami percaya setiap hewan adalah bagian dari keluarga. Karena itu kami memilih produk dengan hati-hati dan menjawab pertanyaan Anda dengan jujur.
+                    <p class="sx-lead mb-4">
+                        Seelly Petshop dimulai sebagai toko kecil yang dikelola oleh beberapa teman yang sekadar mencintai hewan. Apa yang membedakan kami adalah kami meluangkan waktu untuk mengenal setiap hewan peliharaan. Tim kami meluangkan waktu untuk mendengarkan, merekomendasikan apa yang benar-benar dibutuhkan hewan Anda, dan hanya menjanjikan apa yang bisa kami penuhi.
                     </p>
-                    <p class="sx-lead">
-                        Memesan itu mudah: pilih yang dibutuhkan, kirim lewat WhatsApp, lalu kami konfirmasi dan antar sampai rumah.
-                    </p>
-                    <div class="row g-3 mt-2">
+                    <!-- Stats Boxes Horizontal -->
+                    <div class="row g-3">
                         <div class="col-4">
-                            <div class="sx-stat">
-                                <b>{{ stats.products }}</b>
+                            <div class="about-stat-box">
+                                <b>{{ stats.products|default:"-" }}</b>
                                 <span>Produk</span>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="sx-stat">
-                                <b>{{ stats.orders }}</b>
-                                <span>Pesanan terkirim</span>
+                            <div class="about-stat-box">
+                                <b>{{ stats.customers|default:"-" }}</b>
+                                <span>Pelanggan</span>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="sx-stat">
-                                <b>{{ stats.customers }}</b>
-                                <span>Pelanggan</span>
+                            <div class="about-stat-box">
+                                <b>{{ stats.orders|default:"-" }}</b>
+                                <span>Pesanan</span>
                             </div>
                         </div>
                     </div>
@@ -92,111 +95,96 @@
             </div>
         </section>
         <!-- VISION & MISSION -->
-        <section class="container sx-section pt-0">
+        <section class="container mb-5">
             <div class="row g-4">
-                <div class="col-md-5">
-                    <div class="sx-vision">
-                        <span class="sx-feat-icon light"><i class="fas fa-eye"></i></span>
+                <!-- Vision (Dark Card) -->
+                <div class="col-md-6">
+                    <div class="vm-card dark">
+                        <i class="fas fa-paw paw-watermark"></i>
+                        <div class="vm-icon-wrap">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
                         <h3>Visi Kami</h3>
-                        <p>Menjadi toko hewan yang dipercaya keluarga untuk produk berkualitas, saran yang jujur, serta hewan yang sehat dan bahagia.</p>
+                        <p>Menjadi mitra perawatan hewan peliharaan yang paling dipercaya di setiap komunitas, di mana setiap hewan peliharaan hidup dengan sehat, dicintai, dan bahagia.</p>
                     </div>
                 </div>
-                <div class="col-md-7">
-                    <div class="sx-mission">
-                        <span class="sx-feat-icon"><i class="fas fa-flag"></i></span>
+                <!-- Mission (Light Card) -->
+                <div class="col-md-6">
+                    <div class="vm-card light">
+                        <i class="fas fa-paw paw-watermark"></i>
+                        <div class="vm-icon-wrap">
+                            <i class="fas fa-flag"></i>
+                        </div>
                         <h3>Misi Kami</h3>
                         <ul>
-                            <li>Menyediakan produk berkualitas untuk setiap tahap kehidupan hewan.</li>
-                            <li>Memberikan layanan yang ramah dan jujur yang bisa diandalkan.</li>
-                            <li>Membuat pemesanan mudah dan pengiriman dapat diandalkan.</li>
+                            <li>Menyediakan produk berkualitas dan aman untuk setiap tahap kehidupan hewan.</li>
+                            <li>Memberikan layanan yang ramah, profesional, dan jujur.</li>
+                            <li>Mengedukasi pemilik hewan agar mereka dapat merawat dengan percaya diri.</li>
+                            <li>Membuat pengalaman berbelanja menjadi mudah bagi setiap keluarga.</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </section>
-        <!-- VALUES: galeri foto yang bisa digeser -->
-        <section class="container sx-section pt-0" aria-labelledby="values-title">
-            <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
-                <div>
-                    <span class="sx-kicker"><i class="fas fa-paw"></i> Nilai Kami</span>
-                    <h2 class="sx-h2 mb-1" id="values-title">Yang Kami Yakini</h2>
-                    <p class="sx-lead mb-0">Janji yang memandu semua yang kami lakukan, setiap hari.</p>
-                </div>
-                <div class="sx-rail-nav">
-                    <button type="button" id="rail-prev" class="sx-rail-btn" aria-label="Nilai sebelumnya" disabled>
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <button type="button" id="rail-next" class="sx-rail-btn" aria-label="Nilai berikutnya">
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
+        <!-- VALUES (What We Believe In - GRID LAYOUT) -->
+        <section class="container mb-5">
+            <div class="values-header">
+                <span class="sx-kicker"><i class="fas fa-paw"></i> Nilai Kami</span>
+                <h2 class="sx-h2">Yang Kami Yakini</h2>
+                <p class="sx-lead">Janji yang memandu semua yang kami lakukan, setiap hari.</p>
             </div>
-            <div class="sx-rail"
-                 id="values-rail"
-                 tabindex="0"
-                 role="region"
-                 aria-label="Nilai-nilai kami, geser ke samping">
-                    <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-quality.jpg' %}" width="600" height="600" loading="lazy" alt="Sekantong makanan kucing Whiskas">
-                        <div class="sx-vp-body">
-                            <h3>Kualitas Terpercaya</h3>
-                            <p>Kami menawarkan produk dan layanan yang kami percayai, untuk hewan maupun mitra.</p>
-                        </div>
-                    </article>
-                    <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-care.jpg' %}" width="600" height="600" loading="lazy" alt="Corgi duduk menatap ke atas">
-                        <div class="sx-vp-body">
-                            <h3>Layanan Penuh Perhatian</h3>
-                            <p>Tim kami ramah, sabar, dan bersemangat merawat hewan.</p>
-                        </div>
-                    </article>
-                    <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-order.jpg' %}" width="600" height="600" loading="lazy" alt="Kalung anjing kulit hitam">
-                        <div class="sx-vp-body">
-                            <h3>Pemesanan Mudah</h3>
-                            <p>Pemesanan online yang mudah, konfirmasi sederhana, dan pengiriman sampai rumah.</p>
-                        </div>
-                    </article>
-                    <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-happy.jpg' %}" width="600" height="600" loading="lazy" alt="Kura-kura raksasa di atas rumput">
-                        <div class="sx-vp-body">
-                            <h3>Hewan Bahagia</h3>
-                            <p>Hewan sehat, keluarga bahagia. Itu janji kami.</p>
-                        </div>
-                    </article>
-                    <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-health.jpg' %}" width="600" height="600" loading="lazy" alt="Aneka tablet dan kapsul obat hewan">
-                        <div class="sx-vp-body">
-                            <h3>Pilihan Sehat</h3>
-                            <p>Produk perawatan agar hewan peliharaan tetap prima sepanjang tahun.</p>
-                        </div>
-                    </article>
-                    <article class="sx-vp">
-                        <img src="{% static 'customer/img/val-essentials.jpg' %}" width="600" height="600" loading="lazy" alt="Semangkuk makanan kering hewan">
-                        <div class="sx-vp-body">
-                            <h3>Kebutuhan Sehari-hari</h3>
-                            <p>Dari mangkuk makan sampai waktu bermain, kami menyediakan yang dipakai hewan setiap hari.</p>
-                        </div>
-                    </article>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Kualitas Terpercaya</h3>
+                    <p>Kami hanya menawarkan produk dan layanan dari merek serta mitra terpercaya.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3>Layanan Profesional</h3>
+                    <p>Tim kami terlatih, sabar, dan bersemangat dalam merawat hewan peliharaan.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Layanan Praktis</h3>
+                    <p>Pemesanan online yang mudah dan layanan antar sampai rumah untuk Anda yang sibuk.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Hewan Bahagia</h3>
+                    <p>Hewan peliharaan yang sehat, keluarga yang bahagia. Itulah janji utama kami kepada Anda.</p>
+                </div>
             </div>
         </section>
-        <!-- CTA -->
-        <section class="container pb-5">
-            <div class="sx-cta">
-                <div>
-                    <span class="sx-kicker light"><i class="fas fa-paw"></i> Sapa Kami</span>
-                    <h2>Kunjungi Kami atau Hubungi Kami</h2>
-                    {% if store_address %}<p class="mb-1">{{ store_address }}</p>{% endif %}
-                    <p>Ada pertanyaan tentang produk atau pesanan? Kirim pesan lewat WhatsApp.</p>
+        <!-- CTA BANNER -->
+        <section class="container mb-5">
+            <div class="about-cta-banner">
+                <div class="about-cta-content">
+                    <i class="fas fa-paw about-cta-paw"></i>
+                    <div class="about-cta-text">
+                        <span class="sx-kicker" style="color: var(--sx-deep);">Sapa Kami</span>
+                        <h2>Kunjungi Kami atau Hubungi Kami</h2>
+                        <p>{% if store_address %}{{ store_address }}{% else %}Kami siap melayani kebutuhan hewan Anda.{% endif %}</p>
+                    </div>
                 </div>
                 <a href="{{ wa_link }}"
                    target="_blank"
                    rel="noopener"
-                   class="sx-btn-light"><i class="fab fa-whatsapp"></i> Hubungi Kami</a>
+                   class="about-cta-btn">
+                    Hubungi Kami <i class="fas fa-arrow-right ms-2"></i>
+                </a>
             </div>
         </section>
         {% include "customer/_site_footer.html" %}
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="{% static 'customer/js/catalog.js' %}?v=4"></script>
-        <script src="{% static 'customer/js/about.js' %}"></script>
     </body>
 </html>

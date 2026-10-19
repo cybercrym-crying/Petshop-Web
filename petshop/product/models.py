@@ -26,8 +26,6 @@ class Category(models.Model):
 
 
 class PetType(models.TextChoices):
-    """Hewan yang dituju produk. ALL = cocok untuk semua hewan (muncul di filter hewan mana pun)."""
-
     ALL = "ALL", "All pets"
     CAT = "CAT", "Cat"
     DOG = "DOG", "Dog"
