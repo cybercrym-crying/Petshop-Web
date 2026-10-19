@@ -16,30 +16,47 @@
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
               rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'customer/css/catalog.css' %}?v=2">
-        <link rel="stylesheet" href="{% static 'customer/css/site.css' %}?v=4">
+        <link rel="stylesheet" href="{% static 'customer/css/home.css' %}">
     </head>
     <body class="sx">
         {% include "customer/_site_nav.html" with active="home" %}
-        <!-- HERO -->
+        <!-- HERO-->
         <header class="sx-hero-wrap">
-            <div class="sx-hero">
-                <div class="row align-items-end g-4">
-                    <div class="col-lg-7 pb-lg-3">
-                        <span class="sx-eyebrow"><i class="fas fa-paw"></i> Hewan Sehat, Hidup Lebih Bahagia</span>
-                        <h1>
-                            Semua Kebutuhan Hewan Peliharaan, Ada di <span>Satu Tempat</span>
+            <div class="sx-hero-premium">
+                <div class="row align-items-center g-5 position-relative">
+                    <div class="col-lg-6 col-xl-7">
+                        <div class="hero-chip">
+                            <i class="fas fa-paw"></i> Hewan Sehat, Hidup Bahagia
+                        </div>
+                        <h1 class="hero-heading">
+                            Semua Kebutuhan Hewan Peliharaan,
+                            <br>
+                            Ada di <span>Satu Tempat</span>
                         </h1>
-                        <p>Makanan, mainan, perawatan kesehatan, dan aksesori untuk sahabat berbulu kesayangan. Pesan dalam hitungan menit, kami antar sampai rumah.</p>
-                        <a href="{% url 'customer:shop' %}"
-                           class="sx-btn-outline">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
+                        <p class="hero-subtext">
+                            Makanan, mainan, perawatan kesehatan, dan aksesori untuk sahabat berbulu kesayangan. Pesan dalam hitungan menit, kami antar sampai rumah.
+                        </p>
+                        <div class="hero-btn-group">
+                            <a href="{% url 'customer:shop' %}" class="btn-hero-primary">
+                                Belanja Sekarang <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <a href="#kategori" class="btn-hero-secondary">Jelajahi Kategori</a>
+                        </div>
                     </div>
-                    <div class="col-lg-5 text-center">
-                        <img src="{% static 'customer/img/hero-corgi.png' %}"
-                             class="sx-hero-img"
-                             width="565"
-                             height="820"
-                             alt="Seekor corgi duduk menatap kamera">
+                    <div class="col-lg-6 col-xl-5 text-center">
+                        <div class="hero-image-wrapper">
+                            <div class="hero-glow"></div>
+                            <img src="{% static 'customer/img/hero-home-dog.jpg' %}"
+                                 class="hero-dog-pic"
+                                 alt="Anjing gagah berwarna cokelat">
+                            <div class="hero-floating-card">
+                                <i class="fas fa-shield-cat"></i>
+                                <div class="text-start">
+                                    <strong>100%</strong>
+                                    <span>Kualitas Premium</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
