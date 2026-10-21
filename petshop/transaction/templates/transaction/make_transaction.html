@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Make Transaction</title>
+        <title>PetAdmin - Buat Transaksi</title>
         <!-- Bootstrap CSS -->
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
         <!-- Bootstrap Icons -->
@@ -28,7 +28,7 @@
                                 <button type="button"
                                         class="btn-close"
                                         data-bs-dismiss="alert"
-                                        aria-label="Close"></button>
+                                        aria-label="Tutup"></button>
                             </div>
                         {% endfor %}
                     </div>
@@ -43,8 +43,8 @@
                             <span class="text-uppercase fw-bold"
                                   style="color: #A3AED0;
                                          font-size: 0.85rem;
-                                         letter-spacing: 1px">Dashboard</span>
-                            <h2 class="fw-bolder mt-1 mb-0" style="color: #2B3674;">Make Transaction</h2>
+                                         letter-spacing: 1px">Dasbor</span>
+                            <h2 class="fw-bolder mt-1 mb-0" style="color: #2B3674;">Buat Transaksi</h2>
                         </div>
                         <form method="get"
                               action="{% url 'transaction:make_transaction' %}"
@@ -56,8 +56,8 @@
                                        name="q"
                                        value="{{ request.GET.q }}"
                                        class="form-control bg-transparent border-0 py-2 shadow-none"
-                                       placeholder="Search for products..."
-                                       aria-label="Search Produk">
+                                       placeholder="Cari produk..."
+                                       aria-label="Cari Produk">
                             </div>
                         </form>
                     </div>
@@ -99,7 +99,7 @@
                                                         </div>
                                                         <div>
                                                             <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% else %}good{% endif %}">
-                                                                Stock {{ p.stock }}
+                                                                Stok {{ p.stock }}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -127,7 +127,7 @@
                     <div class="order-summary-panel h-100 d-flex flex-column sticky-top"
                          style="top: 24px;
                                 max-height: calc(100vh - 48px)">
-                        <h4 class="mb-4 fw-bold" style="color: #ffffff;">Order Summary</h4>
+                        <h4 class="mb-4 fw-bold" style="color: #ffffff;">Ringkasan Order</h4>
                         <div class="order-list pe-2 mb-3" style="overflow-y: auto; flex-grow: 1;">
                             {% for item in cart_items %}
                                 <div class="cart-item">
@@ -180,27 +180,27 @@
                             <form method="post" action="{% url 'transaction:submit_transaction' %}">
                                 {% csrf_token %}
                                 <div class="mb-3">
-                                    <label class="form-label text-white-50 small mb-1">Payment Method</label>
+                                    <label class="form-label text-white-50 small mb-1">Metode Pembayaran</label>
                                     <select name="payment_method"
                                             class="form-select dark-input form-select-sm py-2"
                                             required>
-                                        <option value="CASH">Cash</option>
+                                        <option value="TUNAI">Tunai</option>
                                         <option value="TRANSFER">Transfer</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label text-white-50 small mb-1">Courier</label>
+                                    <label class="form-label text-white-50 small mb-1">Kurir</label>
                                     <select name="courier" class="form-select dark-input form-select-sm py-2">
-                                        <option value="">- Select Courier -</option>
+                                        <option value="">- Pilih Kurir -</option>
                                         {% for c in couriers %}<option value="{{ c.pk }}">{{ c.first_name }} {{ c.last_name }}</option>{% endfor %}
                                     </select>
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label text-white-50 small mb-1">Customer</label>
+                                    <label class="form-label text-white-50 small mb-1">Pelanggan</label>
                                     <select name="customer"
                                             class="form-select dark-input form-select-sm py-2 mb-1"
                                             required>
-                                        <option value="">- Select Customer -</option>
+                                        <option value="">- Pilih Pelanggan -</option>
                                         {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }} ({{ c.phone_number }})</option>{% endfor %}
                                     </select>
                                     <small class="text-white-50 d-block mt-1" style="font-size: 0.75rem;">
@@ -212,12 +212,12 @@
                                     <div class="col-5">
                                         <button type="submit"
                                                 formaction="{% url 'transaction:cancel_transaction' %}"
-                                                class="btn btn-cancel w-100 py-3">Cancel</button>
+                                                class="btn btn-cancel w-100 py-3">Batal</button>
                                     </div>
                                     <div class="col-7">
                                         <button type="submit"
                                                 class="btn btn-submit w-100 py-3 text-uppercase"
-                                                {% if not cart_items %}disabled{% endif %}>Charge</button>
+                                                {% if not cart_items %}disabled{% endif %}>Bayar</button>
                                     </div>
                                 </div>
                             </form>

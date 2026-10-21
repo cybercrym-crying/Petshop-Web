@@ -1,0 +1,2 @@
+class PetshopError(Exception):
+    pass

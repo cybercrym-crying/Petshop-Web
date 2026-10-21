@@ -101,7 +101,7 @@
     var wanted = item.quantity + (quantity || 1);
     if (wanted > stock) {
       wanted = stock;
-      showToast("Only " + stock + " available for " + product.name);
+      showToast("Stok " + product.name + " hanya tersisa " + stock);
     }
     item.quantity = wanted;
     saveCart(cart);
@@ -300,7 +300,7 @@
     if (heart) {
       var added = toggleWishlist(heart.dataset.id);
       syncWishlistButtons();
-      showToast(added ? "Saved to your wishlist" : "Removed from your wishlist");
+      showToast(added ? "Ditambahkan ke favorit" : "Dihapus dari favorit");
     }
   });
 

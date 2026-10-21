@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import Count, F, Q, Sum
 from django.utils import timezone
+from common.exceptions import PetshopError
 from product.models import Product, InsufficientStock
 from account.models import Customer, User, Role
 from .models import (
@@ -21,10 +22,10 @@ from .models import (
 
 # Kolom board = status order. Kolom terbuka tampil semua; kolom selesai dibatasi.
 BOARD_COLUMNS = (
-    (OrderStatus.CONFIRMED, "confirmed", "Confirmed"),
-    (OrderStatus.ON_DELIVERY, "on-delivery", "On delivery"),
-    (OrderStatus.DELIVERED, "delivered", "Delivered"),
-    (OrderStatus.CANCELLED, "cancelled", "Cancelled"),
+    (OrderStatus.CONFIRMED, "confirmed", "Dikonfirmasi"),
+    (OrderStatus.ON_DELIVERY, "on-delivery", "Dalam Pengiriman"),
+    (OrderStatus.DELIVERED, "delivered", "Terkirim"),
+    (OrderStatus.CANCELLED, "cancelled", "Dibatalkan"),
 )
 OPEN_STATUSES = (OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
 CLOSED_COLUMN_LIMIT = 12
@@ -35,7 +36,7 @@ def _resolve_customer(post):
     """Customer dipilih dari dropdown; customer baru ditambah lewat Manage Account."""
     customer = Customer.objects.filter(pk=post.get("customer") or None).first()
     if customer is None:
-        raise CheckoutError("Pilih customer terlebih dahulu.")
+        raise CheckoutError("Pilih pelanggan terlebih dahulu.")
     return customer
 
 
@@ -150,7 +151,7 @@ def submit_transaction(request):
                 payment_method=paymentMethod,
                 courier=courier,
             )
-        except (CheckoutError, InsufficientStock) as e:
+        except PetshopError as e:
             messages.error(request, str(e))
         else:
             messages.success(request, "Transaksi berhasil dibuat.")
@@ -183,10 +184,10 @@ def manage_transaction(request):
 
     def flag_overdue(order):
         # Transfer yang belum dibayar lewat 1 jam. CASH dibayar saat diantar,
-        # jadi belum lunas di awal itu normal dan tidak ditandai.
+        # jadi belum lunas di awal itu normal dan tidak ditandai jadi jangan di hapus .
         order.overdue = (
             order.payment_status == PaymentStatus.PENDING
-            and order.payment_method == PaymentMethod.TRANSFER
+            and order.payment_handler.can_be_late()
             and order.order_status != OrderStatus.CANCELLED
             and order.date < cutoff
         )
@@ -198,7 +199,9 @@ def manage_transaction(request):
             qs = orders.filter(order_status=status)
             count = qs.count()
             is_open = status in OPEN_STATUSES
-            shown = [flag_overdue(o) for o in (qs if is_open else qs[:CLOSED_COLUMN_LIMIT])]
+            shown = [
+                flag_overdue(o) for o in (qs if is_open else qs[:CLOSED_COLUMN_LIMIT])
+            ]
             columns.append(
                 {
                     "css": css,
@@ -270,7 +273,7 @@ def update_status(request, pk):
                 )
                 if order.payment_status == PaymentStatus.PAID:
                     messages.warning(
-                        request, "Order sudah lunas: kembalikan dana ke customer."
+                        request, "Order sudah lunas: kembalikan dana ke pelanggan."
                     )
             else:
                 messages.error(request, "Aksi tidak dikenal.")

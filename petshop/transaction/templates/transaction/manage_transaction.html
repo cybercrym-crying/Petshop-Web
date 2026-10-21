@@ -4,16 +4,18 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Manage Transaction</title>
+        <title>PetAdmin - Kelola Transaksi</title>
         <!-- Bootstrap CSS -->
-        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+              rel="stylesheet" />
         <!-- Bootstrap Icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
         <!-- Google Fonts: Plus Jakarta Sans -->
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <link rel="stylesheet" href="{% static 'transaction/css/manage_transaction.css' %}?v=dm1">
+        <link rel="stylesheet"
+              href="{% static 'transaction/css/manage_transaction.css' %}?v=dm1">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
@@ -21,14 +23,14 @@
             <!-- Header -->
             <div class="page-header animate-fade-up" style="animation-delay: 0s;">
                 <div>
-                    <p class="eyebrow">Dashboard</p>
-                    <h1 class="page-title">Manage Transaction</h1>
+                    <p class="eyebrow">Dasbor</p>
+                    <h1 class="page-title">Kelola Transaksi</h1>
                     <p class="page-subtitle">
-                        {{ active.n }} active order{{ active.n|pluralize }} · Total Rp {{ active.total|rupiah|intcomma }}
+                        {{ active.n }} pesanan aktif · Total Rp {{ active.total|rupiah|intcomma }}
                     </p>
                 </div>
                 <a href="{% url 'transaction:make_transaction' %}" class="btn-add-trx">
-                    <i class="bi bi-plus-lg"></i> Add Transaction
+                    <i class="bi bi-plus-lg"></i> Tambah Transaksi
                 </a>
             </div>
             <!-- Alerts & Messages -->
@@ -41,7 +43,7 @@
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
+                                    aria-label="Tutup"></button>
                         </div>
                     {% endfor %}
                 </div>
@@ -49,7 +51,7 @@
             {% if overdue_unpaid %}
                 <div class="alert alert-danger border-0 rounded-3 shadow-sm mb-4 d-flex justify-content-between align-items-center animate-fade-up"
                      style="animation-delay: 0.1s">
-                    <span><i class="bi bi-exclamation-triangle me-2"></i> <b>{{ overdue_unpaid }} transfer order{{ overdue_unpaid|pluralize }}</b> belum dibayar lebih dari 1 jam.</span>
+                    <span><i class="bi bi-exclamation-triangle me-2"></i> <b>{{ overdue_unpaid }} order transfer</b> belum dibayar lebih dari 1 jam.</span>
                 </div>
             {% endif %}
             <!-- Search Form -->
@@ -61,9 +63,9 @@
                        name="q"
                        value="{{ q }}"
                        class="search-input"
-                       placeholder="Search order ID or customer name..."
-                       aria-label="Search">
-                <button type="submit" class="btn-search">Search</button>
+                       placeholder="Cari ID pesanan atau nama pelanggan..."
+                       aria-label="Cari">
+                <button type="submit" class="btn-search">Cari</button>
                 {% if q %}
                     <a href="?" class="btn btn-light border rounded-pill px-4 pt-2">Reset</a>
                 {% endif %}
@@ -109,26 +111,26 @@
                             {% for trx in col.orders %}
                                 <div class="col-12 col-md-6 col-lg-4 col-xl-3">
                                     <!-- Animasi masuk untuk setiap kartu -->
-                                    <article class="order-card animate-fade-up {% if trx.order_status == 'CANCELLED' %}is-dim{% endif %}"
+                                    <article class="order-card animate-fade-up {% if trx.order_status == 'DIBATALKAN' %}is-dim{% endif %}"
                                              data-modal="#detailTransaction{{ trx.pk }}">
                                         <div class="card-header-min">
                                             <span class="order-id">#{{ trx.pk }}</span>
                                             <span class="order-time {% if trx.overdue %}is-overdue{% endif %}">
-                                                {{ trx.date|timesince }} ago {% if trx.overdue %}· overdue{% endif %}
+                                                {{ trx.date|timesince }} lalu {% if trx.overdue %}· terlambat{% endif %}
                                             </span>
                                         </div>
                                         <div class="customer-name">{{ trx.customer.name }}</div>
                                         <div class="card-details">
-                                            <span>{{ trx.details.count }} item{{ trx.details.count|pluralize }}</span>
+                                            <span>{{ trx.details.count }} item</span>
                                             <span class="card-price">Rp {{ trx.total_payment|rupiah|intcomma }}</span>
                                         </div>
                                         <div class="card-tags">
-                                            {% if trx.order_status == "CANCELLED" %}
-                                                <span class="bd-tag t-void">Void</span>
-                                            {% elif trx.payment_status == "PAID" %}
-                                                <span class="bd-tag t-paid">Paid</span>
+                                            {% if trx.order_status == "DIBATALKAN" %}
+                                                <span class="bd-tag t-void">Batal</span>
+                                            {% elif trx.payment_status == "LUNAS" %}
+                                                <span class="bd-tag t-paid">Lunas</span>
                                             {% else %}
-                                                <span class="bd-tag t-unpaid">Unpaid</span>
+                                                <span class="bd-tag t-unpaid">Belum Lunas</span>
                                             {% endif %}
                                             <span class="bd-method">{{ trx.get_payment_method_display }}</span>
                                         </div>
@@ -140,12 +142,12 @@
                                         {% else %}
                                             <div class="courier-info opacity-50">
                                                 <i class="courier-avatar bg-transparent border border-secondary text-secondary"><i class="bi bi-person"></i></i>
-                                                No courier assigned
+                                                Belum ada kurir
                                             </div>
                                         {% endif %}
                                         <!-- Actions -->
                                         <div class="mt-auto pt-2 border-top border-light">
-                                            {% if trx.order_status == "CONFIRMED" %}
+                                            {% if trx.order_status == "DIKONFIRMASI" %}
                                                 {% if trx.courier %}
                                                     <form method="post"
                                                           action="{% url 'transaction:update_status' trx.pk %}"
@@ -154,16 +156,16 @@
                                                         <button type="submit"
                                                                 name="action"
                                                                 value="on_delivery"
-                                                                class="btn-card-action is-primary">Send Package</button>
+                                                                class="btn-card-action is-primary">Kirim Paket</button>
                                                     </form>
                                                 {% else %}
                                                     <button type="button"
                                                             class="btn-card-action is-primary"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#detailTransaction{{ trx.pk }}"
-                                                            data-stop-propagation>Assign Courier</button>
+                                                            data-stop-propagation>Daftarkan Kurir</button>
                                                 {% endif %}
-                                            {% elif trx.order_status == "ON_DELIVERY" %}
+                                            {% elif trx.order_status == "DALAM_PENGIRIMAN" %}
                                                 <form method="post"
                                                       action="{% url 'transaction:update_status' trx.pk %}"
                                                       data-stop-propagation>
@@ -171,14 +173,14 @@
                                                     <button type="submit"
                                                             name="action"
                                                             value="delivered"
-                                                            class="btn-card-action is-primary">Mark Delivered</button>
+                                                            class="btn-card-action is-primary">Tandai Selesai</button>
                                                 </form>
                                             {% else %}
                                                 <button type="button"
                                                         class="btn-card-action"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#detailTransaction{{ trx.pk }}"
-                                                        data-stop-propagation>View Details</button>
+                                                        data-stop-propagation>Lihat Detail</button>
                                             {% endif %}
                                         </div>
                                     </article>
@@ -213,13 +215,13 @@
                                 <button type="button"
                                         class="btn-close"
                                         data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
+                                        aria-label="Tutup"></button>
                             </div>
                             <h6 class="text-uppercase text-muted fw-bold mb-3"
                                 style="font-size: 0.8rem;
-                                       letter-spacing: 1px">Information</h6>
+                                       letter-spacing: 1px">Informasi</h6>
                             <div class="detail-field">
-                                <span class="detail-field-label">Customer</span>
+                                <span class="detail-field-label">Pelanggan</span>
                                 <span class="detail-field-value">
                                     {{ trx.customer.name }}
                                     <br>
@@ -230,7 +232,7 @@
                                 </span>
                             </div>
                             <div class="detail-field">
-                                <span class="detail-field-label">Address</span>
+                                <span class="detail-field-label">Alamat</span>
                                 <span class="detail-field-value">
                                     {{ trx.customer.address }}
                                     <br>
@@ -245,12 +247,12 @@
                                 <span class="detail-field-value">{{ trx.admin.get_full_name|default:trx.admin.username }}</span>
                             </div>
                             <div class="detail-field">
-                                <span class="detail-field-label">Courier</span>
+                                <span class="detail-field-label">Kurir</span>
                                 <span class="detail-field-value">{% if trx.courier %}{{ trx.courier.get_full_name|default:trx.courier.username }}{% else %}-{% endif %}</span>
                             </div>
                             <h6 class="text-uppercase text-muted fw-bold mt-4 mb-3"
                                 style="font-size: 0.8rem;
-                                       letter-spacing: 1px">Items</h6>
+                                       letter-spacing: 1px">Barang</h6>
                             <div class="mb-3">
                                 {% for item in trx.details.all %}
                                     <div class="d-flex justify-content-between align-items-center mb-2"
@@ -271,15 +273,15 @@
                                   class="mt-4">
                                 {% csrf_token %}
                                 <div class="detail-field">
-                                    <span class="detail-field-label">Payment Method</span>
+                                    <span class="detail-field-label">Metode Pembayaran</span>
                                     <span class="detail-field-value">{{ trx.get_payment_method_display }}</span>
                                 </div>
                                 <div class="detail-field">
-                                    <span class="detail-field-label">Payment Status</span>
-                                    <span><span class="badge {% if trx.payment_status == 'PAID' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} px-2">{{ trx.get_payment_status_display }}</span></span>
+                                    <span class="detail-field-label">Status Pembayaran</span>
+                                    <span><span class="badge {% if trx.payment_status == 'LUNAS' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} px-2">{{ trx.get_payment_status_display }}</span></span>
                                 </div>
                                 <div class="detail-field">
-                                    <span class="detail-field-label">Order Status</span>
+                                    <span class="detail-field-label">Status Order</span>
                                     <span><span class="badge bg-secondary-subtle text-secondary px-2">{{ trx.get_order_status_display }}</span></span>
                                 </div>
                                 {% if trx.is_open and not trx.courier %}
@@ -296,14 +298,14 @@
                                 <div class="d-flex flex-wrap gap-2 justify-content-end mt-4 pt-3 border-top">
                                     <button type="button"
                                             class="btn btn-light fw-semibold text-secondary"
-                                            data-bs-dismiss="modal">Close</button>
-                                    {% if trx.order_status != "CANCELLED" and trx.payment_status == "PENDING" %}
+                                            data-bs-dismiss="modal">Tutup</button>
+                                    {% if trx.order_status != "DIBATALKAN" and trx.payment_status == "MENUNGGU" %}
                                         <button type="submit"
                                                 name="action"
                                                 value="paid"
                                                 class="btn btn-warning fw-bold text-dark">Tandai Lunas</button>
                                     {% endif %}
-                                    {% if trx.order_status == "CONFIRMED" %}
+                                    {% if trx.order_status == "DIKONFIRMASI" %}
                                         <button type="submit"
                                                 name="action"
                                                 value="on_delivery"

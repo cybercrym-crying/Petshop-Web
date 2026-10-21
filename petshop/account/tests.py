@@ -111,7 +111,7 @@ class CustomerLinksAndManageTests(TestCase):
         from transaction.models import Order
         admin = User.objects.get(username="adm")
         c = Customer.objects.create(name="A", phone_number="081234567890", address="x")
-        Order.objects.create(admin=admin, customer=c, payment_method="CASH")
+        Order.objects.create(admin=admin, customer=c, payment_method="TUNAI")
         r = self.client.post(f"/staff/admin/customer/{c.pk}/delete/", follow=True)
         self.assertTrue(Customer.objects.filter(pk=c.pk).exists())
         self.assertContains(r, "riwayat order")
@@ -131,36 +131,36 @@ class EmployeeProfileTests(TestCase):
         self.customer = Customer.objects.create(name="Siti", phone_number="0899", address="x")
         self.client.login(username="adm", password="x")
 
-    def order(self, courier=None, status="CONFIRMED"):
+    def order(self, courier=None, status="DIKONFIRMASI"):
         from transaction.models import Order
 
         return Order.objects.create(
             admin=self.admin, courier=courier, customer=self.customer,
-            payment_method="CASH", total_payment=50000, order_status=status,
+            payment_method="TUNAI", total_payment=50000, order_status=status,
         )
 
     def test_courier_profile_shows_stats_and_orders(self):
-        self.order(self.courier, "ON_DELIVERY")
-        self.order(self.courier, "DELIVERED")
-        self.order(self.courier, "DELIVERED")
+        self.order(self.courier, "DALAM_PENGIRIMAN")
+        self.order(self.courier, "TERKIRIM")
+        self.order(self.courier, "TERKIRIM")
         r = self.client.get(f"/staff/admin/employee/{self.courier.pk}/")
         self.assertEqual(r.status_code, 200)
         by = {s["label"]: s["value"] for s in r.context["stats"]}
-        self.assertEqual(by, {"Assigned": 3, "On delivery": 1, "Delivered": 2})
+        self.assertEqual(by, {"Ditugaskan": 3, "Dalam pengiriman": 1, "Terkirim": 2})
         self.assertEqual(len(r.context["recent_orders"]), 3)
         self.assertContains(r, "Budi Santoso")
         self.assertContains(r, "https://wa.me/6281234567890")
         self.assertContains(r, "Rp 50.000")
 
     def test_admin_profile_counts_orders_created(self):
-        self.order(None, "CONFIRMED")
-        self.order(None, "DELIVERED")
+        self.order(None, "DIKONFIRMASI")
+        self.order(None, "TERKIRIM")
         r = self.client.get(f"/staff/admin/employee/{self.admin.pk}/")
         by = {s["label"]: s["value"] for s in r.context["stats"]}
-        self.assertEqual(by, {"Orders created": 2, "Still open": 1, "Delivered": 1})
+        self.assertEqual(by, {"Order dibuat": 2, "Masih berjalan": 1, "Terkirim": 1})
         self.assertTrue(r.context["is_self"])
         self.assertNotContains(r, "Delete employee")  # tidak bisa hapus diri sendiri
-        self.assertContains(r, "You cannot change your own role.")
+        self.assertContains(r, "Anda tidak bisa mengubah peran Anda sendiri.")
 
     def test_unknown_employee_404_and_courier_forbidden(self):
         self.assertEqual(self.client.get("/staff/admin/employee/9999/").status_code, 404)
@@ -173,7 +173,7 @@ class EmployeeProfileTests(TestCase):
     def post_edit(self, **extra):
         data = {
             "username": "bud", "first_name": "Budi", "last_name": "Baru",
-            "phone_number": "0812", "role": "COURIER", **extra,
+            "phone_number": "0812", "role": "KURIR", **extra,
         }
         return self.client.post(f"/staff/admin/employee/{self.courier.pk}/edit/", data)
 
@@ -189,7 +189,7 @@ class EmployeeProfileTests(TestCase):
         self.assertRedirects(r, "/staff/admin/manage_account", fetch_redirect_response=False)
 
     def test_delete_employee_with_orders_is_blocked_not_crash(self):
-        self.order(self.courier, "DELIVERED")
+        self.order(self.courier, "TERKIRIM")
         profile = f"/staff/admin/employee/{self.courier.pk}/"
         r = self.client.post(f"/staff/admin/employee/{self.courier.pk}/delete/", {"next": profile})
         self.assertRedirects(r, profile, fetch_redirect_response=False)
@@ -202,12 +202,12 @@ class EmployeeProfileTests(TestCase):
         self.assertFalse(User.objects.filter(pk=self.courier.pk).exists())
 
     def test_manage_account_links_to_profile_with_activity(self):
-        self.order(self.courier, "DELIVERED")
-        self.order(None, "CONFIRMED")
+        self.order(self.courier, "TERKIRIM")
+        self.order(None, "DIKONFIRMASI")
         r = self.client.get("/staff/admin/manage_account")
         self.assertContains(r, f"/staff/admin/employee/{self.courier.pk}/")
-        self.assertContains(r, "1 delivered")
-        self.assertContains(r, "2 orders created")
+        self.assertContains(r, "1 terkirim")
+        self.assertContains(r, "2 order")
         self.assertNotContains(r, "*********")
 
 
@@ -398,3 +398,36 @@ class StaticStructureTests(TestCase):
             self.assertTrue(finders.find(name), name)
         for name in ("base.html", "403.html", "partials/navbar.html", "partials/staff_nav.html"):
             get_template(name)
+
+
+
+class RoleBehaviorTests(TestCase):
+    def test_each_role_has_its_own_behavior(self):
+        from account.models import AdminRole, CourierRole, CustomerRole
+
+        admin = User.objects.create_user("adm", password="x", role=Role.ADMIN)
+        kurir = User.objects.create_user("kur", password="x", role=Role.COURIER)
+        biasa = User.objects.create_user("biasa", password="x", role="")
+        self.assertIsInstance(admin.role_behavior, AdminRole)
+        self.assertIsInstance(kurir.role_behavior, CourierRole)
+        self.assertIsInstance(biasa.role_behavior, CustomerRole)
+        self.assertTrue(admin.role_behavior.can_access_admin())
+        self.assertFalse(kurir.role_behavior.can_access_admin())
+        self.assertFalse(biasa.role_behavior.can_access_admin())
+        self.assertEqual(admin.dashboard_url_name, "staff_admin_dashboard")
+        self.assertEqual(kurir.dashboard_url_name, "courier:dashboard")
+        self.assertEqual(biasa.dashboard_url_name, "customer:home")
+
+    def test_abstract_role_cannot_be_instantiated(self):
+        from account.models import RoleBehavior
+
+        with self.assertRaises(TypeError):
+            RoleBehavior()
+
+    def test_business_exceptions_share_one_parent(self):
+        from common.exceptions import PetshopError
+        from product.models import InsufficientStock
+        from transaction.models import CheckoutError, InvalidTransition
+
+        for kelas in (InsufficientStock, CheckoutError, InvalidTransition):
+            self.assertTrue(issubclass(kelas, PetshopError))

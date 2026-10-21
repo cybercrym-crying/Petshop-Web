@@ -16,6 +16,13 @@ from account.models import Role
 from account.decorators import roleRequired
 
 
+def _flash_form_errors(request, form):
+    for field, errors in form.errors.items():
+        label = form.fields[field].label if field in form.fields else field
+        for error in errors:
+            messages.error(request, f"{label}: {error}")
+
+
 @roleRequired(Role.ADMIN)
 def manage_product(request):
     products = Product.objects.select_related("category").order_by("name")
@@ -52,11 +59,9 @@ def add_product(request):
                         note="Stok awal saat produk dibuat",
                         createdBy=request.user,
                     )
-            messages.success(request, f"Produk '{product.name}' berhasil ditambahkan")
+            messages.success(request, f"Produk '{product.name}' berhasil ditambahkan.")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+            _flash_form_errors(request, form)
     return redirect("product:manage_product")
 
 
@@ -120,7 +125,7 @@ def set_selling_price(request, productId):
         if form.is_valid():
             form.save()
             messages.success(
-                request, f"Selling price '{product.name}' updating success"
+                request, f"Harga jual '{product.name}' berhasil diperbarui."
             )
             return redirect("product:product_list")
     else:
@@ -144,7 +149,7 @@ def add_stock_mutation(request):
             except InsufficientStock as e:
                 form.add_error(None, str(e))
             else:
-                messages.success(request, "Creat mutation stock success")
+                messages.success(request, "Mutasi stok berhasil dicatat.")
                 return redirect("product:product_list")
     else:
         form = StockMutationForm(initial={"product": request.GET.get("product")})
@@ -160,9 +165,7 @@ def edit_product(request, pk):
             form.save()
             messages.success(request, f"Produk '{product.name}' berhasil diperbarui.")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+            _flash_form_errors(request, form)
     return redirect("product:manage_product")
 
 

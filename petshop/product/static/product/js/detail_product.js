@@ -16,7 +16,7 @@ detailModal.addEventListener("show.bs.modal", function (event) {
   form.action = "/product/" + d.id + "/edit/";
   delForm.action = "/product/" + d.id + "/delete/";
 
-  preview.textContent = "Photo";
+  preview.textContent = "Foto";
   if (d.photo) {
     var img = document.createElement("img");
     img.src = d.photo;

@@ -8,9 +8,9 @@ User = get_user_model()
 
 
 class CustomerForm(forms.ModelForm):
-    name = forms.CharField(max_length=255)
-    phone_number = forms.CharField(max_length=20)
-    address = forms.CharField(max_length=255)
+    name = forms.CharField(max_length=255, label="Nama")
+    phone_number = forms.CharField(max_length=20, label="Nomor telepon")
+    address = forms.CharField(max_length=255, label="Alamat")
 
     class Meta:
         model = Customer
@@ -24,16 +24,25 @@ class CustomerForm(forms.ModelForm):
 
 
 class EmployeeForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput, required=False)
+    password = forms.CharField(
+        widget=forms.PasswordInput, required=False, label="Kata sandi"
+    )
 
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "phone_number", "role"]
+        labels = {
+            "username": "Nama pengguna",
+            "first_name": "Nama depan",
+            "last_name": "Nama belakang",
+            "phone_number": "Nomor telepon",
+            "role": "Peran",
+        }
 
     def clean(self):
         cleaned = super().clean()
         if not self.instance.pk and not cleaned.get("password"):
-            self.add_error("password", "Password must be fill.")
+            self.add_error("password", "Kata sandi wajib diisi.")
         return cleaned
 
     def clean_password(self):
@@ -54,5 +63,5 @@ class EmployeeForm(forms.ModelForm):
 
 class LoginForm(forms.Form):
 
-    username = forms.CharField(max_length=255)
-    password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(max_length=255, label="Nama pengguna")
+    password = forms.CharField(widget=forms.PasswordInput, label="Kata sandi")
