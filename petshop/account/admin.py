@@ -19,10 +19,10 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {"fields": ("username", "password")}),
-        ("Personal Info", {"fields": ("first_name", "last_name", "email")}),
-        ("Role", {"fields": ("role",)}),
+        ("Informasi Pribadi", {"fields": ("first_name", "last_name", "email")}),
+        ("Peran", {"fields": ("role",)}),
         (
-            "Permissions",
+            "Hak Akses",
             {
                 "fields": (
                     "is_active",
@@ -33,7 +33,7 @@ class CustomUserAdmin(UserAdmin):
                 )
             },
         ),
-        ("Penting", {"fields": ("last_login", "date_joined")}),
+        ("Data Penting", {"fields": ("last_login", "date_joined")}),
     )
 
     add_fieldsets = (

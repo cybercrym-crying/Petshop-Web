@@ -56,7 +56,7 @@ def loginForm(request):
             login(request, user)
             return redirect(_next_url(request, None) or user.dashboard_url_name)
         else:
-            errorMessage = "Invalid Credential"
+            errorMessage = "Nama pengguna atau kata sandi salah"
             form = LoginForm()
             return render(
                 request, "account/login.html", {"error": errorMessage, "form": form}
@@ -106,34 +106,16 @@ def employee_profile(request, pk):
     emp = _decorate_employee(
         get_object_or_404(User, pk=pk, role__in=[Role.ADMIN, Role.COURIER])
     )
-    is_courier = emp.role == Role.COURIER
-    handled = (
-        Order.objects.filter(courier=emp)
-        if is_courier
-        else Order.objects.filter(admin=emp)
-    )
+    behavior = emp.role_behavior
+    is_courier = behavior.code == Role.COURIER
+    handled = behavior.handled_orders(emp)
     agg = handled.aggregate(
         total=Count("pk"),
         confirmed=Count("pk", filter=Q(order_status=OrderStatus.CONFIRMED)),
         on_delivery=Count("pk", filter=Q(order_status=OrderStatus.ON_DELIVERY)),
         delivered=Count("pk", filter=Q(order_status=OrderStatus.DELIVERED)),
     )
-    if is_courier:
-        stats = [
-            {"value": agg["total"], "label": "Assigned", "tone": ""},
-            {"value": agg["on_delivery"], "label": "On delivery", "tone": "blue"},
-            {"value": agg["delivered"], "label": "Delivered", "tone": "green"},
-        ]
-    else:
-        stats = [
-            {"value": agg["total"], "label": "Orders created", "tone": ""},
-            {
-                "value": agg["confirmed"] + agg["on_delivery"],
-                "label": "Still open",
-                "tone": "blue",
-            },
-            {"value": agg["delivered"], "label": "Delivered", "tone": "green"},
-        ]
+    stats = behavior.statistic_cards(agg)
     return render(
         request,
         "account/employee_profile.html",
@@ -181,11 +163,9 @@ def add_employee(request):
         form = EmployeeForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Add employee success")
+            messages.success(request, "Karyawan berhasil ditambahkan.")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+            _flash_form_errors(request, form)
     return redirect("manage_account")
 
 
@@ -195,17 +175,17 @@ def delete_employee(request, pk):
     if request.method == "POST":
         employee = get_object_or_404(User, pk=pk)
         if employee == request.user:
-            messages.error(request, "You cannot delete your account.")
+            messages.error(request, "Kamu tidak bisa menghapus akunmu sendiri.")
             return redirect(back)
         try:
             employee.delete()
         except ProtectedError:
             messages.error(
                 request,
-                f"Employee '{employee.username}' tidak bisa dihapus karena sudah punya riwayat order.",
+                f"Karyawan '{employee.username}' tidak bisa dihapus karena sudah punya riwayat order.",
             )
             return redirect(back)
-        messages.success(request, "Delete employee success")
+        messages.success(request, "Karyawan berhasil dihapus.")
     return redirect("manage_account")
 
 
@@ -215,8 +195,9 @@ def _customer_tab():
 
 def _flash_form_errors(request, form):
     for field, errors in form.errors.items():
+        label = form.fields[field].label if field in form.fields else field
         for error in errors:
-            messages.error(request, f"{field}: {error}")
+            messages.error(request, f"{label}: {error}")
 
 
 @roleRequired(Role.ADMIN)
@@ -225,7 +206,7 @@ def add_customer(request):
         form = CustomerForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Add customer success.")
+            messages.success(request, "Pelanggan berhasil ditambahkan.")
         else:
             _flash_form_errors(request, form)
     return _customer_tab()
@@ -240,15 +221,17 @@ def edit_employee(request, pk):
         form = EmployeeForm(request.POST, instance=employee)
         if form.is_valid():
             if employee == request.user and form.cleaned_data["role"] != originalRole:
-                messages.error(request, "You cannot change your account role.")
+                messages.error(
+                    request, "Kamu tidak bisa mengubah peran akunmu sendiri."
+                )
                 return redirect(back)
             form.save()
             if employee == request.user and form.cleaned_data.get("password"):
                 # set_password mengubah hash sesi; tanpa ini admin ter-logout sendiri.
                 update_session_auth_hash(request, employee)
-            messages.success(request, "Edit employee success")
+            messages.success(request, "Data karyawan berhasil diperbarui.")
         else:
-            messages.error(request, f"Failed to edit employee {form.errors}.")
+            _flash_form_errors(request, form)
     return redirect(back)
 
 
@@ -259,7 +242,7 @@ def edit_customer(request, pk):
         form = CustomerForm(request.POST, instance=customer)
         if form.is_valid():
             form.save()
-            messages.success(request, "Edit customer success.")
+            messages.success(request, "Data pelanggan berhasil diperbarui.")
         else:
             _flash_form_errors(request, form)
     return _customer_tab()
@@ -271,10 +254,10 @@ def delete_customer(request, pk):
         customer = get_object_or_404(Customer, pk=pk)
         try:
             customer.delete()
-            messages.success(request, "Delete customer success")
+            messages.success(request, "Pelanggan berhasil dihapus.")
         except ProtectedError:
             messages.error(
                 request,
-                f"Customer '{customer.name}' tidak bisa dihapus karena sudah punya riwayat order.",
+                f"Pelanggan '{customer.name}' tidak bisa dihapus karena sudah punya riwayat order.",
             )
     return _customer_tab()

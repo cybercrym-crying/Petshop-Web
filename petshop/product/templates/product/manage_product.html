@@ -4,24 +4,26 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Manage Product</title>
+        <title>PetAdmin - Kelola Produk</title>
         <!-- Bootstrap CSS -->
-        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+              rel="stylesheet" />
         <!-- Bootstrap Icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
         <!-- Google Fonts: Plus Jakarta Sans -->
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <link rel="stylesheet" href="{% static 'product/css/manage_product.css' %}?v=dm1">
+        <link rel="stylesheet"
+              href="{% static 'product/css/manage_product.css' %}?v=dm1">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
         <main class="container-fluid px-xl-5 px-4 py-4">
             <!-- Header -->
             <div class="page-header animate-fade-up" style="animation-delay: 0s;">
-                <p class="eyebrow">Dashboard</p>
-                <h1 class="page-title">Manage Product</h1>
+                <p class="eyebrow">Dasbor</p>
+                <h1 class="page-title">Kelola Produk</h1>
             </div>
             <!-- Messages Area (Disatukan di atas) -->
             {% if messages %}
@@ -33,7 +35,7 @@
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
+                                    aria-label="Tutup"></button>
                         </div>
                     {% endfor %}
                 </div>
@@ -47,7 +49,7 @@
                             class="filter-input filter-category"
                             aria-label="Filter kategori"
                             data-autosubmit>
-                        <option value="">All Categories</option>
+                        <option value="">Semua Kategori</option>
                         {% for cat in categories %}
                             <option value="{{ cat.pk }}"
                                     {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>
@@ -59,7 +61,7 @@
                            name="q"
                            value="{{ request.GET.q }}"
                            class="filter-input filter-search"
-                           placeholder="Search product name..."
+                           placeholder="Cari nama produk..."
                            aria-label="Cari produk" />
                 </form>
                 <div class="btn-action-group">
@@ -69,7 +71,7 @@
                     <button class="btn-orange"
                             data-bs-toggle="modal"
                             data-bs-target="#addProductModal">
-                        <i class="bi bi-plus-lg me-1"></i> Add Product
+                        <i class="bi bi-plus-lg me-1"></i> Tambah Produk
                     </button>
                 </div>
             </div>
@@ -99,10 +101,10 @@
                                 </div>
                                 <div class="badges-wrapper">
                                     <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% else %}good{% endif %}">
-                                        Stock {{ p.stock }}
+                                        Stok {{ p.stock }}
                                     </span>
                                     <span class="badge-is-active {% if p.is_active %}active{% else %}inactive{% endif %}">
-                                        {% if p.is_active %}Active{% else %}Not Active{% endif %}
+                                        {% if p.is_active %}Aktif{% else %}Tidak Aktif{% endif %}
                                     </span>
                                 </div>
                             </div>
@@ -117,7 +119,7 @@
                                 <p class="mt-2">Coba sesuaikan kata kunci atau kategori pencarian Anda.</p>
                             {% else %}
                                 <h5 class="fw-bold mb-0">Belum ada produk.</h5>
-                                <p class="mt-2">Klik tombol "+ Add Product" di atas untuk menambahkan produk pertama Anda.</p>
+                                <p class="mt-2">Klik tombol "+ Tambah Produk" di atas untuk menambahkan produk pertama Anda.</p>
                             {% endif %}
                         </div>
                     </div>
@@ -134,20 +136,20 @@
                     <div class="modal-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <h2 class="modal-title-custom">Add New Product</h2>
-                                <p class="modal-sub">Fill in the product details here</p>
+                                <h2 class="modal-title-custom">Tambah Produk Baru</h2>
+                                <p class="modal-sub">Isi detail produk di sini</p>
                             </div>
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                                    aria-label="Tutup"></button>
                         </div>
                         <form method="post"
                               action="{% url 'product:add_product' %}"
                               enctype="multipart/form-data">
                             {% csrf_token %}
                             <div class="mb-4">
-                                <label class="form-label-custom" for="add-name">Product Name</label>
+                                <label class="form-label-custom" for="add-name">Nama Produk</label>
                                 <input type="text"
                                        id="add-name"
                                        name="name"
@@ -157,16 +159,16 @@
                             </div>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-category">Category</label>
+                                    <label class="form-label-custom" for="add-category">Kategori</label>
                                     <select id="add-category" name="category" class="dark-input" required>
-                                        <option value="" selected disabled>- Select Category -</option>
+                                        <option value="" selected disabled>- Pilih Kategori -</option>
                                         {% for cat in categories %}
                                             <option value="{{ cat.pk }}">{{ cat.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-stock">Initial Stock</label>
+                                    <label class="form-label-custom" for="add-stock">Stok Awal</label>
                                     <input type="number"
                                            id="add-stock"
                                            name="stock"
@@ -179,7 +181,7 @@
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label-custom"
-                                           for="add-purchase-price">Purchase Price (Rp)</label>
+                                           for="add-purchase-price">Harga Beli (Rp)</label>
                                     <input type="number"
                                            id="add-purchase-price"
                                            name="purchase_price"
@@ -189,7 +191,7 @@
                                            placeholder="Modal beli" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-selling-price">Selling Price (Rp)</label>
+                                    <label class="form-label-custom" for="add-selling-price">Harga Jual (Rp)</label>
                                     <input type="number"
                                            id="add-selling-price"
                                            name="selling_price"
@@ -200,25 +202,27 @@
                             </div>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-pet-type">Pet Type</label>
+                                    <label class="form-label-custom" for="add-pet-type">Tipe Hewan</label>
                                     <select id="add-pet-type" name="pet_type" class="dark-input">
                                         {% for value, label in pet_types %}
-                                            <option value="{{ value }}"{% if value == "ALL" %} selected{% endif %}>{{ label }}</option>
+                                            <option value="{{ value }}"
+                                                    {% if value == "SEMUA" %} selected{% endif %}>{{ label }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-condition">Condition</label>
+                                    <label class="form-label-custom" for="add-condition">Kondisi</label>
                                     <select id="add-condition" name="condition" class="dark-input">
                                         {% for value, label in conditions %}
-                                            <option value="{{ value }}"{% if value == "NEW" %} selected{% endif %}>{{ label }}</option>
+                                            <option value="{{ value }}"
+                                                    {% if value == "BARU" %} selected{% endif %}>{{ label }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                             </div>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-photo">Product Photo</label>
+                                    <label class="form-label-custom" for="add-photo">Foto Produk</label>
                                     <input type="file"
                                            id="add-photo"
                                            name="photo"
@@ -229,14 +233,14 @@
                                 <div class="col-md-6">
                                     <label class="form-label-custom" for="add-is-active">Status</label>
                                     <select id="add-is-active" name="is_active" class="dark-input" required>
-                                        <option value="true" selected>Active</option>
-                                        <option value="false">Not Active</option>
+                                        <option value="true" selected>Aktif</option>
+                                        <option value="false">Tidak Aktif</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
-                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn-orange px-5">Save Product</button>
+                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn-orange px-5">Simpan Produk</button>
                             </div>
                         </form>
                     </div>
@@ -254,13 +258,13 @@
                         <div class="modal-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div>
-                                    <h2 class="modal-title-custom">Product Details</h2>
-                                    <p class="modal-sub">Update or delete product data here</p>
+                                    <h2 class="modal-title-custom">Detail Produk</h2>
+                                    <p class="modal-sub">Perbarui atau hapus informasi produk disini</p>
                                 </div>
                                 <button type="button"
                                         class="btn-close"
                                         data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
+                                        aria-label="Tutup"></button>
                             </div>
                             <div class="photo-preview shadow-sm">
                                 {% if p.photo %}
@@ -274,7 +278,7 @@
                                   enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="mb-4">
-                                    <label class="form-label-custom" for="detail-name-{{ p.pk }}">Product Name</label>
+                                    <label class="form-label-custom" for="detail-name-{{ p.pk }}">Nama Produk</label>
                                     <input type="text"
                                            id="detail-name-{{ p.pk }}"
                                            name="name"
@@ -285,7 +289,7 @@
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-category-{{ p.pk }}">Category</label>
+                                               for="detail-category-{{ p.pk }}">Kategori</label>
                                         <select id="detail-category-{{ p.pk }}"
                                                 name="category"
                                                 class="dark-input"
@@ -300,7 +304,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-stock-{{ p.pk }}">Stock (Current)</label>
+                                               for="detail-stock-{{ p.pk }}">Stok (Sekarang)</label>
                                         <input type="number"
                                                id="detail-stock-{{ p.pk }}"
                                                name="stock"
@@ -314,7 +318,7 @@
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-purchase-price-{{ p.pk }}">Purchase Price (Rp)</label>
+                                               for="detail-purchase-price-{{ p.pk }}">Harga Beli (Rp)</label>
                                         <input type="number"
                                                id="detail-purchase-price-{{ p.pk }}"
                                                name="purchase_price"
@@ -325,7 +329,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-selling-price-{{ p.pk }}">Selling Price (Rp)</label>
+                                               for="detail-selling-price-{{ p.pk }}">Harga Jual (Rp)</label>
                                         <input type="number"
                                                id="detail-selling-price-{{ p.pk }}"
                                                name="selling_price"
@@ -336,18 +340,22 @@
                                 </div>
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
-                                        <label class="form-label-custom" for="detail-pet-type-{{ p.pk }}">Pet Type</label>
+                                        <label class="form-label-custom"
+                                               for="detail-pet-type-{{ p.pk }}">Tipe Hewan</label>
                                         <select id="detail-pet-type-{{ p.pk }}" name="pet_type" class="dark-input">
                                             {% for value, label in pet_types %}
-                                                <option value="{{ value }}"{% if value == p.pet_type %} selected{% endif %}>{{ label }}</option>
+                                                <option value="{{ value }}"
+                                                        {% if value == p.pet_type %} selected{% endif %}>{{ label }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label-custom" for="detail-condition-{{ p.pk }}">Condition</label>
+                                        <label class="form-label-custom"
+                                               for="detail-condition-{{ p.pk }}">Kondisi</label>
                                         <select id="detail-condition-{{ p.pk }}" name="condition" class="dark-input">
                                             {% for value, label in conditions %}
-                                                <option value="{{ value }}"{% if value == p.condition %} selected{% endif %}>{{ label }}</option>
+                                                <option value="{{ value }}"
+                                                        {% if value == p.condition %} selected{% endif %}>{{ label }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -355,7 +363,7 @@
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-photo-{{ p.pk }}">Change Photo</label>
+                                               for="detail-photo-{{ p.pk }}">Ubah Gambar</label>
                                         <input type="file"
                                                id="detail-photo-{{ p.pk }}"
                                                name="photo"
@@ -370,20 +378,20 @@
                                                 name="is_active"
                                                 class="dark-input"
                                                 required>
-                                            <option value="true" {% if p.is_active %}selected{% endif %}>Active</option>
+                                            <option value="true" {% if p.is_active %}selected{% endif %}>Aktif</option>
                                             <option value="false"
-                                                    {% if not p.is_active %}selected{% endif %}>Not Active</option>
+                                                    {% if not p.is_active %}selected{% endif %}>Tidak Aktif</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="d-flex flex-wrap gap-2 justify-content-end mt-5 border-top pt-4">
-                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batalkan</button>
                                     <button type="submit"
                                             form="deleteProduct{{ p.pk }}"
                                             class="btn-delete me-auto">
-                                        <i class="bi bi-trash3 me-1"></i> Delete
+                                        <i class="bi bi-trash3 me-1"></i> Hapus
                                     </button>
-                                    <button type="submit" class="btn-orange px-4">Update Product</button>
+                                    <button type="submit" class="btn-orange px-4">Perbarui Produk</button>
                                 </div>
                             </form>
                             <!-- Form Hapus (Terpisah) -->

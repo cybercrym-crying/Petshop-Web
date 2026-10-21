@@ -8,8 +8,8 @@
         <div class="container-fluid px-xl-4 px-3 py-4">
             <!-- Breadcrumb -->
             <div class="pf-crumb animate-fade-up" style="animation-delay: 0s">
-                <a href="{% url 'manage_account' %}?tab=customer"><i class="bi bi-arrow-left me-1"></i> Manage User</a>
-                <span>/</span> Customer <span>/</span>
+                <a href="{% url 'manage_account' %}?tab=customer"><i class="bi bi-arrow-left me-1"></i> Kelola Pengguna</a>
+                <span>/</span> Pelanggan <span>/</span>
                 <span class="text-dark fw-bold">{{ customer.name }}</span>
             </div>
             {% if messages %}
@@ -21,7 +21,7 @@
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
+                                    aria-label="Tutup"></button>
                         </div>
                     {% endfor %}
                 </div>
@@ -37,7 +37,7 @@
                         </div>
                         <hr class="text-muted opacity-25" />
                         <div class="mb-3">
-                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Phone Number</small>
+                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Nomor Telepon</small>
                             <span class="fw-bold fs-6">{{ customer.phone_number|default:"-" }}</span>
                             {% if customer.whatsapp_url %}
                                 <a href="{{ customer.whatsapp_url }}"
@@ -91,7 +91,7 @@
                                        required />
                             </div>
                             <div class="mb-4">
-                                <label class="form-label-custom" for="phone_number">Phone Number</label>
+                                <label class="form-label-custom" for="phone_number">Nomor Telepon</label>
                                 <input type="text"
                                        id="phone_number"
                                        name="phone_number"
@@ -136,7 +136,7 @@
                     <table class="table table-custom">
                         <thead>
                             <tr>
-                                <th>Order ID</th>
+                                <th>ID Order</th>
                                 <th>Total Pembayaran</th>
                                 <th>Status Bayar</th>
                                 <th>Status Order</th>

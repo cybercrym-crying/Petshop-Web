@@ -28,7 +28,7 @@ class PublicPagesTests(TestCase):
         self.assertContains(r, "Semua Kebutuhan Hewan Peliharaan")
         html = r.content.decode()
         imgs = re.findall(r'<img[^>]+src="([^"]+)"', html)
-        self.assertGreaterEqual(len(imgs), 7)  # hero, 2 foto besar, 4 kategori
+        self.assertGreaterEqual(len(imgs), 7)  # hero, 2 foto besar, 4 category_label
         for src in imgs:
             self.assertRegex(src, r"\.(png|jpe?g|webp)$", f"gambar bukan raster: {src}")
             self.assertTrue(
@@ -47,9 +47,9 @@ class PublicPagesTests(TestCase):
     def test_about_counts_only_delivered_orders(self):
         admin = User.objects.create_user("adm", password="x", role=Role.ADMIN)
         cust = Customer.objects.create(name="Siti", phone_number="0811", address="x")
-        for status in ("CONFIRMED", "DELIVERED", "DELIVERED"):
+        for status in ("DIKONFIRMASI", "TERKIRIM", "TERKIRIM"):
             Order.objects.create(
-                admin=admin, customer=cust, payment_method="CASH",
+                admin=admin, customer=cust, payment_method="TUNAI",
                 total_payment=1000, order_status=status,
             )
         r = self.client.get(reverse("customer:about"))
@@ -242,22 +242,22 @@ class WorkingSiteTests(TestCase):
 
 class CategoryLabelTests(TestCase):
     def test_category_chip_is_in_indonesian(self):
-        make_product("Whiskas 70g")  # kategori FOOD
+        make_product("Whiskas 70g")  # category_label FOOD
         html = self.client.get("/shop/").content.decode()
         self.assertIn('chip-category">Makanan<', html)
         self.assertNotIn('chip-category">Food<', html)
 
     def test_filter_labels(self):
-        from customer.templatetags.customer_extras import kategori
+        from customer.templatetags.customer_extras import category_label
 
-        self.assertEqual(kategori("FOOD"), "Makanan")
-        self.assertEqual(kategori("EQUIPMENT"), "Perlengkapan")
-        self.assertEqual(kategori("ACCESSORIES"), "Aksesori")
-        self.assertEqual(kategori("LAINNYA"), "Lainnya")
+        self.assertEqual(category_label("MAKANAN"), "Makanan")
+        self.assertEqual(category_label("PERLENGKAPAN"), "Perlengkapan")
+        self.assertEqual(category_label("AKSESORIS"), "Aksesori")
+        self.assertEqual(category_label("LAINNYA"), "Lainnya")
 
 
 class HomeShopTests(TestCase):
-    """Belanja (/shop/) menampilkan Home Shop: hero, kategori, produk populer."""
+    """Belanja (/shop/) menampilkan Home Shop: hero, category_label, produk populer."""
 
     def test_belanja_links_point_to_shop_and_shop_renders_home_shop(self):
         r = self.client.get(reverse("customer:shop"))
@@ -271,7 +271,7 @@ class HomeShopTests(TestCase):
         r = self.client.get(reverse("customer:shop"))
         for marker in ('class="hero"', 'id="categories"', 'id="popular"', 'id="how-to-order"'):
             self.assertContains(r, marker)
-        self.assertEqual([c["code"] for c in r.context["categories"]], ["FOOD"])
+        self.assertEqual([c["code"] for c in r.context["categories"]], ["MAKANAN"])
         self.assertEqual(r.context["categories"][0]["count"], 1)
         self.assertEqual([p.name for p in r.context["popular_products"]], ["Whiskas 70g"])
         self.assertIsNone(r.context["results"])
@@ -279,7 +279,7 @@ class HomeShopTests(TestCase):
 
     def test_category_card_links_to_filter(self):
         make_product()
-        self.assertContains(self.client.get("/shop/"), 'href="/produk/?category=FOOD"')
+        self.assertContains(self.client.get("/shop/"), 'href="/produk/?category=MAKANAN"')
 
     def test_belanja_sekarang_opens_filter_page(self):
         r = self.client.get("/shop/")
@@ -291,9 +291,9 @@ class HomeShopTests(TestCase):
         r = self.client.get("/shop/", {"q": "whiskas"})
         self.assertEqual([p.name for p in r.context["results"]], ["Whiskas 70g"])
         self.assertContains(r, 'id="product-grid"')
-        r = self.client.get("/shop/", {"category": "food"})
+        r = self.client.get("/shop/", {"category": "makanan"})
         self.assertEqual(len(r.context["results"]), 2)
-        r = self.client.get("/shop/", {"category": "ACCESSORIES"})
+        r = self.client.get("/shop/", {"category": "AKSESORIS"})
         self.assertEqual(r.context["results"], [])
         self.assertContains(r, "Tidak ada produk yang cocok")
 
@@ -314,13 +314,13 @@ class HomeShopTests(TestCase):
 
 
 class ProductsPageTests(TestCase):
-    """/produk/: filter jenis hewan, kategori, harga, kondisi + urutan (tombol Belanja Sekarang)."""
+    """/produk/: filter jenis hewan, category_label, harga, kondisi + urutan (tombol Belanja Sekarang)."""
 
     def setUp(self):
-        self.kitten = make_product("Royal Canin Kitten", price=92000, pet_type="CAT")
-        self.puppy = make_product("Pro Plan Puppy", price=145000, pet_type="DOG")
-        self.generic = make_product("Sisir Bulu", price=25000, cat=Category.GROOMING)  # semua hewan
-        self.used = make_product("Kandang Bekas", price=60000, pet_type="CAT", condition="USED", cat=Category.EQUIPMENT)
+        self.kitten = make_product("Royal Canin Kitten", price=92000, pet_type="KUCING")
+        self.puppy = make_product("Pro Plan Puppy", price=145000, pet_type="ANJING")
+        self.generic = make_product("Sisir Bulu", price=25000, cat=Category.EQUIPMENT)  # semua hewan
+        self.used = make_product("Kandang Bekas", price=60000, pet_type="KUCING", condition="BEKAS", cat=Category.EQUIPMENT)
 
     def names(self, **params):
         r = self.client.get(reverse("customer:products"), params)
@@ -337,12 +337,12 @@ class ProductsPageTests(TestCase):
         self.assertEqual(r.context["total"], 4)
 
     def test_pet_filter_keeps_all_pet_products(self):
-        self.assertEqual(sorted(self.names(pet="CAT")), ["Kandang Bekas", "Royal Canin Kitten", "Sisir Bulu"])
-        self.assertEqual(sorted(self.names(pet=["CAT", "DOG"])), sorted(p.name for p in Product.objects.all()))
+        self.assertEqual(sorted(self.names(pet="KUCING")), ["Kandang Bekas", "Royal Canin Kitten", "Sisir Bulu"])
+        self.assertEqual(sorted(self.names(pet=["KUCING", "ANJING"])), sorted(p.name for p in Product.objects.all()))
 
     def test_category_condition_and_price_filters(self):
-        self.assertEqual(self.names(category="FOOD", pet="DOG"), ["Pro Plan Puppy"])
-        self.assertEqual(self.names(condition="USED"), ["Kandang Bekas"])
+        self.assertEqual(self.names(category="MAKANAN", pet="ANJING"), ["Pro Plan Puppy"])
+        self.assertEqual(self.names(condition="BEKAS"), ["Kandang Bekas"])
         self.assertEqual(sorted(self.names(min_price="30000", max_price="100000")), ["Kandang Bekas", "Royal Canin Kitten"])
         # min > max ditukar, nilai ngawur diabaikan
         self.assertEqual(len(self.names(min_price="100000", max_price="30000")), 2)
@@ -362,7 +362,7 @@ class ProductsPageTests(TestCase):
 
         def order(status, product, qty):
             o = Order.objects.create(
-                admin=admin, customer=cust, payment_method="CASH", total_payment=1000, order_status=status
+                admin=admin, customer=cust, payment_method="TUNAI", total_payment=1000, order_status=status
             )
             OrderDetail.objects.create(transaction=o, product=product, quantity=qty, unit_price=1000, subtotal=1000 * qty)
 
@@ -371,24 +371,24 @@ class ProductsPageTests(TestCase):
         self.assertEqual(self.names()[0], "Pro Plan Puppy")
 
     def test_heading_follows_selection(self):
-        r = self.client.get("/produk/", {"category": "FOOD", "pet": "CAT"})
+        r = self.client.get("/produk/", {"category": "MAKANAN", "pet": "KUCING"})
         self.assertEqual(r.context["title"], "Makanan Kucing")
         self.assertEqual(r.context["blurb"], "Makanan sehat dan lezat untuk kucing kesayangan Anda.")
-        self.assertEqual(self.client.get("/produk/", {"pet": "DOG"}).context["title"], "Produk untuk Anjing")
+        self.assertEqual(self.client.get("/produk/", {"pet": "ANJING"}).context["title"], "Produk untuk Anjing")
         self.assertEqual(self.client.get("/produk/", {"q": "sisir"}).context["title"], "Hasil pencarian “sisir”")
 
     def test_empty_result_and_reset_link(self):
-        r = self.client.get("/produk/", {"condition": "USED", "category": "FOOD"})
+        r = self.client.get("/produk/", {"condition": "BEKAS", "category": "MAKANAN"})
         self.assertContains(r, "Tidak ada produk yang cocok dengan filter Anda.")
         self.assertContains(r, "Atur ulang semua")
 
     def test_pagination_keeps_filters(self):
         for i in range(14):
-            make_product(f"Snack {i:02d}", price=5000 + i, pet_type="CAT")
-        r = self.client.get("/produk/", {"pet": "CAT", "sort": "name"})
+            make_product(f"Snack {i:02d}", price=5000 + i, pet_type="KUCING")
+        r = self.client.get("/produk/", {"pet": "KUCING", "sort": "name"})
         self.assertEqual(len(r.context["products"]), 12)
-        self.assertContains(r, "pet=CAT&amp;sort=name&amp;page=2")
-        self.assertEqual(len(self.client.get("/produk/", {"pet": "CAT", "page": 2}).context["products"]), 5)
+        self.assertContains(r, "pet=KUCING&amp;sort=name&amp;page=2")
+        self.assertEqual(len(self.client.get("/produk/", {"pet": "KUCING", "page": 2}).context["products"]), 5)
 
     def test_hidden_and_unpriced_products_are_not_listed(self):
         make_product("Tanpa Harga", price=None)

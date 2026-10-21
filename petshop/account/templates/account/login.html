@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Employee Login</title>
+        <title>PetAdmin - Login Pegawai</title>
         <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
@@ -198,13 +198,13 @@
                     <span>PETADMIN</span>
                 </div>
                 <div>
-                    <h1 class="left-title">Empower Your Workspace.</h1>
+                    <h1 class="left-title">Kelola Tokomu dengan Mudah.</h1>
                     <p class="left-desc">Kelola kebutuhan hewan peliharaan, stok produk, dan transaksi dengan cepat dalam satu platform.</p>
                 </div>
             </div>
             <!-- PANEL KANAN (Form Login) -->
             <div class="panel-right">
-                <h2 class="form-title">Welcome Back</h2>
+                <h2 class="form-title">Selamat Datang Kembali</h2>
                 <p class="form-sub">Masukkan kredensial Anda untuk melanjutkan</p>
                 {% if error %}
                     <div class="error-box" role="alert">
@@ -214,17 +214,17 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="input-group-custom">
-                        <label for="username" class="form-label-custom">Username</label>
+                        <label for="username" class="form-label-custom">Nama Pengguna</label>
                         <input type="text"
                                name="username"
                                class="modern-input"
                                id="username"
-                               placeholder="@username"
+                               placeholder="@namapengguna"
                                autocomplete="username"
                                required />
                     </div>
                     <div class="input-group-custom">
-                        <label for="password" class="form-label-custom">Password</label>
+                        <label for="password" class="form-label-custom">Kata Sandi</label>
                         <input type="password"
                                name="password"
                                class="modern-input"
@@ -235,7 +235,7 @@
                                required />
                         <button class="toggle-password"
                                 type="button"
-                                aria-label="Tampilkan password"
+                                aria-label="Tampilkan kata sandi"
                                 data-toggle-password>
                             <svg id="icon-show"
                                  width="22"
@@ -264,7 +264,7 @@
                             </svg>
                         </button>
                     </div>
-                    <button type="submit" class="btn-login">Masuk ke Dashboard</button>
+                    <button type="submit" class="btn-login">Masuk ke Dasbor</button>
                     <p class="foot-text">
                         Kehilangan akses akun? <a href="#" class="link-purple">Hubungi Admin</a>
                     </p>

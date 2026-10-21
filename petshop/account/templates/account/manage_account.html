@@ -1,255 +1,303 @@
 {% extends "account/staff_base.html" %}
 {% load static %}
-{% block title %}PetAdmin - Manage User{% endblock %}
+{% block title %}PetAdmin - Kelola Akun{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm1"
+          rel="stylesheet" />
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm1"
+          rel="stylesheet" />
 {% endblock %}
 {% block content %}
-        <div class="container-fluid px-xl-4 px-3 py-4">
-            <!-- Header -->
-            <div class="animate-fade-up" style="animation-delay: 0s;">
-                <p class="eyebrow">Dashboard</p>
-                <h1 class="page-title">Manage User</h1>
-                <p class="text-muted fw-medium mb-4">Kelola data pegawai (Employee) dan pelanggan (Customer) di sini.</p>
-            </div>
-            <!-- Pesan / Notifikasi -->
-            {% if messages %}
-                <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
-                    {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
-                             role="alert">
-                            {{ message }}
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            <!-- Tabs -->
-            <div class="custom-tabs d-flex flex-wrap animate-fade-up"
-                 style="animation-delay: 0.1s"
-                 id="userTabs">
-                <a href="?tab=employee"
-                   class="nav-link {% if active_tab != 'customer' %}active{% endif %}">
-                    <i class="bi bi-person-badge me-1"></i> Employee
-                </a>
-                <a href="?tab=customer"
-                   class="nav-link {% if active_tab == 'customer' %}active{% endif %}">
-                    <i class="bi bi-people me-1"></i> Customer
-                </a>
-            </div>
-            <!-- TAB 1: EMPLOYEE -->
-            <div id="tab-employee"
-                 class="animate-fade-up {% if active_tab == 'customer' %}d-none{% endif %}"
-                 style="animation-delay: 0.2s">
-                <div class="d-flex justify-content-end mb-3">
-                    <button class="btn-orange"
-                            data-bs-toggle="modal"
-                            data-bs-target="#addEmployeeModal">
-                        <i class="bi bi-plus-lg me-2"></i> Add Employee
-                    </button>
-                </div>
-                <div class="card-custom">
-                    <div class="table-responsive">
-                        <table class="table table-custom">
-                            <thead>
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Phone</th>
-                                    <th>Role</th>
-                                    <th>Activity</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for emp in employee %}
-                                    <tr data-href="{% url 'employee_profile' emp.pk %}">
-                                        <td>
-                                            <div class="emp-cell">
-                                                <i class="emp-av tone-{{ emp.tone|default:'5' }}">{{ emp.initials }}</i>
-                                                <div>
-                                                    <div class="fw-bold text-dark"
-                                                         style="font-size: 1.05rem">{{ emp.display_name }}</div>
-                                                    <small class="text-muted fw-semibold">@{{ emp.username }}</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="fw-medium text-secondary">{{ emp.phone_number|default:"-" }}</td>
-                                        <td>
-                                            {% if emp.role == "ADMIN" %}
-                                                <span class="badge-role role-admin"><i class="bi bi-shield-lock me-1"></i> Admin</span>
-                                            {% else %}
-                                                <span class="badge-role role-courier"><i class="bi bi-truck me-1"></i> Courier</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-muted fw-medium">
-                                            {% if emp.role == "COURIER" %}
-                                                <i class="bi bi-box-seam me-1"></i> {{ emp.delivered_count }} delivered
-                                            {% else %}
-                                                <i class="bi bi-cart-check me-1"></i> {{ emp.created_count }} order{{ emp.created_count|pluralize }}
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end text-muted fs-5">
-                                            <i class="bi bi-chevron-right"></i>
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="5" class="text-center py-5">
-                                            <i class="bi bi-person-vcard text-muted opacity-50"
-                                               style="font-size: 3rem"></i>
-                                            <h5 class="fw-bold mt-3 text-dark">Belum ada data employee</h5>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <!-- Header -->
+        <div class="animate-fade-up" style="animation-delay: 0s;">
+            <p class="eyebrow">Dasbor</p>
+            <h1 class="page-title">Kelola Akun</h1>
+            <p class="text-muted fw-medium mb-4">Kelola data pegawai dan pelanggan di sini.</p>
+        </div>
+        <!-- Pesan / Notifikasi -->
+        {% if messages %}
+            <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
+                         role="alert">
+                        {{ message }}
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Tutup"></button>
                     </div>
-                </div>
+                {% endfor %}
             </div>
-            <!-- TAB 2: CUSTOMER -->
-            <div id="tab-customer"
-                 class="animate-fade-up {% if active_tab != 'customer' %}d-none{% endif %}"
-                 style="animation-delay: 0.2s">
-                <div class="d-flex justify-content-end mb-3">
-                    <button class="btn-orange"
-                            data-bs-toggle="modal"
-                            data-bs-target="#addCustomerModal">
-                        <i class="bi bi-plus-lg me-2"></i> Add Customer
-                    </button>
-                </div>
-                <div class="card-custom">
-                    <div class="table-responsive">
-                        <table class="table table-custom">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Address</th>
+        {% endif %}
+        <!-- Tabs -->
+        <div class="custom-tabs d-flex flex-wrap animate-fade-up"
+             style="animation-delay: 0.1s"
+             id="userTabs">
+            <a href="?tab=employee"
+               class="nav-link {% if active_tab != 'customer' %}active{% endif %}">
+                <i class="bi bi-person-badge me-1"></i> Pegawai
+            </a>
+            <a href="?tab=customer"
+               class="nav-link {% if active_tab == 'customer' %}active{% endif %}">
+                <i class="bi bi-people me-1"></i> Pelanggan
+            </a>
+        </div>
+        <!-- TAB 1: EMPLOYEE -->
+        <div id="tab-employee"
+             class="animate-fade-up {% if active_tab == 'customer' %}d-none{% endif %}"
+             style="animation-delay: 0.2s">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn-orange"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addEmployeeModal">
+                    <i class="bi bi-plus-lg me-2"></i> Tambah Pegawai
+                </button>
+            </div>
+            <div class="card-custom">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Pegawai</th>
+                                <th>Nomor HP</th>
+                                <th>Peran</th>
+                                <th>Aktivitas</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in employee %}
+                                <tr data-href="{% url 'employee_profile' emp.pk %}">
+                                    <td>
+                                        <div class="emp-cell">
+                                            <i class="emp-av tone-{{ emp.tone|default:'5' }}">{{ emp.initials }}</i>
+                                            <div>
+                                                <div class="fw-bold text-dark"
+                                                     style="font-size: 1.05rem">{{ emp.display_name }}</div>
+                                                <small class="text-muted fw-semibold">@{{ emp.username }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="fw-medium text-secondary">{{ emp.phone_number|default:"-" }}</td>
+                                    <td>
+                                        <span class="badge-role {{ emp.role_behavior.badge_class }}"><i class="bi {{ emp.role_behavior.badge_icon }} me-1"></i> {{ emp.role_behavior.label }}</span>
+                                    </td>
+                                    <td class="text-muted fw-medium">
+                                        <i class="bi {{ emp.role_behavior.summary_icon }} me-1"></i> {{ emp.role_summary }}
+                                    </td>
+                                    <td class="text-end text-muted fs-5">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {% for cust in customers %}
-                                    <tr data-href="{% url 'customer_profile' cust.pk %}"
-                                        style="cursor: pointer">
-                                        <td>
-                                            <div class="fw-bold text-dark"
-                                                 style="font-size: 1.05rem">{{ cust.name }}</div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="fw-medium text-secondary">{{ cust.phone_number }}</span>
-                                                <a href="{{ cust.whatsapp_url }}"
-                                                   target="_blank"
-                                                   rel="noopener"
-                                                   class="btn-sm-action text-success border-success-subtle"
-                                                   data-stop-propagation>
-                                                    <i class="bi bi-whatsapp"></i> WA
-                                                </a>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="fw-medium text-secondary text-truncate"
-                                                      style="max-width: 250px;
-                                                             display: inline-block">{{ cust.address }}</span>
-                                                <a href="{{ cust.maps_url }}"
-                                                   target="_blank"
-                                                   rel="noopener"
-                                                   class="btn-sm-action text-primary border-primary-subtle"
-                                                   data-stop-propagation>
-                                                    <i class="bi bi-geo-alt"></i> Maps
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="3" class="text-center py-5">
-                                            <i class="bi bi-people text-muted opacity-50" style="font-size: 3rem;"></i>
-                                            <h5 class="fw-bold mt-3 text-dark">Belum ada data customer</h5>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <i class="bi bi-person-vcard text-muted opacity-50"
+                                           style="font-size: 3rem"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">Belum ada data pegawai</h5>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <!-- MODAL: ADD EMPLOYEE -->
-        <div class="modal fade"
-             id="addEmployeeModal"
-             tabindex="-1"
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content p-2">
-                    <div class="modal-body p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h2 class="modal-title-custom">Add New Employee</h2>
-                                <p class="modal-sub">Isi detail akun untuk pegawai baru</p>
-                            </div>
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+        <!-- TAB 2: CUSTOMER -->
+        <div id="tab-customer"
+             class="animate-fade-up {% if active_tab != 'customer' %}d-none{% endif %}"
+             style="animation-delay: 0.2s">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn-orange"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addCustomerModal">
+                    <i class="bi bi-plus-lg me-2"></i> Tambah Pelanggan
+                </button>
+            </div>
+            <div class="card-custom">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Nomor HP</th>
+                                <th>Alamat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cust in customers %}
+                                <tr data-href="{% url 'customer_profile' cust.pk %}"
+                                    style="cursor: pointer">
+                                    <td>
+                                        <div class="fw-bold text-dark" style="font-size: 1.05rem">{{ cust.name }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-medium text-secondary">{{ cust.phone_number }}</span>
+                                            <a href="{{ cust.whatsapp_url }}"
+                                               target="_blank"
+                                               rel="noopener"
+                                               class="btn-sm-action text-success border-success-subtle"
+                                               data-stop-propagation>
+                                                <i class="bi bi-whatsapp"></i> WA
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-medium text-secondary text-truncate"
+                                                  style="max-width: 250px;
+                                                         display: inline-block">{{ cust.address }}</span>
+                                            <a href="{{ cust.maps_url }}"
+                                               target="_blank"
+                                               rel="noopener"
+                                               class="btn-sm-action text-primary border-primary-subtle"
+                                               data-stop-propagation>
+                                                <i class="bi bi-geo-alt"></i> Maps
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-5">
+                                        <i class="bi bi-people text-muted opacity-50" style="font-size: 3rem;"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">Belum ada data pelanggan</h5>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL: ADD EMPLOYEE -->
+    <div class="modal fade"
+         id="addEmployeeModal"
+         tabindex="-1"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content p-2">
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h2 class="modal-title-custom">Tambah Pegawai Baru</h2>
+                            <p class="modal-sub">Isi detail akun untuk pegawai baru</p>
                         </div>
-                        <form method="post" action="{% url 'add_employee' %}">
-                            {% csrf_token %}
-                            <div class="row g-4 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label-custom">First Name</label>
-                                    <input type="text" name="first_name" class="dark-input" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-custom">Last Name</label>
-                                    <input type="text" name="last_name" class="dark-input" required />
-                                </div>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Tutup"></button>
+                    </div>
+                    <form method="post" action="{% url 'add_employee' %}">
+                        {% csrf_token %}
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Nama Depan</label>
+                                <input type="text" name="first_name" class="dark-input" required />
                             </div>
-                            <div class="mb-4">
-                                <label class="form-label-custom">Username</label>
-                                <input type="text" name="username" class="dark-input" required />
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Nama Belakang</label>
+                                <input type="text" name="last_name" class="dark-input" required />
                             </div>
-                            <div class="mb-4">
-                                <label class="form-label-custom">Password</label>
-                                <input type="password"
-                                       name="password"
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label-custom">Nama Pengguna</label>
+                            <input type="text" name="username" class="dark-input" required />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label-custom">Kata Sandi</label>
+                            <input type="password"
+                                   name="password"
+                                   class="dark-input"
+                                   placeholder="Minimal 8 karakter"
+                                   required />
+                        </div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Nomor Telepon</label>
+                                <input type="text"
+                                       name="phone_number"
                                        class="dark-input"
-                                       placeholder="Minimal 8 karakter"
+                                       placeholder="Contoh: 08xxxxx"
                                        required />
                             </div>
-                            <div class="row g-4 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label-custom">Phone Number</label>
-                                    <input type="text"
-                                           name="phone_number"
-                                           class="dark-input"
-                                           placeholder="Contoh: 08xxxxx"
-                                           required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-custom">Role</label>
-                                    <select name="role" class="dark-input" required>
-                                        <option value="ADMIN">Admin</option>
-                                        <option value="COURIER">Courier</option>
-                                    </select>
-                                </div>
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Peran</label>
+                                <select name="role" class="dark-input" required>
+                                    <option value="ADMIN">Admin</option>
+                                    <option value="KURIR">Kurir</option>
+                                </select>
                             </div>
-                            <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
-                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn-orange px-5">Save Employee</button>
-                            </div>
-                        </form>
-                    </div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
+                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn-orange px-5">Simpan Pegawai</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-        <!-- MODAL: ADD CUSTOMER -->
+    </div>
+    <!-- MODAL: ADD CUSTOMER -->
+    <div class="modal fade"
+         id="addCustomerModal"
+         tabindex="-1"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-2">
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h2 class="modal-title-custom">Tambah Pelanggan Baru</h2>
+                            <p class="modal-sub">Isi detail data pelanggan baru</p>
+                        </div>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Tutup"></button>
+                    </div>
+                    <form method="post" action="{% url 'add_customer' %}">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label-custom">Nama</label>
+                            <input type="text"
+                                   name="name"
+                                   class="dark-input"
+                                   placeholder="Nama Pelanggan"
+                                   required />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label-custom">Nomor Telepon</label>
+                            <input type="text"
+                                   name="phone_number"
+                                   class="dark-input"
+                                   placeholder="Contoh: 08xxxxx"
+                                   required />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label-custom">Alamat</label>
+                            <textarea name="address"
+                                      class="dark-input"
+                                      rows="3"
+                                      placeholder="Alamat lengkap pengiriman"
+                                      required></textarea>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
+                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn-orange px-5">Simpan Pelanggan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL: DETAIL / EDIT CUSTOMER -->
+    {% for cust in customers %}
         <div class="modal fade"
-             id="addCustomerModal"
+             id="detailCustomer{{ cust.pk }}"
              tabindex="-1"
              aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -257,128 +305,74 @@
                     <div class="modal-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <h2 class="modal-title-custom">Add New Customer</h2>
-                                <p class="modal-sub">Isi detail data pelanggan baru</p>
+                                <h2 class="modal-title-custom">Detail Pelanggan</h2>
+                                <p class="modal-sub">Perbarui atau hapus data pelanggan</p>
                             </div>
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                                    aria-label="Tutup"></button>
                         </div>
-                        <form method="post" action="{% url 'add_customer' %}">
+                        <form method="post" action="{% url 'edit_customer' cust.pk %}">
                             {% csrf_token %}
                             <div class="mb-4">
-                                <label class="form-label-custom">Name</label>
+                                <label class="form-label-custom">Nama</label>
                                 <input type="text"
                                        name="name"
+                                       value="{{ cust.name }}"
                                        class="dark-input"
-                                       placeholder="Nama Pelanggan"
                                        required />
                             </div>
                             <div class="mb-4">
-                                <label class="form-label-custom">Phone Number</label>
-                                <input type="text"
-                                       name="phone_number"
-                                       class="dark-input"
-                                       placeholder="Contoh: 08xxxxx"
-                                       required />
+                                <label class="form-label-custom">Nomor Telepon</label>
+                                <div class="d-flex gap-2">
+                                    <input type="text"
+                                           name="phone_number"
+                                           value="{{ cust.phone_number }}"
+                                           class="dark-input"
+                                           required />
+                                    <a href="{{ cust.whatsapp_url }}"
+                                       target="_blank"
+                                       rel="noopener"
+                                       class="btn-cancel px-3"
+                                       style="text-decoration:none"
+                                       title="Buka WhatsApp"><i class="bi bi-whatsapp text-success"></i></a>
+                                </div>
                             </div>
                             <div class="mb-4">
-                                <label class="form-label-custom">Address</label>
-                                <textarea name="address"
-                                          class="dark-input"
-                                          rows="3"
-                                          placeholder="Alamat lengkap pengiriman"
-                                          required></textarea>
+                                <label class="form-label-custom">Alamat</label>
+                                <div class="d-flex gap-2 align-items-start">
+                                    <textarea name="address"
+                                              class="dark-input"
+                                              rows="3"
+                                              required>{{ cust.address }}</textarea>
+                                    <a href="{{ cust.maps_url }}"
+                                       target="_blank"
+                                       rel="noopener"
+                                       class="btn-cancel px-3 h-100"
+                                       style="text-decoration:none;
+                                              padding-top: 15px;
+                                              padding-bottom: 15px"
+                                       title="Buka Maps"><i class="bi bi-geo-alt text-primary"></i></a>
+                                </div>
                             </div>
-                            <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
-                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn-orange px-5">Save Customer</button>
+                            <div class="d-flex flex-wrap gap-2 justify-content-end mt-5 border-top pt-4">
+                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit"
+                                        form="deleteCustomer{{ cust.pk }}"
+                                        class="btn-danger-custom me-auto"><i class="bi bi-trash3 me-1"></i> Hapus</button>
+                                <button type="submit" class="btn-orange px-4">Perbarui</button>
                             </div>
+                        </form>
+                        <form id="deleteCustomer{{ cust.pk }}"
+                              method="post"
+                              action="{% url 'delete_customer' cust.pk %}"
+                              data-confirm="Apakah Anda yakin ingin menghapus pelanggan {{ cust.name }}?">
+                            {% csrf_token %}
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- MODAL: DETAIL / EDIT CUSTOMER -->
-        {% for cust in customers %}
-            <div class="modal fade"
-                 id="detailCustomer{{ cust.pk }}"
-                 tabindex="-1"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content p-2">
-                        <div class="modal-body p-4">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h2 class="modal-title-custom">Customer Details</h2>
-                                    <p class="modal-sub">Perbarui atau hapus data pelanggan</p>
-                                </div>
-                                <button type="button"
-                                        class="btn-close"
-                                        data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                            </div>
-                            <form method="post" action="{% url 'edit_customer' cust.pk %}">
-                                {% csrf_token %}
-                                <div class="mb-4">
-                                    <label class="form-label-custom">Name</label>
-                                    <input type="text"
-                                           name="name"
-                                           value="{{ cust.name }}"
-                                           class="dark-input"
-                                           required />
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label-custom">Phone Number</label>
-                                    <div class="d-flex gap-2">
-                                        <input type="text"
-                                               name="phone_number"
-                                               value="{{ cust.phone_number }}"
-                                               class="dark-input"
-                                               required />
-                                        <a href="{{ cust.whatsapp_url }}"
-                                           target="_blank"
-                                           rel="noopener"
-                                           class="btn-cancel px-3"
-                                           style="text-decoration:none"
-                                           title="Buka WhatsApp"><i class="bi bi-whatsapp text-success"></i></a>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label-custom">Address</label>
-                                    <div class="d-flex gap-2 align-items-start">
-                                        <textarea name="address"
-                                                  class="dark-input"
-                                                  rows="3"
-                                                  required>{{ cust.address }}</textarea>
-                                        <a href="{{ cust.maps_url }}"
-                                           target="_blank"
-                                           rel="noopener"
-                                           class="btn-cancel px-3 h-100"
-                                           style="text-decoration:none;
-                                                  padding-top: 15px;
-                                                  padding-bottom: 15px"
-                                           title="Buka Maps"><i class="bi bi-geo-alt text-primary"></i></a>
-                                    </div>
-                                </div>
-                                <div class="d-flex flex-wrap gap-2 justify-content-end mt-5 border-top pt-4">
-                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit"
-                                            form="deleteCustomer{{ cust.pk }}"
-                                            class="btn-danger-custom me-auto"><i class="bi bi-trash3 me-1"></i> Delete</button>
-                                    <button type="submit" class="btn-orange px-4">Update</button>
-                                </div>
-                            </form>
-                            <form id="deleteCustomer{{ cust.pk }}"
-                                  method="post"
-                                  action="{% url 'delete_customer' cust.pk %}"
-                                  data-confirm="Apakah Anda yakin ingin menghapus pelanggan {{ cust.name }}?">
-                                {% csrf_token %}
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
+    {% endfor %}
 {% endblock %}

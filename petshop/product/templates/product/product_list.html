@@ -19,7 +19,7 @@
             <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 animate-fade-up"
                  style="animation-delay: 0s">
                 <div>
-                    <p class="eyebrow">Dashboard</p>
+                    <p class="eyebrow">Dasbor</p>
                     <h1 class="page-title">Stok &amp; Harga</h1>
                     <p class="text-muted mt-1 fw-medium mb-0">
                         {{ counts.all }} total produk tersimpan.
@@ -136,7 +136,7 @@
                                     <td class="text-end">
                                         <div class="d-flex gap-2 justify-content-end">
                                             <a href="{% url 'product:set_selling_price' p.pk %}"
-                                               class="btn-sm-action {% if p.selling_price is None %}primary{% endif %}">Set Harga</a>
+                                               class="btn-sm-action {% if p.selling_price is None %}primary{% endif %}">Atur Harga</a>
                                             <a href="{% url 'product:add_stock_mutation' %}?product={{ p.pk }}"
                                                class="btn-sm-action {% if p.stock_state != 'ok' %}primary{% endif %}">+ Stok</a>
                                         </div>
@@ -163,8 +163,8 @@
                 <div class="feed-wrapper">
                     {% for m in recentMutations %}
                         <div class="feed-item">
-                            <div class="feed-icon {% if m.mutationType == 'IN' %}in{% else %}out{% endif %}">
-                                {% if m.mutationType == "IN" %}
+                            <div class="feed-icon {% if m.mutationType == 'MASUK' %}in{% else %}out{% endif %}">
+                                {% if m.mutationType == "MASUK" %}
                                     <i class="bi bi-arrow-down-left"></i>
                                 {% else %}
                                     <i class="bi bi-arrow-up-right"></i>
@@ -173,8 +173,8 @@
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h6 class="fw-bold mb-1">{{ m.product.name }}</h6>
-                                    <b class="fs-5 {% if m.mutationType == 'IN' %}text-success{% else %}text-danger{% endif %}">
-                                        {% if m.mutationType == "IN" %}+{% else %}−{% endif %}{{ m.quantity }}
+                                    <b class="fs-5 {% if m.mutationType == 'MASUK' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if m.mutationType == "MASUK" %}+{% else %}−{% endif %}{{ m.quantity }}
                                     </b>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-1">

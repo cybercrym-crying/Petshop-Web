@@ -12,7 +12,7 @@
                      loading="lazy">
             {% endif %}
         </a>
-        <span class="chip chip-category">{{ item.category.name|kategori }}</span>
+        <span class="chip chip-category">{{ item.category.name|category_label }}</span>
         {% if item.stock == 0 %}
             <span class="chip chip-stock chip-out">Stok habis</span>
         {% elif item.stock <= 5 %}

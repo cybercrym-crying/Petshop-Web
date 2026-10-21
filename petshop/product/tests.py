@@ -84,7 +84,7 @@ class StockPagesTests(TestCase):
     def test_record_stock_in_via_page(self):
         self.client.post(
             "/stock-mutation",
-            {"product": self.p.pk, "mutationType": "IN", "quantity": 4, "note": "restock"},
+            {"product": self.p.pk, "mutationType": "MASUK", "quantity": 4, "note": "restock"},
         )
         self.p.refresh_from_db()
         self.assertEqual(self.p.stock, 9)
@@ -93,7 +93,7 @@ class StockPagesTests(TestCase):
     def test_out_over_stock_shows_error_and_keeps_stock(self):
         r = self.client.post(
             "/stock-mutation",
-            {"product": self.p.pk, "mutationType": "OUT", "quantity": 99, "note": ""},
+            {"product": self.p.pk, "mutationType": "KELUAR", "quantity": 99, "note": ""},
         )
         self.assertEqual(r.status_code, 200)
         self.p.refresh_from_db()
@@ -102,7 +102,7 @@ class StockPagesTests(TestCase):
     def test_zero_quantity_rejected(self):
         self.client.post(
             "/stock-mutation",
-            {"product": self.p.pk, "mutationType": "IN", "quantity": 0, "note": ""},
+            {"product": self.p.pk, "mutationType": "MASUK", "quantity": 0, "note": ""},
         )
         self.assertEqual(StockMutation.objects.count(), 0)
 
@@ -162,11 +162,11 @@ class StockListFilterTests(TestCase):
 class PetTypeConditionTests(TestCase):
     def test_defaults_for_existing_style_products(self):
         p = make_product()
-        self.assertEqual((p.pet_type, p.condition), ("ALL", "NEW"))
+        self.assertEqual((p.pet_type, p.condition), ("SEMUA", "BARU"))
 
     def test_migration_created_new_categories(self):
         codes = set(Category.objects.values_list("name", flat=True))
-        self.assertTrue({"HEALTHCARE", "TOYS", "GROOMING"} <= codes)
+        self.assertTrue({"KESEHATAN", "MAINAN", "PERLENGKAPAN"} <= codes)
 
     def _data(self, **extra):
         cat, _ = Category.objects.get_or_create(name=Category.FOOD)
@@ -179,13 +179,13 @@ class PetTypeConditionTests(TestCase):
         form = FormProduct(self._data())
         self.assertTrue(form.is_valid(), form.errors)
         p = form.save()
-        self.assertEqual((p.pet_type, p.condition), ("ALL", "NEW"))
+        self.assertEqual((p.pet_type, p.condition), ("SEMUA", "BARU"))
 
     def test_form_saves_pet_type_and_condition_and_rejects_unknown(self):
         from .form import FormProduct
 
-        p = FormProduct(self._data(pet_type="CAT", condition="USED")).save()
-        self.assertEqual((p.pet_type, p.condition), ("CAT", "USED"))
+        p = FormProduct(self._data(pet_type="KUCING", condition="BEKAS")).save()
+        self.assertEqual((p.pet_type, p.condition), ("KUCING", "BEKAS"))
         self.assertFalse(FormProduct(self._data(pet_type="NAGA")).is_valid())
 
     def test_admin_pages_offer_pet_type_and_condition(self):
@@ -196,3 +196,31 @@ class PetTypeConditionTests(TestCase):
         self.assertContains(r, 'name="pet_type"', count=2)  # form tambah + 1 form edit
         self.assertContains(r, 'name="condition"', count=2)
         self.assertContains(r, "Hamster")
+
+
+
+class StockMovementTests(TestCase):
+    def test_every_mutation_type_has_a_movement(self):
+        from product.models import MOVEMENT_REGISTRY
+
+        self.assertEqual(set(MOVEMENT_REGISTRY), set(MutationType.values))
+
+    def test_stock_in_and_out_behave_differently(self):
+        from product.models import StockIn, StockOut
+
+        product = make_product(stock=10)
+        self.assertEqual(StockIn().apply(product, 4), 14)
+        self.assertEqual(StockOut().apply(product, 4), 6)
+        with self.assertRaises(InsufficientStock):
+            StockOut().apply(product, 11)
+
+    def test_abstract_movement_cannot_be_instantiated(self):
+        from product.models import StockMovement
+
+        with self.assertRaises(TypeError):
+            StockMovement()
+
+    def test_unknown_mutation_type_is_rejected(self):
+        product = make_product(stock=10)
+        with self.assertRaises(ValueError):
+            product.apply_mutation("LAINNYA", 1)

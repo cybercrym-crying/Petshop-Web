@@ -9,8 +9,8 @@
         
         <!-- Menu untuk User yang Sudah Login -->
         {% if user.is_authenticated %}
-            {% if user.role == "ADMIN" %}
-                <a href="{% url 'staff_admin_dashboard' %}" class="nav-link-custom">Dashboard Admin</a>
+            {% if user.peran.boleh_akses_admin %}
+                <a href="{% url 'staff_admin_dashboard' %}" class="nav-link-custom">Dasbor Admin</a>
                 <a href="{% url 'product:manage_product' %}" class="nav-link-custom">Kelola Produk</a>
                 <a href="{% url 'manage_account' %}" class="nav-link-custom">Kelola Akun</a>
                 <a href="{% url 'transaction:manage_transaction' %}" class="nav-link-custom">Kelola Transaksi</a>

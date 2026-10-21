@@ -6,7 +6,7 @@ from product.models import PetType, Product, ProductCondition
 from account.models import Customer
 from transaction.models import Order, OrderStatus
 
-from .templatetags.customer_extras import CONDITION_LABEL, KATEGORI, PET_LABEL
+from .templatetags.customer_extras import CONDITION_LABEL, CATEGORY_LABELS, PET_LABEL
 
 # Nomor WhatsApp admin (format internasional tanpa +), dipakai tombol kontak dan pesanan.
 ADMIN_WA_NUMBER = "6281356703075"
@@ -14,13 +14,10 @@ WA_LINK = f"https://wa.me/{ADMIN_WA_NUMBER}"
 WA_DISPLAY = "+62 813-5670-3075"
 
 
-# Banner promo di Home. Isi dengan promo yang benar-benar berlaku, atau ubah jadi None
-# untuk menyembunyikannya (banner "Ready to Order" akan tampil sebagai gantinya).
 SPECIAL_OFFER = {
     "title": "Diskon 20% untuk Produk Pilihan",
     "text": "Merek premium, barang favorit hewan kesayangan Anda, dengan harga spesial!",
 }
-# Alamat toko di bagian "Visit Us" halaman About. Kosongkan untuk menyembunyikannya.
 STORE_ADDRESS = ""
 
 
@@ -51,9 +48,9 @@ def cart_page(request):
 
 # Kategori di halaman Belanja: kode (sama dengan Category.name di database) -> gambar.
 CATEGORY_IMAGES = {
-    "FOOD": "customer/img/pet-food.png",
-    "EQUIPMENT": "customer/img/pet-toys.png",
-    "ACCESSORIES": "customer/img/pet-accessories.png",
+    "MAKANAN": "customer/img/pet-food.png",
+    "PERLENGKAPAN": "customer/img/pet-toys.png",
+    "AKSESORIS": "customer/img/pet-accessories.png",
 }
 DEFAULT_CATEGORY_IMAGE = "customer/img/product-placeholder.svg"
 POPULAR_LIMIT = 8
@@ -70,7 +67,7 @@ def _category_cards(products):
     return [
         {
             "code": code,
-            "label": KATEGORI.get(code, code.title()),
+            "label": CATEGORY_LABELS.get(code, code.title()),
             "image": CATEGORY_IMAGES.get(code, DEFAULT_CATEGORY_IMAGE),
             "count": counts[code],
         }
@@ -81,7 +78,7 @@ def _category_cards(products):
 def shop(request):
     """Home Shop: hero, kategori, produk populer. Dengan ?q=, ?category= atau
     ?wishlist=1 halaman yang sama menampilkan daftar produk hasil filter."""
-    produk = list(
+    products_list = list(
         Product.objects.sellable().select_related("category").order_by("name")
     )
     query = request.GET.get("q", "").strip()
@@ -92,12 +89,12 @@ def shop(request):
     results_title = ""
     if wishlist:
         # Server mengirim semua produk, browser menyembunyikan yang belum difavoritkan.
-        results, results_title = produk, "Produk Favorit"
+        results, results_title = products_list, "Produk Favorit"
     elif query or category:
-        results = produk
+        results = products_list
         if category:
             results = [p for p in results if str(p.category.name).upper() == category]
-            results_title = KATEGORI.get(category, category.title())
+            results_title = CATEGORY_LABELS.get(category, category.title())
         if query:
             results = [p for p in results if query.lower() in p.name.lower()]
             results_title = f"Hasil pencarian “{query}”"
@@ -108,8 +105,8 @@ def shop(request):
         _site_context(
             active_page="shop",
             query=query,
-            categories=_category_cards(produk),
-            popular_products=produk[:POPULAR_LIMIT],
+            categories=_category_cards(products_list),
+            popular_products=products_list[:POPULAR_LIMIT],
             results=results,
             results_title=results_title,
             wishlist_mode=wishlist,
@@ -127,16 +124,14 @@ SORT_OPTIONS = [
     ("price_desc", "Harga Tertinggi"),
     ("name", "Nama A–Z"),
 ]
-PET_FILTERS = [p for p in PetType.values if p != PetType.ALL]  # ALL = cocok untuk semua hewan
+PET_FILTERS = [p for p in PetType.values if p != PetType.ALL]
 CONDITION_FILTERS = list(ProductCondition.values)
-# Kalimat pembuka subjudul per kategori: "<kalimat> untuk <hewan> kesayangan Anda."
 CATEGORY_BLURB = {
-    "FOOD": "Makanan sehat dan lezat",
-    "EQUIPMENT": "Perlengkapan praktis dan awet",
-    "ACCESSORIES": "Aksesori yang lucu dan nyaman",
-    "HEALTHCARE": "Perawatan kesehatan yang terpercaya",
-    "TOYS": "Mainan seru",
-    "GROOMING": "Perlengkapan grooming yang lembut",
+    "MAKANAN": "Makanan sehat dan lezat",
+    "PERLENGKAPAN": "Perlengkapan praktis dan awet",
+    "AKSESORIS": "Aksesori yang lucu dan nyaman",
+    "KESEHATAN": "Perawatan kesehatan yang terpercaya",
+    "MAINAN": "Mainan seru",
 }
 
 
@@ -169,7 +164,7 @@ def _sold_units():
 def _heading(pets, categories, query, has_filters):
     one_pet = PET_LABEL[pets[0]] if len(pets) == 1 else None
     one_cat = categories[0] if len(categories) == 1 else None
-    cat_label = KATEGORI.get(one_cat, one_cat.title()) if one_cat else None
+    cat_label = CATEGORY_LABELS.get(one_cat, one_cat.title()) if one_cat else None
     if cat_label and one_pet:
         title = f"{cat_label} {one_pet}"
     elif cat_label:
@@ -182,8 +177,14 @@ def _heading(pets, categories, query, has_filters):
         title = "Hasil Filter"
     else:
         title = "Semua Produk"
-    opening = CATEGORY_BLURB.get(one_cat, "Temukan kebutuhan terbaik") if one_cat else "Temukan kebutuhan terbaik"
-    target = f"{one_pet.lower()} kesayangan Anda" if one_pet else "hewan kesayangan Anda"
+    opening = (
+        CATEGORY_BLURB.get(one_cat, "Temukan kebutuhan terbaik")
+        if one_cat
+        else "Temukan kebutuhan terbaik"
+    )
+    target = (
+        f"{one_pet.lower()} kesayangan Anda" if one_pet else "hewan kesayangan Anda"
+    )
     return title, f"{opening} untuk {target}."
 
 
@@ -232,7 +233,14 @@ def products(request):
 
     page_obj = Paginator(queryset, PRODUCTS_PER_PAGE).get_page(request.GET.get("page"))
 
-    has_filters = bool(pets or categories or conditions or min_price is not None or max_price is not None or query)
+    has_filters = bool(
+        pets
+        or categories
+        or conditions
+        or min_price is not None
+        or max_price is not None
+        or query
+    )
     title, blurb = _heading(pets, categories, query, has_filters)
 
     params = request.GET.copy()
@@ -247,8 +255,16 @@ def products(request):
         + [PET_LABEL[code] for code in pets]
         + [c["label"] for c in category_options if c["checked"]]
         + [CONDITION_LABEL[code] for code in conditions]
-        + ([f"Mulai Rp {min_price:,}".replace(",", ".")] if min_price is not None else [])
-        + ([f"Sampai Rp {max_price:,}".replace(",", ".")] if max_price is not None else [])
+        + (
+            [f"Mulai Rp {min_price:,}".replace(",", ".")]
+            if min_price is not None
+            else []
+        )
+        + (
+            [f"Sampai Rp {max_price:,}".replace(",", ".")]
+            if max_price is not None
+            else []
+        )
     )
 
     return render(
@@ -262,10 +278,14 @@ def products(request):
             page_obj=page_obj,
             products=page_obj.object_list,
             total=page_obj.paginator.count,
-            pet_options=[{"code": c, "label": PET_LABEL[c], "checked": c in pets} for c in PET_FILTERS],
+            pet_options=[
+                {"code": c, "label": PET_LABEL[c], "checked": c in pets}
+                for c in PET_FILTERS
+            ],
             category_options=category_options,
             condition_options=[
-                {"code": c, "label": CONDITION_LABEL[c], "checked": c in conditions} for c in CONDITION_FILTERS
+                {"code": c, "label": CONDITION_LABEL[c], "checked": c in conditions}
+                for c in CONDITION_FILTERS
             ],
             min_price=min_price,
             max_price=max_price,

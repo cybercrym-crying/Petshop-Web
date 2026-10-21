@@ -2,219 +2,220 @@
 {% load static rupiah %}
 {% block title %}PetAdmin - {{ emp.display_name }}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'account/css/employee_profile.css' %}?v=dm1" rel="stylesheet" />
+    <link href="{% static 'account/css/employee_profile.css' %}?v=dm1"
+          rel="stylesheet" />
 {% endblock %}
 {% block content %}
-        <div class="container-fluid px-xl-4 px-3 py-4">
-            <!-- Breadcrumb -->
-            <div class="pf-crumb animate-fade-up" style="animation-delay: 0s;">
-                <a href="{% url 'manage_account' %}"><i class="bi bi-arrow-left me-1"></i> Manage User</a>
-                <span>/</span> Employee <span>/</span> <span class="text-dark fw-bold">{{ emp.display_name }}</span>
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <!-- Breadcrumb -->
+        <div class="pf-crumb animate-fade-up" style="animation-delay: 0s;">
+            <a href="{% url 'manage_account' %}"><i class="bi bi-arrow-left me-1"></i> Kelola Pengguna</a>
+            <span>/</span> Pegawai <span>/</span> <span class="text-dark fw-bold">{{ emp.display_name }}</span>
+        </div>
+        {% if messages %}
+            <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
+                         role="alert">
+                        {{ message }}
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Tutup"></button>
+                    </div>
+                {% endfor %}
             </div>
-            {% if messages %}
-                <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
-                    {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
-                             role="alert">
-                            {{ message }}
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            <div class="row g-4 mb-4">
-                <!-- KIRI: Profil Ringkas -->
-                <div class="col-12 col-xl-4 animate-fade-up" style="animation-delay: 0.2s">
-                    <div class="card-custom h-100 text-center text-xl-start">
-                        <div class="d-flex flex-column align-items-center align-items-xl-start">
-                            <i class="emp-av tone-{{ emp.tone|default:'5' }}">{{ emp.initials }}</i>
-                            <h2 class="fw-bold mb-0" style="color: #2B3674;">{{ emp.display_name }}</h2>
-                            <p class="text-muted fw-semibold mb-3">@{{ emp.username }}</p>
-                            <div class="d-flex gap-2 mb-4 justify-content-center justify-content-xl-start">
-                                {% if is_courier %}
-                                    <span class="badge-role role-courier">Courier</span>
-                                {% else %}
-                                    <span class="badge-role role-admin">Admin</span>
-                                {% endif %}
-                                {% if emp.is_active %}
-                                    <span class="badge-role status-active">Active</span>
-                                {% else %}
-                                    <span class="badge-role status-inactive">Inactive</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <hr class="text-muted opacity-25">
-                        <div class="mb-3">
-                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Phone Number</small>
-                            <span class="fw-bold fs-6">{{ emp.phone_number|default:"-" }}</span>
-                            {% if wa_url %}
-                                <a href="{{ wa_url }}"
-                                   target="_blank"
-                                   rel="noopener"
-                                   class="ms-2 badge bg-success text-decoration-none py-1 px-2"><i class="bi bi-whatsapp"></i> Chat</a>
+        {% endif %}
+        <div class="row g-4 mb-4">
+            <!-- KIRI: Profil Ringkas -->
+            <div class="col-12 col-xl-4 animate-fade-up" style="animation-delay: 0.2s">
+                <div class="card-custom h-100 text-center text-xl-start">
+                    <div class="d-flex flex-column align-items-center align-items-xl-start">
+                        <i class="emp-av tone-{{ emp.tone|default:'5' }}">{{ emp.initials }}</i>
+                        <h2 class="fw-bold mb-0" style="color: #2B3674;">{{ emp.display_name }}</h2>
+                        <p class="text-muted fw-semibold mb-3">@{{ emp.username }}</p>
+                        <div class="d-flex gap-2 mb-4 justify-content-center justify-content-xl-start">
+                            {% if is_courier %}
+                                <span class="badge-role role-courier">Kurir</span>
+                            {% else %}
+                                <span class="badge-role role-admin">Admin</span>
+                            {% endif %}
+                            {% if emp.is_active %}
+                                <span class="badge-role status-active">Aktif</span>
+                            {% else %}
+                                <span class="badge-role status-inactive">Tidak Aktif</span>
                             {% endif %}
                         </div>
-                        <div class="mb-3">
-                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Role Type</small>
-                            <span class="fw-bold fs-6">{% if is_courier %}Courier{% else %}Admin{% endif %}</span>
-                        </div>
-                        <div class="mb-4">
-                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Joined Date</small>
-                            <span class="fw-bold fs-6">{{ emp.date_joined|date:"d M Y" }}</span>
-                        </div>
-                        <!-- Statistik -->
-                        <div class="row g-2 mt-auto">
-                            {% for st in stats %}
-                                <div class="col-6">
-                                    <div class="stat-box">
-                                        <div class="num {{ st.tone }}">{{ st.value }}</div>
-                                        <div class="lbl">{{ st.label }}</div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
                     </div>
-                </div>
-                <!-- KANAN: Form Edit Akun -->
-                <div class="col-12 col-xl-8 animate-fade-up" style="animation-delay: 0.3s">
-                    <div class="card-custom h-100">
-                        <h4 class="fw-bold mb-4"
-                            style="color: #2B3674"><i class="bi bi-person-gear me-2"></i> Account Information</h4>
-                        <form method="post" action="{% url 'edit_employee' emp.pk %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="{{ request.path }}">
-                            <div class="row g-4 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label-custom" for="first_name">First Name</label>
-                                    <input type="text"
-                                           id="first_name"
-                                           name="first_name"
-                                           value="{{ emp.first_name }}"
-                                           class="dark-input"
-                                           required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-custom" for="last_name">Last Name</label>
-                                    <input type="text"
-                                           id="last_name"
-                                           name="last_name"
-                                           value="{{ emp.last_name }}"
-                                           class="dark-input"
-                                           required>
+                    <hr class="text-muted opacity-25">
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Nomor HP</small>
+                        <span class="fw-bold fs-6">{{ emp.phone_number|default:"-" }}</span>
+                        {% if wa_url %}
+                            <a href="{{ wa_url }}"
+                               target="_blank"
+                               rel="noopener"
+                               class="ms-2 badge bg-success text-decoration-none py-1 px-2"><i class="bi bi-whatsapp"></i> Chat</a>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Tipe Peran</small>
+                        <span class="fw-bold fs-6">{% if is_courier %}Kurir{% else %}Admin{% endif %}</span>
+                    </div>
+                    <div class="mb-4">
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Tanggal Bergabung</small>
+                        <span class="fw-bold fs-6">{{ emp.date_joined|date:"d M Y" }}</span>
+                    </div>
+                    <!-- Statistik -->
+                    <div class="row g-2 mt-auto">
+                        {% for st in stats %}
+                            <div class="col-6">
+                                <div class="stat-box">
+                                    <div class="num {{ st.tone }}">{{ st.value }}</div>
+                                    <div class="lbl">{{ st.label }}</div>
                                 </div>
                             </div>
-                            <div class="mb-4">
-                                <label class="form-label-custom" for="username">Username</label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <!-- KANAN: Form Edit Akun -->
+            <div class="col-12 col-xl-8 animate-fade-up" style="animation-delay: 0.3s">
+                <div class="card-custom h-100">
+                    <h4 class="fw-bold mb-4"
+                        style="color: #2B3674"><i class="bi bi-person-gear me-2"></i>Informasi Akun</h4>
+                    <form method="post" action="{% url 'edit_employee' emp.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label-custom" for="first_name">Nama Depan</label>
                                 <input type="text"
-                                       id="username"
-                                       name="username"
-                                       value="{{ emp.username }}"
+                                       id="first_name"
+                                       name="first_name"
+                                       value="{{ emp.first_name }}"
                                        class="dark-input"
                                        required>
                             </div>
-                            <div class="row g-4 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label-custom" for="phone_number">Phone Number</label>
-                                    <input type="text"
-                                           id="phone_number"
-                                           name="phone_number"
-                                           value="{{ emp.phone_number }}"
-                                           class="dark-input"
-                                           placeholder="08xxxxx">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-custom" for="role">Role</label>
-                                    {% if is_self %}
-                                        <select id="role" class="dark-input" disabled>
-                                            <option>{{ emp.get_role_display }}</option>
-                                        </select>
-                                        <input type="hidden" name="role" value="{{ emp.role }}">
-                                        <small class="text-danger mt-1 d-block fw-semibold"><i class="bi bi-info-circle"></i> Anda tidak bisa mengubah role Anda sendiri.</small>
-                                    {% else %}
-                                        <select id="role" name="role" class="dark-input">
-                                            <option value="ADMIN"
-                                                    {% if emp.role == "ADMIN" %}selected{% endif %}>Admin</option>
-                                            <option value="COURIER"
-                                                    {% if emp.role == "COURIER" %}selected{% endif %}>Courier</option>
-                                        </select>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="mb-5">
-                                <label class="form-label-custom" for="password">New Password (Opsional)</label>
-                                <input type="password"
-                                       id="password"
-                                       name="password"
-                                       autocomplete="new-password"
+                            <div class="col-md-6">
+                                <label class="form-label-custom" for="last_name">Nama Belakang</label>
+                                <input type="text"
+                                       id="last_name"
+                                       name="last_name"
+                                       value="{{ emp.last_name }}"
                                        class="dark-input"
-                                       placeholder="Biarkan kosong jika tidak ingin mengubah password">
+                                       required>
                             </div>
-                            <div class="d-flex flex-wrap gap-3 justify-content-end mt-4 pt-4 border-top">
-                                {% if not is_self %}
-                                    <button type="submit"
-                                            form="deleteEmployee"
-                                            class="btn-danger-custom me-auto"><i class="bi bi-person-x me-1"></i> Hapus Akun</button>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label-custom" for="username">Nama Pengguna</label>
+                            <input type="text"
+                                   id="username"
+                                   name="username"
+                                   value="{{ emp.username }}"
+                                   class="dark-input"
+                                   required>
+                        </div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label-custom" for="phone_number">Nomor HP</label>
+                                <input type="text"
+                                       id="phone_number"
+                                       name="phone_number"
+                                       value="{{ emp.phone_number }}"
+                                       class="dark-input"
+                                       placeholder="08xxxxx">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-custom" for="role">Peran</label>
+                                {% if is_self %}
+                                    <select id="role" class="dark-input" disabled>
+                                        <option>{{ emp.get_role_display }}</option>
+                                    </select>
+                                    <input type="hidden" name="role" value="{{ emp.role }}">
+                                    <small class="text-danger mt-1 d-block fw-semibold"><i class="bi bi-info-circle"></i> Anda tidak bisa mengubah peran Anda sendiri.</small>
+                                {% else %}
+                                    <select id="role" name="role" class="dark-input">
+                                        <option value="ADMIN"
+                                                {% if emp.role == "ADMIN" %}selected{% endif %}>Admin</option>
+                                        <option value="KURIR"
+                                                {% if emp.role == "KURIR" %}selected{% endif %}>Kurir</option>
+                                    </select>
                                 {% endif %}
-                                <a href="{% url 'manage_account' %}" class="btn-cancel">Batal</a>
-                                <button type="submit" class="btn-orange px-4">Simpan Perubahan</button>
                             </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label-custom" for="password">Kata Sandi Baru (Opsional)</label>
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   autocomplete="new-password"
+                                   class="dark-input"
+                                   placeholder="Biarkan kosong jika tidak ingin mengubah kata sandi">
+                        </div>
+                        <div class="d-flex flex-wrap gap-3 justify-content-end mt-4 pt-4 border-top">
+                            {% if not is_self %}
+                                <button type="submit"
+                                        form="deleteEmployee"
+                                        class="btn-danger-custom me-auto"><i class="bi bi-person-x me-1"></i> Hapus Akun</button>
+                            {% endif %}
+                            <a href="{% url 'manage_account' %}" class="btn-cancel">Batal</a>
+                            <button type="submit" class="btn-orange px-4">Simpan Perubahan</button>
+                        </div>
+                    </form>
+                    {% if not is_self %}
+                        <form id="deleteEmployee"
+                              method="post"
+                              action="{% url 'delete_employee' emp.pk %}"
+                              data-confirm="Apakah Anda yakin ingin menghapus pegawai ini secara permanen?">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
                         </form>
-                        {% if not is_self %}
-                            <form id="deleteEmployee"
-                                  method="post"
-                                  action="{% url 'delete_employee' emp.pk %}"
-                                  data-confirm="Apakah Anda yakin ingin menghapus pegawai ini secara permanen?">
-                                {% csrf_token %}
-                                <input type="hidden" name="next" value="{{ request.path }}">
-                            </form>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            <!-- TABEL BAWAH: Riwayat Order/Delivery -->
-            <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
-                style="animation-delay: 0.4s;
-                       color: #2B3674">
-                <i class="bi bi-clock-history me-2"></i> {% if is_courier %}Recent Deliveries{% else %}Recent Orders Created{% endif %}
-            </h4>
-            <div class="card-custom p-0 animate-fade-up" style="animation-delay: 0.5s">
-                <div class="table-responsive">
-                    <table class="table table-custom">
-                        <thead>
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Customer</th>
-                                <th>Total Pembayaran</th>
-                                <th>Status Bayar</th>
-                                <th>Status Order</th>
-                                <th>Tanggal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for o in recent_orders %}
-                                <tr>
-                                    <td><a class="order-link"
-   href="{% url 'transaction:manage_transaction' %}?q={{ o.pk }}">#{{ o.pk }}</a></td>
-                                    <td class="fw-bold">{{ o.customer.name }}</td>
-                                    <td class="fw-bold" style="color: #2B3674;">Rp {{ o.total_payment|rupiah }}</td>
-                                    <td><span class="s-{{ o.payment_status|lower }}">{{ o.get_payment_status_display }}</span></td>
-                                    <td><span class="s-{{ o.order_status|lower }}">{{ o.get_order_status_display }}</span></td>
-                                    <td class="text-muted fw-semibold">{{ o.date|date:"d M Y, H:i" }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center py-5">
-                                        <i class="bi bi-receipt text-muted opacity-50" style="font-size: 3rem;"></i>
-                                        <h5 class="fw-bold mt-3 text-dark">Belum ada riwayat pesanan</h5>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    {% endif %}
                 </div>
             </div>
         </div>
+        <!-- TABEL BAWAH: Riwayat Order/Delivery -->
+        <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
+            style="animation-delay: 0.4s;
+                   color: #2B3674">
+            <i class="bi bi-clock-history me-2"></i> {% if is_courier %}Pengiriman Terbaru{% else %}Order Terbaru yang Dibuat{% endif %}
+        </h4>
+        <div class="card-custom p-0 animate-fade-up" style="animation-delay: 0.5s">
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>ID Pesanan</th>
+                            <th>Pelanggan</th>
+                            <th>Total Pembayaran</th>
+                            <th>Status Bayar</th>
+                            <th>Status Order</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in recent_orders %}
+                            <tr>
+                                <td><a class="order-link"
+   href="{% url 'transaction:manage_transaction' %}?q={{ o.pk }}">#{{ o.pk }}</a></td>
+                                <td class="fw-bold">{{ o.customer.name }}</td>
+                                <td class="fw-bold" style="color: #2B3674;">Rp {{ o.total_payment|rupiah }}</td>
+                                <td><span class="s-{{ o.payment_status|lower }}">{{ o.get_payment_status_display }}</span></td>
+                                <td><span class="s-{{ o.order_status|lower }}">{{ o.get_order_status_display }}</span></td>
+                                <td class="text-muted fw-semibold">{{ o.date|date:"d M Y, H:i" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="bi bi-receipt text-muted opacity-50" style="font-size: 3rem;"></i>
+                                    <h5 class="fw-bold mt-3 text-dark">Belum ada riwayat pesanan</h5>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}

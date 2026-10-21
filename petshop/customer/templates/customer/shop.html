@@ -2,7 +2,7 @@
 {% load static %}
 {% block navbar %}
 <header class="site-header">
-    <nav class="container site-nav" aria-label="Shop navigation">
+    <nav class="container site-nav" aria-label="Navigasi toko">
         <a href="{% url 'customer:home' %}" class="brand">
             <i class="fas fa-paw" aria-hidden="true"></i>
             <span>Seelly Petshop</span>
@@ -10,16 +10,16 @@
         <div class="nav-actions ms-auto">
             <form class="search-form" action="{% url 'customer:shop' %}" method="get" role="search">
                 <input type="search" name="q" value="{{ query|default:'' }}"
-                       placeholder="Search products..." aria-label="Search products">
-                <button type="submit" aria-label="Search">
+                       placeholder="Cari produk..." aria-label="Cari produk">
+                <button type="submit" aria-label="Cari">
                     <i class="fas fa-search" aria-hidden="true"></i>
                 </button>
             </form>
-            <a class="icon-btn" href="{% url 'customer:shop' %}?wishlist=1" aria-label="Wishlist">
+            <a class="icon-btn" href="{% url 'customer:shop' %}?wishlist=1" aria-label="Favorit">
                 <i class="far fa-heart" aria-hidden="true"></i>
                 <span class="icon-badge" id="wishlist-count" hidden>0</span>
             </a>
-            <a class="icon-btn" href="{% url 'customer:cart' %}" aria-label="Cart">
+            <a class="icon-btn" href="{% url 'customer:cart' %}" aria-label="Keranjang">
                 <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                 <span class="icon-badge" id="cart-count" hidden>0</span>
             </a>
@@ -41,7 +41,7 @@
                 {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
                 <h2 class="filter-title">Filter</h2>
                 <fieldset class="filter-group">
-                    <legend>Category</legend>
+                    <legend>Kategori</legend>
                     {% for category in categories %}
                         <label class="check-row">
                             <input type="checkbox"
@@ -55,7 +55,7 @@
                     {% endfor %}
                 </fieldset>
                 <fieldset class="filter-group">
-                    <legend>Price</legend>
+                    <legend>Harga</legend>
                     <label class="price-input">
                         <span>Rp</span>
                         <input type="number"
@@ -63,7 +63,7 @@
                                min="0"
                                step="1000"
                                inputmode="numeric"
-                               placeholder="Min price"
+                               placeholder="Harga minimum"
                                value="{{ min_price|default_if_none:'' }}">
                     </label>
                     <label class="price-input">
@@ -73,24 +73,24 @@
                                min="0"
                                step="1000"
                                inputmode="numeric"
-                               placeholder="Max price"
+                               placeholder="Harga maksimum"
                                value="{{ max_price|default_if_none:'' }}">
                     </label>
                 </fieldset>
                 <fieldset class="filter-group">
-                    <legend>Availability</legend>
+                    <legend>Ketersediaan</legend>
                     <label class="check-row">
                         <input type="checkbox"
                                name="in_stock"
                                value="1"
                                {% if in_stock_only %}checked{% endif %}>
                         <span class="check-box" aria-hidden="true"></span>
-                        <span class="check-label">In stock only</span>
+                        <span class="check-label">Hanya yang tersedia</span>
                     </label>
                 </fieldset>
-                <button type="submit" class="btn-primary-seelly w-100">Apply Filters</button>
+                <button type="submit" class="btn-primary-seelly w-100">Terapkan Filter</button>
                 {% if has_filters %}
-                    <a href="{% url 'customer:shop' %}" class="filter-reset">Reset all</a>
+                    <a href="{% url 'customer:shop' %}" class="filter-reset">Atur ulang semua</a>
                 {% endif %}
             </form>
         </aside>
@@ -101,9 +101,9 @@
                     <h1 class="shop-title" id="shop-title">{{ title }}</h1>
                     <p class="shop-sub" id="shop-sub">
                         {% if wishlist_mode %}
-                            Products you saved with the heart button.
+                            Produk yang Anda simpan dengan tombol hati.
                         {% elif page_obj %}
-                            {{ page_obj.paginator.count }} product{{ page_obj.paginator.count|pluralize }} found
+                            {{ page_obj.paginator.count }} produk ditemukan
                         {% endif %}
                     </p>
                 </div>
@@ -113,11 +113,11 @@
                             id="filter-toggle"
                             aria-expanded="false"
                             aria-controls="filter-panel">
-                        <i class="fas fa-sliders" aria-hidden="true"></i> Filters
+                        <i class="fas fa-sliders" aria-hidden="true"></i> Filter
                     </button>
                     {% if not wishlist_mode %}
                         <label class="sort-box">
-                            <span>Sort by</span>
+                            <span>Urutkan</span>
                             <select name="sort" form="filter-form" id="sort-select">
                                 {% for value, label in sort_options %}
                                     <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
@@ -129,13 +129,13 @@
             </div>
             {% if has_filters %}
                 <div class="active-filters">
-                    {% if query %}<span class="filter-chip">Search: “{{ query }}”</span>{% endif %}
+                    {% if query %}<span class="filter-chip">Pencarian: “{{ query }}”</span>{% endif %}
                     {% for category in categories %}
                         {% if category.code in selected_categories %}<span class="filter-chip">{{ category.label }}</span>{% endif %}
                     {% endfor %}
-                    {% if min_price is not None %}<span class="filter-chip">From Rp {{ min_price }}</span>{% endif %}
-                    {% if max_price is not None %}<span class="filter-chip">Up to Rp {{ max_price }}</span>{% endif %}
-                    {% if in_stock_only %}<span class="filter-chip">In stock</span>{% endif %}
+                    {% if min_price is not None %}<span class="filter-chip">Mulai Rp {{ min_price }}</span>{% endif %}
+                    {% if max_price is not None %}<span class="filter-chip">Sampai Rp {{ max_price }}</span>{% endif %}
+                    {% if in_stock_only %}<span class="filter-chip">Tersedia</span>{% endif %}
                 </div>
             {% endif %}
             <div class="product-grid product-grid-shop"
@@ -146,21 +146,21 @@
                 {% empty %}
                     <div class="empty-state">
                         <img src="{% static 'customer/img/product-placeholder.svg' %}" alt="">
-                        <p>No products match your filters.</p>
-                        <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">Clear filters</a>
+                        <p>Tidak ada produk yang cocok dengan filter Anda.</p>
+                        <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">Hapus Filter</a>
                     </div>
                 {% endfor %}
             </div>
             <div class="empty-state" id="wishlist-empty" hidden>
                 <img src="{% static 'customer/img/product-placeholder.svg' %}" alt="">
-                <p>Your wishlist is empty. Tap the heart on a product to save it.</p>
-                <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">Browse products</a>
+                <p>Belum ada produk favorit. Tekan ikon hati pada produk untuk menyimpannya.</p>
+                <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">Lihat produk</a>
             </div>
             {% if page_obj and page_obj.paginator.num_pages > 1 %}
-                <nav class="pagination-seelly" aria-label="Pagination">
+                <nav class="pagination-seelly" aria-label="Halaman">
                     {% if page_obj.has_previous %}
                         <a href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
-                           aria-label="Previous page"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
+                           aria-label="Halaman sebelumnya"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
                     {% endif %}
                     {% for number in page_obj.paginator.page_range %}
                         {% if number == page_obj.number %}
@@ -171,7 +171,7 @@
                     {% endfor %}
                     {% if page_obj.has_next %}
                         <a href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
-                           aria-label="Next page"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+                           aria-label="Halaman berikutnya"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
                     {% endif %}
                 </nav>
             {% endif %}

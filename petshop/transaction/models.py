@@ -2,31 +2,71 @@ from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
 from product.models import Product, MutationType, InsufficientStock
+from common.exceptions import PetshopError
+from common.models import TimeStampedModel
+from abc import ABC, abstractmethod
 
 
-class CheckoutError(Exception):
+class Payment(ABC):
+    code = None
+
+    @abstractmethod
+    def paid_after_accepted(self) -> bool: ...
+
+    @abstractmethod
+    def can_be_late(self) -> bool: ...
+
+
+class Cash(Payment):
+    code = "TUNAI"
+
+    def paid_after_accepted(self):
+        return True
+
+    def can_be_late(self):
+        return False
+
+
+class Transfer(Payment):
+    code = "TRANSFER"
+
+    def paid_after_accepted(self):
+        return False
+
+    def can_be_late(self):
+        return True
+
+
+PAYMENT_REGISTRY = {payment_class.code: payment_class() for payment_class in (Cash, Transfer)}
+
+
+def get_payment(code):
+    return PAYMENT_REGISTRY[code]
+
+
+class CheckoutError(PetshopError):
     pass
 
 
-class InvalidTransition(Exception):
+class InvalidTransition(PetshopError):
     pass
 
 
 class PaymentMethod(models.TextChoices):
-    CASH = "CASH"
-    TRANSFER = "TRANSFER"
+    CASH = "TUNAI", "Tunai"
+    TRANSFER = "TRANSFER", "Transfer"
 
 
 class PaymentStatus(models.TextChoices):
-    PENDING = "PENDING"
-    PAID = "PAID"
+    PENDING = "MENUNGGU", "Menunggu"
+    PAID = "LUNAS", "Lunas"
 
 
 class OrderStatus(models.TextChoices):
-    CONFIRMED = "CONFIRMED"
-    ON_DELIVERY = "ON_DELIVERY"
-    DELIVERED = "DELIVERED"
-    CANCELLED = "CANCELLED"
+    CONFIRMED = "DIKONFIRMASI", "Dikonfirmasi"
+    ON_DELIVERY = "DALAM_PENGIRIMAN", "Dalam Pengiriman"
+    DELIVERED = "TERKIRIM", "Terkirim"
+    CANCELLED = "DIBATALKAN", "Dibatalkan"
 
 
 class Order(models.Model):
@@ -66,10 +106,14 @@ class Order(models.Model):
     def is_open(self):
         return self.order_status in self._ALLOWED_TRANSITIONS
 
+    @property
+    def payment_handler(self):
+        return get_payment(self.payment_method)
+
     def _move_to(self, new_status):
         if new_status not in self._ALLOWED_TRANSITIONS.get(self.order_status, set()):
             raise InvalidTransition(
-                f"Order #{self.pk}: {self.order_status} tidak bisa ke {new_status}."
+                f"Order #{self.pk}: status {OrderStatus(self.order_status).label} tidak bisa diubah ke {OrderStatus(new_status).label}."
             )
         self.order_status = new_status
 
@@ -77,14 +121,13 @@ class Order(models.Model):
         if courier is not None:
             self.courier = courier
         if self.courier_id is None:
-            raise InvalidTransition(f"Order #{self.pk}: pilih kurir dulu.")
+            raise InvalidTransition(f"Order #{self.pk}: pilih kurir terlebih dahulu.")
         self._move_to(OrderStatus.ON_DELIVERY)
         self.save(update_fields=["order_status", "courier"])
 
     def mark_delivered(self):
         self._move_to(OrderStatus.DELIVERED)
-        # CASH dibayar saat barang diterima; TRANSFER dikonfirmasi lewat mark_paid().
-        if self.payment_method == PaymentMethod.CASH:
+        if self.payment_handler.paid_after_accepted():
             self.payment_status = PaymentStatus.PAID
         self.save(update_fields=["order_status", "payment_status"])
 
@@ -126,9 +169,8 @@ class OrderDetail(models.Model):
         ]
 
 
-class Cart(models.Model):
+class Cart(TimeStampedModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     @property
     def total(self):

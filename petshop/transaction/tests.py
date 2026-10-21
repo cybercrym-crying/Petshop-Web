@@ -1,5 +1,7 @@
 from django.test import TestCase
 from account.models import User, Customer, Role
+from django.test import SimpleTestCase
+from transaction.models import PaymentMethod, PAYMENT_REGISTRY
 from product.models import Category, Product, StockMutation, InsufficientStock
 from .models import (
     Cart,
@@ -36,7 +38,7 @@ class CheckoutTests(TestCase):
 
     def checkout(self, **kw):
         return self.cart.checkout(
-            customer=self.customer, admin=self.admin, payment_method="CASH", **kw
+            customer=self.customer, admin=self.admin, payment_method="TUNAI", **kw
         )
 
     def test_cart_total(self):
@@ -81,7 +83,9 @@ class OrderStatusTests(TestCase):
         self.p = make_product("A", stock=5)
         cart = Cart.objects.create(user=self.admin)
         CartItem.objects.create(cart=cart, product=self.p, quantity=2)
-        self.order = cart.checkout(customer=customer, admin=self.admin, payment_method="CASH")
+        self.order = cart.checkout(
+            customer=customer, admin=self.admin, payment_method="TUNAI"
+        )
 
     def test_new_order_is_confirmed_and_unpaid(self):
         self.assertEqual(self.order.order_status, OrderStatus.CONFIRMED)
@@ -177,7 +181,7 @@ class ViewSmokeTests(TestCase):
         self.client.post(f"/staff/admin/cart/add/{self.p.pk}/")
         self.client.post(
             "/staff/admin/cart/submit/",
-            {"customer": self.customer.pk, "payment_method": "CASH", "courier": ""},
+            {"customer": self.customer.pk, "payment_method": "TUNAI", "courier": ""},
         )
         order = Order.objects.get()
         self.assertEqual(order.total_payment, 30000)
@@ -198,7 +202,9 @@ class ManageTransactionViewTests(TestCase):
         self.p = make_product("A", stock=5)
         cart = Cart.objects.create(user=self.admin)
         CartItem.objects.create(cart=cart, product=self.p, quantity=2)
-        self.order = cart.checkout(customer=customer, admin=self.admin, payment_method="CASH")
+        self.order = cart.checkout(
+            customer=customer, admin=self.admin, payment_method="TUNAI"
+        )
         self.client.login(username="adm", password="x")
 
     def act(self, action, **extra):
@@ -248,11 +254,13 @@ class CustomerSelectionTests(TestCase):
 
     def submit(self, **data):
         return self.client.post(
-            "/staff/admin/cart/submit/", {"payment_method": "CASH", **data}
+            "/staff/admin/cart/submit/", {"payment_method": "TUNAI", **data}
         )
 
     def test_selected_customer_used(self):
-        c = Customer.objects.create(name="Budi", phone_number="081234567890", address="x")
+        c = Customer.objects.create(
+            name="Budi", phone_number="081234567890", address="x"
+        )
         self.submit(customer=c.pk)
         self.assertEqual(Order.objects.get().customer, c)
 
@@ -276,12 +284,16 @@ class BoardViewTests(TestCase):
     def setUp(self):
         self.admin = User.objects.create_user("adm", password="x", role=Role.ADMIN)
         self.courier = User.objects.create_user("cr", password="x", role=Role.COURIER)
-        self.budi = Customer.objects.create(name="Budi", phone_number="081", address="x")
-        self.sari = Customer.objects.create(name="Sari", phone_number="082", address="y")
+        self.budi = Customer.objects.create(
+            name="Budi", phone_number="081", address="x"
+        )
+        self.sari = Customer.objects.create(
+            name="Sari", phone_number="082", address="y"
+        )
         self.p = make_product("A", stock=50)
         self.client.login(username="adm", password="x")
 
-    def make_order(self, customer=None, method="CASH"):
+    def make_order(self, customer=None, method="TUNAI"):
         cart = Cart.objects.create(user=self.admin)
         CartItem.objects.create(cart=cart, product=self.p, quantity=1)
         return cart.checkout(
@@ -316,7 +328,7 @@ class BoardViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.context["view"], "list")
         self.assertContains(r, f"#{o.pk}")
-        self.assertContains(r, "<th>Status</th>")
+        self.assertContains(r, "Status Order")
 
     def test_search_by_customer_name_and_number(self):
         a = self.make_order(self.budi)
@@ -331,11 +343,13 @@ class BoardViewTests(TestCase):
         from django.utils import timezone
 
         late = self.make_order(method="TRANSFER")
-        Order.objects.filter(pk=late.pk).update(date=timezone.now() - timedelta(hours=2))
-        cash = self.make_order(method="CASH")
+        Order.objects.filter(pk=late.pk).update(
+            date=timezone.now() - timedelta(hours=2)
+        )
+        cash = self.make_order(method="TUNAI")
         r = self.client.get(self.URL)
         self.assertEqual(r.context["overdue_unpaid"], 1)  # CASH tidak dihitung
-        self.assertContains(r, "still unpaid after 1 hour")
+        self.assertContains(r, "belum dibayar lebih dari 1 jam")
         r = self.client.get(self.URL, {"payment": "pending"})
         self.assertTrue(r.context["only_unpaid"])
         pks = {o.pk for o in r.context["transactions"]}
@@ -393,13 +407,20 @@ class SeedDemoTests(TestCase):
     def test_seed_creates_realistic_data_through_real_rules(self):
         from django.test import override_settings
         from product.models import MutationType
+        from transaction.management.commands.seed_demo import CUSTOMERS, PRODUCTS
 
         with override_settings(DEBUG=True):
             self.run_seed(orders=24)
-        self.assertEqual(User.objects.filter(username__startswith="demo_", role=Role.ADMIN).count(), 2)
-        self.assertEqual(User.objects.filter(username__startswith="demo_", role=Role.COURIER).count(), 3)
-        self.assertEqual(Customer.objects.count(), 10)
-        self.assertEqual(Product.objects.count(), 18)
+        self.assertEqual(
+            User.objects.filter(username__startswith="demo_", role=Role.ADMIN).count(),
+            2,
+        )
+        self.assertEqual(
+            User.objects.filter(username__startswith="demo_", role=Role.COURIER).count(),
+            3,
+        )
+        self.assertEqual(Customer.objects.count(), len(CUSTOMERS))
+        self.assertEqual(Product.objects.count(), len(PRODUCTS))
         self.assertEqual(Order.objects.count(), 24)
         statuses = set(Order.objects.values_list("order_status", flat=True))
         self.assertGreaterEqual(len(statuses), 3)  # campuran status
@@ -410,13 +431,17 @@ class SeedDemoTests(TestCase):
         self.assertTrue(Product.objects.exclude(photo="").exists())
         # stok selalu sama dengan jumlah riwayat mutasi (tidak ada angka yang dikarang)
         for p in Product.objects.all():
-            masuk = sum(m.quantity for m in p.mutations.filter(mutationType=MutationType.IN))
-            keluar = sum(m.quantity for m in p.mutations.filter(mutationType=MutationType.OUT))
+            masuk = sum(
+                m.quantity for m in p.mutations.filter(mutationType=MutationType.IN)
+            )
+            keluar = sum(
+                m.quantity for m in p.mutations.filter(mutationType=MutationType.OUT)
+            )
             self.assertEqual(p.stock, masuk - keluar, p.name)
         # total tiap order = jumlah detailnya; kurir wajib ada untuk order yang sedang diantar
         for o in Order.objects.all():
             self.assertEqual(o.total_payment, sum(d.subtotal for d in o.details.all()))
-            if o.order_status in ("ON_DELIVERY", "DELIVERED"):
+            if o.order_status in ("DALAM_PENGIRIMAN", "TERKIRIM"):
                 self.assertIsNotNone(o.courier)
 
     def test_seed_can_login_and_pages_render(self):
@@ -424,8 +449,14 @@ class SeedDemoTests(TestCase):
 
         with override_settings(DEBUG=True):
             self.run_seed(orders=10, password="rahasia-123")
-        self.assertTrue(self.client.login(username="demo_admin", password="rahasia-123"))
-        for url in ("/staff/admin/manage_transaction/", "/list", "/staff/admin/manage_account"):
+        self.assertTrue(
+            self.client.login(username="demo_admin", password="rahasia-123")
+        )
+        for url in (
+            "/staff/admin/manage_transaction/",
+            "/list",
+            "/staff/admin/manage_account",
+        ):
             self.assertEqual(self.client.get(url).status_code, 200, url)
 
     def test_seed_is_idempotent_and_more_orders_adds(self):
@@ -433,17 +464,29 @@ class SeedDemoTests(TestCase):
 
         with override_settings(DEBUG=True):
             self.run_seed(orders=8)
-            counts = (User.objects.count(), Product.objects.count(), Customer.objects.count(), Order.objects.count())
+            counts = (
+                User.objects.count(),
+                Product.objects.count(),
+                Customer.objects.count(),
+                Order.objects.count(),
+            )
             self.run_seed(orders=8)
             self.assertEqual(
                 counts,
-                (User.objects.count(), Product.objects.count(), Customer.objects.count(), Order.objects.count()),
+                (
+                    User.objects.count(),
+                    Product.objects.count(),
+                    Customer.objects.count(),
+                    Order.objects.count(),
+                ),
             )
             self.run_seed(orders=5, more_orders=True)
             self.assertEqual(Order.objects.count(), 13)
 
     def test_reset_removes_only_demo_data(self):
         from django.test import override_settings
+
+        from transaction.management.commands.seed_demo import PRODUCTS
 
         mine = make_product("Produk Milikku", stock=3)
         owner = User.objects.create_user("owner", password="x", role=Role.ADMIN)
@@ -453,7 +496,7 @@ class SeedDemoTests(TestCase):
         self.assertEqual(Order.objects.count(), 6)  # order lama dihapus, 6 baru dibuat
         self.assertTrue(Product.objects.filter(pk=mine.pk).exists())
         self.assertTrue(User.objects.filter(pk=owner.pk).exists())
-        self.assertEqual(Product.objects.count(), 19)  # 18 demo + produk milikku
+        self.assertEqual(Product.objects.count(), len(PRODUCTS) + 1)
 
 
 class AddToCartLimitsTests(TestCase):
@@ -487,3 +530,14 @@ class AddToCartLimitsTests(TestCase):
         )
         self.assertEqual(self.add(hidden).status_code, 404)
         self.assertFalse(CartItem.objects.filter(product=hidden).exists())
+
+
+class PaymentRegistryTests(SimpleTestCase):
+    def test_every_method_has_a_handler(self):
+        self.assertEqual(set(PAYMENT_REGISTRY), {code for code, _ in PaymentMethod.choices})
+
+    def test_cash_and_transfer_behaviour(self):
+        self.assertTrue(PAYMENT_REGISTRY["TUNAI"].paid_after_accepted())
+        self.assertFalse(PAYMENT_REGISTRY["TUNAI"].can_be_late())
+        self.assertFalse(PAYMENT_REGISTRY["TRANSFER"].paid_after_accepted())
+        self.assertTrue(PAYMENT_REGISTRY["TRANSFER"].can_be_late())

@@ -1,14 +1,15 @@
 from django.conf import settings
 from django.db import models
+from common.models import TimeStampedModel
 
 
 class CourierStatus(models.TextChoices):
-    ACTIVE = "ACTIVE", "Active"
+    ACTIVE = "AKTIF", "Aktif"
     OFFLINE = "OFFLINE", "Offline"
-    BREAK = "BREAK", "Break"
+    BREAK = "ISTIRAHAT", "Istirahat"
 
 
-class CourierProfile(models.Model):
+class CourierProfile(TimeStampedModel):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -22,8 +23,6 @@ class CourierProfile(models.Model):
         choices=CourierStatus.choices,
         default=CourierStatus.ACTIVE,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         name = self.user.get_full_name() or self.user.username

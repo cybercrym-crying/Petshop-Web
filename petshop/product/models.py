@@ -1,22 +1,24 @@
+from abc import ABC, abstractmethod
+
 from django.db import models, transaction
 from django.utils import timezone
+from common.exceptions import PetshopError
+from common.models import TimeStampedModel
 
 
 class Category(models.Model):
-    FOOD = "FOOD"
-    EQUIPMENT = "EQUIPMENT"
-    ACCESSORIES = "ACCESSORIES"
-    HEALTHCARE = "HEALTHCARE"
-    TOYS = "TOYS"
-    GROOMING = "GROOMING"
+    FOOD = "MAKANAN"
+    EQUIPMENT = "PERLENGKAPAN"
+    ACCESSORIES = "AKSESORIS"
+    HEALTHCARE = "KESEHATAN"
+    TOYS = "MAINAN"
 
     CATEGORY_CHOICES = [
-        (FOOD, "Food"),
-        (EQUIPMENT, "Equipment"),
-        (ACCESSORIES, "Accessories"),
-        (HEALTHCARE, "Healthcare"),
-        (TOYS, "Toys"),
-        (GROOMING, "Grooming"),
+        (FOOD, "Makanan"),
+        (EQUIPMENT, "Perlengkapan"),
+        (ACCESSORIES, "Aksesori"),
+        (HEALTHCARE, "Kesehatan"),
+        (TOYS, "Mainan"),
     ]
 
     name = models.CharField(max_length=64, choices=CATEGORY_CHOICES, unique=True)
@@ -26,26 +28,26 @@ class Category(models.Model):
 
 
 class PetType(models.TextChoices):
-    ALL = "ALL", "All pets"
-    CAT = "CAT", "Cat"
-    DOG = "DOG", "Dog"
-    BIRD = "BIRD", "Bird"
-    RABBIT = "RABBIT", "Rabbit"
-    FISH = "FISH", "Fish"
+    ALL = "SEMUA", "Semua hewan"
+    CAT = "KUCING", "Kucing"
+    DOG = "ANJING", "Anjing"
+    BIRD = "BURUNG", "Burung"
+    RABBIT = "KELINCI", "Kelinci"
+    FISH = "IKAN", "Ikan"
     HAMSTER = "HAMSTER", "Hamster"
 
 
 class ProductCondition(models.TextChoices):
-    NEW = "NEW", "New"
-    USED = "USED", "Used"
+    NEW = "BARU", "Baru"
+    USED = "BEKAS", "Bekas"
 
 
 class MutationType(models.TextChoices):
-    IN = "IN", "Stok Masuk"
-    OUT = "OUT", "Stok Keluar"
+    IN = "MASUK", "Stok Masuk"
+    OUT = "KELUAR", "Stok Keluar"
 
 
-class InsufficientStock(Exception):
+class InsufficientStock(PetshopError):
     def __init__(self, product, requested):
         self.product = product
         self.requested = requested
@@ -54,12 +56,45 @@ class InsufficientStock(Exception):
         )
 
 
+class StockMovement(ABC):
+    code = None
+
+    @abstractmethod
+    def apply(self, product, quantity) -> int: ...
+
+
+class StockIn(StockMovement):
+    code = MutationType.IN
+
+    def apply(self, product, quantity):
+        return product.stock + quantity
+
+
+class StockOut(StockMovement):
+    code = MutationType.OUT
+
+    def apply(self, product, quantity):
+        if quantity > product.stock:
+            raise InsufficientStock(product, quantity)
+        return product.stock - quantity
+
+
+MOVEMENT_REGISTRY = {cls.code: cls() for cls in (StockIn, StockOut)}
+
+
+def get_movement(code):
+    try:
+        return MOVEMENT_REGISTRY[code]
+    except KeyError:
+        raise ValueError(f"Jenis mutasi '{code}' tidak dikenal.")
+
+
 class ProductQuerySet(models.QuerySet):
     def sellable(self):
         return self.filter(is_active=True, selling_price__isnull=False)
 
 
-class Product(models.Model):
+class Product(TimeStampedModel):
     objects = ProductQuerySet.as_manager()
 
     category = models.ForeignKey(Category, null=False, on_delete=models.PROTECT)
@@ -74,8 +109,7 @@ class Product(models.Model):
         max_length=8, choices=ProductCondition.choices, default=ProductCondition.NEW
     )
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(auto_now=True)
+
     photo = models.ImageField(upload_to="products", null=True, blank=True)
 
     @property
@@ -88,12 +122,7 @@ class Product(models.Model):
             raise ValueError("Jumlah mutasi harus lebih dari 0.")
         with transaction.atomic():
             locked = Product.objects.select_for_update().get(pk=self.pk)
-            if mutation_type == MutationType.OUT:
-                if quantity > locked.stock:
-                    raise InsufficientStock(locked, quantity)
-                locked.stock -= quantity
-            else:
-                locked.stock += quantity
+            locked.stock = get_movement(mutation_type).apply(locked, quantity)
             locked.save(update_fields=["stock", "updated_at"])
             self.stock = locked.stock
             return StockMutation.objects.create(

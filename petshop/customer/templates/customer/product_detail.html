@@ -11,7 +11,7 @@
             <i class="fas fa-chevron-right" aria-hidden="true"></i>
             <a href="{% url 'customer:shop' %}">Belanja</a>
             <i class="fas fa-chevron-right" aria-hidden="true"></i>
-            <a href="{% url 'customer:shop' %}?category={{ product.category.name }}">{{ product.category.name|kategori }}</a>
+            <a href="{% url 'customer:shop' %}?category={{ product.category.name }}">{{ product.category.name|category_label }}</a>
         </nav>
         <div class="detail-grid">
             <div class="detail-photo">
@@ -22,7 +22,7 @@
                 {% endif %}
             </div>
             <div class="detail-card">
-                <span class="chip chip-category static">{{ product.category.name|kategori }}</span>
+                <span class="chip chip-category static">{{ product.category.name|category_label }}</span>
                 <h1 class="detail-name">{{ product.name }}</h1>
                 <div class="detail-price">Rp {{ product.selling_price|default:"0"|rupiah }}</div>
                 {% if product.stock == 0 %}
@@ -82,7 +82,7 @@
                     <div>
                         <i class="fas fa-tag" aria-hidden="true"></i>
                         <span>Kategori</span>
-                        <strong>{{ product.category.name|kategori }}</strong>
+                        <strong>{{ product.category.name|category_label }}</strong>
                     </div>
                     <div>
                         <i class="fab fa-whatsapp" aria-hidden="true"></i>
@@ -102,7 +102,7 @@
                     </div>
                     <div>
                         <dt>Kategori</dt>
-                        <dd>{{ product.category.name|kategori }}</dd>
+                        <dd>{{ product.category.name|category_label }}</dd>
                     </div>
                     <div>
                         <dt>Harga</dt>

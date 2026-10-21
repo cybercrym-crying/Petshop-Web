@@ -2,31 +2,30 @@ from django import template
 
 register = template.Library()
 
-# Nama kategori di database memakai kode bahasa Inggris; ini label untuk pengunjung.
-KATEGORI = {
-    "FOOD": "Makanan",
-    "EQUIPMENT": "Perlengkapan",
-    "ACCESSORIES": "Aksesori",
-    "HEALTHCARE": "Kesehatan",
-    "TOYS": "Mainan",
-    "GROOMING": "Perawatan",
+# Nama category_label di database memakai kode bahasa Inggris; ini label untuk pengunjung.
+CATEGORY_LABELS = {
+    "MAKANAN": "Makanan",
+    "PERLENGKAPAN": "Perlengkapan",
+    "AKSESORIS": "Aksesori",
+    "KESEHATAN": "Kesehatan",
+    "MAINAN": "Mainan",
 }
 # Hewan tujuan & kondisi produk (kode di database -> label untuk pengunjung).
 PET_LABEL = {
-    "ALL": "Semua Hewan",
-    "CAT": "Kucing",
-    "DOG": "Anjing",
-    "BIRD": "Burung",
-    "RABBIT": "Kelinci",
-    "FISH": "Ikan",
+    "SEMUA": "Semua Hewan",
+    "KUCING": "Kucing",
+    "ANJING": "Anjing",
+    "BURUNG": "Burung",
+    "KELINCI": "Kelinci",
+    "IKAN": "Ikan",
     "HAMSTER": "Hamster",
 }
-CONDITION_LABEL = {"NEW": "Baru", "USED": "Bekas"}
+CONDITION_LABEL = {"BARU": "Baru", "BEKAS": "Bekas"}
 
 
 @register.filter
-def kategori(value):
-    return KATEGORI.get(str(value).upper(), str(value).title())
+def category_label(value):
+    return CATEGORY_LABELS.get(str(value).upper(), str(value).title())
 
 
 @register.filter

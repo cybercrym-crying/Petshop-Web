@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>PetAdmin - Dashboard</title>
+        <title>PetAdmin - Dasbor</title>
         <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
               rel="stylesheet">
@@ -26,9 +26,9 @@
             </div>
         </nav>
         <main>
-            <p class="eyebrow">Dashboard</p>
-            <h1 class="page-title">Welcome back again, Admin!</h1>
-            <h2 class="section-label">Transactions</h2>
+            <p class="eyebrow">Dasbor</p>
+            <h1 class="page-title">Selamat datang kembali, Admin!</h1>
+            <h2 class="section-label">Transaksi</h2>
             <div class="card-grid">
                 <a href="{% url 'transaction:make_transaction' %}"
                    class="dash-card dash-card--primary">
@@ -43,9 +43,9 @@
                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                         </svg>
                     </span>
-                    <h3>Make Transaction</h3>
-                    <p>Make new transaction for customer</p>
-                    <span class="cta">Make Transaction <span class="arrow">↗</span></span>
+                    <h3>Buat Transaksi</h3>
+                    <p>Buat transaksi baru untuk pelanggan</p>
+                    <span class="cta">Buat Transaksi <span class="arrow">↗</span></span>
                 </a>
                 <a href="{% url 'transaction:manage_transaction' %}" class="dash-card">
                     <span class="icon" aria-hidden="true">
@@ -59,12 +59,12 @@
                             <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
                         </svg>
                     </span>
-                    <h3>Manage Transaction</h3>
-                    <p>Manage and see transaction activity</p>
-                    <span class="cta">Manage Transaction <span class="arrow">↗</span></span>
+                    <h3>Kelola Transaksi</h3>
+                    <p>Kelola dan pantau aktivitas transaksi</p>
+                    <span class="cta">Kelola Transaksi <span class="arrow">↗</span></span>
                 </a>
             </div>
-            <h2 class="section-label">Products &amp; Stock</h2>
+            <h2 class="section-label">Produk &amp; Stok</h2>
             <div class="card-grid">
                 <a href="{% url 'product:manage_product' %}" class="dash-card">
                     <span class="icon" aria-hidden="true">
@@ -79,9 +79,9 @@
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" />
                         </svg>
                     </span>
-                    <h3>Manage Product</h3>
-                    <p>Manage product and product availability</p>
-                    <span class="cta">Manage Product <span class="arrow">↗</span></span>
+                    <h3>Kelola Produk</h3>
+                    <p>Kelola produk dan ketersediaannya</p>
+                    <span class="cta">Kelola Produk <span class="arrow">↗</span></span>
                 </a>
                 <a href="{% url 'product:product_list' %}" class="dash-card">
                     <span class="icon" aria-hidden="true">
@@ -95,12 +95,12 @@
                             <line x1="7" y1="7" x2="7.01" y2="7" />
                         </svg>
                     </span>
-                    <h3>Stock &amp; Price</h3>
-                    <p>Record stock in and out, set selling prices</p>
-                    <span class="cta">Stock &amp; Price <span class="arrow">↗</span></span>
+                    <h3>Stok &amp; Harga</h3>
+                    <p>Catat stok masuk dan keluar, atur harga jual</p>
+                    <span class="cta">Stok &amp; Harga <span class="arrow">↗</span></span>
                 </a>
             </div>
-            <h2 class="section-label">Accounts</h2>
+            <h2 class="section-label">Akun</h2>
             <div class="card-grid">
                 <a href="{% url 'manage_account' %}" class="dash-card">
                     <span class="icon" aria-hidden="true">
@@ -114,9 +114,9 @@
                             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                         </svg>
                     </span>
-                    <h3>Employees</h3>
-                    <p>Manage admin and courier accounts</p>
-                    <span class="cta">Manage Employees <span class="arrow">↗</span></span>
+                    <h3>Pegawai</h3>
+                    <p>Kelola akun admin dan kurir</p>
+                    <span class="cta">Kelola Pegawai <span class="arrow">↗</span></span>
                 </a>
                 <a href="{% url 'manage_account' %}?tab=customer" class="dash-card">
                     <span class="icon" aria-hidden="true">
@@ -132,9 +132,9 @@
                             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
                     </span>
-                    <h3>Customers</h3>
-                    <p>Add customers before taking an order, open WhatsApp and Maps</p>
-                    <span class="cta">Manage Customers <span class="arrow">↗</span></span>
+                    <h3>Pelanggan</h3>
+                    <p>Tambah pelanggan sebelum membuat order, buka WhatsApp dan Maps</p>
+                    <span class="cta">Kelola Pelanggan <span class="arrow">↗</span></span>
                 </a>
             </div>
         </main>
