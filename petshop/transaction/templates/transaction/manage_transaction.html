@@ -5,13 +5,10 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>PetAdmin - Kelola Transaksi</title>
-        <!-- Bootstrap CSS -->
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
               rel="stylesheet" />
-        <!-- Bootstrap Icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
-        <!-- Google Fonts: Plus Jakarta Sans -->
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
         <link rel="stylesheet"
@@ -25,9 +22,7 @@
                 <div>
                     <p class="eyebrow">Dasbor</p>
                     <h1 class="page-title">Kelola Transaksi</h1>
-                    <p class="page-subtitle">
-                        {{ active.n }} pesanan aktif · Total Rp {{ active.total|rupiah|intcomma }}
-                    </p>
+                    <p class="page-subtitle">{{ active.n }} pesanan aktif · Total Rp {{ active.total|rupiah|intcomma }}</p>
                 </div>
                 <a href="{% url 'transaction:make_transaction' %}" class="btn-add-trx">
                     <i class="bi bi-plus-lg"></i> Tambah Transaksi
@@ -147,24 +142,24 @@
                                         {% endif %}
                                         <!-- Actions -->
                                         <div class="mt-auto pt-2 border-top border-light">
-                                            {% if trx.order_status == "DIKONFIRMASI" %}
-                                                {% if trx.courier %}
-                                                    <form method="post"
-                                                          action="{% url 'transaction:update_status' trx.pk %}"
-                                                          data-stop-propagation>
-                                                        {% csrf_token %}
-                                                        <button type="submit"
-                                                                name="action"
-                                                                value="on_delivery"
-                                                                class="btn-card-action is-primary">Kirim Paket</button>
-                                                    </form>
-                                                {% else %}
-                                                    <button type="button"
-                                                            class="btn-card-action is-primary"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#detailTransaction{{ trx.pk }}"
-                                                            data-stop-propagation>Daftarkan Kurir</button>
-                                                {% endif %}
+                                            {% if trx.order_status == "DIKONFIRMASI" and trx.is_ready_to_ship and not trx.courier %}
+                                                <button type="button"
+                                                        class="btn-card-action is-primary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                        data-stop-propagation>Daftarkan Kurir</button>
+                                            {% elif trx.order_status == "DIKONFIRMASI" and not trx.is_ready_to_ship %}
+                                                <button type="button"
+                                                        class="btn-card-action"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                        data-stop-propagation>Menunggu Pembayaran</button>
+                                            {% elif trx.order_status == "DIKONFIRMASI" %}
+                                                <button type="button"
+                                                        class="btn-card-action"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                        data-stop-propagation>Menunggu Kurir Kirim</button>
                                             {% elif trx.order_status == "DALAM_PENGIRIMAN" %}
                                                 <form method="post"
                                                       action="{% url 'transaction:update_status' trx.pk %}"
@@ -284,7 +279,10 @@
                                     <span class="detail-field-label">Status Order</span>
                                     <span><span class="badge bg-secondary-subtle text-secondary px-2">{{ trx.get_order_status_display }}</span></span>
                                 </div>
-                                {% if trx.is_open and not trx.courier %}
+                                {% if trx.order_status == "DIKONFIRMASI" and not trx.is_ready_to_ship %}
+                                    <p class="small text-muted mt-3 mb-0">Kurir bisa didaftarkan setelah transfer ditandai lunas.</p>
+                                {% endif %}
+                                {% if trx.is_ready_to_ship and not trx.courier %}
                                     <div class="mt-3">
                                         <label class="form-label text-muted small fw-bold">Pilih Kurir</label>
                                         <select name="courier" class="form-select border-light shadow-sm">
@@ -305,13 +303,13 @@
                                                 value="paid"
                                                 class="btn btn-warning fw-bold text-dark">Tandai Lunas</button>
                                     {% endif %}
-                                    {% if trx.order_status == "DIKONFIRMASI" %}
+                                    {% if trx.is_ready_to_ship and not trx.courier %}
                                         <button type="submit"
                                                 name="action"
-                                                value="on_delivery"
+                                                value="assign_courier"
                                                 class="btn btn-primary fw-bold"
                                                 style="background-color: #5c418c;
-                                                       border: none">Kirim</button>
+                                                       border: none">Daftarkan Kurir</button>
                                     {% endif %}
                                     {% if trx.is_open %}
                                         <button type="submit"

@@ -5,7 +5,7 @@ from django.db.models import ProtectedError
 from .models import (
     Category,
     InsufficientStock,
-    MutationType,
+    LOW_STOCK_THRESHOLD,
     PetType,
     Product,
     ProductCondition,
@@ -51,21 +51,11 @@ def add_product(request):
         if form.is_valid():
             with transaction.atomic():
                 product = form.save()
-                if product.stock > 0:
-                    StockMutation.objects.create(
-                        product=product,
-                        mutationType=MutationType.IN,
-                        quantity=product.stock,
-                        note="Stok awal saat produk dibuat",
-                        createdBy=request.user,
-                    )
+                product.record_initial_stock(user=request.user)
             messages.success(request, f"Produk '{product.name}' berhasil ditambahkan.")
         else:
             _flash_form_errors(request, form)
     return redirect("product:manage_product")
-
-
-LOW_STOCK_THRESHOLD = 10  # stok 1..10 dianggap menipis, 0 = habis
 
 
 @roleRequired(Role.ADMIN)
@@ -91,13 +81,6 @@ def product_list(request):
         queryset = queryset.filter(name__icontains=q)
 
     products = list(queryset)
-    for p in products:
-        p.stock_state = (
-            "empty" if p.stock == 0 else "low" if p.stock <= LOW_STOCK_THRESHOLD else "ok"
-        )
-        p.margin = (
-            p.selling_price - p.purchase_price if p.selling_price is not None else None
-        )
 
     recentMutations = StockMutation.objects.select_related(
         "product", "createdBy"

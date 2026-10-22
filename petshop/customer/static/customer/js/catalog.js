@@ -27,6 +27,7 @@ function updateCartCount() {
     let badge = document.getElementById('cart-count');
     if (badge) {
         badge.textContent = totalItems;
+        badge.hidden = totalItems <= 0;
     }
 }
 

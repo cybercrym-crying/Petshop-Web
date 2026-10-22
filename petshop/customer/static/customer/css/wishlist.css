@@ -1,0 +1,48 @@
+.wishlist-head {
+  margin-bottom: 24px;
+}
+
+.wishlist-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--ink, #261a33);
+}
+
+.wishlist-title i {
+  color: var(--purple-700, #6b21a8);
+}
+
+.wishlist-state {
+  text-align: center;
+  padding: 56px 16px;
+  color: #6b5b7a;
+}
+
+.wishlist-state[hidden] {
+  display: none;
+}
+
+.wishlist-state > i {
+  font-size: 2.6rem;
+  margin-bottom: 14px;
+  opacity: 0.55;
+}
+
+.wishlist-state p {
+  max-width: 420px;
+  margin: 0 auto 18px;
+}
+
+.wishlist-page .product-card.is-leaving {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.product-grid[hidden] {
+  display: none;
+}

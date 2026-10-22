@@ -6,6 +6,11 @@ from django.contrib.auth.models import AbstractUser
 from abc import abstractmethod, ABC
 
 
+AVATAR_TONES = 6
+
+
+# OOP: ABSTRAKSI - RoleBehavior mendefinisikan "apa" yang dimiliki setiap peran
+# (dashboard, hak akses, statistik) tanpa isi; tiap peran mengisi sendiri.
 class RoleBehavior(ABC):
     code = None
     label = None
@@ -30,6 +35,8 @@ class RoleBehavior(ABC):
     def summary(self, user) -> str: ...
 
 
+# OOP: PEWARISAN + POLIMORFISME - AdminRole, CourierRole, CustomerRole mewarisi
+# RoleBehavior dan menjawab method yang sama dengan cara berbeda.
 class AdminRole(RoleBehavior):
     code = "ADMIN"
     label = "Admin"
@@ -105,6 +112,8 @@ class CustomerRole(RoleBehavior):
         return ""
 
 
+# OOP: POLIMORFISME - user.role_behavior mengembalikan objek peran yang sesuai,
+# pemanggil tidak perlu if role == "ADMIN" / "KURIR".
 ROLE_REGISTRY = {cls.code: cls() for cls in (AdminRole, CourierRole)}
 DEFAULT_ROLE = CustomerRole()
 
@@ -114,9 +123,32 @@ class Role(models.TextChoices):
     COURIER = "KURIR", "Kurir"
 
 
+# OOP: PEWARISAN - User mewarisi AbstractUser bawaan Django.
 class User(AbstractUser):
     role = models.CharField(max_length=20, choices=Role.choices, null=False)
     phone_number = models.CharField(max_length=20)
+
+    @classmethod
+    def couriers(cls):
+        """Semua user ber-peran kurir (satu pintu, tidak diulang di view)."""
+        return cls.objects.filter(role=Role.COURIER)
+
+    # OOP: ENKAPSULASI - info tampilan karyawan dihitung User sendiri.
+    @property
+    def display_name(self):
+        full = f"{(self.first_name or '').strip()} {(self.last_name or '').strip()}"
+        return full.strip() or self.username
+
+    @property
+    def initials(self):
+        first = (self.first_name or "").strip()
+        last = (self.last_name or "").strip()
+        return ((first[:1] + last[:1]) or self.username[:2]).upper()
+
+    @property
+    def tone(self):
+        """Warna avatar, stabil per user."""
+        return self.pk % AVATAR_TONES
 
     @property
     def role_behavior(self):

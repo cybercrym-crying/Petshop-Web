@@ -5,13 +5,15 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Dasbor Kurir - PetAdmin</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
               rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
               rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'courier/css/dashboard.css' %}">
+        <link rel="stylesheet" href="{% static 'courier/css/theme.css' %}?v=3">
+        <link rel="stylesheet" href="{% static 'courier/css/dashboard.css' %}?v=5">
+        <script src="{% static 'courier/js/theme.js' %}?v=2"></script>
     </head>
     <body>
         <nav class="navbar-custom">
@@ -20,6 +22,13 @@
                 <span class="brand-name">Kurir</span>
             </a>
             <div class="nav-right">
+                <button type="button"
+                        class="theme-toggle"
+                        data-theme-toggle
+                        aria-label="Beralih ke mode gelap"
+                        aria-pressed="false">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
                 <div class="user-pill d-none d-sm-flex" data-user-name>
                     <i class="bi bi-person-circle fs-5 text-secondary"></i>
                     {{ request.user.get_full_name|default:request.user.username }}
@@ -39,75 +48,64 @@
             <section class="row g-4 mb-5 animate-fade-up"
                      style="animation-delay: 0.1s"
                      aria-label="Ringkasan pengiriman">
-                <div class="col-12 col-md-6">
-                    <a class="stat-box" href="#pending" data-stat="pending">
+                <div class="col-12 col-md-4">
+                    <a class="stat-box{% if current == 'pending' %} is-active{% endif %}"
+                       href="{% url 'courier:dashboard' %}?status=pending"
+                       {% if current == 'pending' %}aria-current="page"{% endif %}>
                         <div class="stat-icon pending">
                             <i class="bi bi-clock-history"></i>
                         </div>
                         <div>
-                            <div class="num" data-stat-value>{{ total_active }}</div>
-                            <div class="lbl">Menunggu Pengiriman</div>
+                            <div class="num">{{ total_pending }}</div>
+                            <div class="lbl">Menunggu Dikirim</div>
                         </div>
                     </a>
                 </div>
-                <div class="col-12 col-md-6">
-                    <a class="stat-box"
-                       href="{% url 'courier:history' %}"
-                       data-stat="history">
+                <div class="col-12 col-md-4">
+                    <a class="stat-box{% if current == 'on_delivery' %} is-active{% endif %}"
+                       href="{% url 'courier:dashboard' %}?status=on_delivery"
+                       {% if current == 'on_delivery' %}aria-current="page"{% endif %}>
+                        <div class="stat-icon active">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <div>
+                            <div class="num">{{ total_on_delivery }}</div>
+                            <div class="lbl">Sedang Dikirim</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-12 col-md-4">
+                    <a class="stat-box{% if current == 'done' %} is-active{% endif %}"
+                       href="{% url 'courier:dashboard' %}?status=done"
+                       {% if current == 'done' %}aria-current="page"{% endif %}>
                         <div class="stat-icon history">
                             <i class="bi bi-check2-circle"></i>
                         </div>
                         <div>
-                            <div class="num" data-stat-value>{{ total_delivered }}</div>
+                            <div class="num">{{ total_delivered }}</div>
                             <div class="lbl">Riwayat Pengiriman</div>
                         </div>
                     </a>
                 </div>
             </section>
-            <h4 class="fw-bold mb-4 animate-fade-up"
-                style="animation-delay: 0.2s;
-                       color: #2B3674">Pengiriman Aktif</h4>
-            <ul class="orders animate-fade-up"
-                id="pending"
-                style="animation-delay: 0.3s">
-                {% for order in active_orders %}
-                    <li>
-                        <article class="order-card"
-                                 data-order-id="{{ order.pk }}"
-                                 data-detail-url="{% url 'courier:order_detail' order.pk %}"
-                                 tabindex="0">
-                            <h2 class="order-card__name">{{ order.customer.name }}</h2>
-                            <p class="order-card__address"><i class="bi bi-geo-alt me-1 text-brand"></i> {{ order.customer.address }}</p>
-                            <dl class="order-card__details">
-                                <div class="order-card__row">
-                                    <dt>Telepon</dt>
-                                    <dd>
-                                        {{ order.customer.phone_number }}
-                                    </dd>
-                                </div>
-                                <div class="order-card__row">
-                                    <dt>Barang</dt>
-                                    <dd>
-                                        {{ order.details.count }} Barang
-                                    </dd>
-                                </div>
-                                <div class="order-card__row">
-                                    <dt>Total</dt>
-                                    <dd class="text-brand">Rp {{ order.total_payment }} {% if order.payment_method == "TUNAI" %}(COD){% else %}({{ order.get_payment_method_display }}){% endif %}</dd>
-                                </div>
-                            </dl>
-                        </article>
-                    </li>
+            {% if messages %}
+                <div class="mb-4" aria-live="polite">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2"
+                             role="alert">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <h4 class="fw-bold mb-4 d-flex align-items-center gap-2"
+                style="color: var(--c-text)">
+                <i class="bi {{ meta.icon }}"></i> {{ meta.title }}
+                <span class="board-count">{{ current_orders|length }}</span>
+            </h4>
+            <ul class="orders-grid">
+                {% for order in current_orders %}
+                    <li>{% include "courier/_order_card.html" with order=order action=meta.action %}</li>
                 {% empty %}
-                    <li style="width: 100%;">
-                        <div class="text-center py-5 rounded-4 border"
-                             style="background: #ffffff;
-                                    border-color: #E2E8F0">
-                            <i class="bi bi-inbox text-muted opacity-50" style="font-size: 3rem;"></i>
-                            <h5 class="fw-bold mt-3 text-dark">Tidak Ada Pengiriman</h5>
-                            <p class="text-muted">Saat ini Anda tidak memiliki antrean pesanan untuk dikirim.</p>
-                        </div>
-                    </li>
+                    <li class="orders-empty">{{ meta.empty }}</li>
                 {% endfor %}
             </ul>
         </main>
@@ -140,7 +138,7 @@
                 <span class="modal__item-price"></span>
             </li>
         </template>
-        <script src="{% static 'courier/js/script.js' %}"></script>
+        <script src="{% static 'courier/js/script.js' %}?v=5"></script>
         <script>
         document.addEventListener('click', function(e) {
             const card = e.target.closest('.order-card');

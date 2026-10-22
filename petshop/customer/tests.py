@@ -60,7 +60,7 @@ class PublicPagesTests(TestCase):
         r = self.client.get(reverse("customer:shop"))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Whiskas 70g")
-        self.assertContains(r, 'class="nav-link-item active">Belanja')
+        self.assertContains(r, 'class="sn-link active">Belanja')
 
     def test_nav_links_between_pages_and_search_goes_to_shop(self):
         for name in ("customer:home", "customer:about", "customer:shop"):
@@ -121,25 +121,122 @@ class DesignUpdateTests(TestCase):
         self.assertContains(r, 'href="/">Beranda</a> / Tentang Kami')
 
 
+PUBLIC_PAGES = ("customer:home", "customer:shop", "customer:about", "customer:wishlist")
+
+
+def _nav_html(response):
+    html = response.content.decode()
+    start = html.index('<header class="sn-header">')
+    return html[start:html.index("</header>", start) + len("</header>")]
+
+
+def _without_active_state(nav):
+    return nav.replace(" active", "").replace(" is-active", "")
+
+
 class PublicMobileNavTests(TestCase):
     def test_every_public_page_has_a_mobile_menu_with_all_links(self):
-        for name in ("customer:home", "customer:about"):
+        for name in PUBLIC_PAGES:
             r = self.client.get(reverse(name))
             self.assertContains(r, 'id="nav-toggle"')
-            self.assertContains(r, 'id="mobile-menu"')
-            html = r.content.decode()
-            menu = html[html.index('id="mobile-menu"'):]
+            self.assertContains(r, 'id="nav-links"')
+            nav = _nav_html(r)
+            links = nav[nav.index('id="nav-links"'):].split("</div>")[0]
             for label in ("Beranda", "Belanja", "Tentang Kami", "Hubungi Kami"):
-                self.assertIn(f">{label}</a>", menu.split("</nav>")[0], f"{name}: {label}")
+                self.assertIn(f">{label}</a>", links, f"{name}: {label}")
 
-    def test_shop_has_menu_toggle_and_all_nav_links(self):
+
+class SharedNavbarTests(TestCase):
+    def test_navbar_is_identical_on_every_public_page(self):
+        navs = {name: _without_active_state(_nav_html(self.client.get(reverse(name)))) for name in PUBLIC_PAGES}
+        reference = navs["customer:home"]
+        for name, nav in navs.items():
+            self.assertEqual(nav, reference, name)
+
+    def test_active_link_follows_the_current_page(self):
+        expected = {
+            "customer:home": 'class="sn-link active">Beranda',
+            "customer:shop": 'class="sn-link active">Belanja',
+            "customer:about": 'class="sn-link active">Tentang Kami',
+            "customer:wishlist": 'class="sn-icon is-active"',
+        }
+        for name, marker in expected.items():
+            self.assertIn(marker, _nav_html(self.client.get(reverse(name))), name)
+
+    def test_every_public_page_loads_the_shared_navbar_assets(self):
+        for name in PUBLIC_PAGES:
+            r = self.client.get(reverse(name))
+            self.assertContains(r, "customer/css/nav.css")
+            self.assertContains(r, "customer/js/nav.js")
+
+    def test_old_navbar_markup_is_gone(self):
+        for name in PUBLIC_PAGES:
+            html = self.client.get(reverse(name)).content.decode()
+            self.assertNotIn("navbar-seelly", html)
+            self.assertNotIn('id="mobile-menu"', html)
+
+
+class WishlistPageTests(TestCase):
+    def test_wishlist_has_its_own_url_and_page(self):
+        self.assertEqual(reverse("customer:wishlist"), "/favorit/")
+        r = self.client.get("/favorit/")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Produk Favorit")
+        self.assertContains(r, 'id="wishlist-grid"')
+        self.assertContains(r, 'id="wishlist-empty"')
+        self.assertContains(r, 'data-items-url="/favorit/produk/"')
+
+    def test_navbar_heart_links_to_the_wishlist_page(self):
         r = self.client.get(reverse("customer:shop"))
-        self.assertContains(r, 'id="nav-toggle"')
-        self.assertContains(r, 'id="nav-links"')
+        self.assertContains(r, 'href="/favorit/"')
+        self.assertNotContains(r, "wishlist=1")
+
+    def test_old_wishlist_link_redirects_to_the_new_page(self):
+        r = self.client.get("/shop/", {"wishlist": "1"})
+        self.assertRedirects(r, "/favorit/", status_code=301, fetch_redirect_response=False)
+
+    def test_shop_page_no_longer_has_a_wishlist_mode(self):
+        make_product()
+        r = self.client.get("/shop/", {"q": "whis"})
+        self.assertNotContains(r, "data-wishlist-mode")
+        self.assertNotContains(r, 'id="wishlist-empty"')
+
+    def test_items_endpoint_returns_only_requested_products_newest_first(self):
+        first = make_product("Whiskas 70g")
+        second = make_product("Royal Canin")
+        make_product("Tidak diminta")
+        r = self.client.get("/favorit/produk/", {"ids": f"{first.id},{second.id}"})
+        self.assertEqual(r.status_code, 200)
         html = r.content.decode()
-        nav = html[html.index('id="nav-links"'):].split("</div>")[0]
-        for label in ("Beranda", "Belanja", "Tentang Kami", "Hubungi Kami"):
-            self.assertIn(f">{label}</a>", nav, label)
+        self.assertIn("Whiskas 70g", html)
+        self.assertIn("Royal Canin", html)
+        self.assertNotIn("Tidak diminta", html)
+        self.assertLess(html.index("Whiskas 70g"), html.index("Royal Canin"))
+
+    def test_items_endpoint_keeps_the_order_of_the_ids(self):
+        first = make_product("Whiskas 70g")
+        second = make_product("Royal Canin")
+        html = self.client.get("/favorit/produk/", {"ids": f"{second.id},{first.id}"}).content.decode()
+        self.assertLess(html.index("Royal Canin"), html.index("Whiskas 70g"))
+
+    def test_items_endpoint_ignores_bad_unknown_and_unsellable_ids(self):
+        ok = make_product("Whiskas 70g")
+        hidden = make_product("Produk Nonaktif", is_active=False)
+        r = self.client.get("/favorit/produk/", {"ids": f"abc,-1,9999,{hidden.id},{ok.id},{ok.id}"})
+        html = r.content.decode()
+        self.assertEqual(html.count('class="product-card"'), 1)
+        self.assertIn("Whiskas 70g", html)
+        self.assertNotIn("Produk Nonaktif", html)
+
+    def test_items_endpoint_without_ids_is_empty(self):
+        make_product()
+        r = self.client.get("/favorit/produk/")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.content.decode().strip(), "")
+
+    def test_items_endpoint_is_not_cached(self):
+        r = self.client.get("/favorit/produk/")
+        self.assertIn("no-cache", r.headers["Cache-Control"])
 
 
 class SiteAtRootTests(TestCase):
@@ -297,12 +394,6 @@ class HomeShopTests(TestCase):
         self.assertEqual(r.context["results"], [])
         self.assertContains(r, "Tidak ada produk yang cocok")
 
-    def test_wishlist_mode(self):
-        make_product()
-        r = self.client.get("/shop/", {"wishlist": "1"})
-        self.assertContains(r, "data-wishlist-mode")
-        self.assertContains(r, 'id="wishlist-empty"')
-
     def test_product_detail(self):
         p = make_product("Whiskas 70g", price=12000)
         r = self.client.get(reverse("customer:product_detail", args=[p.id]))
@@ -401,3 +492,41 @@ class ProductsPageTests(TestCase):
         for english in ("Add to Cart", "Pet Type", "Apply Filters", "Sort by"):
             self.assertNotIn(english, html)
         self.assertIn('href="/shop/"', html)
+
+
+class CheckoutConfirmationTests(TestCase):
+    def setUp(self):
+        self.page = self.client.get(reverse("customer:checkout"))
+
+    def test_page_has_confirmation_dialog(self):
+        self.assertContains(self.page, 'id="confirm-dialog"')
+        self.assertContains(self.page, "Periksa Pesanan Anda")
+
+    def test_dialog_shows_receiver_data_and_items(self):
+        for element_id in (
+            "confirm-name",
+            "confirm-phone",
+            "confirm-address",
+            "confirm-payment",
+            "confirm-items",
+            "confirm-total",
+        ):
+            self.assertContains(self.page, f'id="{element_id}"')
+
+    def test_send_button_starts_disabled_until_user_confirms(self):
+        html = self.page.content.decode()
+        self.assertRegex(html, r"data-confirm-send\s+disabled")
+        self.assertContains(self.page, 'id="confirm-check"')
+        self.assertContains(self.page, "semuanya sudah benar")
+
+    def test_original_order_button_is_still_there(self):
+        self.assertContains(self.page, "data-place-order")
+        self.assertContains(self.page, "Pesan via WhatsApp")
+
+    def test_confirmation_logic_lives_in_the_static_script(self):
+        script = finders.find("customer/js/checkout.js")
+        with open(script, encoding="utf-8") as handle:
+            code = handle.read()
+        self.assertIn("showModal", code)
+        self.assertIn("data-confirm-send", code)
+        self.assertNotRegex(self.page.content.decode(), r"<script(?![^>]*\bsrc=)")

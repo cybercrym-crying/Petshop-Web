@@ -149,9 +149,7 @@
     aria-hidden="true"></i></a>
             </div>
             <p class="muted" id="shop-sub">{{ results|length }} produk ditemukan</p>
-            <div class="product-grid"
-                 id="product-grid"
-                 {% if wishlist_mode %}data-wishlist-mode{% endif %}>
+            <div class="product-grid" id="product-grid">
                 {% for item in results %}
                     {% include "customer/_product_card.html" %}
                 {% empty %}
@@ -161,11 +159,6 @@
                     </div>
                 {% endfor %}
             </div>
-            {% if wishlist_mode %}
-                <p class="muted text-center py-4"
-                   id="wishlist-empty"
-                   hidden>Belum ada produk favorit. Tekan ikon hati pada produk untuk menyimpannya.</p>
-            {% endif %}
         </section>
     {% endif %}
     <!-- HERO (VIDEO BACKGROUND Penuh) -->

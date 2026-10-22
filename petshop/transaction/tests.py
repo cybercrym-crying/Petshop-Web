@@ -219,17 +219,49 @@ class ManageTransactionViewTests(TestCase):
         self.assertContains(r, f"Order #{self.order.pk}")
 
     def test_full_flow(self):
-        self.act("on_delivery", courier=self.courier.pk)
+        # Admin hanya menugaskan kurir; kurir yang mulai mengirim.
+        self.act("assign_courier", courier=self.courier.pk)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.order_status, OrderStatus.CONFIRMED)
+        self.assertEqual(self.order.courier, self.courier)
+        self.order.mark_on_delivery(self.courier)
         self.act("delivered")
         self.order.refresh_from_db()
         self.assertEqual(self.order.order_status, OrderStatus.DELIVERED)
         self.assertEqual(self.order.payment_status, PaymentStatus.PAID)
-        self.assertEqual(self.order.courier, self.courier)
 
-    def test_on_delivery_without_courier_rejected(self):
-        self.act("on_delivery")
+    def test_admin_cannot_dispatch(self):
+        self.act("on_delivery", courier=self.courier.pk)
         self.order.refresh_from_db()
         self.assertEqual(self.order.order_status, OrderStatus.CONFIRMED)
+
+    def test_assign_courier_without_courier_rejected(self):
+        self.act("assign_courier")
+        self.order.refresh_from_db()
+        self.assertIsNone(self.order.courier)
+
+    def test_cash_order_can_get_courier_before_paid(self):
+        self.assertEqual(self.order.payment_status, PaymentStatus.PENDING)
+        self.act("assign_courier", courier=self.courier.pk)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.courier, self.courier)
+
+    def test_transfer_needs_paid_before_courier(self):
+        self.order.payment_method = "TRANSFER"
+        self.order.save(update_fields=["payment_method"])
+        self.act("assign_courier", courier=self.courier.pk)
+        self.order.refresh_from_db()
+        self.assertIsNone(self.order.courier)
+        self.act("paid")
+        self.act("assign_courier", courier=self.courier.pk)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.courier, self.courier)
+
+    def test_courier_cannot_start_unpaid_transfer(self):
+        self.order.payment_method = "TRANSFER"
+        self.order.save(update_fields=["payment_method"])
+        with self.assertRaises(InvalidTransition):
+            self.order.mark_on_delivery(self.courier)
 
     def test_cancel_via_view_restores_stock(self):
         self.act("cancel")

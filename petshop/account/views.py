@@ -15,18 +15,6 @@ from django.db.models import Sum
 
 User = get_user_model()
 
-AVATAR_TONES = 6
-
-
-def _decorate_employee(emp):
-    """Tambah atribut tampilan: nama, inisial, dan warna avatar (stabil per user)."""
-    first = (emp.first_name or "").strip()
-    last = (emp.last_name or "").strip()
-    emp.display_name = f"{first} {last}".strip() or emp.username
-    emp.initials = ((first[:1] + last[:1]) or emp.username[:2]).upper()
-    emp.tone = emp.pk % AVATAR_TONES
-    return emp
-
 
 def _whatsapp_url(phone):
     digits = re.sub(r"\D", "", phone or "")
@@ -95,7 +83,7 @@ def manage_account(request):
     )
     context = {
         "active_tab": request.GET.get("tab", "employee"),
-        "employee": [_decorate_employee(e) for e in employees],
+        "employee": list(employees),
         "customers": Customer.objects.all(),
     }
     return render(request, "account/manage_account.html", context)
@@ -103,9 +91,7 @@ def manage_account(request):
 
 @roleRequired(Role.ADMIN)
 def employee_profile(request, pk):
-    emp = _decorate_employee(
-        get_object_or_404(User, pk=pk, role__in=[Role.ADMIN, Role.COURIER])
-    )
+    emp = get_object_or_404(User, pk=pk, role__in=[Role.ADMIN, Role.COURIER])
     behavior = emp.role_behavior
     is_courier = behavior.code == Role.COURIER
     handled = behavior.handled_orders(emp)

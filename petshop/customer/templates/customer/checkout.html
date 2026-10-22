@@ -115,6 +115,60 @@
         </div>
     </div>
 
+    <dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-title">
+        <div class="confirm-dialog__box">
+            <h2 class="confirm-dialog__title" id="confirm-title">
+                <i class="fas fa-clipboard-check"></i> Periksa Pesanan Anda
+            </h2>
+            <p class="confirm-dialog__lead">
+                Pastikan barang dan data di bawah ini sudah benar sebelum pesanan dikirim ke WhatsApp admin.
+            </p>
+
+            <section class="confirm-block">
+                <h3 class="confirm-block__title">Data Penerima</h3>
+                <dl class="confirm-data">
+                    <div class="confirm-data__row">
+                        <dt>Nama</dt>
+                        <dd id="confirm-name"></dd>
+                    </div>
+                    <div class="confirm-data__row">
+                        <dt>Nomor Telepon</dt>
+                        <dd id="confirm-phone"></dd>
+                    </div>
+                    <div class="confirm-data__row">
+                        <dt>Alamat</dt>
+                        <dd id="confirm-address"></dd>
+                    </div>
+                    <div class="confirm-data__row">
+                        <dt>Pembayaran</dt>
+                        <dd id="confirm-payment"></dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="confirm-block">
+                <h3 class="confirm-block__title">Barang</h3>
+                <ul class="confirm-items" id="confirm-items"></ul>
+                <div class="confirm-total">
+                    <span>Total</span>
+                    <strong id="confirm-total"></strong>
+                </div>
+            </section>
+
+            <label class="confirm-check">
+                <input type="checkbox" id="confirm-check">
+                <span>Saya sudah memeriksa barang dan data di atas, dan semuanya sudah benar.</span>
+            </label>
+
+            <div class="confirm-actions">
+                <button type="button" class="btn-confirm-back" data-confirm-back>Periksa Lagi</button>
+                <button type="button" class="btn-confirm-send" data-confirm-send disabled>
+                    <i class="fab fa-whatsapp"></i> Ya, Kirim Pesanan
+                </button>
+            </div>
+        </div>
+    </dialog>
+
     <script src="{% static 'customer/js/checkout.js' %}"></script>
     <script src="{% static 'js/common.js' %}"></script>
 </body>

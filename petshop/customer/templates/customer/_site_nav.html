@@ -1,75 +1,52 @@
-{% comment %}Navbar publik. Pakai: {% include "customer/_site_nav.html" with active="home" %}{% endcomment %}
-<nav class="navbar-seelly sx-nav">
-    <div class="container d-flex align-items-center justify-content-between gap-2">
-        <a href="{% url 'customer:home' %}"
-           class="navbar-brand text-decoration-none">🐾 Seelly Petshop</a>
-        <div class="d-none d-xl-flex align-items-center">
+<header class="sn-header">
+    <nav class="container sn-bar" aria-label="Navigasi utama">
+        <a href="{% url 'customer:home' %}" class="sn-brand">
+            <i class="fas fa-paw" aria-hidden="true"></i>
+            <span>Seelly Petshop</span>
+        </a>
+        <button class="sn-toggle"
+                type="button"
+                id="nav-toggle"
+                aria-label="Buka menu"
+                aria-expanded="false"
+                aria-controls="nav-links">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+        <div class="sn-links" id="nav-links">
             <a href="{% url 'customer:home' %}"
-               class="nav-link-custom{% if active == 'home' %} active{% endif %}">Beranda</a>
+               class="sn-link{% if active == 'home' %} active{% endif %}">Beranda</a>
             <a href="{% url 'customer:shop' %}"
-               class="nav-link-custom{% if active == 'shop' %} active{% endif %}">Belanja</a>
+               class="sn-link{% if active == 'shop' %} active{% endif %}">Belanja</a>
             <a href="{% url 'customer:about' %}"
-               class="nav-link-custom{% if active == 'about' %} active{% endif %}">Tentang Kami</a>
-            <a href="#kontak" class="nav-link-custom">Hubungi Kami</a>
+               class="sn-link{% if active == 'about' %} active{% endif %}">Tentang Kami</a>
+            <a href="#kontak" class="sn-link">Hubungi Kami</a>
         </div>
-        <div class="d-flex align-items-center">
-            <form id="site-search"
-                  class="sx-search d-none d-xl-flex js-search-form"
+        <div class="sn-actions">
+            <form class="sn-search"
                   action="{% url 'customer:shop' %}"
                   method="get"
                   role="search">
                 <input type="search"
                        name="q"
-                       id="product-search"
-                       class="search-bar js-search"
+                       value="{{ query|default:'' }}"
                        placeholder="Cari produk..."
                        aria-label="Cari produk">
-                <button class="icon-btn" type="submit" aria-label="Cari" id="search-btn">
-                    <i class="fas fa-search"></i>
+                <button type="submit" aria-label="Cari">
+                    <i class="fas fa-search" aria-hidden="true"></i>
                 </button>
             </form>
-            <button class="icon-btn" type="button" aria-label="Favorit">
-                <i class="far fa-heart"></i>
-                <span class="badge-count">0</span>
-            </button>
-            <a class="icon-btn"
+            <a class="sn-icon{% if active == 'wishlist' %} is-active{% endif %}"
+               href="{% url 'customer:wishlist' %}"
+               aria-label="Favorit">
+                <i class="far fa-heart" aria-hidden="true"></i>
+                <span class="sn-badge" id="wishlist-count" hidden>0</span>
+            </a>
+            <a class="sn-icon"
                href="{% url 'customer:cart' %}"
                aria-label="Keranjang">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="badge-count" id="cart-count">0</span>
+                <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                <span class="sn-badge" id="cart-count" hidden>0</span>
             </a>
-            <button class="icon-btn d-xl-none"
-                    type="button"
-                    id="nav-toggle"
-                    aria-label="Buka menu"
-                    aria-expanded="false"
-                    aria-controls="mobile-menu">
-                <i class="fas fa-bars"></i>
-            </button>
         </div>
-    </div>
-    <div id="mobile-menu" class="sx-mobile-menu d-xl-none">
-        <div class="container">
-            <form class="sx-search-m js-search-form"
-                  action="{% url 'customer:shop' %}"
-                  method="get"
-                  role="search">
-                <input type="search"
-                       name="q"
-                       class="js-search"
-                       placeholder="Cari produk..."
-                       aria-label="Cari produk">
-                <button class="icon-btn" type="submit" aria-label="Cari">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
-            <a href="{% url 'customer:home' %}"
-               class="sx-mlink{% if active == 'home' %} active{% endif %}">Beranda</a>
-            <a href="{% url 'customer:shop' %}"
-               class="sx-mlink{% if active == 'shop' %} active{% endif %}">Belanja</a>
-            <a href="{% url 'customer:about' %}"
-               class="sx-mlink{% if active == 'about' %} active{% endif %}">Tentang Kami</a>
-            <a href="#kontak" class="sx-mlink">Hubungi Kami</a>
-        </div>
-    </div>
-</nav>
+    </nav>
+</header>
