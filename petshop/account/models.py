@@ -277,6 +277,12 @@ class User(AbstractUser):
         self.first_name = first[:150]
         self.last_name = last.strip()[:150]
 
+    @classmethod
+    def couriers(cls):
+        """Semua user ber-peran kurir (satu pintu, tidak diulang di view)."""
+        return cls.objects.filter(role=Role.COURIER)
+
+    # OOP: ENKAPSULASI - info tampilan karyawan dihitung User sendiri.
     @property
     def initials(self):
         first = (self.first_name or "").strip()
