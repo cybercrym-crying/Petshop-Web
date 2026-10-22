@@ -1,0 +1,48 @@
+/* Halaman Booking Layanan & Jenis Layanan (admin/kasir). */
+.bk-status {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.bk-pending { background: rgba(229, 165, 0, 0.12); color: #b07d00; border-color: rgba(229, 165, 0, 0.3); }
+.bk-proses { background: rgba(140, 115, 194, 0.14); color: #6b4fb0; border-color: rgba(140, 115, 194, 0.35); }
+.bk-selesai { background: rgba(5, 166, 96, 0.12); color: #04824b; border-color: rgba(5, 166, 96, 0.3); }
+[data-theme="dark"] .bk-pending { color: #ffc247; }
+[data-theme="dark"] .bk-proses { color: #c4aef0; }
+[data-theme="dark"] .bk-selesai { color: #3dd68c; }
+
+.svc-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.svc-filters .custom-tabs { margin-bottom: 0 !important; }
+.svc-count {
+  display: inline-block;
+  min-width: 22px;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 50px;
+  background: rgba(140, 115, 194, 0.15);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.svc-search {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 260px;
+  max-width: 380px;
+}
+.svc-muted { color: #718096; font-size: 0.85rem; font-weight: 500; }
+.svc-late { color: #e31a1a; font-weight: 700; font-size: 0.75rem; }
+.svc-assign { display: flex; gap: 6px; align-items: center; min-width: 220px; }
+.svc-assign select { padding: 6px 10px; font-size: 0.85rem; }
+.svc-inactive td { opacity: 0.55; }
+.svc-price { font-weight: 800; white-space: nowrap; }

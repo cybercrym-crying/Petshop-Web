@@ -1,0 +1,74 @@
+{% extends "customer/base.html" %}
+{% load static rupiah %}
+{% block title %}Layanan Grooming - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <section class="container section svc-page">
+        <header class="svc-head">
+            <div>
+                <h1 class="svc-title"><i class="fas fa-scissors" aria-hidden="true"></i> Layanan Grooming &amp; Perawatan</h1>
+                <p class="muted mb-0">Pilih layanan, tentukan jadwal datang, dan groomer kami siap merawat hewan kesayangan Anda.</p>
+            </div>
+            {% if is_customer %}
+                <a href="{% url 'service:my_bookings' %}" class="btn-ghost"><i class="fas fa-calendar-check" aria-hidden="true"></i> Booking Saya</a>
+            {% endif %}
+        </header>
+        {% include "service/_site_messages.html" %}
+        <div class="svc-layout">
+            <div>
+                <ul class="svc-grid">
+                    {% for s in services %}
+                        <li class="svc-card">
+                            <div class="svc-card__top">
+                                <h2>{{ s.name }}</h2>
+                                <span class="svc-chip">{{ s.get_pet_type_display }}</span>
+                            </div>
+                            {% if s.description %}<p class="muted">{{ s.description }}</p>{% endif %}
+                            <div class="svc-card__foot">
+                                <span class="svc-price">Rp {{ s.price|rupiah }}</span>
+                                <span class="muted"><i class="far fa-clock" aria-hidden="true"></i> ± {{ s.duration_minutes }} menit</span>
+                            </div>
+                            <a class="btn-soft svc-pick" href="?layanan={{ s.pk }}#booking">Pilih layanan ini</a>
+                        </li>
+                    {% empty %}
+                        <li class="empty-state">
+                            <i class="fas fa-scissors" aria-hidden="true"></i>
+                            <h2>Belum ada layanan</h2>
+                            <p>Layanan grooming akan segera tersedia.</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <aside class="svc-booking" id="booking" aria-labelledby="booking-title">
+                <h2 id="booking-title">Booking Layanan</h2>
+                {% if not user.is_authenticated %}
+                    <p class="muted">Masuk atau daftar akun customer untuk membuat booking dan memantau statusnya (Pending → Proses → Selesai).</p>
+                    <div class="svc-auth">
+                        <a class="btn-primary-seelly" href="{% url 'login_form' %}?next={% url 'service:catalog' %}">Masuk</a>
+                        <a class="btn-ghost" href="{% url 'register' %}?next={% url 'service:catalog' %}">Daftar</a>
+                    </div>
+                {% elif not is_customer %}
+                    <p class="muted">Anda masuk sebagai pegawai. Booking untuk pelanggan dibuat lewat menu <strong>Booking Layanan</strong> di halaman staf.</p>
+                {% else %}
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="svc-alert svc-alert--error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+                        {% for field in form %}
+                            <div class="svc-field{% if field.errors %} has-error{% endif %}">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="muted">(opsional)</span>{% endif %}</label>
+                                {{ field }}
+                                {% for error in field.errors %}<p class="svc-error">{{ error }}</p>{% endfor %}
+                            </div>
+                        {% endfor %}
+                        <p class="muted svc-hint">Jam layanan 08.00–20.00 WITA. Bayar di toko setelah layanan selesai.</p>
+                        <button type="submit" class="btn-primary-seelly w-100">
+                            <i class="fas fa-calendar-plus" aria-hidden="true"></i> Buat Booking
+                        </button>
+                    </form>
+                {% endif %}
+            </aside>
+        </div>
+    </section>
+{% endblock %}

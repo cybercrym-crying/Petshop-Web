@@ -1,0 +1,7 @@
+{% if messages %}
+    <div class="svc-messages" aria-live="polite">
+        {% for message in messages %}
+            <div class="svc-alert svc-alert--{% if message.tags == 'error' %}error{% else %}{{ message.tags|default:'info' }}{% endif %}" role="alert">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}

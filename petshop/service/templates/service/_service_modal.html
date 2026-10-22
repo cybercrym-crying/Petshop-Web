@@ -1,0 +1,58 @@
+<div class="modal fade"
+     id="serviceModal{% if s %}{{ s.pk }}{% else %}New{% endif %}"
+     tabindex="-1"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content p-2">
+            <div class="modal-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h2 class="modal-title-custom">{% if s %}Ubah Layanan{% else %}Tambah Layanan{% endif %}</h2>
+                        <p class="modal-sub">{% if s %}{{ s.name }}{% else %}Jasa baru yang bisa dibooking pelanggan{% endif %}</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <form method="post"
+                      action="{% if s %}{% url 'service:edit_service' s.pk %}{% else %}{% url 'service:add_service' %}{% endif %}">
+                    {% csrf_token %}
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label-custom">Nama Layanan</label>
+                            <input type="text" name="name" maxlength="120" class="dark-input" value="{{ s.name|default:'' }}" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-custom">Untuk Hewan</label>
+                            <select name="pet_type" class="dark-input">
+                                {% for code, label in pet_types %}
+                                    <option value="{{ code }}" {% if s and s.pet_type == code %}selected{% elif not s and code == "SEMUA" %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Harga (Rp)</label>
+                            <input type="number" name="price" min="0" step="500" class="dark-input" value="{{ s.price|default:'' }}" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Durasi (menit)</label>
+                            <input type="number" name="duration_minutes" min="5" step="5" class="dark-input" value="{% if s %}{{ s.duration_minutes }}{% else %}60{% endif %}" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label-custom">Deskripsi</label>
+                            <textarea name="description" rows="3" class="dark-input">{{ s.description|default:'' }}</textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="d-inline-flex align-items-center gap-2 fw-semibold">
+                                <input type="checkbox" name="is_active" class="form-check-input m-0" {% if not s or s.is_active %}checked{% endif %} />
+                                Aktif (tampil di situs &amp; bisa dibooking)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end border-top pt-4">
+                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn-orange px-5">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

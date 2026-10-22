@@ -1,0 +1,298 @@
+/* =========================================
+   ABOUT US PAGE STYLES (Mockup Design)
+   ========================================= */
+
+/* --- HERO SECTION --- */
+.about-hero-section {
+  background-color: #f7eff4; /* Warna latar pastel/cream lembut dari mockup */
+  padding: 60px 0;
+  margin-bottom: 60px;
+}
+
+.about-hero-content {
+  padding-right: 40px;
+}
+
+.about-breadcrumb {
+  font-size: 0.85rem;
+  color: var(--sx-muted);
+  margin-bottom: 16px;
+}
+
+.about-breadcrumb a {
+  color: var(--sx-muted);
+  text-decoration: none;
+}
+
+.about-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.about-hero-title {
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  font-weight: 800;
+  color: var(--sx-ink);
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+
+.about-hero-title span {
+  color: var(--sx-mid); /* Warna ungu lebih terang untuk penekanan */
+}
+
+.about-hero-subtext {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--sx-muted);
+}
+
+.about-hero-img-wrap {
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
+  background-color: #e5e5e5; /* Placeholder jika gambar gagal dimuat */
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.about-hero-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- STATS BOXES --- */
+.about-stat-box {
+  background: #fff;
+  border: 1px solid var(--sx-line);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  height: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease;
+}
+
+.about-stat-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.about-stat-box b {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--sx-deep);
+  margin-bottom: 4px;
+}
+
+.about-stat-box span {
+  font-size: 0.85rem;
+  color: var(--sx-muted);
+  font-weight: 500;
+}
+
+/* --- VISION & MISSION CARDS --- */
+.vm-card {
+  border-radius: 16px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  z-index: 1;
+}
+
+.vm-card.dark {
+  background-color: var(--sx-deep);
+  color: #fff;
+}
+
+.vm-card.light {
+  background-color: #fff;
+  border: 1px solid var(--sx-line);
+  color: var(--sx-ink);
+  box-shadow: 0 10px 30px rgba(75, 42, 120, 0.05);
+}
+
+.vm-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  margin-bottom: 24px;
+}
+
+.vm-card.dark .vm-icon-wrap {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.vm-card.light .vm-icon-wrap {
+  background: var(--soft-purple);
+  color: var(--sx-deep);
+}
+
+.vm-card h3 {
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+.vm-card.light h3 {
+  color: var(--sx-deep);
+}
+
+.vm-card p,
+.vm-card ul {
+  font-size: 1rem;
+  line-height: 1.7;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.vm-card ul {
+  padding-left: 1.2rem;
+}
+
+/* Paw Watermark */
+.paw-watermark {
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  font-size: 8rem;
+  z-index: -1;
+  transform: rotate(-15deg);
+}
+
+.vm-card.dark .paw-watermark {
+  color: rgba(255, 255, 255, 0.08);
+}
+
+.vm-card.light .paw-watermark {
+  color: rgba(123, 87, 166, 0.05);
+}
+
+/* --- VALUES GRID (What We Believe In) --- */
+.values-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.value-card {
+  background: #fff;
+  border: 1px solid var(--sx-line);
+  border-radius: 12px;
+  padding: 30px 24px;
+  height: 100%;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+.value-card:hover {
+  box-shadow: 0 12px 30px rgba(75, 42, 120, 0.08);
+  transform: translateY(-5px);
+}
+
+.value-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: var(--soft-purple);
+  color: var(--sx-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+}
+
+.value-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--sx-deep);
+  margin-bottom: 12px;
+}
+
+.value-card p {
+  font-size: 0.95rem;
+  color: var(--sx-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* --- CTA BANNER --- */
+.about-cta-banner {
+  background-color: #bfaecf; /* Warna latar CTA ungu pudar dari mockup */
+  border-radius: 16px;
+  padding: 32px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.about-cta-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.about-cta-paw {
+  font-size: 3.5rem;
+  color: var(--sx-deep);
+}
+
+.about-cta-text h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--sx-deep);
+  margin: 0 0 4px 0;
+}
+
+.about-cta-text p {
+  color: var(--sx-ink);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.about-cta-btn {
+  background-color: var(--sx-deep);
+  color: #fff;
+  padding: 12px 32px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.about-cta-btn:hover {
+  background-color: #3b1f60;
+  color: #fff;
+}
+
+/* Responsiveness */
+@media (max-width: 991.98px) {
+  .about-hero-content {
+    padding-right: 0;
+    margin-bottom: 30px;
+  }
+  .about-cta-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  .about-cta-content {
+    flex-direction: column;
+    text-align: center;
+  }
+}

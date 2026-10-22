@@ -1,27 +1,66 @@
+from urllib.parse import quote
+
 from account.decorators import roleRequired
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.urls import reverse
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Count, F, Q, Sum
+from common.exceptions import PetshopError
 from product.models import Product, InsufficientStock
-from account.models import Customer, User, Role
+from account.models import POS_ROLES, Customer, User, Role, person_search
 from .models import (
     Cart,
     CartItem,
     CheckoutError,
     InvalidTransition,
     Order,
+    OrderStatus,
     PaymentMethod,
     PaymentStatus,
 )
+
+# Kolom board = status order. Kolom terbuka tampil semua; kolom selesai dibatasi.
+BOARD_COLUMNS = (
+    (OrderStatus.PENDING, "pending", "Pesanan Online Baru"),
+    (OrderStatus.CONFIRMED, "confirmed", "Dikonfirmasi"),
+    (OrderStatus.ON_DELIVERY, "on-delivery", "Dalam Pengiriman"),
+    (OrderStatus.DELIVERED, "delivered", "Terkirim"),
+    (OrderStatus.CANCELLED, "cancelled", "Dibatalkan"),
+)
+OPEN_STATUSES = (OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
+CLOSED_COLUMN_LIMIT = 12
 
 
 def _resolve_customer(post):
     """Customer dipilih dari dropdown; customer baru ditambah lewat Manage Account."""
     customer = Customer.objects.filter(pk=post.get("customer") or None).first()
     if customer is None:
-        raise CheckoutError("Pilih customer terlebih dahulu.")
+        raise CheckoutError("Pilih pelanggan terlebih dahulu.")
     return customer
+
+
+def _with_overdue(order):
+    # Aturan telat bayar milik Order.is_overdue; di sini hanya disalin ke atribut
+    # yang dibaca template.
+    order.overdue = order.is_overdue
+    return order
+
+
+def _with_share_link(order, request):
+    """Tautan WhatsApp berisi resi + link lacak, siap dikirim admin ke pelanggan."""
+    track_url = request.build_absolute_uri(
+        reverse("customer:track_detail", args=[order.tracking_number])
+    )
+    text = (
+        f"Halo {order.customer.name}, pesanan Anda di Seelly Petshop "
+        f"(order #{order.pk}) sudah kami proses.\n"
+        f"No. resi: {order.tracking_number}\n"
+        f"Lacak pesanan & lihat bukti pengiriman: {track_url}"
+    )
+    order.track_url = track_url
+    order.share_wa_url = f"{order.customer.whatsapp_url}?text={quote(text)}"
+    return order
 
 
 def _get_or_create_cart(user):
@@ -29,7 +68,7 @@ def _get_or_create_cart(user):
     return cart
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def make_transaction(request):
     cart = _get_or_create_cart(request.user)
     products = Product.objects.sellable()
@@ -47,29 +86,34 @@ def make_transaction(request):
             "products": products,
             "cart_items": cart_items,
             "cart_total": cart_total,
-            "customers": Customer.objects.all(),
-            "couriers": User.objects.filter(role=Role.COURIER),
+            "customers": Customer.objects.order_by("first_name", "last_name"),
+            "couriers": User.couriers(),
         },
     )
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def add_to_cart(request, pk):
     if request.method == "POST":
-        product = get_object_or_404(Product, pk=pk)
+        product = get_object_or_404(Product.objects.sellable(), pk=pk)
         cart = _get_or_create_cart(request.user)
-        if product.stock <= 0:
-            messages.error(request, f"Stok '{product.name}' habis.")
+        try:
+            cart.add(product)
+        except InsufficientStock:
+            if product.stock <= 0:
+                messages.error(request, f"Stok '{product.name}' habis.")
+            else:
+                messages.error(
+                    request,
+                    f"Stok '{product.name}' hanya {product.stock}, "
+                    "semuanya sudah ada di keranjang.",
+                )
         else:
-            item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-            if not created:
-                item.quantity = F("quantity") + 1
-                item.save(update_fields=["quantity"])
             messages.success(request, f"'{product.name}' ditambahkan.")
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def remove_from_cart(request, pk):
     if request.method == "POST":
         item = get_object_or_404(CartItem, pk=pk, cart__user=request.user)
@@ -77,7 +121,7 @@ def remove_from_cart(request, pk):
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def update_cart_quantity(request, pk):
     if request.method == "POST":
         cart = get_object_or_404(Cart, user=request.user)
@@ -93,7 +137,7 @@ def update_cart_quantity(request, pk):
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def cancel_transaction(request):
     if request.method == "POST":
         Cart.objects.filter(user=request.user).delete()
@@ -101,7 +145,7 @@ def cancel_transaction(request):
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def submit_transaction(request):
     if request.method == "POST":
         cart = get_object_or_404(Cart, user=request.user)
@@ -117,9 +161,7 @@ def submit_transaction(request):
             messages.error(request, "Metode pembayaran tidak valid.")
             return redirect("transaction:make_transaction")
 
-        courier = User.objects.filter(
-            pk=request.POST.get("courier") or None, role=Role.COURIER
-        ).first()
+        courier = User.couriers().filter(pk=request.POST.get("courier") or None).first()
 
         try:
             cart.checkout(
@@ -128,31 +170,95 @@ def submit_transaction(request):
                 payment_method=paymentMethod,
                 courier=courier,
             )
-        except (CheckoutError, InsufficientStock) as e:
+        except PetshopError as e:
             messages.error(request, str(e))
         else:
             messages.success(request, "Transaksi berhasil dibuat.")
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def manage_transaction(request):
-    transactions = (
+    view = "list" if request.GET.get("view") == "list" else "board"
+    q = request.GET.get("q", "").strip()
+    only_unpaid = request.GET.get("payment") == "pending"
+
+    orders = (
         Order.objects.select_related("customer", "admin", "courier")
         .prefetch_related("details__product")
         .order_by("-date")
     )
+    if q:
+        orders, cond = person_search(orders, q, prefix="customer__")
+        cond |= Q(tracking_number__icontains=q)
+        digits = q.lstrip("#")
+        if digits.isdigit() and len(digits) <= 9:
+            cond |= Q(pk=int(digits))
+        orders = orders.filter(cond)
+    if only_unpaid:
+        orders = orders.filter(payment_status=PaymentStatus.PENDING).exclude(
+            order_status=OrderStatus.CANCELLED
+        )
+
+    columns = []
+    if view == "board":
+        for status, css, title in BOARD_COLUMNS:
+            qs = orders.filter(order_status=status)
+            count = qs.count()
+            is_open = status in OPEN_STATUSES
+            shown = [
+                _with_share_link(_with_overdue(o), request)
+                for o in (qs if is_open else qs[:CLOSED_COLUMN_LIMIT])
+            ]
+            columns.append(
+                {
+                    "css": css,
+                    "title": title,
+                    "count": count,
+                    "orders": shown,
+                    "total": sum(o.total_payment for o in shown) if is_open else None,
+                    "hidden": count - len(shown),
+                }
+            )
+        # Tab yang terbuka pertama: pesanan online baru bila ada, selain itu Dikonfirmasi.
+        active = next(
+            (c for c in columns if c["css"] == "pending" and c["count"]),
+            next(c for c in columns if c["css"] == "confirmed"),
+        )
+        for col in columns:
+            col["active"] = col is active
+        transactions = [o for col in columns for o in col["orders"]]
+    else:
+        transactions = [_with_share_link(_with_overdue(o), request) for o in orders]
+
+    active = Order.objects.filter(order_status__in=OPEN_STATUSES).aggregate(
+        n=Count("pk"), total=Sum("total_payment")
+    )
+    overdue_unpaid = sum(
+        1
+        for o in Order.objects.filter(payment_status=PaymentStatus.PENDING).exclude(
+            order_status=OrderStatus.CANCELLED
+        )
+        if o.is_overdue
+    )
+
     return render(
         request,
         "transaction/manage_transaction.html",
         {
-            "transactions": transactions,
-            "couriers": User.objects.filter(role=Role.COURIER),
+            "view": view,
+            "q": q,
+            "only_unpaid": only_unpaid,
+            "columns": columns,
+            "transactions": transactions,  # dipakai tabel (list) dan modal detail
+            "active": active,
+            "overdue_unpaid": overdue_unpaid,
+            "couriers": User.couriers(),
         },
     )
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def update_status(request, pk):
     if request.method != "POST":
         return redirect("transaction:manage_transaction")
@@ -161,15 +267,24 @@ def update_status(request, pk):
     try:
         with transaction.atomic():
             order = get_object_or_404(Order.objects.select_for_update(), pk=pk)
-            if action == "paid":
+            if action == "confirm":
+                order.confirm(request.user)
+                messages.success(
+                    request, f"Pesanan online #{order.pk} dikonfirmasi."
+                )
+            elif action == "paid":
                 order.mark_paid()
                 messages.success(request, f"Order #{order.pk} ditandai lunas.")
-            elif action == "on_delivery":
-                courier = User.objects.filter(
-                    pk=request.POST.get("courier") or None, role=Role.COURIER
+            elif action == "assign_courier":
+                courier = User.couriers().filter(
+                    pk=request.POST.get("courier") or None
                 ).first()
-                order.mark_on_delivery(courier)
-                messages.success(request, f"Order #{order.pk} sedang dikirim.")
+                order.assign_courier(courier)
+                messages.success(
+                    request,
+                    f"Kurir {courier.get_full_name() or courier.username} "
+                    f"ditugaskan ke order #{order.pk}.",
+                )
             elif action == "delivered":
                 order.mark_delivered()
                 messages.success(request, f"Order #{order.pk} selesai diantar.")
@@ -180,7 +295,7 @@ def update_status(request, pk):
                 )
                 if order.payment_status == PaymentStatus.PAID:
                     messages.warning(
-                        request, "Order sudah lunas: kembalikan dana ke customer."
+                        request, "Order sudah lunas: kembalikan dana ke pelanggan."
                     )
             else:
                 messages.error(request, "Aksi tidak dikenal.")

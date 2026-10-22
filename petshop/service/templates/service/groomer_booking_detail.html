@@ -1,0 +1,101 @@
+{% load rupiah %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        {% include "service/_groomer_head.html" %}
+        <title>Booking #{{ booking.pk }} - Groomer</title>
+    </head>
+    <body>
+        {% include "service/_groomer_nav.html" %}
+        <main class="container-fluid px-xl-5 px-4 py-5 groomer-detail">
+            <div class="pf-crumb">
+                <a href="{% url 'service:groomer_dashboard' %}?status={{ booking.status|lower }}"><i class="bi bi-arrow-left me-1"></i> Dasbor</a>
+                <span>/</span>
+                <strong>Booking #{{ booking.pk }}</strong>
+            </div>
+            {% if messages %}
+                <div class="mb-4" aria-live="polite">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <section class="detail-card">
+                <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                    <div>
+                        <p class="eyebrow mb-1">{{ booking.service.name }}</p>
+                        <h1 class="detail-title">{{ booking.pet_name }} <small>· {{ booking.get_pet_type_display }}</small></h1>
+                    </div>
+                    <span class="bk-status bk-{{ booking.status|lower }} bk-lg">{{ booking.get_status_display }}</span>
+                </div>
+                <ol class="bk-steps" aria-label="Alur status">
+                    <li class="is-done">
+                        <span class="dot"><i class="bi bi-calendar-check"></i></span>
+                        <div><strong>Pending</strong><small>Dibooking {{ booking.created_at|date:"d M Y, H:i" }}</small></div>
+                    </li>
+                    <li class="{% if booking.status != 'PENDING' %}is-done{% endif %}">
+                        <span class="dot"><i class="bi bi-scissors"></i></span>
+                        <div><strong>Proses</strong><small>{% if booking.started_at %}Mulai {{ booking.started_at|date:"d M Y, H:i" }}{% else %}Belum dimulai{% endif %}</small></div>
+                    </li>
+                    <li class="{% if booking.status == 'SELESAI' %}is-done{% endif %}">
+                        <span class="dot"><i class="bi bi-check2"></i></span>
+                        <div><strong>Selesai</strong><small>{% if booking.finished_at %}{{ booking.finished_at|date:"d M Y, H:i" }}{% else %}-{% endif %}</small></div>
+                    </li>
+                </ol>
+                <dl class="detail-grid">
+                    <div><dt>Jadwal</dt><dd>{{ booking.schedule|date:"l, d M Y · H:i" }}{% if booking.is_late %} <span class="booking-late d-inline">(lewat)</span>{% endif %}</dd></div>
+                    <div><dt>Durasi perkiraan</dt><dd>{{ booking.service.duration_minutes }} menit</dd></div>
+                    <div><dt>Harga</dt><dd class="text-brand">Rp {{ booking.price|rupiah }}</dd></div>
+                    <div><dt>Groomer</dt><dd>{{ booking.groomer.display_name|default:"Belum ditentukan" }}</dd></div>
+                    <div><dt>Pemilik</dt><dd>{{ booking.customer.name }}</dd></div>
+                    <div>
+                        <dt>Kontak</dt>
+                        <dd>
+                            {{ booking.customer.phone_number|default:"-" }}
+                            {% if booking.customer.whatsapp_url %}
+                                <a class="wa-link" href="{{ booking.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> WA</a>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+                {% if booking.customer_note %}
+                    <div class="note-box"><span>Catatan pelanggan</span>{{ booking.customer_note }}</div>
+                {% endif %}
+                {% if booking.groomer_note %}
+                    <div class="note-box is-ok"><span>Catatan groomer</span>{{ booking.groomer_note }}</div>
+                {% endif %}
+                {% if booking.status == "PENDING" %}
+                    <form method="post" action="{% url 'service:groomer_update_status' booking.pk %}" class="detail-action">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="start">
+                        <input type="hidden" name="from" value="detail">
+                        <button type="submit" class="btn-orange w-100"><i class="bi bi-play-fill me-2"></i>{% if booking.groomer_id %}Mulai Proses{% else %}Ambil &amp; Proses{% endif %}</button>
+                    </form>
+                {% elif booking.status == "PROSES" %}
+                    <form method="post" action="{% url 'service:groomer_update_status' booking.pk %}" class="detail-action">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="finish">
+                        <input type="hidden" name="from" value="detail">
+                        <label class="form-label fw-bold" for="note">Catatan hasil (opsional)</label>
+                        <input type="text" id="note" name="note" maxlength="255" class="form-control mb-3" placeholder="mis. kutu sudah bersih, kuku dipotong pendek">
+                        <button type="submit" class="btn-green w-100"><i class="bi bi-check2-circle me-2"></i>Tandai Selesai</button>
+                    </form>
+                {% endif %}
+            </section>
+            {% if history %}
+                <section class="detail-card mt-4">
+                    <h2 class="h5 fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Riwayat {{ booking.pet_name }}</h2>
+                    <ul class="history-list">
+                        {% for h in history %}
+                            <li>
+                                <strong>{{ h.service.name }}</strong>
+                                <span>{{ h.finished_at|date:"d M Y" }} · {{ h.groomer.display_name|default:"-" }}</span>
+                                {% if h.groomer_note %}<em>{{ h.groomer_note }}</em>{% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+        </main>
+    </body>
+</html>

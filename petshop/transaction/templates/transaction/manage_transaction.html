@@ -1,147 +1,350 @@
-{% load static %}
+{% load static rupiah humanize %}
 <!DOCTYPE html>
 <html lang="id">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Manage Transaction</title>
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        <title>PetAdmin - Kelola Transaksi</title>
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+              rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
         <link rel="stylesheet"
-              href="{% static 'transaction/css/manage_transaction.css' %}?v=20261013">
+              href="{% static 'transaction/css/manage_transaction.css' %}?v=dm1">
     </head>
     <body>
-        <nav class="navbar-petadmin">
-            <div class="brand">
-                <span class="brand-logo">L</span>
-                <a href="/staff/admin/dashboard">
-                    <span class="brand-name">PetAdmin</span>
+        {% include "partials/staff_nav.html" %}
+        <main class="container-fluid px-xl-5 px-4 py-4">
+            <!-- Header -->
+            <div class="page-header animate-fade-up" style="animation-delay: 0s;">
+                <div>
+                    <p class="eyebrow">Dasbor</p>
+                    <h1 class="page-title">Kelola Transaksi</h1>
+                    <p class="page-subtitle">{{ active.n }} pesanan aktif · Total Rp {{ active.total|rupiah|intcomma }}</p>
+                </div>
+                <a href="{% url 'transaction:make_transaction' %}" class="btn-add-trx">
+                    <i class="bi bi-plus-lg"></i> Tambah Transaksi
                 </a>
             </div>
-            <div class="pill-name">{{ request.user.get_full_name|default:request.user.username }}</div>
-        </nav>
-        <main>
-            <p class="eyebrow">Dashboard</p>
-            <h1 class="page-title">Manage Transaction</h1>
+            <!-- Alerts & Messages -->
             {% if messages %}
-                <div class="messages">
+                <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
                     {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-3 shadow-sm border-0"
                              role="alert">
                             {{ message }}
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
+                                    aria-label="Tutup"></button>
                         </div>
                     {% endfor %}
                 </div>
             {% endif %}
-            <div class="toolbar">
-                <a href="{% url 'transaction:make_transaction' %}" class="btn-orange">+ Add Transaction</a>
-            </div>
-            <!-- Daftar ringkas: nama customer, admin, dan kurir hanya tampil di detail -->
-            <table>
-                <tr>
-                    <th>Order</th>
-                    <th>Items</th>
-                    <th>Total</th>
-                    <th>Payment</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
-                {% for trx in transactions %}
-                    <tr data-row
-                        data-bs-toggle="modal"
-                        data-bs-target="#detailTransaction{{ trx.pk }}">
-                        <td data-label="Order" class="cust-name">#{{ trx.pk }}</td>
-                        <td data-label="Items">{{ trx.details.count }} Items</td>
-                        <td data-label="Total">Rp. {{ trx.total_payment|floatformat:0 }}</td>
-                        <td data-label="Payment">
-                            <span class="badge-status status-{{ trx.payment_status|lower }}">{{ trx.get_payment_status_display }}</span>
-                        </td>
-                        <td data-label="Status">
-                            <span class="badge-status status-{{ trx.order_status|lower }}">{{ trx.get_order_status_display }}</span>
-                        </td>
-                        <td data-label="Date">{{ trx.date|date:"Y-m-d H:i:s" }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="6" class="empty-state">Belum ada transaksi.</td>
-                    </tr>
+            {% if overdue_unpaid %}
+                <div class="alert alert-danger border-0 rounded-3 shadow-sm mb-4 d-flex justify-content-between align-items-center animate-fade-up"
+                     style="animation-delay: 0.1s">
+                    <span><i class="bi bi-exclamation-triangle me-2"></i> <b>{{ overdue_unpaid }} order transfer</b> belum dibayar lebih dari 1 jam.</span>
+                </div>
+            {% endif %}
+            <!-- Search Form -->
+            <form method="get"
+                  class="search-container animate-fade-up"
+                  style="animation-delay: 0.2s"
+                  role="search">
+                <input type="search"
+                       name="q"
+                       value="{{ q }}"
+                       class="search-input"
+                       placeholder="Cari ID, resi, atau nama pelanggan..."
+                       aria-label="Cari">
+                <button type="submit" class="btn-search">Cari</button>
+                {% if q %}
+                    <a href="?" class="btn btn-light border rounded-pill px-4 pt-2">Reset</a>
+                {% endif %}
+            </form>
+            <!-- KATEGORI TABS -->
+            <ul class="nav nav-pills category-tabs animate-fade-up"
+                style="animation-delay: 0.3s"
+                id="boardTabs"
+                role="tablist">
+                {% for col in columns %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if col.active %}active{% endif %}"
+                                id="tab-{{ col.css }}"
+                                data-bs-toggle="pill"
+                                data-bs-target="#pane-{{ col.css }}"
+                                type="button"
+                                role="tab"
+                                aria-controls="pane-{{ col.css }}"
+                                aria-selected="{% if col.active %}true{% else %}false{% endif %}">
+                            {{ col.title }}
+                            <span class="tab-badge">{{ col.count }}</span>
+                        </button>
+                    </li>
                 {% endfor %}
-            </table>
+            </ul>
+            <!-- KONTEN TAB -->
+            <div class="tab-content" id="boardTabsContent">
+                {% for col in columns %}
+                    <div class="tab-pane fade {% if col.active %}show active{% endif %}"
+                         id="pane-{{ col.css }}"
+                         role="tabpanel"
+                         aria-labelledby="tab-{{ col.css }}">
+                        <div class="d-flex justify-content-between align-items-center mb-3 px-1 animate-fade-up"
+                             style="animation-delay: 0s">
+                            <span class="text-muted fw-semibold"
+                                  style="font-size: 0.9rem">Menampilkan {{ col.orders|length }} dari {{ col.count }} transaksi</span>
+                            {% if col.total is not None %}
+                                <span class="fw-bold"
+                                      style="color: #2B3674">Subtotal: Rp {{ col.total|rupiah|intcomma }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="row g-4">
+                            {% for trx in col.orders %}
+                                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                    <!-- Animasi masuk untuk setiap kartu -->
+                                    <article class="order-card animate-fade-up {% if trx.order_status == 'DIBATALKAN' %}is-dim{% endif %}"
+                                             data-modal="#detailTransaction{{ trx.pk }}">
+                                        <div class="card-header-min">
+                                            <span class="order-id">#{{ trx.pk }}</span>
+                                            <span class="order-time {% if trx.overdue %}is-overdue{% endif %}">
+                                                {{ trx.date|timesince }} lalu {% if trx.overdue %}· terlambat{% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="customer-name">{{ trx.customer.name }}{% if trx.is_online %} <span class="bd-method" title="Dipesan sendiri oleh pelanggan lewat situs"><i class="bi bi-globe2"></i> Online</span>{% endif %}</div>
+                                        <div class="card-details">
+                                            <span>{{ trx.details.count }} item</span>
+                                            <span class="card-price">Rp {{ trx.total_payment|rupiah|intcomma }}</span>
+                                        </div>
+                                        <div class="card-tags">
+                                            {% if trx.order_status == "DIBATALKAN" %}
+                                                <span class="bd-tag t-void">Batal</span>
+                                            {% elif trx.payment_status == "LUNAS" %}
+                                                <span class="bd-tag t-paid">Lunas</span>
+                                            {% else %}
+                                                <span class="bd-tag t-unpaid">Belum Lunas</span>
+                                            {% endif %}
+                                            <span class="bd-method">{{ trx.get_payment_method_display }}</span>
+                                            {% if trx.delivery_photo %}<span class="bd-method" title="Ada foto bukti pengiriman"><i class="bi bi-camera-fill"></i></span>{% endif %}
+                                        </div>
+                                        {% if trx.courier %}
+                                            <div class="courier-info">
+                                                <i class="courier-avatar">{{ trx.courier.get_full_name|default:trx.courier.username|slice:":1"|upper }}</i>
+                                                {{ trx.courier.get_full_name|default:trx.courier.username }}
+                                            </div>
+                                        {% else %}
+                                            <div class="courier-info opacity-50">
+                                                <i class="courier-avatar bg-transparent border border-secondary text-secondary"><i class="bi bi-person"></i></i>
+                                                Belum ada kurir
+                                            </div>
+                                        {% endif %}
+                                        <!-- Actions -->
+                                        <div class="mt-auto pt-2 border-top border-light">
+                                            {% if trx.order_status == "MENUNGGU" %}
+                                                <form method="post"
+                                                      action="{% url 'transaction:update_status' trx.pk %}"
+                                                      data-stop-propagation>
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                            name="action"
+                                                            value="confirm"
+                                                            class="btn-card-action is-primary">Konfirmasi Pesanan</button>
+                                                </form>
+                                            {% elif trx.order_status == "DIKONFIRMASI" and trx.is_ready_to_ship and not trx.courier %}
+                                                <button type="button"
+                                                        class="btn-card-action is-primary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                        data-stop-propagation>Daftarkan Kurir</button>
+                                            {% elif trx.order_status == "DIKONFIRMASI" and not trx.is_ready_to_ship %}
+                                                <button type="button"
+                                                        class="btn-card-action"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                        data-stop-propagation>Menunggu Pembayaran</button>
+                                            {% elif trx.order_status == "DIKONFIRMASI" %}
+                                                <button type="button"
+                                                        class="btn-card-action"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                        data-stop-propagation>Menunggu Kurir Kirim</button>
+                                            {% elif trx.order_status == "DALAM_PENGIRIMAN" %}
+                                                <form method="post"
+                                                      action="{% url 'transaction:update_status' trx.pk %}"
+                                                      data-stop-propagation>
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                            name="action"
+                                                            value="delivered"
+                                                            class="btn-card-action is-primary">Tandai Selesai</button>
+                                                </form>
+                                            {% else %}
+                                                <button type="button"
+                                                        class="btn-card-action"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#detailTransaction{{ trx.pk }}"
+                                                        data-stop-propagation>Lihat Detail</button>
+                                            {% endif %}
+                                        </div>
+                                    </article>
+                                </div>
+                            {% empty %}
+                                <div class="col-12">
+                                    <div class="empty-state-minimal">
+                                        <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                                        <p class="mb-0">Tidak ada transaksi di kategori <b>{{ col.title }}</b> saat ini.</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </main>
-        <!-- Detail transaction -->
+        <!-- Modal Details -->
         {% for trx in transactions %}
             <div class="modal fade"
                  id="detailTransaction{{ trx.pk }}"
                  tabindex="-1"
                  aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
+                    <div class="modal-content shadow-lg">
                         <div class="modal-body p-4">
-                            <div class="modal-header-custom">
-                                <p class="modal-cust-name">Order #{{ trx.pk }}</p>
-                                <p class="modal-cust-date">{{ trx.date|date:"Y-m-d H:i:s" }}</p>
+                            <div class="modal-header-custom d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 class="modal-cust-name">Order #{{ trx.pk }}</h4>
+                                    <small class="text-muted">{{ trx.date|date:"Y-m-d H:i:s" }}</small>
+                                    {% if trx.tracking_number %}
+                                        <div class="resi-chip">
+                                            <i class="bi bi-upc-scan"></i>
+                                            <span class="resi-code">{{ trx.tracking_number }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Tutup"></button>
                             </div>
-                            <!-- Pihak yang terlibat -->
-                            <p class="section-label">Detail</p>
+                            <h6 class="text-uppercase text-muted fw-bold mb-3"
+                                style="font-size: 0.8rem;
+                                       letter-spacing: 1px">Informasi</h6>
                             <div class="detail-field">
-                                <span class="detail-field-label">Customer</span>
+                                <span class="detail-field-label">Pelanggan</span>
                                 <span class="detail-field-value">
                                     {{ trx.customer.name }}
-                                    <a href="{{ trx.customer.whatsapp_url }}" target="_blank" rel="noopener">WA</a>
+                                    <br>
+                                    <a href="{{ trx.customer.whatsapp_url }}"
+                                       class="text-success text-decoration-none fw-normal"
+                                       target="_blank"
+                                       rel="noopener"><i class="bi bi-whatsapp"></i> Chat WA</a>
                                 </span>
                             </div>
                             <div class="detail-field">
-                                <span class="detail-field-label">Address</span>
+                                <span class="detail-field-label">Alamat</span>
                                 <span class="detail-field-value">
                                     {{ trx.customer.address }}
-                                    <a href="{{ trx.customer.maps_url }}" target="_blank" rel="noopener">Maps</a>
+                                    <br>
+                                    <a href="{{ trx.customer.maps_url }}"
+                                       class="text-primary text-decoration-none fw-normal"
+                                       target="_blank"
+                                       rel="noopener"><i class="bi bi-geo-alt"></i> Maps</a>
                                 </span>
                             </div>
                             <div class="detail-field">
                                 <span class="detail-field-label">Admin</span>
-                                <span class="detail-field-value">{{ trx.admin.get_full_name|default:trx.admin.username }}</span>
+                                <span class="detail-field-value">{% if trx.admin %}{{ trx.admin.get_full_name|default:trx.admin.username }}{% else %}-{% endif %}</span>
                             </div>
                             <div class="detail-field">
-                                <span class="detail-field-label">Courier</span>
+                                <span class="detail-field-label">Sumber</span>
+                                <span class="detail-field-value">{{ trx.get_channel_display }}</span>
+                            </div>
+                            {% if trx.customer_note %}
+                                <div class="detail-field">
+                                    <span class="detail-field-label">Catatan Pelanggan</span>
+                                    <span class="detail-field-value">{{ trx.customer_note }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="detail-field">
+                                <span class="detail-field-label">Kurir</span>
                                 <span class="detail-field-value">{% if trx.courier %}{{ trx.courier.get_full_name|default:trx.courier.username }}{% else %}-{% endif %}</span>
                             </div>
-                            <!-- Item -->
-                            <p class="section-label mt-3">Items</p>
-                            <ul class="item-list">
+                            {% if trx.shipped_at %}
+                                <div class="detail-field">
+                                    <span class="detail-field-label">Mulai Dikirim</span>
+                                    <span class="detail-field-value">{{ trx.shipped_at|date:"d M Y, H:i" }}</span>
+                                </div>
+                            {% endif %}
+                            {% if trx.order_status == "TERKIRIM" %}
+                                <div class="detail-field">
+                                    <span class="detail-field-label">Sampai</span>
+                                    <span class="detail-field-value">{% if trx.delivered_at %}{{ trx.delivered_at|date:"d M Y, H:i" }}{% else %}-{% endif %}</span>
+                                </div>
+                                <div class="proof-box">
+                                    {% if trx.delivery_photo %}
+                                        <a href="{{ trx.delivery_photo.url }}" target="_blank" rel="noopener">
+                                            <img src="{{ trx.delivery_photo.url }}"
+                                                 alt="Foto bukti pengiriman order #{{ trx.pk }}"
+                                                 loading="lazy">
+                                        </a>
+                                        {% if trx.delivery_note %}<small class="text-muted d-block mt-1">Catatan kurir: {{ trx.delivery_note }}</small>{% endif %}
+                                    {% else %}
+                                        <small class="text-muted"><i class="bi bi-camera-video-off"></i> Tidak ada foto bukti (order ditutup manual).</small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            <h6 class="text-uppercase text-muted fw-bold mt-4 mb-3"
+                                style="font-size: 0.8rem;
+                                       letter-spacing: 1px">Barang</h6>
+                            <div class="mb-3">
                                 {% for item in trx.details.all %}
-                                    <li class="item-row">
-                                        <span class="item-name">{{ item.product.name }} x{{ item.quantity }} @ Rp. {{ item.unit_price|floatformat:0 }}</span>
-                                        <span>Rp. {{ item.subtotal|floatformat:0 }}</span>
-                                    </li>
+                                    <div class="d-flex justify-content-between align-items-center mb-2"
+                                         style="font-size: 0.9rem">
+                                        <div class="fw-medium text-dark">{{ item.product.name }} <span class="text-muted">x{{ item.quantity }}</span></div>
+                                        <div class="fw-semibold">Rp {{ item.subtotal|rupiah|intcomma }}</div>
+                                    </div>
                                 {% endfor %}
-                            </ul>
-                            <div class="total-row">
-                                <span>Total</span>
-                                <span>Rp. {{ trx.total_payment|floatformat:0 }}</span>
                             </div>
-                            <form method="post" action="{% url 'transaction:update_status' trx.pk %}">
+                            <div class="d-flex justify-content-between align-items-center pt-3 mt-3 border-top"
+                                 style="border-color: #E2E8F0 !important">
+                                <span class="fw-bold text-secondary">Total</span>
+                                <span class="fw-bold fs-5"
+                                      style="color: #5c418c">Rp {{ trx.total_payment|rupiah|intcomma }}</span>
+                            </div>
+                            {% if trx.order_status != "DIBATALKAN" and trx.tracking_number %}
+                                <a href="{{ trx.share_wa_url }}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="btn btn-success fw-semibold w-100 mt-3">
+                                    <i class="bi bi-whatsapp me-1"></i> Kirim Resi ke Pelanggan
+                                </a>
+                            {% endif %}
+                            <form method="post"
+                                  action="{% url 'transaction:update_status' trx.pk %}"
+                                  class="mt-4">
                                 {% csrf_token %}
                                 <div class="detail-field">
-                                    <span class="detail-field-label">Payment Method</span>
+                                    <span class="detail-field-label">Metode Pembayaran</span>
                                     <span class="detail-field-value">{{ trx.get_payment_method_display }}</span>
                                 </div>
                                 <div class="detail-field">
-                                    <span class="detail-field-label">Payment Status</span>
-                                    <span class="badge-status status-{{ trx.payment_status|lower }}">{{ trx.get_payment_status_display }}</span>
+                                    <span class="detail-field-label">Status Pembayaran</span>
+                                    <span><span class="badge {% if trx.payment_status == 'LUNAS' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} px-2">{{ trx.get_payment_status_display }}</span></span>
                                 </div>
                                 <div class="detail-field">
-                                    <span class="detail-field-label">Order Status</span>
-                                    <span class="badge-status status-{{ trx.order_status|lower }}">{{ trx.get_order_status_display }}</span>
+                                    <span class="detail-field-label">Status Order</span>
+                                    <span><span class="badge bg-secondary-subtle text-secondary px-2">{{ trx.get_order_status_display }}</span></span>
                                 </div>
-                                {% if trx.is_open and not trx.courier %}
-                                    <div class="detail-field">
-                                        <span class="detail-field-label">Pilih Kurir</span>
-                                        <select name="courier" class="select-status">
+                                {% if trx.order_status == "DIKONFIRMASI" and not trx.is_ready_to_ship %}
+                                    <p class="small text-muted mt-3 mb-0">Kurir bisa didaftarkan setelah transfer ditandai lunas.</p>
+                                {% endif %}
+                                {% if trx.is_ready_to_ship and not trx.courier %}
+                                    <div class="mt-3">
+                                        <label class="form-label text-muted small fw-bold">Pilih Kurir</label>
+                                        <select name="courier" class="form-select border-light shadow-sm">
                                             <option value="">- Pilih Kurir -</option>
                                             {% for c in couriers %}
                                                 <option value="{{ c.pk }}">{{ c.get_full_name|default:c.username }}</option>
@@ -149,37 +352,36 @@
                                         </select>
                                     </div>
                                 {% endif %}
-                                <div class="action-row"
-                                     style="display:flex;
-                                            flex-wrap:wrap;
-                                            gap:0.6rem;
-                                            justify-content:flex-end;
-                                            margin-top:1.5rem">
-                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Close</button>
-                                    {% if trx.order_status != "CANCELLED" and trx.payment_status == "PENDING" %}
+                                <div class="d-flex flex-wrap gap-2 justify-content-end mt-4 pt-3 border-top">
+                                    <button type="button"
+                                            class="btn btn-light fw-semibold text-secondary"
+                                            data-bs-dismiss="modal">Tutup</button>
+                                    {% if trx.order_status == "MENUNGGU" %}
+                                        <button type="submit"
+                                                name="action"
+                                                value="confirm"
+                                                class="btn btn-success fw-bold">Konfirmasi Pesanan</button>
+                                    {% endif %}
+                                    {% if trx.order_status != "DIBATALKAN" and trx.payment_status == "MENUNGGU" %}
                                         <button type="submit"
                                                 name="action"
                                                 value="paid"
-                                                class="btn-orange">Tandai Lunas</button>
+                                                class="btn btn-warning fw-bold text-dark">Tandai Lunas</button>
                                     {% endif %}
-                                    {% if trx.order_status == "CONFIRMED" %}
+                                    {% if trx.is_ready_to_ship and not trx.courier %}
                                         <button type="submit"
                                                 name="action"
-                                                value="on_delivery"
-                                                class="btn-orange">Kirim</button>
+                                                value="assign_courier"
+                                                class="btn btn-primary fw-bold"
+                                                style="background-color: #5c418c;
+                                                       border: none">Daftarkan Kurir</button>
                                     {% endif %}
                                     {% if trx.is_open %}
                                         <button type="submit"
                                                 name="action"
-                                                value="delivered"
-                                                class="btn-orange">Selesai</button>
-                                        <button type="submit"
-                                                name="action"
                                                 value="cancel"
-                                                class="btn-cancel"
-                                                onclick="return confirm('Batalkan order ini? Stok akan dikembalikan.')">
-                                            Batalkan
-                                        </button>
+                                                class="btn btn-danger fw-bold"
+                                                data-confirm="Batalkan order ini? Stok akan dikembalikan.">Batalkan</button>
                                     {% endif %}
                                 </div>
                             </form>
@@ -188,6 +390,8 @@
                 </div>
             </div>
         {% endfor %}
-        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{% static 'transaction/js/manage_transaction.js' %}"></script>
+        <script src="{% static 'js/common.js' %}"></script>
     </body>
 </html>

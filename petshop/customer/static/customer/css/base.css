@@ -1,0 +1,315 @@
+/* ==========================================================================
+   Seelly Petshop - shared storefront styles
+   ========================================================================== */
+
+:root {
+  --purple-900: #34174d;
+  --purple-700: #6b21a8;
+  --purple-600: #7e2fb8;
+  --purple-500: #9b4fcf;
+  --purple-300: #d2aee9;
+  --purple-200: #e6d2f3;
+  --purple-100: #f2e8f9;
+  --purple-50: #faf5fd;
+  --cream: #fff8f1;
+  --ink: #261a33;
+  --muted: #6f6479;
+  --line: #eadcf4;
+  --white: #fff;
+  --accent: #f59e0b;
+  --success: #15803d;
+  --danger: #dc2626;
+  --whatsapp: #1fa855;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 2px 10px rgba(107, 33, 168, 0.08);
+  --shadow-md: 0 10px 30px rgba(107, 33, 168, 0.14);
+  --header-h: 72px;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 12px); }
+
+body {
+  margin: 0;
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.modal-open { overflow: hidden; }
+
+img { max-width: 100%; }
+
+a { color: var(--purple-600); }
+a:hover { color: var(--purple-700); }
+
+h1, h2, h3 { line-height: 1.25; }
+
+:focus-visible {
+  outline: 3px solid var(--purple-500);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  background: var(--purple-700);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  z-index: 200;
+}
+.skip-link:focus { top: 12px; color: #fff; }
+
+.section { padding-top: 28px; padding-bottom: 28px; }
+.muted { color: var(--muted); }
+
+/* ---------- buttons ---------- */
+
+.btn-primary-seelly,
+.btn-whatsapp,
+.btn-soft,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+
+.btn-primary-seelly { background: var(--purple-700); color: #fff; box-shadow: 0 6px 16px rgba(107, 33, 168, 0.28); }
+.btn-primary-seelly:hover { background: var(--purple-600); color: #fff; transform: translateY(-1px); }
+.btn-primary-seelly:disabled { background: #cdbddb; box-shadow: none; cursor: not-allowed; transform: none; }
+
+.btn-whatsapp { background: var(--whatsapp); color: #fff; box-shadow: 0 6px 16px rgba(31, 168, 85, 0.3); }
+.btn-whatsapp:hover { background: #178a46; color: #fff; transform: translateY(-1px); }
+.btn-whatsapp:disabled { opacity: 0.7; cursor: wait; transform: none; }
+
+.btn-soft { background: var(--purple-100); color: var(--purple-700); }
+.btn-soft:hover { background: var(--purple-200); color: var(--purple-700); }
+
+.btn-ghost { background: transparent; color: var(--purple-700); border-color: var(--purple-300); }
+.btn-ghost:hover { background: var(--purple-100); color: var(--purple-700); }
+
+.btn-lg { padding: 13px 28px; font-size: 1.02rem; }
+
+/* ---------- small pieces ---------- */
+
+.chip {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--purple-700);
+  font-size: 0.74rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.qty-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--purple-300);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.qty-control button {
+  width: 38px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--purple-700);
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.qty-control button:hover:not(:disabled) { background: var(--purple-100); }
+.qty-control button:disabled { color: #c9bad6; cursor: not-allowed; }
+.qty-control span { min-width: 36px; text-align: center; font-weight: 600; }
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 16px;
+  background: #fff;
+  border: 1px dashed var(--purple-300);
+  border-radius: var(--radius);
+}
+.empty-state img { width: 150px; margin-bottom: 8px; }
+.empty-state > i { font-size: 3rem; color: var(--purple-300); margin-bottom: 12px; }
+.empty-state h2 { font-size: 1.3rem; }
+.empty-state p { color: var(--muted); margin-bottom: 18px; }
+
+/* ---------- footer ---------- */
+
+.site-footer {
+  margin-top: 48px;
+  background: linear-gradient(180deg, #f1e4fa, #e2c7f1);
+  color: var(--ink);
+}
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding-top: 36px;
+  padding-bottom: 24px;
+}
+.footer-brand { font-weight: 700; font-size: 1.25rem; margin-bottom: 14px; }
+.footer-brand i { color: var(--purple-700); }
+.social-icons { display: flex; gap: 10px; }
+.social-icons a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.social-icons a:hover { background: var(--purple-700); color: #fff; transform: translateY(-2px); }
+.footer-contact h2 { font-size: 1.05rem; font-weight: 700; color: var(--purple-700); margin-bottom: 10px; }
+.footer-contact p { margin: 0 0 6px; }
+.footer-contact i { width: 22px; color: var(--purple-700); }
+.footer-copy {
+  padding-top: 14px;
+  padding-bottom: 20px;
+  border-top: 1px solid rgba(107, 33, 168, 0.18);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---------- "Added to Cart" modal ---------- */
+
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(38, 26, 51, 0.55);
+  backdrop-filter: blur(3px);
+  animation: fade-in 0.18s ease;
+}
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  padding: 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+  animation: pop-in 0.22s ease;
+}
+.modal-card h2 {
+  margin: 0 0 18px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--purple-900);
+}
+.modal-card h2 i { color: var(--success); margin-right: 6px; }
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--purple-50);
+  color: var(--muted);
+  cursor: pointer;
+}
+.modal-close:hover { background: var(--purple-100); color: var(--purple-700); }
+
+.modal-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--purple-50);
+}
+.modal-item-photo {
+  flex: 0 0 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--purple-300);
+  font-size: 1.6rem;
+}
+.modal-item-photo img { width: 100%; height: 100%; object-fit: cover; }
+.modal-item-info { flex: 1; min-width: 0; }
+.modal-item-name { font-weight: 600; overflow-wrap: anywhere; }
+.modal-item-price { color: var(--muted); font-size: 0.85rem; }
+
+.modal-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 4px 4px;
+  color: var(--muted);
+}
+.modal-total strong { color: var(--purple-700); font-size: 1.2rem; }
+
+.modal-actions { display: flex; gap: 12px; margin-top: 18px; }
+.modal-actions > * { flex: 1; }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 480px) {
+  .modal-actions { flex-direction: column-reverse; }
+}
+
+/* ---------- toast ---------- */
+
+.toast-msg {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 120;
+  transform: translate(-50%, 20px);
+  max-width: calc(100% - 32px);
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: var(--purple-900);
+  color: #fff;
+  font-size: 0.92rem;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.toast-msg.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

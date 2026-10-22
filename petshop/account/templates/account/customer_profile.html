@@ -1,0 +1,226 @@
+{% extends "account/staff_base.html" %}
+{% load static rupiah %}
+{% block title %}PetAdmin - {{ customer.name }}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/customer_profile.css' %}?v=dm1" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+        <div class="container-fluid px-xl-4 px-3 py-4">
+            <!-- Breadcrumb -->
+            <div class="pf-crumb animate-fade-up" style="animation-delay: 0s">
+                <a href="{% url 'manage_account' %}?tab=customer"><i class="bi bi-arrow-left me-1"></i> Kelola Pengguna</a>
+                <span>/</span> Pelanggan <span>/</span>
+                <span class="text-dark fw-bold">{{ customer.name }}</span>
+            </div>
+            {% if messages %}
+                <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
+                             role="alert">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Tutup"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-xl-4 animate-fade-up" style="animation-delay: 0.2s">
+                    <div class="card-custom h-100 text-center text-xl-start">
+                        <div class="d-flex flex-column align-items-center align-items-xl-start">
+                            <div class="cust-av">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <h2 class="fw-bold mb-3" style="color: #2b3674">{{ customer.name }}</h2>
+                        </div>
+                        <hr class="text-muted opacity-25" />
+                        <div class="mb-3">
+                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Nomor Telepon</small>
+                            <span class="fw-bold fs-6">{{ customer.phone_number|default:"-" }}</span>
+                            {% if customer.whatsapp_url %}
+                                <a href="{{ customer.whatsapp_url }}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="ms-2 badge bg-success text-decoration-none py-1 px-2"><i class="bi bi-whatsapp"></i> Chat</a>
+                            {% endif %}
+                        </div>
+                        <div class="mb-4">
+                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Alamat Lengkap</small>
+                            <span class="fw-bold fs-6">{{ customer.address|default:"-" }}</span>
+                            {% if customer.maps_url %}
+                                <a href="{{ customer.maps_url }}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="d-block mt-2 badge bg-primary text-decoration-none py-1 px-2"
+                                   style="width: fit-content"><i class="bi bi-geo-alt"></i> Buka di Maps</a>
+                            {% endif %}
+                        </div>
+                        <!-- Statistik Opsional (Misal total pesanan pelanggan jika ada variabel stats) -->
+                        {% if stats %}
+                            <div class="row g-2 mt-auto">
+                                {% for st in stats %}
+                                    <div class="col-6">
+                                        <div class="stat-box">
+                                            <div class="num text-primary">{{ st.value }}</div>
+                                            <div class="lbl">{{ st.label }}</div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- KANAN: Form Edit Akun Pelanggan -->
+                <div class="col-12 col-xl-8 animate-fade-up" style="animation-delay: 0.3s">
+                    <div class="card-custom h-100">
+                        <h4 class="fw-bold mb-4" style="color: #2b3674">
+                            <i class="bi bi-person-lines-fill me-2"></i> Informasi Pelanggan
+                        </h4>
+                        <form method="post" action="{% url 'edit_customer' customer.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}" />
+                            <div class="mb-4">
+                                <label class="form-label-custom" for="name">Nama Lengkap</label>
+                                <input type="text"
+                                       id="name"
+                                       name="name"
+                                       value="{{ customer.name }}"
+                                       class="dark-input"
+                                       required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label-custom" for="phone_number">Nomor Telepon</label>
+                                <input type="text"
+                                       id="phone_number"
+                                       name="phone_number"
+                                       value="{{ customer.phone_number }}"
+                                       class="dark-input"
+                                       placeholder="08xxxxx"
+                                       required />
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label-custom" for="address">Alamat Pengiriman</label>
+                                <textarea id="address" name="address" rows="4" class="dark-input" required>
+{{ customer.address }}</textarea>
+                            </div>
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="username">Nama Pengguna (login)</label>
+                                    <input type="text" id="username" name="username" value="{{ customer.username }}" class="dark-input" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="password">Kata Sandi Baru (Opsional)</label>
+                                    <input type="password" id="password" name="password" autocomplete="new-password" class="dark-input"
+                                           placeholder="{% if customer.has_usable_password %}Kosongkan bila tidak diubah{% else %}Belum bisa login, isi untuk mengaktifkan{% endif %}" />
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-3 justify-content-end mt-4 pt-4 border-top">
+                                <button type="submit" form="deleteCustomer" class="btn-danger-custom me-auto">
+                                    <i class="bi bi-person-x me-1"></i> Hapus Pelanggan
+                                </button>
+                                <a href="{% url 'manage_account' %}?tab=customer" class="btn-cancel">Batal</a>
+                                <button type="submit" class="btn-orange px-4">Simpan Perubahan</button>
+                            </div>
+                        </form>
+                        <form id="deleteCustomer"
+                              method="post"
+                              action="{% url 'delete_customer' customer.pk %}"
+                              data-confirm="Apakah Anda yakin ingin menghapus data pelanggan ini secara permanen?">
+                            {% csrf_token %}
+                            <input type="hidden"
+                                   name="next"
+                                   value="{% url 'manage_account' %}?tab=customer" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- TABEL BAWAH: Riwayat Pembelian Pelanggan -->
+            <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
+                style="animation-delay: 0.4s;
+                       color: #2b3674">
+                <i class="bi bi-bag-check me-2"></i> Riwayat Pesanan
+            </h4>
+            <div class="card-custom p-0 animate-fade-up" style="animation-delay: 0.5s">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>ID Order</th>
+                                <th>Total Pembayaran</th>
+                                <th>Status Bayar</th>
+                                <th>Status Order</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for o in recent_orders %}
+                                <tr>
+                                    <td>
+                                        <a class="order-link"
+                                           href="{% url 'transaction:manage_transaction' %}?q={{ o.pk }}">#{{ o.pk }}</a>
+                                    </td>
+                                    <td class="fw-bold" style="color: #2b3674">Rp {{ o.total_payment|rupiah }}</td>
+                                    <td>
+                                        <span class="s-{{ o.payment_status|lower }}">{{ o.get_payment_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="s-{{ o.order_status|lower }}">{{ o.get_order_status_display }}</span>
+                                    </td>
+                                    <td class="text-muted fw-semibold">{{ o.date|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <i class="bi bi-receipt text-muted opacity-50" style="font-size: 3rem"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">Belum ada riwayat pesanan</h5>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
+                style="animation-delay: 0.6s;
+                       color: #2b3674">
+                <i class="bi bi-scissors me-2"></i> Riwayat Booking Layanan
+            </h4>
+            <div class="card-custom p-0 animate-fade-up" style="animation-delay: 0.7s">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Hewan</th>
+                                <th>Layanan</th>
+                                <th>Groomer</th>
+                                <th>Status</th>
+                                <th>Jadwal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in recent_bookings %}
+                                <tr>
+                                    <td><a class="order-link" href="{% url 'service:manage_bookings' %}?q={{ b.pk }}">#{{ b.pk }}</a></td>
+                                    <td class="fw-bold">{{ b.pet_name }} <small class="text-muted">· {{ b.get_pet_type_display }}</small></td>
+                                    <td>{{ b.service.name }}</td>
+                                    <td>{{ b.groomer.display_name|default:"-" }}</td>
+                                    <td><span class="s-{{ b.status|lower }}">{{ b.get_status_display }}</span></td>
+                                    <td class="text-muted fw-semibold">{{ b.schedule|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <i class="bi bi-scissors text-muted opacity-50" style="font-size: 3rem"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">Belum ada booking layanan</h5>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+{% endblock %}

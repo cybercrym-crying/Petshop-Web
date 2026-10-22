@@ -1,185 +1,142 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>register</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-              rel="stylesheet" />
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-              rel="stylesheet" />
-        <style>
-      body {
-        font-family: "Inter", sans-serif;
-      }
-
-      .side-panel {
-        min-height: 100vh;
-        background: linear-gradient(
-          160deg,
-          #c9c9d8 0%,
-          #d9b8dd 45%,
-          #cfa0d6 100%
-        );
-      }
-
-      .main-panel {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #f7f1ea 0%, #eef2e2 100%);
-      }
-
-      .form-wrap {
-        width: 100%;
-        max-width: 320px;
-      }
-
-      .form-label {
-        font-size: 0.85rem;
-        font-weight: 500;
-        margin-bottom: 0.35rem;
-      }
-
-      .form-control {
-        border-radius: 6px;
-        padding: 0.6rem 0.8rem;
-      }
-
-      .btn-register {
-        background-color: rgba(152, 80, 197, 0.42);
-        border: none;
-        color: #fff;
-        font-weight: 500;
-      }
-      .btn-register:hover {
-        background-color: rgba(152, 80, 197, 0.55);
-        color: #fff;
-      }
-
-      .toggle-password {
-        cursor: pointer;
-        border: none;
-        background: none;
-        color: #6c757d;
-      }
-
-      .form-check-input:checked {
-        background-color: #9850c5;
-        border-color: #9850c5;
-      }
-
-      a.link-purple {
-        color: #9850c5;
-        text-decoration: none;
-        font-size: 0.85rem;
-      }
-      a.link-purple:hover {
-        text-decoration: underline;
-      }
-        </style>
+        <title>Seelly Petshop - Daftar Akun Customer</title>
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+              rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=2">
     </head>
-    <body>
-        <div class="row g-0">
-            <div class="col-12 col-md-4 side-panel p-5">
-                <h5 class="fw-bold mb-0"
-                    style="margin-left: 10px;
-                           margin-top: 10px;
-                           font-size: 100px">Register First!</h5>
-            </div>
-            <div class="col-12 col-md-8 main-panel d-flex flex-column align-items-center justify-content-center p-4">
-                <div class="form-wrap">
-                    <h2 class="fw-bold text-center mb-1"
-                        style="font-size: 1.8rem">Find everything that you need for your pet</h2>
-                    <p class="text-center text-muted mb-4" style="font-size: 0.9rem">Regist to make new account</p>
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text"
-                                   name="username"
-                                   class="form-control"
-                                   id="username"
-                                   placeholder="Enter your username" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text"
-                                   name="name"
-                                   class="form-control"
-                                   id="name"
-                                   placeholder="Enter your full name" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="text"
-                                   name="email"
-                                   class="form-control"
-                                   id="email"
-                                   placeholder="Enter your email" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="phone_number" class="form-label">Phone Number</label>
-                            <input type="text"
-                                   name="phone_number"
-                                   class="form-control"
-                                   id="phone_number"
-                                   placeholder="Enter your phone number" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <div class="input-group">
-                                <input type="password"
-                                       name="password"
-                                       class="form-control border-end-0"
-                                       id="password"
-                                       placeholder="Enter your password" />
-                                <button class="btn border border-start-0 toggle-password"
-                                        type="button"
-                                        onclick="togglePassword()">
-                                    <span id="eye-icon">👁</span>
-                                </button>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password_confirm" class="form-label">Password Confirm</label>
-                                <div class="input-group">
-                                    <input type="password"
-                                           name="password_confirm"
-                                           class="form-control border-end-0"
-                                           id="password_confirm"
-                                           placeholder="Enter your password again" />
-                                    <button class="btn border border-start-0 toggle-password"
-                                            type="button"
-                                            onclick="togglePassword()">
-                                        <span id="eye-icon">👁</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div class="form-check">
-
-                            <button type="submit"
-                                    class="btn btn-register rounded-pill w-100 py-2 mb-3">Register</button>
-                            <p class="text-center text-muted mb-0" style="font-size: 0.85rem">
-                                Already have an account?
-                                <a href="/login" class="link-purple">Login here</a>
-                            </p>
-                        </form>
-                    </div>
+    <body class="auth-register">
+        <div class="bg-blob blob-purple"></div>
+        <div class="bg-blob blob-orange"></div>
+        <div class="login-glass-card">
+            <!-- PANEL KIRI (visual sama dengan halaman login) -->
+            <div class="panel-left">
+                <a class="brand-badge text-white text-decoration-none" href="{% url 'customer:home' %}">
+                    <i class="bi bi-heart-pulse-fill fs-5"></i>
+                    <span>SEELLY PETSHOP</span>
+                </a>
+                <div>
+                    <h1 class="left-title">Gabung &amp; Rawat Hewan Kesayanganmu.</h1>
+                    <p class="left-desc">Satu akun untuk booking grooming, memantau status layanan, dan belanja kebutuhan hewan peliharaan.</p>
+                    <ul class="left-points">
+                        <li><i class="bi bi-calendar2-check-fill"></i>Booking layanan tanpa antre</li>
+                        <li><i class="bi bi-bell-fill"></i>Pantau status Pending → Proses → Selesai</li>
+                        <li><i class="bi bi-geo-alt-fill"></i>Lacak posisi kurir saat pesanan diantar</li>
+                    </ul>
                 </div>
             </div>
-            <script>
-      function togglePassword() {
-        const input = document.getElementById("password");
-        const icon = document.getElementById("eye-icon");
-        if (input.type === "password") {
-          input.type = "text";
-          icon.innerHTML = "&#128064;&#65039;";
-        } else {
-          input.type = "password";
-          icon.innerHTML = "&#128065;";
-        }
-      }
-            </script>
-        </body>
-    </html>
+            <!-- PANEL KANAN (Form Daftar) -->
+            <div class="panel-right">
+                <h2 class="form-title">Buat Akun Customer</h2>
+                <p class="form-sub">Isi data di bawah ini, hanya butuh satu menit.</p>
+                {% if form.non_field_errors %}
+                    <div class="error-box" role="alert">
+                        <i class="bi bi-shield-exclamation fs-5"></i> {{ form.non_field_errors|join:" " }}
+                    </div>
+                {% endif %}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}" />
+                    <div class="form-grid">
+                        <div class="input-group-custom span-2">
+                            <label for="id_name" class="form-label-custom">Nama Lengkap</label>
+                            <input type="text"
+                                   name="name"
+                                   id="id_name"
+                                   value="{{ form.name.value|default:'' }}"
+                                   class="modern-input{% if form.name.errors %} is-invalid{% endif %}"
+                                   placeholder="cth. Siti Aminah"
+                                   autocomplete="name"
+                                   maxlength="255"
+                                   required />
+                            {% for e in form.name.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+                        </div>
+                        <div class="input-group-custom">
+                            <label for="id_username" class="form-label-custom">Nama Pengguna</label>
+                            <input type="text"
+                                   name="username"
+                                   id="id_username"
+                                   value="{{ form.username.value|default:'' }}"
+                                   class="modern-input{% if form.username.errors %} is-invalid{% endif %}"
+                                   placeholder="@namapengguna"
+                                   autocomplete="username"
+                                   maxlength="150"
+                                   required />
+                            {% for e in form.username.errors %}<p class="field-error">{{ e }}</p>{% empty %}<p class="field-hint">Dipakai untuk masuk.</p>{% endfor %}
+                        </div>
+                        <div class="input-group-custom">
+                            <label for="id_phone_number" class="form-label-custom">Nomor WhatsApp</label>
+                            <input type="tel"
+                                   name="phone_number"
+                                   id="id_phone_number"
+                                   value="{{ form.phone_number.value|default:'' }}"
+                                   class="modern-input{% if form.phone_number.errors %} is-invalid{% endif %}"
+                                   placeholder="08xxxxxxxxxx"
+                                   autocomplete="tel"
+                                   inputmode="tel"
+                                   maxlength="20"
+                                   required />
+                            {% for e in form.phone_number.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+                        </div>
+                        <div class="input-group-custom span-2">
+                            <label for="id_address" class="form-label-custom">Alamat</label>
+                            <textarea name="address"
+                                      id="id_address"
+                                      rows="2"
+                                      class="modern-input{% if form.address.errors %} is-invalid{% endif %}"
+                                      placeholder="Alamat lengkap untuk pengiriman"
+                                      autocomplete="street-address"
+                                      maxlength="255"
+                                      required>{{ form.address.value|default:'' }}</textarea>
+                            {% for e in form.address.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+                        </div>
+                        <div class="input-group-custom">
+                            <label for="id_password1" class="form-label-custom">Kata Sandi</label>
+                            <input type="password"
+                                   name="password1"
+                                   id="id_password1"
+                                   class="modern-input{% if form.password1.errors %} is-invalid{% endif %}"
+                                   placeholder="Minimal 8 karakter"
+                                   autocomplete="new-password"
+                                   style="padding-right: 50px"
+                                   required />
+                            {% include "account/_password_toggle.html" with target="id_password1" %}
+                        </div>
+                        <div class="input-group-custom">
+                            <label for="id_password2" class="form-label-custom">Ulangi Kata Sandi</label>
+                            <input type="password"
+                                   name="password2"
+                                   id="id_password2"
+                                   class="modern-input{% if form.password2.errors %} is-invalid{% endif %}"
+                                   placeholder="••••••••"
+                                   autocomplete="new-password"
+                                   style="padding-right: 50px"
+                                   required />
+                            {% include "account/_password_toggle.html" with target="id_password2" %}
+                        </div>
+                        {% if form.password1.errors or form.password2.errors %}
+                            <div class="span-2">
+                                {% for e in form.password1.errors %}<p class="field-error mt-0">{{ e }}</p>{% endfor %}
+                                {% for e in form.password2.errors %}<p class="field-error mt-0">{{ e }}</p>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn-login">Daftar Sekarang</button>
+                    <p class="foot-text">
+                        Sudah punya akun? <a href="{% url 'login_form' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="link-purple">Masuk di sini</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+        <script src="{% static 'account/js/login.js' %}?v=2"></script>
+    </body>
+</html>

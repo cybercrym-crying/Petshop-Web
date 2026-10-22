@@ -1,0 +1,20 @@
+{% load static %}
+{# Panel "Bagikan lokasi": HP kurir mengirim GPS (Geolocation API HTML5) selama ada paket yang diantar. #}
+<link rel="stylesheet" href="{% static 'courier/css/live_location.css' %}?v=1">
+<section class="live-loc"
+         data-live-location
+         data-url="{% url 'courier:share_location' %}"
+         data-csrf="{{ csrf_token }}"
+         data-state="off"
+         aria-live="polite">
+    <div class="live-loc__icon"><i class="bi bi-broadcast-pin"></i></div>
+    <div class="live-loc__body">
+        <h2 class="live-loc__title">Bagikan lokasi ke pelanggan</h2>
+        <p class="live-loc__status" data-live-status>Lokasi belum dibagikan. Pelanggan bisa melihat posisi Anda di halaman lacak resi.</p>
+        <p class="live-loc__meta" data-live-meta hidden></p>
+    </div>
+    <button type="button" class="btn-orange live-loc__btn" data-live-toggle>
+        <i class="bi bi-geo-alt-fill me-2"></i><span>Mulai bagikan</span>
+    </button>
+</section>
+<script src="{% static 'courier/js/live_location.js' %}?v=1" defer></script>

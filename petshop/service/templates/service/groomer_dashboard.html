@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        {% include "service/_groomer_head.html" %}
+        <title>Dasbor Groomer - PetAdmin</title>
+    </head>
+    <body>
+        {% include "service/_groomer_nav.html" %}
+        <main class="container-fluid px-xl-5 px-4 py-5">
+            <div class="animate-fade-up">
+                <p class="eyebrow"><i class="bi bi-speedometer2 me-1"></i> Dasbor Groomer</p>
+                <h1 class="page-title">Halo, <span class="text-brand">{{ request.user.get_full_name|default:request.user.username }}</span>!</h1>
+            </div>
+            <section class="row g-4 mb-4 animate-fade-up" style="animation-delay: .1s" aria-label="Ringkasan booking">
+                <div class="col-12 col-md-4">
+                    <a class="stat-box{% if tab == 'pending' %} is-active{% endif %}"
+                       href="?status=pending"
+                       {% if tab == 'pending' %}aria-current="page"{% endif %}>
+                        <div class="stat-icon pending"><i class="bi bi-hourglass-split"></i></div>
+                        <div>
+                            <div class="num">{{ counts.pending }}</div>
+                            <div class="lbl">Pending</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-12 col-md-4">
+                    <a class="stat-box{% if tab == 'proses' %} is-active{% endif %}"
+                       href="?status=proses"
+                       {% if tab == 'proses' %}aria-current="page"{% endif %}>
+                        <div class="stat-icon active"><i class="bi bi-scissors"></i></div>
+                        <div>
+                            <div class="num">{{ counts.proses }}</div>
+                            <div class="lbl">Proses</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-12 col-md-4">
+                    <a class="stat-box{% if tab == 'selesai' %} is-active{% endif %}"
+                       href="?status=selesai"
+                       {% if tab == 'selesai' %}aria-current="page"{% endif %}>
+                        <div class="stat-icon history"><i class="bi bi-check2-circle"></i></div>
+                        <div>
+                            <div class="num">{{ counts.selesai }}</div>
+                            <div class="lbl">Selesai</div>
+                        </div>
+                    </a>
+                </div>
+            </section>
+            {% if messages %}
+                <div class="mb-4" aria-live="polite">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="groomer-toolbar">
+                <h4 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                    <i class="bi {{ meta.icon }}"></i> {{ meta.title }}
+                    <span class="board-count">{{ bookings|length }}</span>
+                </h4>
+                <form method="get" class="groomer-search" role="search">
+                    <input type="hidden" name="status" value="{{ tab }}">
+                    <input type="search" name="q" value="{{ q }}" placeholder="Cari hewan, pemilik, layanan, #id" aria-label="Cari booking">
+                    <button type="submit" aria-label="Cari"><i class="bi bi-search"></i></button>
+                </form>
+            </div>
+            {% if tab == "pending" %}
+                <p class="groomer-hint"><i class="bi bi-info-circle me-1"></i>Booking yang belum punya groomer bisa langsung Anda ambil. Urutan sesuai jadwal paling awal.</p>
+            {% elif tab == "selesai" and bookings|length >= done_limit %}
+                <p class="groomer-hint">Menampilkan {{ done_limit }} booking terakhir.</p>
+            {% endif %}
+            <ul class="orders-grid">
+                {% for booking in bookings %}
+                    <li>{% include "service/_booking_card.html" %}</li>
+                {% empty %}
+                    <li class="orders-empty">{% if q %}Tidak ada booking yang cocok dengan “{{ q }}”.{% else %}{{ meta.empty }}{% endif %}</li>
+                {% endfor %}
+            </ul>
+        </main>
+        <script src="{% static 'service/js/groomer.js' %}?v=1"></script>
+    </body>
+</html>

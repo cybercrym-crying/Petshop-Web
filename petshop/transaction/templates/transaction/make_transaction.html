@@ -1,170 +1,234 @@
-{% load static %}
+{% load static rupiah humanize %}
 <!DOCTYPE html>
 <html lang="id">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Make Transaction</title>
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        <title>PetAdmin - Buat Transaksi</title>
+        <!-- Bootstrap CSS -->
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <!-- Bootstrap Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <!-- Google Fonts: Plus Jakarta Sans -->
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
               rel="stylesheet" />
-        <link rel="stylesheet"
-              href="{% static 'transaction/css/make_transaction.css' %}?v=20261013">
+        <link rel="stylesheet" href="{% static 'transaction/css/make_transaction.css' %}?v=dm1">
     </head>
     <body>
-        <nav class="navbar-petadmin">
-            <div class="brand">
-                <span class="brand-logo">L</span>
-                <a href="/staff/admin/dashboard">
-                    <span class="brand-name">PetAdmin</span>
-                </a>
-            </div>
-            <div class="pill-name">{{ request.user.get_full_name|default:"Name" }}</div>
-        </nav>
-        <main>
+        {% include "partials/staff_nav.html" %}
+        <main class="container-fluid px-xl-5 px-4 py-4">
             {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
-                             role="alert">
-                            {{ message }}
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm border-0 rounded-4"
+                                 role="alert">
+                                {{ message }}
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="alert"
+                                        aria-label="Tutup"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             {% endif %}
-            <!-- pencarian -->
-            <div class="catalog-col">
-                <p class="eyebrow">Dashboard</p>
-                <h1 class="page-title">Make Transaction</h1>
-                <form class="search-form"
-                      method="get"
-                      action="{% url 'transaction:make_transaction' %}">
-                    <input type="search"
-                           name="q"
-                           value="{{ request.GET.q }}"
-                           class="filter-input"
-                           placeholder="Search"
-                           aria-label="Search Produk" />
-                </form>
-                <div class="product-grid">
-                    {% for p in products %}
-                        <div class="product-card">
-                            <form method="post" action="{% url 'transaction:add_to_cart' p.pk %}">
+            <div class="row g-4">
+                <!-- KOLOM KIRI: BOARD PRODUK -->
+                <div class="col-lg-8">
+                    <!-- HEADER BOARD -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                        <div>
+                            <span class="text-uppercase fw-bold"
+                                  style="color: #A3AED0;
+                                         font-size: 0.85rem;
+                                         letter-spacing: 1px">Dasbor</span>
+                            <h2 class="fw-bolder mt-1 mb-0" style="color: #2B3674;">Buat Transaksi</h2>
+                        </div>
+                        <form method="get"
+                              action="{% url 'transaction:make_transaction' %}"
+                              class="w-100"
+                              style="max-width: 350px">
+                            <div class="input-group search-pill align-items-center p-0 overflow-hidden">
+                                <span class="input-group-text bg-transparent border-0 ps-4 pe-2"><i class="bi bi-search text-muted"></i></span>
+                                <input type="search"
+                                       name="q"
+                                       value="{{ request.GET.q }}"
+                                       class="form-control bg-transparent border-0 py-2 shadow-none"
+                                       placeholder="Cari produk..."
+                                       aria-label="Cari Produk">
+                            </div>
+                        </form>
+                    </div>
+                    <!-- BOARD KONTEN -->
+                    <div class="product-board">
+                        <div class="row g-4">
+                            {% for p in products %}
+                                <div class="col-6 col-md-4 col-xl-3">
+                                    <form method="post"
+                                          action="{% url 'transaction:add_to_cart' p.pk %}"
+                                          class="h-100">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="card-trigger h-100"
+                                                {% if p.stock == 0 %}disabled{% endif %}>
+                                            <div class="card product-card h-100">
+                                                <!-- WRAPPER GAMBAR FULL 100% -->
+                                                <div class="product-img-wrapper">
+                                                    {% if p.photo %}
+                                                        <img src="{{ p.photo.url }}" alt="{{ p.name }}" />
+                                                    {% else %}
+                                                        <div class="h-100 w-100 d-flex align-items-center justify-content-center">
+                                                            <i class="bi bi-box-seam fs-1 text-muted opacity-50"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <!-- END WRAPPER GAMBAR -->
+                                                <div class="card-body p-3 d-flex flex-column">
+                                                    <h6 class="card-title fw-bold text-truncate mb-3"
+                                                        style="color: #2B3674;
+                                                               font-size: 0.95rem">{{ p.name }}</h6>
+                                                    <div class="mt-auto d-flex flex-column gap-2">
+                                                        <div class="fw-bolder price-text">
+                                                            {% if p.selling_price %}
+                                                                Rp {{ p.selling_price|floatformat:0|intcomma }}
+                                                            {% else %}
+                                                                <span class="fs-6 text-muted">Belum diset</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div>
+                                                            <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% else %}good{% endif %}">
+                                                                Stok {{ p.stock }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% empty %}
+                                <div class="col-12 text-center py-5">
+                                    <div class="p-5 border border-dashed rounded-4">
+                                        <i class="bi bi-inboxes text-muted opacity-50" style="font-size: 3rem;"></i>
+                                        <h6 class="mt-3 text-muted fw-bold">
+                                            {% if request.GET.q %}Tidak ada produk yang cocok dengan pencarian.{% else %}Belum ada produk.{% endif %}
+                                        </h6>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <!-- END BOARD KONTEN -->
+                </div>
+                <!-- KOLOM KANAN: ORDER SUMMARY -->
+                <div class="col-lg-4">
+                    <div class="order-summary-panel h-100 d-flex flex-column sticky-top"
+                         style="top: 24px;
+                                max-height: calc(100vh - 48px)">
+                        <h4 class="mb-4 fw-bold" style="color: #ffffff;">Ringkasan Order</h4>
+                        <div class="order-list pe-2 mb-3" style="overflow-y: auto; flex-grow: 1;">
+                            {% for item in cart_items %}
+                                <div class="cart-item">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="cart-item-title text-truncate pe-2">{{ item.product.name }}</div>
+                                        <form method="post"
+                                              action="{% url 'transaction:remove_from_cart' item.pk %}">
+                                            {% csrf_token %}
+                                            <button type="submit"
+                                                    class="btn btn-link text-danger p-0 text-decoration-none"
+                                                    title="Hapus">
+                                                <i class="bi bi-x-circle-fill fs-5"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <!-- Formatting Harga Keranjang -->
+                                        <div class="cart-item-price">Rp {{ item.subtotal|floatformat:0|intcomma }}</div>
+                                        <form method="post"
+                                              action="{% url 'transaction:update_cart_quantity' item.pk %}"
+                                              class="d-flex align-items-center gap-1">
+                                            {% csrf_token %}
+                                            <input type="number"
+                                                   name="quantity"
+                                                   value="{{ item.quantity }}"
+                                                   min="1"
+                                                   max="{{ item.product.stock }}"
+                                                   class="dark-input qty-input"
+                                                   aria-label="Jumlah">
+                                            <button type="submit" class="btn-update-qty">
+                                                <i class="bi bi-check2"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="text-center py-5 opacity-50">
+                                    <i class="bi bi-cart3 d-block mb-3" style="font-size: 3rem;"></i>
+                                    <p class="mb-0">Keranjang masih kosong.</p>
+                                    <small>Klik produk di sebelah kiri.</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-auto pt-4 border-top border-secondary border-opacity-25">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <span class="fs-5 text-white-50">Total</span>
+                                <!-- Formatting Total Harga -->
+                                <span class="fs-3 fw-black text-white">Rp {{ cart_total|floatformat:0|intcomma }}</span>
+                            </div>
+                            <form method="post" action="{% url 'transaction:submit_transaction' %}">
                                 {% csrf_token %}
-                                <button type="submit"
-                                        class="card-trigger"
-                                        {% if p.stock == 0 %}disabled{% endif %}>
-                                    <div class="product-photo">
-                                        {% if p.photo %}
-                                            <img src="{{ p.photo.url }}" alt="{{ p.name }}" />
+                                <div class="mb-3">
+                                    <label class="form-label text-white-50 small mb-1">Metode Pembayaran</label>
+                                    <select name="payment_method"
+                                            class="form-select dark-input form-select-sm py-2"
+                                            required>
+                                        <option value="TUNAI">Tunai</option>
+                                        <option value="TRANSFER">Transfer</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-white-50 small mb-1">Kurir</label>
+                                    <select name="courier" class="form-select dark-input form-select-sm py-2">
+                                        <option value="">- Pilih Kurir -</option>
+                                        {% for c in couriers %}<option value="{{ c.pk }}">{{ c.first_name }} {{ c.last_name }}</option>{% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label text-white-50 small mb-1">Pelanggan</label>
+                                    <select name="customer"
+                                            class="form-select dark-input form-select-sm py-2 mb-1"
+                                            required>
+                                        <option value="">- Pilih Pelanggan -</option>
+                                        {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }} ({{ c.phone_number }})</option>{% endfor %}
+                                    </select>
+                                    <small class="text-white-50 d-block mt-1" style="font-size: 0.75rem;">
+                                        {% if request.user.role == "ADMIN" %}
+                                            Belum ada? <a href="{% url 'manage_account' %}?tab=customer"
+    class="text-warning text-decoration-none">Tambah Data</a>
                                         {% else %}
-                                            Photo
+                                            Belum ada? Minta admin menambahkan pelanggan, atau pelanggan bisa daftar sendiri di situs.
                                         {% endif %}
+                                    </small>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-5">
+                                        <button type="submit"
+                                                formaction="{% url 'transaction:cancel_transaction' %}"
+                                                class="btn btn-cancel w-100 py-3">Batal</button>
                                     </div>
-                                    <div class="product-body">
-                                        <p class="product-name">{{ p.name }}</p>
-                                        <p class="product-price">
-                                            {% if p.selling_price %}
-                                                Rp. {{ p.selling_price|floatformat:0 }}
-                                            {% else %}
-                                                Harga belum diset
-                                            {% endif %}
-                                        </p>
-                                        <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% endif %}">Stock {{ p.stock }}</span>
+                                    <div class="col-7">
+                                        <button type="submit"
+                                                class="btn btn-submit w-100 py-3 text-uppercase"
+                                                {% if not cart_items %}disabled{% endif %}>Bayar</button>
                                     </div>
-                                </button>
+                                </div>
                             </form>
                         </div>
-                    {% empty %}
-                        <div class="empty-state">
-                            {% if request.GET.q %}
-                                Tidak ada produk yang cocok dengan pencarian.
-                            {% else %}
-                                Belum ada produk yang bisa dijual.
-                            {% endif %}
-                        </div>
-                    {% endfor %}
+                    </div>
                 </div>
             </div>
-            <aside class="order-panel">
-                <h2 class="order-title">Order Summary</h2>
-                <div class="order-list">
-                    {% for item in cart_items %}
-                        <div class="order-line">
-                            <div>
-                                <div class="order-line-name">{{ item.product.name }}</div>
-                                <form method="post"
-                                      action="{% url 'transaction:update_cart_quantity' item.pk %}"
-                                      class="d-flex gap-1 align-items-center">
-                                    {% csrf_token %}
-                                    <input type="number"
-                                           name="quantity"
-                                           value="{{ item.quantity }}"
-                                           min="1"
-                                           max="{{ item.product.stock }}"
-                                           style="width: 4.5rem"
-                                           aria-label="Jumlah {{ item.product.name }}" />
-                                    <button type="submit" class="order-line-remove">Set</button>
-                                </form>
-                                <form method="post"
-                                      action="{% url 'transaction:remove_from_cart' item.pk %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="order-line-remove">Remove</button>
-                                </form>
-                            </div>
-                            <div>Rp. {{ item.subtotal|floatformat:0 }}</div>
-                        </div>
-                    {% empty %}
-                        <p class="order-empty">Click product on the left, to fill this order.</p>
-                    {% endfor %}
-                </div>
-                <div class="order-total">
-                    <span>Total</span>
-                    <span>Rp. {{ cart_total|floatformat:0 }}</span>
-                </div>
-                <form method="post" action="{% url 'transaction:submit_transaction' %}">
-                    {% csrf_token %}
-                    <div class="order-field">
-                        <label for="payment-method">Payment Method</label>
-                        <select id="payment-method"
-                                name="payment_method"
-                                class="order-input"
-                                required>
-                            <option value="CASH">Cash</option>
-                            <option value="TRANSFER">Transfer</option>
-                        </select>
-                    </div>
-                    <div class="order-field">
-                        <label for="courier">Courier</label>
-                        <select id="courier" name="courier" class="order-input">
-                            <option value="">- Select Courier -</option>
-                            {% for c in couriers %}<option value="{{ c.pk }}">{{ c.first_name }} {{ c.last_name }}</option>{% endfor %}
-                        </select>
-                    </div>
-                    <div class="order-field">
-                        <label for="customer">Customer</label>
-                        <select id="customer" name="customer" class="order-input" required>
-                            <option value="">- Select Customer -</option>
-                            {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }} ({{ c.phone_number }})</option>{% endfor %}
-                        </select>
-                        <small class="text-muted">
-                            Customer belum ada? <a href="{% url 'manage_account' %}?tab=customer">Tambah di Manage Account</a>
-                        </small>
-                    </div>
-                    <div class="order-actions">
-                        <button type="submit"
-                                formaction="{% url 'transaction:cancel_transaction' %}"
-                                class="btn-order-cancel">Cancel</button>
-                        <button type="submit"
-                                class="btn-order-submit"
-                                {% if not cart_items %}disabled{% endif %}>Submit</button>
-                    </div>
-                </form>
-            </aside>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>

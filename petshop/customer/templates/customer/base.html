@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Seelly Petshop{% endblock %}</title>
+        <link rel="icon"
+              href="{% static 'customer/img/favicon.svg' %}"
+              type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect"
+              href="https://fonts.gstatic.com"
+              crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+              rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+              rel="stylesheet">
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="{% static 'customer/css/base.css' %}">
+        <link rel="stylesheet" href="{% static 'customer/css/nav.css' %}">
+        {% block extra_css %}{% endblock %}
+    </head>
+    <body>
+        <a class="skip-link" href="#main">Lewati ke konten</a>
+        {% block navbar %}
+            {% include "customer/_site_nav.html" with active=active_page %}
+        {% endblock %}
+        <main id="main">
+            {% block content %}{% endblock %}
+        </main>
+        <!-- FOOTER -->
+        <footer class="site-footer" id="kontak">
+            <div class="container footer-inner">
+                <div>
+                    <div class="footer-brand">
+                        <i class="fas fa-paw" aria-hidden="true"></i> Seelly Petshop
+                    </div>
+                    <div class="social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <h2>Hubungi Kami</h2>
+                    <p>
+                        <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                        <a href="{{ wa_link }}" target="_blank" rel="noopener">{{ wa_display }}</a>
+                    </p>
+                    <p>
+                        <i class="fas fa-envelope" aria-hidden="true"></i> SeellyPetshop@outlook.com
+                    </p>
+                </div>
+            </div>
+            <div class="container footer-copy">© 2026 Seelly Petshop. Hak cipta dilindungi.</div>
+        </footer>
+        <!-- ADDED TO CART MODAL -->
+        <div class="modal-backdrop-custom"
+             id="cart-modal"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="cart-modal-title"
+             hidden>
+            <div class="modal-card">
+                <button type="button"
+                        class="modal-close"
+                        data-modal-close
+                        aria-label="Tutup">
+                    <i class="fas fa-xmark" aria-hidden="true"></i>
+                </button>
+                <h2 id="cart-modal-title">
+                    <i class="fas fa-circle-check" aria-hidden="true"></i> Ditambahkan ke Keranjang
+                </h2>
+                <div class="modal-item">
+                    <div class="modal-item-photo" id="modal-photo"></div>
+                    <div class="modal-item-info">
+                        <div class="modal-item-name" id="modal-name"></div>
+                        <div class="modal-item-price" id="modal-price"></div>
+                    </div>
+                    <div class="qty-control" aria-label="Jumlah">
+                        <button type="button" id="modal-minus" aria-label="Kurangi jumlah">−</button>
+                        <span id="modal-qty">1</span>
+                        <button type="button" id="modal-plus" aria-label="Tambah jumlah">+</button>
+                    </div>
+                </div>
+                <div class="modal-total">
+                    <span>Total keranjang (<span id="modal-items">0</span> barang)</span>
+                    <strong id="modal-total">Rp 0</strong>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-soft" data-modal-close>Lanjut Belanja</button>
+                    <a href="{% url 'customer:cart' %}" class="btn-primary-seelly">Lihat Keranjang</a>
+                </div>
+            </div>
+        </div>
+        <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
+        <script src="{% static 'customer/js/nav.js' %}"></script>
+        <script src="{% static 'customer/js/store.js' %}"></script>
+        {% block extra_js %}{% endblock %}
+        {% include "chatbot/_widget.html" %}
+    </body>
+</html>

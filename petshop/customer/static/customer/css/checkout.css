@@ -190,3 +190,239 @@ body {
     color: var(--light-purple);
     margin-bottom: 20px;
 }
+
+.confirm-dialog {
+    border: none;
+    border-radius: 20px;
+    padding: 0;
+    width: min(560px, calc(100% - 32px));
+    max-height: calc(100% - 32px);
+    color: var(--text-dark);
+    box-shadow: 0 25px 60px rgba(31, 41, 55, 0.35);
+}
+
+.confirm-dialog::backdrop {
+    background: rgba(31, 41, 55, 0.55);
+}
+
+.confirm-dialog__box {
+    padding: 28px;
+    overflow-y: auto;
+    max-height: calc(100vh - 32px);
+}
+
+.confirm-dialog__title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary-purple);
+}
+
+.confirm-dialog__lead {
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+.confirm-block {
+    background: var(--soft-purple);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+
+.confirm-block__title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--primary-purple);
+    margin: 0 0 10px;
+}
+
+.confirm-data {
+    margin: 0;
+}
+
+.confirm-data__row {
+    display: flex;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.confirm-data__row dt {
+    flex: 0 0 110px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.confirm-data__row dd {
+    margin: 0;
+    font-weight: 600;
+    word-break: break-word;
+    white-space: pre-line;
+}
+
+.confirm-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.confirm-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--light-purple);
+}
+
+.confirm-item__name {
+    font-weight: 700;
+}
+
+.confirm-item__detail {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.confirm-item__price {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.confirm-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    font-size: 1.1rem;
+}
+
+.confirm-total strong {
+    color: var(--primary-purple);
+}
+
+.confirm-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 18px 0;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.confirm-check input {
+    margin-top: 4px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-purple);
+    flex: 0 0 auto;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-confirm-back,
+.btn-confirm-send {
+    flex: 1;
+    border-radius: 12px;
+    padding: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-confirm-back {
+    background: white;
+    color: var(--primary-purple);
+    border: 2px solid var(--light-purple);
+}
+
+.btn-confirm-back:hover {
+    background: var(--soft-purple);
+}
+
+.btn-confirm-send {
+    background: var(--primary-purple);
+    color: white;
+    border: 2px solid var(--primary-purple);
+}
+
+.btn-confirm-send:hover:not(:disabled) {
+    background: #6d28d9;
+}
+
+.btn-confirm-send:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    .confirm-dialog__box {
+        padding: 20px;
+    }
+    .confirm-actions {
+        flex-direction: column-reverse;
+    }
+    .confirm-data__row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+
+/* Ajakan masuk untuk pengunjung (checkout tamu = via WhatsApp) */
+.guest-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 0 0 24px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #f3e8ff;
+  border: 1px solid #e9d5ff;
+  color: #3b0764;
+}
+.guest-banner > i {
+  font-size: 1.3rem;
+  color: #7e22ce;
+}
+.guest-banner__text {
+  flex: 1 1 280px;
+  font-size: 0.92rem;
+}
+.guest-banner__actions {
+  display: flex;
+  gap: 8px;
+}
+.guest-banner__btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1.5px solid #a855f7;
+  color: #7e22ce;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.guest-banner__btn:hover {
+  background: #faf5ff;
+  color: #6b21a8;
+}
+.guest-banner__btn.is-primary {
+  background: #7e22ce;
+  border-color: #7e22ce;
+  color: #fff;
+}
+.guest-banner__btn.is-primary:hover {
+  background: #6b21a8;
+  color: #fff;
+}

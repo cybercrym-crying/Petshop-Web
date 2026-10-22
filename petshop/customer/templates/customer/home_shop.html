@@ -1,0 +1,285 @@
+{% extends "customer/base.html" %}
+{% load static %}
+{% block title %}Belanja - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=2">
+    <style>
+        .video-hero-wrap-shop {
+            position: relative;
+            width: 100%;
+            min-height: 65vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 60px;
+            border-radius: 0 0 40px 40px;
+            text-align: center;
+        }
+        .hero-bg-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            object-fit: cover;
+            z-index: 0;
+        }
+        .hero-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(30, 27, 75, 0.8) 0%, rgba(92, 65, 140, 0.6) 50%, rgba(0, 0, 0, 0.4) 100%);
+            z-index: 1;
+        }
+        .hero-content-top {
+            z-index: 2;
+            padding: 80px 20px;
+        }
+
+        /* Tipografi Glassmorphism */
+        .hero-eyebrow-glass {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            margin-bottom: 20px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .hero-title-light {
+            color: #ffffff;
+            font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .hero-title-light span { color: #FF9000; }
+        .hero-desc-light {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        }
+
+        .hero-actions-center {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-solid-light {
+            display: inline-flex;
+            align-items: center;
+            background: #ffffff;
+            color: #5c418c;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .btn-solid-light:hover {
+            background: #FF9000;
+            color: #ffffff;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(255, 144, 0, 0.4);
+        }
+        .btn-outline-glass {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-glass:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #ffffff;
+            color: #ffffff;
+            transform: translateY(-3px);
+        }
+
+        /* Polesan Kartu About & Steps agar selaras */
+        .about-card, .step-card {
+            border-radius: 24px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease;
+        }
+        .step-card:hover { transform: translateY(-5px); }
+        .step-icon { border-radius: 18px; }
+    </style>
+{% endblock %}
+{% block content %}
+    {% if results is not None %}
+        <!-- HASIL FILTER / PENCARIAN / FAVORIT -->
+        <section class="container section"
+                 id="produk"
+                 aria-label="{{ results_title }}">
+            <div class="section-head">
+                <h2 class="section-title">{{ results_title }}</h2>
+                <a href="{% url 'customer:shop' %}"
+                   class="view-all">Kembali ke Belanja <i class="fas fa-arrow-right"
+    aria-hidden="true"></i></a>
+            </div>
+            <p class="muted" id="shop-sub">{{ results|length }} produk ditemukan</p>
+            <div class="product-grid" id="product-grid">
+                {% for item in results %}
+                    {% include "customer/_product_card.html" %}
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-box-open fs-1 text-muted mb-3 opacity-50"></i>
+                        <p class="muted fs-5">Tidak ada produk yang cocok.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    <section class="video-hero-wrap-shop">
+        <!-- Video Latar Belakang -->
+        <video class="hero-bg-video" autoplay loop muted playsinline>
+            <source src="{% static 'customer/video/orang-utan-video.mp4' %}"
+                    type="video/mp4">
+        </video>
+        <div class="hero-bg-overlay"></div>
+        <div class="container position-relative hero-content-top text-center">
+            <span class="hero-eyebrow-glass"><i class="fas fa-paw me-2"></i> Toko favorit hewan kesayangan Anda</span>
+            <h1 class="hero-title-light">
+                Semua kebutuhan hewan
+                <br>
+                peliharaan di <span>satu tempat</span>
+            </h1>
+            <p class="hero-desc-light">Makanan, mainan, aksesori, dan produk perawatan terbaik untuk kebahagiaan sahabat berbulu Anda.</p>
+            <div class="hero-actions-center">
+                <a href="{% url 'customer:products' %}"
+                   class="btn-solid-light">Belanja Sekarang <i class="fas fa-shopping-bag ms-2"></i></a>
+                <a href="#how-to-order" class="btn-outline-glass">Cara Memesan</a>
+            </div>
+        </div>
+    </section>
+    <!-- KATEGORI -->
+    <section class="container section" id="categories">
+        <div class="section-head">
+            <h2 class="section-title">Belanja per Kategori</h2>
+        </div>
+        <div class="category-row">
+            {% for category in categories %}
+                <a class="category-item"
+                   href="{% url 'customer:products' %}?category={{ category.code }}">
+                    <span class="category-circle">
+                        <img src="{% static category.image %}"
+                             alt="{{ category.label }}"
+                             loading="lazy">
+                    </span>
+                    <span class="category-name">{{ category.label }}</span>
+                    <span class="category-count">{{ category.count }} produk</span>
+                </a>
+            {% empty %}
+                <p class="muted w-100 text-center py-4">Belum ada kategori tersedia.</p>
+            {% endfor %}
+        </div>
+    </section>
+    <!-- PRODUK POPULER -->
+    <section class="container section" id="popular">
+        <div class="section-head">
+            <h2 class="section-title">Produk Populer</h2>
+            <a href="{% url 'customer:products' %}"
+               class="view-all">Lihat Semua <i class="fas fa-arrow-right ms-1"
+    aria-hidden="true"></i></a>
+        </div>
+        <div class="carousel">
+            <button type="button"
+                    class="carousel-btn prev"
+                    id="popular-prev"
+                    aria-label="Produk sebelumnya">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <div class="carousel-track" id="popular-track">
+                {% for item in popular_products %}
+                    {% include "customer/_product_card.html" %}
+                {% empty %}
+                    <p class="muted py-4 w-100 text-center">Belum ada produk populer. Silakan cek lagi nanti!</p>
+                {% endfor %}
+            </div>
+            <button type="button"
+                    class="carousel-btn next"
+                    id="popular-next"
+                    aria-label="Produk berikutnya">
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+        </div>
+    </section>
+    <!-- CARA MEMESAN -->
+    <section class="container section" id="how-to-order" aria-label="Cara memesan">
+        <div class="section-head text-center w-100 mb-5">
+            <h2 class="section-title m-0">Cara Memesan</h2>
+        </div>
+        <div class="steps">
+            <div class="step-card">
+                <span class="step-icon"><i class="fas fa-cart-shopping" aria-hidden="true"></i></span>
+                <div>
+                    <h3>1. Pilih produk</h3>
+                    <p>Masukkan kebutuhan hewan Anda ke keranjang belanja.</p>
+                </div>
+            </div>
+            <div class="step-card">
+                <span class="step-icon"><i class="fab fa-whatsapp" aria-hidden="true"></i></span>
+                <div>
+                    <h3>2. Kirim via WhatsApp</h3>
+                    <p>Pesanan Anda langsung masuk ke sistem admin kami.</p>
+                </div>
+            </div>
+            <div class="step-card">
+                <span class="step-icon"><i class="fas fa-truck-fast" aria-hidden="true"></i></span>
+                <div>
+                    <h3>3. Kami Antar</h3>
+                    <p>Bayar dan terima pesanan langsung di depan pintu Anda.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- TENTANG -->
+    <section class="container section pb-5" id="about">
+        <div class="about-card">
+            <div>
+                <h2 class="section-title mb-3">Tentang Seelly Petshop</h2>
+                <p class="mb-4" style="font-size: 1.05rem; line-height: 1.6;">
+                    Kami adalah toko hewan yang peduli. Kami memastikan setiap hewan makan dengan baik, bermain dengan gembira, dan tetap sehat.
+                    Lihat katalog produk kami, kirim pesanan lewat WhatsApp, dan tim kami akan segera memproses pengantaran ke rumah Anda.
+                </p>
+            </div>
+            <ul class="about-points">
+                <li><i class="fas fa-circle-check"
+   aria-hidden="true"></i> Kualitas produk terjamin & dipilih cermat</li>
+                <li><i class="fas fa-circle-check" aria-hidden="true"></i> Layanan pelanggan ramah via WhatsApp</li>
+                <li><i class="fas fa-circle-check" aria-hidden="true"></i> Pengantaran cepat, aman, dan hati-hati</li>
+            </ul>
+        </div>
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'customer/js/shop.js' %}"></script>
+{% endblock %}

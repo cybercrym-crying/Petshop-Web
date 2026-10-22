@@ -3,14 +3,9 @@ from . import views
 
 urlpatterns = [
     # --- Publik, tidak perlu login ---
-    path("", views.home, name="home"),
     path("login", views.loginForm, name="login_form"),
     path("logout", views.logoutForm, name="logout"),
-    # --- Customer: perlu login, tetap di main site (bukan /staff/) ---
-    path("customer/dashboard", views.customerDashboard, name="customer_dashboard"),
-    # --- Staff: perlu login + role check, sengaja di prefix /staff/
-    # (bukan /admin/) supaya tidak bentrok dengan Django admin bawaan yang
-    # tetap ada di /admin/ untuk superuser). ---
+    path("daftar", views.register, name="register"),
     path(
         "staff/admin/dashboard",
         views.staff_admin_dashboard,
@@ -22,6 +17,12 @@ urlpatterns = [
         name="manage_account",
     ),
     path("staff/admin/employee/add/", views.add_employee, name="add_employee"),
+    path(
+        "staff/admin/employee/<int:pk>/",
+        views.employee_profile,
+        name="employee_profile",
+    ),
+    path("customer/<int:pk>/", views.customer_profile, name="customer_profile"),
     path(
         "staff/admin/employee/<int:pk>/edit/", views.edit_employee, name="edit_employee"
     ),

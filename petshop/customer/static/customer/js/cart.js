@@ -1,3 +1,7 @@
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+
 function formatRupiah(angka) { 
     return 'Rp ' + parseInt(angka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
 }
@@ -23,9 +27,9 @@ function renderCart() {
                     <td>
                         <div class="d-flex align-items-center gap-3">
                             <div class="cart-item-photo">
-                                ${item.photo ? `<img src="${item.photo}" alt="photo">` : '<span>Photo</span>'}
+                                ${item.photo ? `<img src="${item.photo}" alt="foto">` : '<span>Foto</span>'}
                             </div>
-                            <span class="fw-semibold">${item.name}</span>
+                            <span class="fw-semibold">${escapeHtml(item.name)}</span>
                         </div>
                     </td>
                     <td>${formatRupiah(item.price)}</td>
@@ -95,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
         checkoutBtn.addEventListener('click', function() {
             let cart = JSON.parse(localStorage.getItem('petshop_cart')) || [];
             if (cart.length === 0) { 
-                alert('Your cart is still empty!'); 
+                alert('Keranjang Anda masih kosong!'); 
                 return; 
             }
             window.location.href = this.getAttribute('data-checkout-url');

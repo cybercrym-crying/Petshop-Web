@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, Product, StockMutation, MutationType
+from .models import MutationType, PetType, Product, ProductCondition, StockMutation
 
 
 class FormProduct(forms.ModelForm):
@@ -12,19 +12,41 @@ class FormProduct(forms.ModelForm):
             "purchase_price",
             "selling_price",
             "stock",
+            "pet_type",
+            "condition",
             "is_active",
             "photo",
         ]
+        labels = {
+            "category": "Kategori",
+            "name": "Nama produk",
+            "purchase_price": "Harga beli",
+            "selling_price": "Harga jual",
+            "stock": "Stok",
+            "pet_type": "Tipe hewan",
+            "condition": "Kondisi",
+            "is_active": "Status aktif",
+            "photo": "Foto produk",
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["stock"].help_text = (
             "Stok awal saat produk pertama kali ditambahkan"
         )
+        # Hewan tujuan & kondisi opsional di form: kosong = SEMUA / BARU (bawaan model).
+        self.fields["pet_type"].required = False
+        self.fields["condition"].required = False
         # Stok hanya diisi saat produk baru dibuat.
         # Perubahan stok sesudahnya wajib lewat StockMutation supaya tercatat.
         if self.instance.pk:
             self.fields["stock"].disabled = True
+
+    def clean_pet_type(self):
+        return self.cleaned_data.get("pet_type") or PetType.ALL
+
+    def clean_condition(self):
+        return self.cleaned_data.get("condition") or ProductCondition.NEW
 
     def clean(self):
         cleaned_data = super().clean()
@@ -47,6 +69,7 @@ class SellingPriceForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ["selling_price"]
+        labels = {"selling_price": "Harga jual"}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,11 +90,17 @@ class SellingPriceForm(forms.ModelForm):
 class StockMutationForm(forms.ModelForm):
     # Dipakai Staf Gudang untuk mencatat stok masuk/keluar.
 
-    quantity = forms.IntegerField(min_value=1)
+    quantity = forms.IntegerField(min_value=1, label="Jumlah")
 
     class Meta:
         model = StockMutation
         fields = ["product", "mutationType", "quantity", "note"]
+        labels = {
+            "product": "Produk",
+            "mutationType": "Jenis mutasi",
+            "quantity": "Jumlah",
+            "note": "Catatan",
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,0 +1,145 @@
+{% extends "customer/base.html" %}
+{% load static rupiah %}
+{% block title %}Lacak Pesanan - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/track.css' %}">
+    {% if order and order.order_status == "DALAM_PENGIRIMAN" %}
+        <link rel="stylesheet"
+              href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+              crossorigin="">
+    {% endif %}
+{% endblock %}
+{% block content %}
+    <section class="container section track-page">
+        <header class="track-head">
+            <h1 class="track-title">
+                <i class="fas fa-location-dot" aria-hidden="true"></i> Lacak Pesanan
+            </h1>
+            <p class="muted">Masukkan nomor resi yang dikirim admin lewat WhatsApp.</p>
+        </header>
+        <form class="track-form" method="get" action="{% url 'customer:track' %}" role="search">
+            <label class="visually-hidden" for="resi">Nomor resi</label>
+            <input id="resi"
+                   type="text"
+                   name="resi"
+                   value="{{ raw }}"
+                   placeholder="PS-261022-K7M2QX"
+                   autocomplete="off"
+                   autocapitalize="characters"
+                   spellcheck="false"
+                   required>
+            <button type="submit" class="btn-primary-seelly">
+                <i class="fas fa-magnifying-glass" aria-hidden="true"></i> Lacak
+            </button>
+        </form>
+        {% if error %}
+            <div class="track-alert" role="alert">
+                <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> {{ error }}
+            </div>
+        {% endif %}
+        {% if order %}
+            <article class="track-card">
+                <div class="track-card__top">
+                    <div>
+                        <div class="track-label">Nomor resi</div>
+                        <div class="track-resi">{{ order.tracking_number }}</div>
+                    </div>
+                    <span class="track-badge track-badge--{{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
+                </div>
+                {% if order.order_status == "DIBATALKAN" %}
+                    <div class="track-alert" role="status">
+                        <i class="fas fa-ban" aria-hidden="true"></i>
+                        Pesanan ini dibatalkan. Hubungi kami lewat WhatsApp jika ada pertanyaan.
+                    </div>
+                {% else %}
+                    <ol class="track-steps">
+                        {% for step in steps %}
+                            <li class="track-step{% if step.done %} is-done{% endif %}{% if step.current %} is-current{% endif %}">
+                                <span class="track-step__dot"><i class="fas {{ step.icon }}" aria-hidden="true"></i></span>
+                                <div>
+                                    <div class="track-step__title">{{ step.title }}</div>
+                                    <div class="track-step__time">
+                                        {% if step.time %}{{ step.time|date:"d M Y, H:i" }}{% else %}Belum{% endif %}
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% endif %}
+                {% if order.order_status == "DALAM_PENGIRIMAN" %}
+                    <section class="track-live"
+                             aria-labelledby="live-title"
+                             data-track-live
+                             data-url="{% url 'customer:track_location' order.tracking_number %}"
+                             data-courier="{{ courier_name }}">
+                        <div class="track-live__head">
+                            <h2 id="live-title">
+                                <span class="track-live__dot" aria-hidden="true"></span> Posisi kurir
+                            </h2>
+                            <span class="track-live__updated" data-live-updated>Memuat lokasi…</span>
+                        </div>
+                        <div class="track-live__map" id="track-map" role="img" aria-label="Peta posisi kurir" hidden></div>
+                        <p class="track-note" data-live-empty>Kurir belum membagikan lokasi. Halaman ini akan memperbarui posisi secara otomatis.</p>
+                        <a class="track-live__gmaps" href="#" target="_blank" rel="noopener" data-live-gmaps hidden>
+                            <i class="fas fa-map-location-dot" aria-hidden="true"></i> Buka di Google Maps
+                        </a>
+                    </section>
+                {% endif %}
+                {% if order.order_status == "TERKIRIM" %}
+                    <section class="track-proof" aria-labelledby="proof-title">
+                        <h2 id="proof-title">
+                            <i class="fas fa-camera" aria-hidden="true"></i> Bukti pengiriman
+                        </h2>
+                        {% if order.delivery_photo %}
+                            <a href="{{ order.delivery_photo.url }}" target="_blank" rel="noopener">
+                                <img src="{{ order.delivery_photo.url }}"
+                                     alt="Foto bukti pesanan sampai"
+                                     loading="lazy">
+                            </a>
+                            {% if order.delivery_note %}<p class="track-note">Catatan kurir: {{ order.delivery_note }}</p>{% endif %}
+                        {% else %}
+                            <p class="track-note">Pesanan ditandai sampai tanpa foto bukti. Hubungi kami jika ada kendala.</p>
+                        {% endif %}
+                    </section>
+                {% endif %}
+                <dl class="track-info">
+                    <div>
+                        <dt>Penerima</dt>
+                        <dd>{{ masked_name }}</dd>
+                    </div>
+                    {% if courier_name and order.order_status != "DIBATALKAN" %}
+                        <div>
+                            <dt>Kurir</dt>
+                            <dd>{{ courier_name }}</dd>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <dt>Pembayaran</dt>
+                        <dd>{{ order.get_payment_method_display }} · {{ order.get_payment_status_display }}</dd>
+                    </div>
+                </dl>
+                <ul class="track-items">
+                    {% for item in items %}
+                        <li>
+                            <span>{{ item.product.name }} <small>×{{ item.quantity }}</small></span>
+                            <strong>Rp {{ item.subtotal|rupiah }}</strong>
+                        </li>
+                    {% endfor %}
+                    <li class="track-total">
+                        <span>Total</span>
+                        <strong>Rp {{ order.total_payment|rupiah }}</strong>
+                    </li>
+                </ul>
+            </article>
+        {% endif %}
+    </section>
+{% endblock %}
+{% block extra_js %}
+    {% if order and order.order_status == "DALAM_PENGIRIMAN" %}
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                crossorigin=""></script>
+        <script src="{% static 'customer/js/track_map.js' %}?v=2"></script>
+    {% endif %}
+{% endblock %}
