@@ -1,22 +1,22 @@
 body {
-  background-color: #fafafc;
+  background-color: var(--c-bg);
   font-family: "Plus Jakarta Sans", sans-serif;
-  color: #2b3674;
+  color: var(--c-text);
   margin: 0;
 }
 
 .text-brand {
-  color: #8c73c2 !important;
+  color: var(--c-brand) !important;
 }
 
 /* Modern Navbar Courier */
 .navbar-custom {
-  background: #ffffff;
+  background: var(--c-surface);
   padding: 12px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--c-border);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -41,7 +41,7 @@ body {
   font-size: 1.2rem;
 }
 .brand-name {
-  color: #2b3674;
+  color: var(--c-text);
   font-weight: 800;
   font-size: 1.25rem;
   letter-spacing: -0.5px;
@@ -53,23 +53,23 @@ body {
   font-weight: 600;
 }
 .pf-crumb a {
-  color: #8c73c2;
+  color: var(--c-brand);
   text-decoration: none;
   transition: color 0.2s;
 }
 .pf-crumb a:hover {
-  color: #5c418c;
+  color: var(--c-brand-dark);
   text-decoration: underline;
 }
 .pf-crumb span {
-  color: #a0aec0;
+  color: var(--c-muted-2);
   margin: 0 5px;
 }
 
 .card-custom {
-  background-color: #ffffff;
+  background-color: var(--c-surface);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--c-border);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
   overflow: hidden;
   padding: 30px;
@@ -83,13 +83,13 @@ body {
   margin-bottom: 30px;
 }
 .meta-item {
-  background: #f8fafc;
+  background: var(--c-surface-2);
   padding: 15px 20px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--c-border);
 }
 .meta-label {
-  color: #718096;
+  color: var(--c-muted);
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -98,7 +98,7 @@ body {
 }
 .meta-value {
   font-weight: 700;
-  color: #2b3674;
+  color: var(--c-text);
   font-size: 1.05rem;
 }
 
@@ -108,10 +108,10 @@ body {
   border-collapse: collapse;
 }
 .table-custom th {
-  background-color: #f8fafc;
-  color: #4a5568;
+  background-color: var(--c-surface-2);
+  color: var(--c-text-2);
   font-weight: 700;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--c-border);
   padding: 16px 20px;
   white-space: nowrap;
   text-align: left;
@@ -119,8 +119,8 @@ body {
 .table-custom td {
   padding: 16px 20px;
   vertical-align: middle;
-  border-bottom: 1px solid #e2e8f0;
-  color: #2d3748;
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-text-3);
 }
 
 .badge-status {
@@ -132,19 +132,19 @@ body {
   border: 1px solid transparent;
 }
 .badge-status.confirmed {
-  background: #f3eefc;
-  color: #5c418c;
-  border-color: #e4dcf5;
+  background: var(--c-brand-soft);
+  color: var(--c-brand-dark);
+  border-color: var(--c-brand-soft-border);
 }
 .badge-status.on_delivery {
-  background: #fff8e5;
-  color: #e5a500;
-  border-color: #fef3c7;
+  background: var(--c-warn-bg);
+  color: var(--c-warn-text);
+  border-color: var(--c-warn-border);
 }
 .badge-status.delivered {
-  background: #e8fcf1;
-  color: #05a660;
-  border-color: #d1fae5;
+  background: var(--c-ok-bg);
+  color: var(--c-ok-text);
+  border-color: var(--c-ok-border);
 }
 
 .btn-orange {
@@ -188,9 +188,9 @@ body {
 }
 
 .btn-cancel {
-  background-color: #ffffff;
-  color: #5c418c;
-  border: 1px solid #e2e8f0;
+  background-color: var(--c-surface);
+  color: var(--c-brand-dark);
+  border: 1px solid var(--c-border);
   border-radius: 50px;
   padding: 12px 30px;
   font-weight: 600;
@@ -201,7 +201,7 @@ body {
   transition: all 0.3s;
 }
 .btn-cancel:hover {
-  background-color: #f3f0f8;
-  border-color: #d1c5e8;
-  color: #4a3473;
+  background-color: var(--c-brand-soft);
+  border-color: var(--c-brand-soft-border);
+  color: var(--c-brand-soft-text);
 }

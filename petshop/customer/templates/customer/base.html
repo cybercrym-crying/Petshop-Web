@@ -19,63 +19,13 @@
         <link rel="stylesheet"
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link rel="stylesheet" href="{% static 'customer/css/base.css' %}">
+        <link rel="stylesheet" href="{% static 'customer/css/nav.css' %}">
         {% block extra_css %}{% endblock %}
     </head>
     <body>
         <a class="skip-link" href="#main">Lewati ke konten</a>
-        <!-- NAVBAR -->
         {% block navbar %}
-        <header class="site-header">
-            <nav class="container site-nav" aria-label="Navigasi utama">
-                <a href="{% url 'customer:home' %}" class="brand">
-                    <i class="fas fa-paw" aria-hidden="true"></i>
-                    <span>Seelly Petshop</span>
-                </a>
-                <button class="nav-toggle"
-                        type="button"
-                        id="nav-toggle"
-                        aria-label="Buka menu"
-                        aria-expanded="false"
-                        aria-controls="nav-links">
-                    <i class="fas fa-bars" aria-hidden="true"></i>
-                </button>
-                <div class="nav-links" id="nav-links">
-                    <a href="{% url 'customer:home' %}"
-                       class="nav-link-item {% if active_page == 'home' %}active{% endif %}">Beranda</a>
-                    <a href="{% url 'customer:shop' %}"
-                       class="nav-link-item {% if active_page == 'shop' %}active{% endif %}">Belanja</a>
-                    <a href="{% url 'customer:about' %}" class="nav-link-item">Tentang Kami</a>
-                    <a href="#kontak" class="nav-link-item">Hubungi Kami</a>
-                </div>
-                <div class="nav-actions">
-                    <form class="search-form"
-                          action="{% url 'customer:shop' %}"
-                          method="get"
-                          role="search">
-                        <input type="search"
-                               name="q"
-                               value="{{ query|default:'' }}"
-                               placeholder="Cari produk..."
-                               aria-label="Cari produk">
-                        <button type="submit" aria-label="Cari">
-                            <i class="fas fa-search" aria-hidden="true"></i>
-                        </button>
-                    </form>
-                    <a class="icon-btn"
-                       href="{% url 'customer:shop' %}?wishlist=1"
-                       aria-label="Favorit">
-                        <i class="far fa-heart" aria-hidden="true"></i>
-                        <span class="icon-badge" id="wishlist-count" hidden>0</span>
-                    </a>
-                    <a class="icon-btn"
-                       href="{% url 'customer:cart' %}"
-                       aria-label="Keranjang">
-                        <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-                        <span class="icon-badge" id="cart-count" hidden>0</span>
-                    </a>
-                </div>
-            </nav>
-        </header>
+            {% include "customer/_site_nav.html" with active=active_page %}
         {% endblock %}
         <main id="main">
             {% block content %}{% endblock %}
@@ -147,6 +97,7 @@
             </div>
         </div>
         <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
+        <script src="{% static 'customer/js/nav.js' %}"></script>
         <script src="{% static 'customer/js/store.js' %}"></script>
         {% block extra_js %}{% endblock %}
     </body>

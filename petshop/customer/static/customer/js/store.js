@@ -146,6 +146,12 @@
     return index === -1;
   }
 
+  function setWishlist(ids) {
+    writeList(WISHLIST_KEY, ids.map(String));
+    updateBadges();
+    document.dispatchEvent(new CustomEvent("wishlist:change"));
+  }
+
   function syncWishlistButtons() {
     document.querySelectorAll("[data-wishlist-toggle]").forEach(function (button) {
       var active = isWishlisted(button.dataset.id);
@@ -274,16 +280,6 @@
     };
   }
 
-  function setupNav() {
-    var toggle = document.getElementById("nav-toggle");
-    var links = document.getElementById("nav-links");
-    if (!toggle || !links) return;
-    toggle.addEventListener("click", function () {
-      var open = links.classList.toggle("open");
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    });
-  }
-
   document.addEventListener("click", function (event) {
     var addButton = event.target.closest("[data-add-to-cart]");
     if (addButton && !addButton.disabled) {
@@ -310,7 +306,6 @@
   });
 
   document.addEventListener("DOMContentLoaded", function () {
-    setupNav();
     setupModal();
     updateBadges();
     syncWishlistButtons();
@@ -328,6 +323,8 @@
     removeItem: removeItem,
     clearCart: clearCart,
     getWishlist: getWishlist,
+    setWishlist: setWishlist,
+    syncWishlistButtons: syncWishlistButtons,
     showToast: showToast
   };
 })();

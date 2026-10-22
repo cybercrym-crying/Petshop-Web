@@ -1,38 +1,46 @@
 {% extends "customer/base.html" %}
 {% load static %}
 {% block navbar %}
-<header class="site-header">
-    <nav class="container site-nav" aria-label="Navigasi toko">
-        <a href="{% url 'customer:home' %}" class="brand">
-            <i class="fas fa-paw" aria-hidden="true"></i>
-            <span>Seelly Petshop</span>
-        </a>
-        <div class="nav-actions ms-auto">
-            <form class="search-form" action="{% url 'customer:shop' %}" method="get" role="search">
-                <input type="search" name="q" value="{{ query|default:'' }}"
-                       placeholder="Cari produk..." aria-label="Cari produk">
-                <button type="submit" aria-label="Cari">
-                    <i class="fas fa-search" aria-hidden="true"></i>
-                </button>
-            </form>
-            <a class="icon-btn" href="{% url 'customer:shop' %}?wishlist=1" aria-label="Favorit">
-                <i class="far fa-heart" aria-hidden="true"></i>
-                <span class="icon-badge" id="wishlist-count" hidden>0</span>
+    <header class="site-header">
+        <nav class="container site-nav" aria-label="Navigasi toko">
+            <a href="{% url 'customer:home' %}" class="brand">
+                <i class="fas fa-paw" aria-hidden="true"></i>
+                <span>Seelly Petshop</span>
             </a>
-            <a class="icon-btn" href="{% url 'customer:cart' %}" aria-label="Keranjang">
-                <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-                <span class="icon-badge" id="cart-count" hidden>0</span>
-            </a>
-        </div>
-    </nav>
-</header>
+            <div class="nav-actions ms-auto">
+                <form class="search-form"
+                      action="{% url 'customer:shop' %}"
+                      method="get"
+                      role="search">
+                    <input type="search"
+                           name="q"
+                           value="{{ query|default:'' }}"
+                           placeholder="Cari produk..."
+                           aria-label="Cari produk">
+                    <button type="submit" aria-label="Cari">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                    </button>
+                </form>
+                <a class="icon-btn"
+                   href="{% url 'customer:shop' %}?wishlist=1"
+                   aria-label="Favorit">
+                    <i class="far fa-heart" aria-hidden="true"></i>
+                    <span class="icon-badge" id="wishlist-count" hidden>0</span>
+                </a>
+                <a class="icon-btn"
+                   href="{% url 'customer:cart' %}"
+                   aria-label="Keranjang">
+                    <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                    <span class="icon-badge" id="cart-count" hidden>0</span>
+                </a>
+            </div>
+        </nav>
+    </header>
 {% endblock %}
 {% block title %}{{ title }} - Seelly Petshop{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}">
 {% endblock %}
-
-
 {% block content %}
     <div class="container section shop-layout">
         <!-- FILTERS -->
@@ -120,7 +128,8 @@
                             <span>Urutkan</span>
                             <select name="sort" form="filter-form" id="sort-select">
                                 {% for value, label in sort_options %}
-                                    <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
+                                    <option value="{{ value }}"
+                                            {% if value == sort %}selected{% endif %}>{{ label }}</option>
                                 {% endfor %}
                             </select>
                         </label>

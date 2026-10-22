@@ -1,4 +1,4 @@
-/* Shop, home and product detail behaviour (filters, sorting, quantity, wishlist view). */
+/* Shop, home and product detail behaviour (filters, sorting, quantity). */
 (function () {
   "use strict";
 
@@ -57,36 +57,10 @@
     render(stock > 0 ? 1 : 0);
   }
 
-  /* Wishlist view: the server lists every product, the browser keeps only saved ones. */
-  function setupWishlistView() {
-    var grid = document.getElementById("product-grid");
-    if (!grid || !grid.hasAttribute("data-wishlist-mode")) return;
-
-    function apply() {
-      var saved = window.Store.getWishlist();
-      var visible = 0;
-      grid.querySelectorAll(".product-card").forEach(function (card) {
-        var show = saved.indexOf(card.dataset.productId) !== -1;
-        card.hidden = !show;
-        if (show) visible += 1;
-      });
-      var empty = document.getElementById("wishlist-empty");
-      if (empty) empty.hidden = visible > 0;
-      grid.hidden = visible === 0;
-      var sub = document.getElementById("shop-sub");
-      if (sub && visible > 0) sub.textContent = visible + " produk favorit";
-      else if (sub) sub.textContent = "";
-    }
-
-    document.addEventListener("wishlist:change", apply);
-    apply();
-  }
-
   document.addEventListener("DOMContentLoaded", function () {
     popular();
     setupSort();
     setupFilterToggle();
     setupDetailQuantity();
-    setupWishlistView();
   });
 })();

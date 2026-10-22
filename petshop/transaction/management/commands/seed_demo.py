@@ -856,20 +856,20 @@ class Command(BaseCommand):
         if status == "confirmed":
             if transfer and self.rng.random() < 0.4:
                 order.mark_paid()
-            if self.rng.random() < 0.35:
-                order.courier = self.rng.choice(couriers)
-                order.save(update_fields=["courier"])
+            # Aturan asli: kurir hanya bisa ditugaskan bila transfer sudah lunas.
+            if order.is_ready_to_ship and self.rng.random() < 0.35:
+                order.assign_courier(self.rng.choice(couriers))
             return now - timedelta(minutes=self.rng.randint(10, 240))
         if status == "on_delivery":
-            if transfer and self.rng.random() < 0.85:
-                order.mark_paid()
+            if transfer:
+                order.mark_paid()  # transfer harus lunas sebelum dikirim
             order.mark_on_delivery(self.rng.choice(couriers))
             return now - timedelta(hours=self.rng.randint(1, 6))
         if status == "delivered":
+            if transfer:
+                order.mark_paid()  # transfer harus lunas sebelum dikirim
             order.mark_on_delivery(self.rng.choice(couriers))
             order.mark_delivered()
-            if transfer:
-                order.mark_paid()
             return now - timedelta(
                 days=self.rng.randint(1, 28), hours=self.rng.randint(0, 8)
             )

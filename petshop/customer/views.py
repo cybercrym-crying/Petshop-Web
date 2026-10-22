@@ -1,7 +1,9 @@
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.cache import never_cache
 from product.models import PetType, Product, ProductCondition
 from account.models import Customer
 from transaction.models import Order, OrderStatus
@@ -76,21 +78,19 @@ def _category_cards(products):
 
 
 def shop(request):
-    """Home Shop: hero, kategori, produk populer. Dengan ?q=, ?category= atau
-    ?wishlist=1 halaman yang sama menampilkan daftar produk hasil filter."""
+    """Home Shop: hero, kategori, produk populer. Dengan ?q= atau ?category=
+    halaman yang sama menampilkan daftar produk hasil filter."""
+    if request.GET.get("wishlist") == "1":
+        return redirect("customer:wishlist", permanent=True)
     products_list = list(
         Product.objects.sellable().select_related("category").order_by("name")
     )
     query = request.GET.get("q", "").strip()
     category = request.GET.get("category", "").strip().upper()
-    wishlist = request.GET.get("wishlist") == "1"
 
     results = None
     results_title = ""
-    if wishlist:
-        # Server mengirim semua produk, browser menyembunyikan yang belum difavoritkan.
-        results, results_title = products_list, "Produk Favorit"
-    elif query or category:
+    if query or category:
         results = products_list
         if category:
             results = [p for p in results if str(p.category.name).upper() == category]
@@ -109,12 +109,42 @@ def shop(request):
             popular_products=products_list[:POPULAR_LIMIT],
             results=results,
             results_title=results_title,
-            wishlist_mode=wishlist,
         ),
     )
 
 
-# ---------- Halaman produk dengan filter (tombol "Belanja Sekarang") ----------
+WISHLIST_MAX_ITEMS = 100
+
+
+def _parse_ids(raw):
+    ids = []
+    for part in (raw or "").split(","):
+        part = part.strip()
+        if part.isdigit() and int(part) not in ids:
+            ids.append(int(part))
+        if len(ids) >= WISHLIST_MAX_ITEMS:
+            break
+    return ids
+
+
+def wishlist(request):
+    return render(
+        request,
+        "customer/wishlist.html",
+        _site_context(
+            active_page="wishlist",
+            items_url=reverse("customer:wishlist_items"),
+        ),
+    )
+
+
+@never_cache
+def wishlist_items(request):
+    ids = _parse_ids(request.GET.get("ids"))
+    by_id = Product.objects.sellable().select_related("category").in_bulk(ids)
+    items = [by_id[pk] for pk in ids if pk in by_id]
+    return render(request, "customer/_wishlist_items.html", {"items": items})
+
 
 PRODUCTS_PER_PAGE = 12
 SORT_OPTIONS = [

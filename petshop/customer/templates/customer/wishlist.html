@@ -1,0 +1,37 @@
+{% extends "customer/base.html" %}
+{% load static %}
+{% block title %}Produk Favorit - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/wishlist.css' %}">
+{% endblock %}
+{% block content %}
+    <section class="container section wishlist-page"
+             id="wishlist-page"
+             data-items-url="{{ items_url }}">
+        <header class="wishlist-head">
+            <h1 class="wishlist-title">
+                <i class="fas fa-heart" aria-hidden="true"></i> Produk Favorit
+            </h1>
+            <p class="muted" id="wishlist-sub" aria-live="polite"></p>
+        </header>
+        <div class="product-grid" id="wishlist-grid" hidden></div>
+        <div class="wishlist-state" id="wishlist-loading" role="status">
+            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+            <p>Memuat produk favorit...</p>
+        </div>
+        <div class="wishlist-state" id="wishlist-empty" hidden>
+            <i class="far fa-heart" aria-hidden="true"></i>
+            <p>Belum ada produk favorit. Tekan ikon hati pada produk untuk menyimpannya.</p>
+            <a class="btn-primary-seelly" href="{% url 'customer:shop' %}">Mulai Belanja</a>
+        </div>
+        <div class="wishlist-state" id="wishlist-error" hidden>
+            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+            <p>Produk favorit belum bisa dimuat. Periksa koneksi Anda lalu coba lagi.</p>
+            <button type="button" class="btn-primary-seelly" id="wishlist-retry">Coba Lagi</button>
+        </div>
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'customer/js/wishlist.js' %}"></script>
+{% endblock %}

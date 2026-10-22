@@ -16,6 +16,9 @@
   }
 
   document.addEventListener("click", function (event) {
+    if (event.target.closest("form, button, a")) {
+      return;
+    }
     var card = event.target.closest("[data-order-id]");
     if (card) {
       navigateToDetail(card);

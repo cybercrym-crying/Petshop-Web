@@ -1,15 +1,46 @@
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from account.decorators import roleRequired
 from account.models import Role
-from transaction.models import Order, OrderStatus
+from common.exceptions import PetshopError
+from transaction.models import Order, OrderStatus, PaymentMethod, PaymentStatus
+
+BOARD_DONE_LIMIT = 15
+BOARD_STATUSES = ("pending", "on_delivery", "done")
+BOARD_META = {
+    "pending": {
+        "title": "Menunggu Dikirim",
+        "icon": "bi-clock-history",
+        "action": "on_delivery",
+        "empty": "Tidak ada pesanan yang menunggu dikirim.",
+    },
+    "on_delivery": {
+        "title": "Sedang Dikirim",
+        "icon": "bi-truck",
+        "action": "delivered",
+        "empty": "Belum ada pesanan yang sedang dikirim.",
+    },
+    "done": {
+        "title": "Riwayat Pengiriman",
+        "icon": "bi-check2-circle",
+        "action": "",
+        "empty": "Belum ada pengiriman yang selesai.",
+    },
+}
+
+
+def _board_status(raw):
+    return raw if raw in BOARD_STATUSES else "pending"
 
 
 @roleRequired(Role.COURIER)
 def dashboard(request):
     q = (request.GET.get("q") or "").strip()
+    current = _board_status(request.GET.get("status"))
     orders = (
         Order.objects.filter(courier=request.user)
         .select_related("customer", "admin", "courier")
@@ -23,8 +54,15 @@ def dashboard(request):
             filters |= Q(pk=int(q))
         orders = orders.filter(filters)
 
-    active_orders = orders.filter(
-        order_status__in=[OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY]
+    # Siap-kirim ditentukan Order.is_ready_to_ship (lewat Payment), bukan string
+    # "cod"/"paid" di view. Disaring di Python agar aturan tetap satu tempat.
+    pending_ids = [
+        o.pk for o in orders.filter(order_status=OrderStatus.CONFIRMED) if o.is_ready_to_ship
+    ]
+    pending_orders = orders.filter(pk__in=pending_ids).order_by("date")
+
+    on_delivery_orders = orders.filter(order_status=OrderStatus.ON_DELIVERY).order_by(
+        "date"
     )
     delivered_orders = orders.filter(order_status=OrderStatus.DELIVERED)
 
@@ -33,10 +71,17 @@ def dashboard(request):
         "courier/dashboard.html",
         {
             "q": q,
-            "active_orders": active_orders,
-            "delivered_orders": delivered_orders,
-            "total_active": active_orders.count(),
+            "current": current,
+            "meta": BOARD_META[current],
+            "current_orders": {
+                "pending": pending_orders,
+                "on_delivery": on_delivery_orders,
+                "done": delivered_orders[:BOARD_DONE_LIMIT],
+            }[current],
+            "total_pending": pending_orders.count(),
+            "total_on_delivery": on_delivery_orders.count(),
             "total_delivered": delivered_orders.count(),
+            "done_limit": BOARD_DONE_LIMIT,
         },
     )
 
@@ -70,20 +115,27 @@ def order_detail(request, pk):
 
 
 @roleRequired(Role.COURIER)
+@transaction.atomic
 def update_status(request, pk):
     if request.method != "POST":
         return redirect("courier:dashboard")
 
-    order = get_object_or_404(Order.objects.select_for_update(), pk=pk, courier=request.user)
+    order = get_object_or_404(
+        Order.objects.select_for_update(), pk=pk, courier=request.user
+    )
     action = request.POST.get("action")
 
-    if action == "on_delivery":
-        order.mark_on_delivery(request.user)
-        messages.success(request, f"Order #{order.pk} sedang dikirim.")
-    elif action == "delivered":
-        order.mark_delivered()
-        messages.success(request, f"Order #{order.pk} berhasil dikirim.")
-    else:
-        messages.error(request, "Aksi tidak tersedia.")
+    try:
+        if action == "on_delivery":
+            order.mark_on_delivery(request.user)
+            messages.success(request, f"Order #{order.pk} sedang dikirim.")
+        elif action == "delivered":
+            order.mark_delivered()
+            messages.success(request, f"Order #{order.pk} berhasil dikirim.")
+        else:
+            messages.error(request, "Aksi tidak tersedia.")
+    except PetshopError as error:
+        messages.error(request, str(error))
 
-    return redirect("courier:dashboard")
+    status = _board_status(request.POST.get("status"))
+    return redirect(f"{reverse('courier:dashboard')}?status={status}")

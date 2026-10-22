@@ -14,9 +14,12 @@
               rel="stylesheet">
         <link rel="stylesheet"
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+              rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
               rel="stylesheet">
         <link rel="stylesheet" href="{% static 'customer/css/home.css' %}">
+        <link rel="stylesheet" href="{% static 'customer/css/nav.css' %}">
     </head>
     <body class="sx">
         {% include "customer/_site_nav.html" with active="home" %}
@@ -231,6 +234,7 @@
             {% endif %}
         </section>
         {% include "customer/_site_footer.html" %}
-        <script src="{% static 'customer/js/catalog.js' %}?v=4"></script>
+        <script src="{% static 'customer/js/nav.js' %}"></script>
+        <script src="{% static 'customer/js/catalog.js' %}?v=5"></script>
     </body>
 </html>
