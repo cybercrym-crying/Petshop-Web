@@ -1,175 +1,195 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seelly Petshop - Checkout</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'customer/css/checkout.css' %}">
-</head>
-<body>
-
-    <!-- Header -->
-    <div class="checkout-header">
-        <div class="container d-flex align-items-center justify-content-between">
-            <a href="{% url 'customer:home' %}" class="logo text-decoration-none">
-                <i class="fas fa-paw"></i> Seelly Petshop
-            </a>
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-link text-decoration-none" data-href="{% url 'customer:cart' %}">
-                    <i class="fas fa-shopping-cart fa-lg" style="color: var(--primary-purple);"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="checkout-container">
-        <h1 class="checkout-title">
-            <i class="far fa-clock"></i> Checkout
-        </h1>
-        
-        <div class="row">
-            <!-- Left Column: Delivery & Payment -->
-            <div class="col-lg-7">
-                <!-- Informasi Pengiriman -->
-                <div class="delivery-section">
-                    <div class="section-title">
-                        <i class="fas fa-map-marker-alt" style="color: var(--primary-purple);"></i>
-                        Informasi Pengiriman
-                    </div>
-                    
-                    <form id="checkout-form">
-                        <div class="mb-3">
-                            <label class="form-label">Nama Lengkap *</label>
-                            <input type="text" name="nama" class="form-control" required placeholder="Masukkan nama lengkap">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Nomor Telepon *</label>
-                            <input type="tel" name="no_wa" class="form-control" required placeholder="081234567890">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Alamat *</label>
-                            <textarea name="alamat" class="form-control" rows="3" required placeholder="Masukkan alamat lengkap (Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Kode Pos)"></textarea>
-                            <small class="text-muted">Contoh: Jl. Merdeka No. 123, RT 001/RW 002, Kel. Sukamaju, Kec. Bandung Wetan, Kota Bandung, 40115</small>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Metode Pembayaran -->
-                <div class="payment-section">
-                    <div class="section-title">
-                        <i class="fas fa-credit-card" style="color: var(--primary-purple);"></i>
-                        Metode Pembayaran
-                    </div>
-                    
-                    <div class="payment-option">
-                        <input type="radio" name="payment_method" id="cod" value="Bayar di Tempat (COD)" checked>
-                        <label for="cod">Bayar di Tempat (COD)</label>
-                    </div>
-                    
-                    <div class="payment-option">
-                        <input type="radio" name="payment_method" id="transfer" value="Transfer Bank">
-                        <label for="transfer">Transfer Bank</label>
-                    </div>
-                    
-                    <div class="payment-option">
-                        <input type="radio" name="payment_method" id="ewallet" value="E-Wallet">
-                        <label for="ewallet">E-Wallet (GoPay/OVO/DANA)</label>
-                    </div>
-                </div>
-                
-                <button type="button" class="btn-place-order" data-place-order>
-                    <i class="fab fa-whatsapp"></i> Pesan via WhatsApp
-                </button>
-            </div>
-            
-            <!-- Right Column: Ringkasan Pesanan -->
-            <div class="col-lg-5">
-                <div class="summary-section">
-                    <div class="section-title">
-                        <i class="fas fa-shopping-cart" style="color: var(--primary-purple);"></i>
-                        Ringkasan Pesanan
-                    </div>
-                    
-                    <div id="order-items">
-                    </div>
-                    
-                    <div id="empty-cart" class="empty-cart-message" style="display: none;">
-                        <i class="fas fa-shopping-cart"></i>
-                        <p class="text-muted">Keranjang Anda kosong</p>
-                        <a href="{% url 'customer:shop' %}" class="btn btn-primary mt-3" style="background: var(--primary-purple); border: none;">Mulai Belanja</a>
-                    </div>
-                    
-                    <div class="total-section">
-                        <div class="total-row">
-                            <span>Total</span>
-                            <span id="total-price">Rp 0</span>
-                        </div>
-                    </div>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Seelly Petshop - Checkout</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+              rel="stylesheet">
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="{% static 'customer/css/checkout.css' %}?v=2">
+    </head>
+    <body>
+        <!-- Header -->
+        <div class="checkout-header">
+            <div class="container d-flex align-items-center justify-content-between">
+                <a href="{% url 'customer:home' %}" class="logo text-decoration-none">
+                    <i class="fas fa-paw"></i> Seelly Petshop
+                </a>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-link text-decoration-none"
+                            data-href="{% url 'customer:cart' %}">
+                        <i class="fas fa-shopping-cart fa-lg"
+                           style="color: var(--primary-purple)"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
-
-    <dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-title">
-        <div class="confirm-dialog__box">
-            <h2 class="confirm-dialog__title" id="confirm-title">
-                <i class="fas fa-clipboard-check"></i> Periksa Pesanan Anda
-            </h2>
-            <p class="confirm-dialog__lead">
-                Pastikan barang dan data di bawah ini sudah benar sebelum pesanan dikirim ke WhatsApp admin.
-            </p>
-
-            <section class="confirm-block">
-                <h3 class="confirm-block__title">Data Penerima</h3>
-                <dl class="confirm-data">
-                    <div class="confirm-data__row">
-                        <dt>Nama</dt>
-                        <dd id="confirm-name"></dd>
-                    </div>
-                    <div class="confirm-data__row">
-                        <dt>Nomor Telepon</dt>
-                        <dd id="confirm-phone"></dd>
-                    </div>
-                    <div class="confirm-data__row">
-                        <dt>Alamat</dt>
-                        <dd id="confirm-address"></dd>
-                    </div>
-                    <div class="confirm-data__row">
-                        <dt>Pembayaran</dt>
-                        <dd id="confirm-payment"></dd>
-                    </div>
-                </dl>
-            </section>
-
-            <section class="confirm-block">
-                <h3 class="confirm-block__title">Barang</h3>
-                <ul class="confirm-items" id="confirm-items"></ul>
-                <div class="confirm-total">
-                    <span>Total</span>
-                    <strong id="confirm-total"></strong>
+        <div class="checkout-container">
+            <h1 class="checkout-title">
+                <i class="far fa-clock"></i> Checkout
+            </h1>
+            <div class="guest-banner" role="note">
+                <i class="fas fa-circle-info" aria-hidden="true"></i>
+                <div class="guest-banner__text">
+                    <strong>Anda belum masuk.</strong>
+                    Pesanan akan dikirim lewat WhatsApp admin. Masuk sebagai customer untuk memesan langsung di situs dan memantau status pesanan.
                 </div>
-            </section>
-
-            <label class="confirm-check">
-                <input type="checkbox" id="confirm-check">
-                <span>Saya sudah memeriksa barang dan data di atas, dan semuanya sudah benar.</span>
-            </label>
-
-            <div class="confirm-actions">
-                <button type="button" class="btn-confirm-back" data-confirm-back>Periksa Lagi</button>
-                <button type="button" class="btn-confirm-send" data-confirm-send disabled>
-                    <i class="fab fa-whatsapp"></i> Ya, Kirim Pesanan
-                </button>
+                <div class="guest-banner__actions">
+                    <a href="{% url 'login_form' %}?next={{ next_url|urlencode }}" class="guest-banner__btn is-primary">Masuk</a>
+                    <a href="{% url 'register' %}?next={{ next_url|urlencode }}" class="guest-banner__btn">Daftar</a>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Left Column: Delivery & Payment -->
+                <div class="col-lg-7">
+                    <!-- Informasi Pengiriman -->
+                    <div class="delivery-section">
+                        <div class="section-title">
+                            <i class="fas fa-map-marker-alt" style="color: var(--primary-purple);"></i>
+                            Informasi Pengiriman
+                        </div>
+                        <form id="checkout-form">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Lengkap *</label>
+                                <input type="text"
+                                       name="nama"
+                                       class="form-control"
+                                       required
+                                       placeholder="Masukkan nama lengkap">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nomor Telepon *</label>
+                                <input type="tel"
+                                       name="no_wa"
+                                       class="form-control"
+                                       required
+                                       placeholder="081234567890">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Alamat *</label>
+                                <textarea name="alamat"
+                                          class="form-control"
+                                          rows="3"
+                                          required
+                                          placeholder="Masukkan alamat lengkap (Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Kode Pos)"></textarea>
+                                <small class="text-muted">Contoh: Jl. Merdeka No. 123, RT 001/RW 002, Kel. Sukamaju, Kec. Bandung Wetan, Kota Bandung, 40115</small>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Metode Pembayaran -->
+                    <div class="payment-section">
+                        <div class="section-title">
+                            <i class="fas fa-credit-card" style="color: var(--primary-purple);"></i>
+                            Metode Pembayaran
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio"
+                                   name="payment_method"
+                                   id="cod"
+                                   value="Bayar di Tempat (COD)"
+                                   checked>
+                            <label for="cod">Bayar di Tempat (COD)</label>
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio"
+                                   name="payment_method"
+                                   id="transfer"
+                                   value="Transfer Bank">
+                            <label for="transfer">Transfer Bank</label>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-place-order" data-place-order>
+                        <i class="fab fa-whatsapp"></i> Pesan via WhatsApp
+                    </button>
+                </div>
+                <!-- Right Column: Ringkasan Pesanan -->
+                <div class="col-lg-5">
+                    <div class="summary-section">
+                        <div class="section-title">
+                            <i class="fas fa-shopping-cart" style="color: var(--primary-purple);"></i>
+                            Ringkasan Pesanan
+                        </div>
+                        <div id="order-items"></div>
+                        <div id="empty-cart" class="empty-cart-message" style="display: none;">
+                            <i class="fas fa-shopping-cart"></i>
+                            <p class="text-muted">Keranjang Anda kosong</p>
+                            <a href="{% url 'customer:shop' %}"
+                               class="btn btn-primary mt-3"
+                               style="background: var(--primary-purple);
+                                      border: none">Mulai Belanja</a>
+                        </div>
+                        <div class="total-section">
+                            <div class="total-row">
+                                <span>Total</span>
+                                <span id="total-price">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </dialog>
-
-    <script src="{% static 'customer/js/checkout.js' %}"></script>
-    <script src="{% static 'js/common.js' %}"></script>
-</body>
+        <dialog class="confirm-dialog"
+                id="confirm-dialog"
+                aria-labelledby="confirm-title">
+            <div class="confirm-dialog__box">
+                <h2 class="confirm-dialog__title" id="confirm-title">
+                    <i class="fas fa-clipboard-check"></i> Periksa Pesanan Anda
+                </h2>
+                <p class="confirm-dialog__lead">
+                    Pastikan barang dan data di bawah ini sudah benar sebelum pesanan dikirim ke WhatsApp admin.
+                </p>
+                <section class="confirm-block">
+                    <h3 class="confirm-block__title">Data Penerima</h3>
+                    <dl class="confirm-data">
+                        <div class="confirm-data__row">
+                            <dt>Nama</dt>
+                            <dd id="confirm-name">
+                            </dd>
+                        </div>
+                        <div class="confirm-data__row">
+                            <dt>Nomor Telepon</dt>
+                            <dd id="confirm-phone">
+                            </dd>
+                        </div>
+                        <div class="confirm-data__row">
+                            <dt>Alamat</dt>
+                            <dd id="confirm-address">
+                            </dd>
+                        </div>
+                        <div class="confirm-data__row">
+                            <dt>Pembayaran</dt>
+                            <dd id="confirm-payment">
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+                <section class="confirm-block">
+                    <h3 class="confirm-block__title">Barang</h3>
+                    <ul class="confirm-items" id="confirm-items">
+                    </ul>
+                    <div class="confirm-total">
+                        <span>Total</span>
+                        <strong id="confirm-total"></strong>
+                    </div>
+                </section>
+                <label class="confirm-check">
+                    <input type="checkbox" id="confirm-check">
+                    <span>Saya sudah memeriksa barang dan data di atas, dan semuanya sudah benar.</span>
+                </label>
+                <div class="confirm-actions">
+                    <button type="button" class="btn-confirm-back" data-confirm-back>Periksa Lagi</button>
+                    <button type="button" class="btn-confirm-send" data-confirm-send disabled>
+                        <i class="fab fa-whatsapp"></i> Ya, Kirim Pesanan
+                    </button>
+                </div>
+            </div>
+        </dialog>
+        <script src="{% static 'customer/js/checkout.js' %}"></script>
+        <script src="{% static 'js/common.js' %}"></script>
+        {% include "chatbot/_widget.html" %}
+    </body>
 </html>
+

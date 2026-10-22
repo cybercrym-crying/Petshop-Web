@@ -1,8 +1,20 @@
-from django.test import TestCase
+import io
+import shutil
+import tempfile
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from PIL import Image
 
 from account.models import Customer, Role, User
 from transaction.models import Order, OrderStatus
+
+
+def make_photo(name="bukti.jpg", fmt="JPEG"):
+    buffer = io.BytesIO()
+    Image.new("RGB", (40, 40), "green").save(buffer, fmt)
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/jpeg")
 
 
 def make_courier(username):
@@ -25,6 +37,7 @@ def make_order(courier, status):
     )
 
 
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp(prefix="petshop-test-media-"))
 class CourierBoardTests(TestCase):
     def setUp(self):
         self.courier = make_courier("kurir_a")
@@ -102,7 +115,9 @@ class CourierBoardTests(TestCase):
         self.client.post(url, {"action": "on_delivery", "status": "pending"})
         order.refresh_from_db()
         self.assertEqual(order.order_status, OrderStatus.ON_DELIVERY)
-        self.client.post(url, {"action": "delivered", "status": "on_delivery"})
+        self.client.post(
+            url, {"action": "delivered", "status": "on_delivery", "photo": make_photo()}
+        )
         order.refresh_from_db()
         self.assertEqual(order.order_status, OrderStatus.DELIVERED)
 
@@ -145,3 +160,177 @@ class CourierBoardTests(TestCase):
             follow=True,
         )
         self.assertContains(response, f"Order #{order.pk} sedang dikirim.", count=1)
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp(prefix="petshop-test-media-"))
+class DeliveryProofTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        from django.conf import settings
+
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.courier = make_courier("kurir_bukti")
+        self.client.force_login(self.courier)
+        self.order = make_order(self.courier, OrderStatus.ON_DELIVERY)
+        self.url = reverse("courier:update_status", args=[self.order.pk])
+
+    def finish(self, **data):
+        return self.client.post(self.url, {"action": "delivered", **data})
+
+    def test_finish_with_photo_stores_proof_and_times(self):
+        self.finish(photo=make_photo(), note="Diterima satpam")
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.order_status, OrderStatus.DELIVERED)
+        self.assertTrue(self.order.delivery_photo)
+        self.assertTrue(self.order.delivery_photo.name.startswith("delivery_proofs/"))
+        self.assertNotIn("bukti", self.order.delivery_photo.name)  # nama diacak
+        self.assertEqual(self.order.delivery_note, "Diterima satpam")
+        self.assertIsNotNone(self.order.delivered_at)
+
+    def test_finish_without_photo_is_rejected(self):
+        response = self.finish(note="tanpa foto")
+        self.assertRedirects(
+            response, reverse("courier:order_detail", args=[self.order.pk])
+        )
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.order_status, OrderStatus.ON_DELIVERY)
+        self.assertFalse(self.order.delivery_photo)
+        self.assertIsNone(self.order.delivered_at)
+
+    def test_non_image_file_is_rejected(self):
+        fake = SimpleUploadedFile("x.jpg", b"bukan gambar", content_type="image/jpeg")
+        self.finish(photo=fake)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.order_status, OrderStatus.ON_DELIVERY)
+
+    def test_unsupported_image_format_is_rejected(self):
+        self.finish(photo=make_photo("x.gif", "GIF"))
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.order_status, OrderStatus.ON_DELIVERY)
+
+    def test_oversized_photo_is_rejected(self):
+        from courier import forms
+
+        original = forms.MAX_PROOF_SIZE
+        forms.MAX_PROOF_SIZE = 10
+        try:
+            self.finish(photo=make_photo())
+        finally:
+            forms.MAX_PROOF_SIZE = original
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.order_status, OrderStatus.ON_DELIVERY)
+
+    def test_other_courier_cannot_finish_my_order(self):
+        other = make_courier("kurir_lain")
+        self.client.force_login(other)
+        response = self.finish(photo=make_photo())
+        self.assertEqual(response.status_code, 404)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.order_status, OrderStatus.ON_DELIVERY)
+
+    def test_detail_shows_upload_form_while_on_delivery(self):
+        response = self.client.get(
+            reverse("courier:order_detail", args=[self.order.pk])
+        )
+        self.assertContains(response, 'enctype="multipart/form-data"')
+        self.assertContains(response, self.order.tracking_number)
+
+    def test_detail_shows_photo_after_delivered(self):
+        self.finish(photo=make_photo())
+        self.order.refresh_from_db()
+        response = self.client.get(
+            reverse("courier:order_detail", args=[self.order.pk])
+        )
+        self.assertContains(response, self.order.delivery_photo.url)
+        self.assertNotContains(response, 'enctype="multipart/form-data"')
+
+    def test_start_delivery_records_shipped_at(self):
+        order = make_order(self.courier, OrderStatus.CONFIRMED)
+        self.client.post(
+            reverse("courier:update_status", args=[order.pk]),
+            {"action": "on_delivery"},
+        )
+        order.refresh_from_db()
+        self.assertIsNotNone(order.shipped_at)
+
+
+class LiveLocationTests(TestCase):
+    URL = "/staff/courier/lokasi/"
+
+    def setUp(self):
+        self.courier = make_courier("kurir_gps")
+        self.client.login(username="kurir_gps", password="x")
+
+    def ping(self, lat="-1.265400", lng="116.831200", accuracy="12"):
+        return self.client.post(self.URL, {"lat": lat, "lng": lng, "accuracy": accuracy})
+
+    def test_rejected_when_not_delivering(self):
+        make_order(self.courier, OrderStatus.CONFIRMED)
+        r = self.ping()
+        self.assertEqual(r.status_code, 409)
+        from courier.models import CourierLocation
+
+        self.assertFalse(CourierLocation.objects.exists())
+
+    def test_saved_while_delivering_and_shown_on_tracking_page(self):
+        from courier.models import CourierLocation
+
+        order = make_order(self.courier, OrderStatus.CONFIRMED)
+        order.mark_on_delivery(self.courier)
+        r = self.ping()
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()["saved"])
+        self.assertEqual(CourierLocation.objects.count(), 1)
+        # kiriman terlalu rapat diabaikan
+        self.assertFalse(self.ping().json()["saved"])
+
+        self.client.logout()
+        url = reverse("customer:track_location", args=[order.tracking_number])
+        data = self.client.get(url).json()
+        self.assertTrue(data["live"])
+        self.assertAlmostEqual(data["last"]["lat"], -1.2654)
+        self.assertEqual(len(data["points"]), 1)
+        page = self.client.get(reverse("customer:track_detail", args=[order.tracking_number]))
+        self.assertContains(page, "data-track-live")
+        self.assertContains(page, "leaflet")
+
+    def test_location_hidden_after_delivered(self):
+        order = make_order(self.courier, OrderStatus.CONFIRMED)
+        order.mark_on_delivery(self.courier)
+        self.ping()
+        order.mark_delivered()
+        data = self.client.get(
+            reverse("customer:track_location", args=[order.tracking_number])
+        ).json()
+        self.assertFalse(data["live"])
+        self.assertEqual(data["points"], [])
+
+    def test_invalid_coordinates_and_other_roles(self):
+        order = make_order(self.courier, OrderStatus.CONFIRMED)
+        order.mark_on_delivery(self.courier)
+        self.assertEqual(self.ping(lat="200").status_code, 400)
+        self.assertEqual(self.ping(lng="abc").status_code, 400)
+        User.objects.create_user("adm_gps", password="x", role=Role.ADMIN)
+        self.client.login(username="adm_gps", password="x")
+        self.assertEqual(self.ping().status_code, 403)
+
+    def test_dashboard_shows_share_panel_only_when_delivering(self):
+        r = self.client.get(reverse("courier:dashboard"))
+        self.assertNotContains(r, "data-live-location")
+        order = make_order(self.courier, OrderStatus.CONFIRMED)
+        order.mark_on_delivery(self.courier)
+        r = self.client.get(reverse("courier:dashboard"))
+        self.assertContains(r, "data-live-location")
+
+
+    def test_old_order_without_shipped_at_still_shows_location(self):
+        order = make_order(self.courier, OrderStatus.ON_DELIVERY)  # shipped_at kosong
+        self.assertIsNone(order.shipped_at)
+        self.ping()
+        data = self.client.get(
+            reverse("customer:track_location", args=[order.tracking_number])
+        ).json()
+        self.assertTrue(data["live"])

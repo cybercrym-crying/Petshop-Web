@@ -264,3 +264,23 @@ body {
   border-color: var(--t-bd-8c73c2,#8c73c2);
   box-shadow: 0 0 0 4px rgba(140, 115, 194, 0.1);
 }
+
+/* Peran tambahan: kasir, groomer, customer */
+.role-cashier {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+.role-groomer {
+  background-color: rgba(140, 115, 194, 0.12);
+  color: #6b4fb0;
+  border-color: rgba(140, 115, 194, 0.3);
+}
+.role-customer {
+  background-color: rgba(100, 116, 139, 0.1);
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.25);
+}
+[data-theme="dark"] .role-cashier { color: #93c5fd; }
+[data-theme="dark"] .role-groomer { color: #c4aef0; }
+[data-theme="dark"] .role-customer { color: #cbd5e1; }

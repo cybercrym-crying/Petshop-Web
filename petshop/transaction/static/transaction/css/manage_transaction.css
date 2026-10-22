@@ -256,3 +256,33 @@ body {
 .detail-field { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
 .detail-field-label { color: var(--t-tx-718096,#718096); }
 .detail-field-value { font-weight: 600; color: var(--t-tx-2d3748,#2d3748); text-align: right; }
+
+/* Resi & bukti pengiriman di modal detail */
+.resi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1ecf8;
+  color: #5c418c;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.resi-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.5px;
+  user-select: all;
+}
+.proof-box {
+  margin: 10px 0 4px;
+}
+.proof-box img {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}

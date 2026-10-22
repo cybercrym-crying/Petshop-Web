@@ -530,3 +530,111 @@ class CheckoutConfirmationTests(TestCase):
         self.assertIn("showModal", code)
         self.assertIn("data-confirm-send", code)
         self.assertNotRegex(self.page.content.decode(), r"<script(?![^>]*\bsrc=)")
+
+
+class TrackOrderTests(TestCase):
+    def setUp(self):
+        from account.models import Customer, Role, User
+        from transaction.models import Order
+
+        self.admin = User.objects.create_user("adm_lacak", password="x", role=Role.ADMIN)
+        self.courier = User.objects.create_user(
+            "kurir_lacak", password="x", role=Role.COURIER, first_name="Rudi"
+        )
+        self.customer = Customer.objects.create(
+            name="Budi Santoso", phone_number="081200001111", address="Jl. Rahasia 99"
+        )
+        self.order = Order.objects.create(
+            admin=self.admin,
+            courier=self.courier,
+            customer=self.customer,
+            payment_method="TUNAI",
+            total_payment=45000,
+        )
+
+    def test_empty_form_page_renders(self):
+        response = self.client.get(reverse("customer:track"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Masukkan nomor resi")
+
+    def test_unknown_resi_shows_error(self):
+        response = self.client.get(reverse("customer:track"), {"resi": "PS-000000-AAAAAA"})
+        self.assertContains(response, "Resi tidak ditemukan")
+
+    def test_garbage_resi_shows_error_not_crash(self):
+        response = self.client.get(reverse("customer:track"), {"resi": "<script>x</script>"})
+        self.assertContains(response, "Resi tidak ditemukan")
+        self.assertNotContains(response, "<script>x</script>")
+
+    def test_lookup_by_query_and_by_link(self):
+        by_query = self.client.get(
+            reverse("customer:track"), {"resi": self.order.tracking_number.lower()}
+        )
+        by_link = self.client.get(
+            reverse("customer:track_detail", args=[self.order.tracking_number])
+        )
+        for response in (by_query, by_link):
+            self.assertContains(response, self.order.tracking_number)
+            self.assertContains(response, "Pesanan dikonfirmasi")
+
+    def test_private_data_is_not_exposed(self):
+        response = self.client.get(
+            reverse("customer:track_detail", args=[self.order.tracking_number])
+        )
+        self.assertContains(response, "Budi S****")
+        self.assertNotContains(response, "Santoso")
+        self.assertNotContains(response, "Jl. Rahasia 99")
+        self.assertNotContains(response, "081200001111")
+
+    def test_page_is_not_cacheable(self):
+        response = self.client.get(
+            reverse("customer:track_detail", args=[self.order.tracking_number])
+        )
+        self.assertIn("no-store", response["Cache-Control"])
+
+    def test_delivered_order_shows_proof_photo(self):
+        import io
+        import shutil
+        import tempfile
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from django.test import override_settings
+        from PIL import Image
+
+        media = tempfile.mkdtemp(prefix="petshop-test-media-")
+        self.addCleanup(shutil.rmtree, media, ignore_errors=True)
+        buffer = io.BytesIO()
+        Image.new("RGB", (20, 20), "blue").save(buffer, "JPEG")
+        with override_settings(MEDIA_ROOT=media):
+            self.order.mark_on_delivery(self.courier)
+            self.order.mark_delivered(
+                photo=SimpleUploadedFile("x.jpg", buffer.getvalue(), "image/jpeg"),
+                note="Titip di pos satpam",
+            )
+            response = self.client.get(
+                reverse("customer:track_detail", args=[self.order.tracking_number])
+            )
+        self.assertContains(response, "Bukti pengiriman")
+        self.assertContains(response, self.order.delivery_photo.url)
+        self.assertContains(response, "Titip di pos satpam")
+        self.assertContains(response, "Rudi")
+
+    def test_in_delivery_order_has_no_proof_section(self):
+        self.order.mark_on_delivery(self.courier)
+        response = self.client.get(
+            reverse("customer:track_detail", args=[self.order.tracking_number])
+        )
+        self.assertContains(response, "Sedang dikirim kurir")
+        self.assertNotContains(response, "Bukti pengiriman")
+
+    def test_cancelled_order_shows_cancel_notice(self):
+        self.order.cancel()
+        response = self.client.get(
+            reverse("customer:track_detail", args=[self.order.tracking_number])
+        )
+        self.assertContains(response, "Pesanan ini dibatalkan")
+        self.assertNotContains(response, "Bukti pengiriman")
+
+    def test_nav_has_track_link(self):
+        response = self.client.get(reverse("customer:home"))
+        self.assertContains(response, reverse("customer:track"))

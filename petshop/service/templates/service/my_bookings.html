@@ -1,0 +1,47 @@
+{% extends "customer/base.html" %}
+{% load static rupiah %}
+{% block title %}Booking Saya - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <section class="container section svc-page svc-mine">
+        <header class="svc-head">
+            <div>
+                <h1 class="svc-title"><i class="fas fa-calendar-check" aria-hidden="true"></i> Booking Saya</h1>
+                <p class="muted mb-0">Halo {{ user.name }}, berikut status layanan untuk hewan Anda.</p>
+            </div>
+            <a href="{% url 'service:catalog' %}#booking" class="btn-primary-seelly"><i class="fas fa-plus" aria-hidden="true"></i> Booking Baru</a>
+        </header>
+        {% include "service/_site_messages.html" %}
+        <ul class="svc-list">
+            {% for b in bookings %}
+                <li class="svc-item">
+                    <div class="svc-item__main">
+                        <div class="svc-item__title">
+                            <strong>{{ b.pet_name }}</strong>
+                            <span class="muted">· {{ b.get_pet_type_display }} · #{{ b.pk }}</span>
+                        </div>
+                        <div>{{ b.service.name }} <span class="muted">· Rp {{ b.price|rupiah }}</span></div>
+                        <div class="muted"><i class="far fa-clock" aria-hidden="true"></i> {{ b.schedule|date:"l, d M Y · H:i" }}</div>
+                        {% if b.groomer %}<div class="muted"><i class="fas fa-user" aria-hidden="true"></i> Groomer: {{ b.groomer.display_name }}</div>{% endif %}
+                        {% if b.groomer_note %}<div class="svc-note">Catatan groomer: {{ b.groomer_note }}</div>{% endif %}
+                    </div>
+                    <ol class="svc-progress" aria-label="Status booking">
+                        <li class="is-done">Pending</li>
+                        <li class="{% if b.status != 'PENDING' %}is-done{% endif %}">Proses</li>
+                        <li class="{% if b.status == 'SELESAI' %}is-done{% endif %}">Selesai</li>
+                    </ol>
+                    <span class="svc-status svc-status--{{ b.status|lower }}">{{ b.get_status_display }}</span>
+                </li>
+            {% empty %}
+                <li class="empty-state">
+                    <i class="fas fa-paw" aria-hidden="true"></i>
+                    <h2>Belum ada booking</h2>
+                    <p>Yuk jadwalkan grooming pertama untuk hewan kesayangan Anda.</p>
+                    <a href="{% url 'service:catalog' %}" class="btn-primary-seelly">Lihat Layanan</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endblock %}

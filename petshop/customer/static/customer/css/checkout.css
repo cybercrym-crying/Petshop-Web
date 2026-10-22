@@ -377,3 +377,52 @@ body {
         gap: 0;
     }
 }
+
+
+/* Ajakan masuk untuk pengunjung (checkout tamu = via WhatsApp) */
+.guest-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 0 0 24px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #f3e8ff;
+  border: 1px solid #e9d5ff;
+  color: #3b0764;
+}
+.guest-banner > i {
+  font-size: 1.3rem;
+  color: #7e22ce;
+}
+.guest-banner__text {
+  flex: 1 1 280px;
+  font-size: 0.92rem;
+}
+.guest-banner__actions {
+  display: flex;
+  gap: 8px;
+}
+.guest-banner__btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1.5px solid #a855f7;
+  color: #7e22ce;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.guest-banner__btn:hover {
+  background: #faf5ff;
+  color: #6b21a8;
+}
+.guest-banner__btn.is-primary {
+  background: #7e22ce;
+  border-color: #7e22ce;
+  color: #fff;
+}
+.guest-banner__btn.is-primary:hover {
+  background: #6b21a8;
+  color: #fff;
+}

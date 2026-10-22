@@ -13,7 +13,7 @@
         <div class="animate-fade-up" style="animation-delay: 0s;">
             <p class="eyebrow">Dasbor</p>
             <h1 class="page-title">Kelola Akun</h1>
-            <p class="text-muted fw-medium mb-4">Kelola data pegawai dan pelanggan di sini.</p>
+            <p class="text-muted fw-medium mb-4">Kelola data pegawai (admin, kasir, kurir, groomer) dan pelanggan di sini.</p>
         </div>
         <!-- Pesan / Notifikasi -->
         {% if messages %}
@@ -131,6 +131,7 @@
                                     style="cursor: pointer">
                                     <td>
                                         <div class="fw-bold text-dark" style="font-size: 1.05rem">{{ cust.name }}</div>
+                                        <small class="text-muted fw-semibold">@{{ cust.username }}{% if not cust.has_usable_password %} · belum bisa login{% endif %}</small>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
@@ -227,8 +228,9 @@
                             <div class="col-md-6">
                                 <label class="form-label-custom">Peran</label>
                                 <select name="role" class="dark-input" required>
-                                    <option value="ADMIN">Admin</option>
-                                    <option value="KURIR">Kurir</option>
+                                    {% for code, label in staff_roles %}
+                                        <option value="{{ code }}">{{ label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -284,6 +286,17 @@
                                       rows="3"
                                       placeholder="Alamat lengkap pengiriman"
                                       required></textarea>
+                        </div>
+                        <p class="modal-sub mb-3">Akun login (opsional). Kosongkan bila pelanggan tidak perlu login; nama pengguna otomatis memakai nomor HP.</p>
+                        <div class="row g-4 mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Nama Pengguna</label>
+                                <input type="text" name="username" class="dark-input" placeholder="Opsional" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Kata Sandi</label>
+                                <input type="password" name="password" class="dark-input" placeholder="Opsional, min. 8 karakter" />
+                            </div>
                         </div>
                         <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
                             <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>

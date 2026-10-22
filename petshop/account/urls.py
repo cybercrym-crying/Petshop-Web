@@ -5,6 +5,7 @@ urlpatterns = [
     # --- Publik, tidak perlu login ---
     path("login", views.loginForm, name="login_form"),
     path("logout", views.logoutForm, name="logout"),
+    path("daftar", views.register, name="register"),
     path(
         "staff/admin/dashboard",
         views.staff_admin_dashboard,

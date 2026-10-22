@@ -12,6 +12,7 @@ from PIL import Image
 
 from account.models import Customer, Role, User
 from courier.models import CourierProfile, CourierStatus
+from service.models import Service, ServiceBooking
 from product.models import (
     Category,
     MutationType,
@@ -39,6 +40,24 @@ COURIERS = [
     ("demo_kurir1", "Budi", "Santoso", "081200000011"),
     ("demo_kurir2", "Citra", "Lestari", "081200000012"),
     ("demo_kurir3", "Eko", "Wijaya", "081200000013"),
+]
+
+CASHIERS = [
+    ("demo_kasir", "Sari", "Puspita", "081200000021"),
+]
+
+GROOMERS = [
+    ("demo_groomer1", "Gilang", "Saputra", "081200000031"),
+    ("demo_groomer2", "Mega", "Anggraini", "081200000032"),
+]
+
+# Akun customer demo yang bisa login ke situs untuk mencoba booking layanan.
+DEMO_CUSTOMER = ("demo_customer", "Ayu", "Pratiwi", "081300000099", "Jl. Melur No. 5, Kel. Sungai Pinang")
+
+PET_NAMES = [
+    ("Mochi", PetType.CAT), ("Kopi", PetType.DOG), ("Luna", PetType.CAT),
+    ("Bruno", PetType.DOG), ("Snowy", PetType.RABBIT), ("Oyen", PetType.CAT),
+    ("Max", PetType.DOG), ("Cimol", PetType.CAT),
 ]
 
 COURIER_PROFILES = {
@@ -673,12 +692,13 @@ class Command(BaseCommand):
         if opts["reset"]:
             self.reset()
         with transaction.atomic():
-            admins, couriers = self.seed_users(opts["password"])
+            admins, couriers, cashiers, groomers = self.seed_users(opts["password"])
             self.seed_products(admins[0], opts["no_photos"])
-            customers = self.seed_customers()
+            customers = self.seed_customers(opts["password"])
             made = self.seed_orders(
                 admins, couriers, customers, opts["orders"], opts["more_orders"]
             )
+            self.seed_bookings(customers, groomers, cashiers[0])
         self.summary(made, opts["password"])
 
     def reset(self):
@@ -687,6 +707,9 @@ class Command(BaseCommand):
             orders = Order.objects.filter(admin__in=demo_users) | Order.objects.filter(
                 customer__phone_number__in=CUSTOMER_PHONES
             )
+            ServiceBooking.objects.filter(
+                customer__phone_number__in=CUSTOMER_PHONES + [DEMO_CUSTOMER[3]]
+            ).delete()
             OrderDetail.objects.filter(transaction__in=orders).delete()
             orders.delete()
             products = Product.objects.filter(name__in=PRODUCT_NAMES)
@@ -707,7 +730,11 @@ class Command(BaseCommand):
             ).delete()
             Cart.objects.filter(user__in=demo_users).delete()
             demo_users.filter(
-                order__isnull=True, orders_as_courier__isnull=True
+                order__isnull=True,
+                orders_as_courier__isnull=True,
+                orders__isnull=True,
+                grooming_jobs__isnull=True,
+                service_bookings__isnull=True,
             ).delete()
         self.stdout.write("Data demo lama dihapus.")
 
@@ -730,6 +757,8 @@ class Command(BaseCommand):
 
         admins = [make(r, Role.ADMIN) for r in ADMINS]
         couriers = [make(r, Role.COURIER) for r in COURIERS]
+        cashiers = [make(r, Role.CASHIER) for r in CASHIERS]
+        groomers = [make(r, Role.GROOMER) for r in GROOMERS]
         for courier in couriers:
             vehicle, plate, area, status = COURIER_PROFILES[courier.username]
             CourierProfile.objects.get_or_create(
@@ -741,16 +770,67 @@ class Command(BaseCommand):
                     "status": status,
                 },
             )
-        return admins, couriers
+        return admins, couriers, cashiers, groomers
 
-    def seed_customers(self):
+    def seed_customers(self, password):
         out = []
         for name, phone, address in CUSTOMERS:
             cust, _ = Customer.objects.get_or_create(
                 phone_number=phone, defaults={"name": name, "address": address}
             )
             out.append(cust)
+        username, first, last, phone, address = DEMO_CUSTOMER
+        demo, created = Customer.objects.get_or_create(
+            phone_number=phone,
+            defaults={
+                "username": username,
+                "first_name": first,
+                "last_name": last,
+                "address": address,
+            },
+        )
+        if created:
+            demo.set_password(password)
+            demo.save()
+        out.append(demo)
         return out
+
+    def seed_bookings(self, customers, groomers, cashier, count=14):
+        if ServiceBooking.objects.filter(customer__in=customers).exists():
+            self.stdout.write("Booking layanan demo sudah ada, dilewati.")
+            return
+        services = list(Service.objects.active())
+        if not services or not groomers:
+            return
+        now = timezone.now().replace(minute=0, second=0, microsecond=0)
+        for i in range(count):
+            pet_name, pet_type = self.rng.choice(PET_NAMES)
+            options = [s for s in services if s.suits(pet_type)] or services
+            status = ["done", "done", "process", "pending", "pending"][i % 5]
+            if status == "done":
+                schedule = now - timedelta(days=self.rng.randint(1, 20), hours=self.rng.randint(0, 6))
+            elif status == "process":
+                schedule = now - timedelta(minutes=30)
+            else:
+                schedule = now + timedelta(days=self.rng.randint(0, 5), hours=self.rng.randint(1, 6))
+            local = timezone.localtime(schedule)
+            schedule = local.replace(hour=max(9, min(local.hour, 18)))  # jam buka
+            booking = ServiceBooking.book(
+                customer=self.rng.choice(customers),
+                service=self.rng.choice(options),
+                pet_name=pet_name,
+                pet_type=pet_type,
+                schedule=schedule,
+                created_by=cashier,
+            )
+            groomer = self.rng.choice(groomers)
+            if status in ("process", "done"):
+                booking.start(groomer)
+            if status == "done":
+                booking.finish(groomer, note="Bersih, wangi, kuku sudah dipotong.")
+                ServiceBooking.objects.filter(pk=booking.pk).update(
+                    started_at=schedule, finished_at=schedule + timedelta(hours=1)
+                )
 
     def photo_file(self, static_path):
         found = finders.find(static_path)
@@ -887,5 +967,9 @@ class Command(BaseCommand):
             f"  Pelanggan   : {Customer.objects.filter(phone_number__in=CUSTOMER_PHONES).count()}\n"
             f"  Order       : +{made} (total {Order.objects.count()})\n"
             f"  Login admin : demo_admin / {password}\n"
-            f"  Login kurir : demo_kurir1 / {password}"
+            f"  Login kurir : demo_kurir1 / {password}\n"
+            f"  Login kasir : demo_kasir / {password}\n"
+            f"  Login groomer: demo_groomer1 / {password}\n"
+            f"  Login customer: demo_customer / {password}\n"
+            f"  Booking     : {ServiceBooking.objects.count()}"
         )

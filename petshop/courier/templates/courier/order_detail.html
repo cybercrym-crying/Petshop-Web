@@ -46,6 +46,11 @@
                     </h2>
                     <span class="badge-status {{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
                 </div>
+                {% if order.tracking_number %}
+                    <p class="resi-line">
+                        <i class="bi bi-upc-scan me-1"></i> Resi: <strong>{{ order.tracking_number }}</strong>
+                    </p>
+                {% endif %}
                 <div class="meta-grid">
                     <div class="meta-item">
                         <div class="meta-label">Pelanggan</div>
@@ -58,6 +63,10 @@
                         </div>
                     </div>
                     <div class="meta-item">
+                        <div class="meta-label">Jenis Pembayaran</div>
+                        <div class="meta-value">{{ order.payment_method }}</div>
+                    </div>
+                    <div class="meta-item" style="grid-column: span 2">
                         <div class="meta-label">Status Pembayaran</div>
                         <div class="meta-value">
                             {% if order.payment_status == "LUNAS" %}<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> LUNAS</span>
@@ -102,21 +111,59 @@
                                 <i class="bi bi-truck me-2"></i> Mulai Kirim Pesanan
                             </button>
                         </form>
-                    {% elif order.order_status == "DALAM_PENGIRIMAN" %}
-                        <form method="post"
-                              action="{% url 'courier:update_status' order.pk %}"
-                              class="m-0">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="delivered" />
-                            <button type="submit" class="btn-green">
-                                <i class="bi bi-check2-circle me-2"></i> Tandai Selesai
-                                (Terkirim)
-                            </button>
-                        </form>
                     {% endif %}
                 </div>
             </div>
+            {% if order.order_status == "DALAM_PENGIRIMAN" %}
+                <div class="mt-4">{% include "courier/_live_location.html" %}</div>
+                <section class="proof-card" id="bukti">
+                    <h4 class="fw-bold mb-1" style="color: var(--c-text)">
+                        <i class="bi bi-camera-fill text-brand me-2"></i>Bukti Pengiriman
+                    </h4>
+                    <p class="proof-hint">Foto barang yang sudah diterima pembeli (atau diletakkan di tempat tujuan), lalu tandai selesai.</p>
+                    <form method="post"
+                          action="{% url 'courier:update_status' order.pk %}"
+                          enctype="multipart/form-data"
+                          class="m-0"
+                          data-proof-form>
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delivered" />
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="id_photo">{{ proof_form.photo.label }}</label>
+                            {{ proof_form.photo }}
+                            <img class="proof-preview" alt="Pratinjau foto bukti" hidden />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="id_note">{{ proof_form.note.label }}</label>
+                            {{ proof_form.note }}
+                        </div>
+                        <button type="submit" class="btn-green">
+                            <i class="bi bi-check2-circle me-2"></i> Tandai Selesai (Terkirim)
+                        </button>
+                    </form>
+                </section>
+            {% elif order.order_status == "TERKIRIM" %}
+                <section class="proof-card" id="bukti">
+                    <h4 class="fw-bold mb-3" style="color: var(--c-text)">
+                        <i class="bi bi-camera-fill text-brand me-2"></i>Bukti Pengiriman
+                    </h4>
+                    {% if order.delivered_at %}
+                        <p class="proof-hint">Sampai pada {{ order.delivered_at|date:"d M Y, H:i" }}</p>
+                    {% endif %}
+                    {% if order.delivery_photo %}
+                        <a href="{{ order.delivery_photo.url }}" target="_blank" rel="noopener">
+                            <img class="proof-image"
+                                 src="{{ order.delivery_photo.url }}"
+                                 alt="Foto bukti pengiriman order #{{ order.pk }}" />
+                        </a>
+                    {% else %}
+                        <p class="proof-hint mb-0">Tidak ada foto bukti untuk order ini.</p>
+                    {% endif %}
+                    {% if order.delivery_note %}<p class="mt-2 mb-0"><strong>Catatan:</strong> {{ order.delivery_note }}</p>{% endif %}
+                </section>
+            {% endif %}
         </div>
     </main>
+    <script src="{% static 'courier/js/proof.js' %}"></script>
 </body>
 </html>

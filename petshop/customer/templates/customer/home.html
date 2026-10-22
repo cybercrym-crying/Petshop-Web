@@ -49,7 +49,7 @@
                     <div class="col-lg-6 col-xl-5 text-center">
                         <div class="hero-image-wrapper">
                             <div class="hero-glow"></div>
-                            <img src="{% static 'customer/img/hero-home-dog.jpg' %}"
+                            <img src="{% static 'customer/img/hero-home-dog.png' %}"
                                  class="hero-dog-pic"
                                  alt="Anjing gagah berwarna cokelat">
                             <div class="hero-floating-card">
@@ -69,9 +69,9 @@
             <div class="row align-items-center g-5">
                 <div class="col-lg-6">
                     <div class="sx-photo">
-                        <img src="{% static 'customer/img/care-collage.jpg' %}"
-                             width="1200"
-                             height="900"
+                        <img src="{% static 'customer/img/hero-home-dog-2.jpg' %}"
+                             width="1000"
+                             height="500"
                              loading="lazy"
                              alt="Corgi dengan semangkuk makanan kering, kalung kulit, mainan kucing, dan obat hewan">
                     </div>
@@ -236,5 +236,6 @@
         {% include "customer/_site_footer.html" %}
         <script src="{% static 'customer/js/nav.js' %}"></script>
         <script src="{% static 'customer/js/catalog.js' %}?v=5"></script>
+        {% include "chatbot/_widget.html" %}
     </body>
 </html>

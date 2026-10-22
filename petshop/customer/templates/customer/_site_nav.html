@@ -4,37 +4,42 @@
             <i class="fas fa-paw" aria-hidden="true"></i>
             <span>Seelly Petshop</span>
         </a>
-        <button class="sn-toggle"
-                type="button"
-                id="nav-toggle"
-                aria-label="Buka menu"
-                aria-expanded="false"
-                aria-controls="nav-links">
-            <i class="fas fa-bars" aria-hidden="true"></i>
-        </button>
         <div class="sn-links" id="nav-links">
             <a href="{% url 'customer:home' %}"
                class="sn-link{% if active == 'home' %} active{% endif %}">Beranda</a>
             <a href="{% url 'customer:shop' %}"
                class="sn-link{% if active == 'shop' %} active{% endif %}">Belanja</a>
+            <a href="{% url 'service:catalog' %}"
+               class="sn-link{% if active == 'service' %} active{% endif %}">Layanan</a>
             <a href="{% url 'customer:about' %}"
                class="sn-link{% if active == 'about' %} active{% endif %}">Tentang Kami</a>
+            <a href="{% url 'customer:track' %}"
+               class="sn-link{% if active == 'track' %} active{% endif %}">Lacak Pesanan</a>
             <a href="#kontak" class="sn-link">Hubungi Kami</a>
         </div>
+        <form class="sn-search"
+              id="nav-search"
+              action="{% url 'customer:shop' %}"
+              method="get"
+              role="search">
+            <input type="search"
+                   name="q"
+                   value="{{ query|default:'' }}"
+                   placeholder="Cari produk..."
+                   aria-label="Cari produk">
+            <button type="submit" aria-label="Cari">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </button>
+        </form>
         <div class="sn-actions">
-            <form class="sn-search"
-                  action="{% url 'customer:shop' %}"
-                  method="get"
-                  role="search">
-                <input type="search"
-                       name="q"
-                       value="{{ query|default:'' }}"
-                       placeholder="Cari produk..."
-                       aria-label="Cari produk">
-                <button type="submit" aria-label="Cari">
-                    <i class="fas fa-search" aria-hidden="true"></i>
-                </button>
-            </form>
+            <button type="button"
+                    class="sn-icon sn-search-toggle"
+                    id="nav-search-toggle"
+                    aria-controls="nav-search"
+                    aria-expanded="false"
+                    aria-label="Cari produk">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </button>
             <a class="sn-icon{% if active == 'wishlist' %} is-active{% endif %}"
                href="{% url 'customer:wishlist' %}"
                aria-label="Favorit">
@@ -47,6 +52,50 @@
                 <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                 <span class="sn-badge" id="cart-count" hidden>0</span>
             </a>
+            {% if user.is_authenticated %}
+                <div class="sn-account" data-account>
+                    <button type="button"
+                            class="sn-icon sn-account__btn"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            aria-controls="nav-account-menu"
+                            aria-label="Akun {{ user.name }}">
+                        <span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>
+                    </button>
+                    <div class="sn-menu" id="nav-account-menu" hidden>
+                        <div class="sn-menu__who">
+                            <strong>{{ user.name }}</strong>
+                            <small>{{ user.get_role_display|default:"Akun" }}</small>
+                        </div>
+                        {% if user.role == "CUSTOMER" %}
+                            <a href="{% url 'customer:my_orders' %}" class="sn-menu__item"><i class="fas fa-box" aria-hidden="true"></i> Pesanan Saya</a>
+                            <a href="{% url 'service:my_bookings' %}" class="sn-menu__item"><i class="far fa-calendar-check" aria-hidden="true"></i> Booking Saya</a>
+                            <a href="{% url 'service:catalog' %}#booking" class="sn-menu__item"><i class="fas fa-scissors" aria-hidden="true"></i> Booking Layanan</a>
+                        {% else %}
+                            <a href="{% url user.dashboard_url_name %}" class="sn-menu__item"><i class="fas fa-gauge" aria-hidden="true"></i> Dasbor Staf</a>
+                        {% endif %}
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="sn-menu__item sn-menu__logout"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Keluar</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <a class="sn-icon sn-login"
+                   href="{% url 'login_form' %}"
+                   aria-label="Masuk / Daftar"
+                   title="Masuk / Daftar">
+                    <i class="far fa-user" aria-hidden="true"></i>
+                </a>
+            {% endif %}
         </div>
+        <button class="sn-toggle"
+                type="button"
+                id="nav-toggle"
+                aria-label="Buka menu"
+                aria-expanded="false"
+                aria-controls="nav-links">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
     </nav>
 </header>

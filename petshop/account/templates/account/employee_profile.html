@@ -35,11 +35,7 @@
                         <h2 class="fw-bold mb-0" style="color: #2B3674;">{{ emp.display_name }}</h2>
                         <p class="text-muted fw-semibold mb-3">@{{ emp.username }}</p>
                         <div class="d-flex gap-2 mb-4 justify-content-center justify-content-xl-start">
-                            {% if is_courier %}
-                                <span class="badge-role role-courier">Kurir</span>
-                            {% else %}
-                                <span class="badge-role role-admin">Admin</span>
-                            {% endif %}
+                            <span class="badge-role {{ emp.role_behavior.badge_class }}">{{ emp.get_role_display }}</span>
                             {% if emp.is_active %}
                                 <span class="badge-role status-active">Aktif</span>
                             {% else %}
@@ -60,7 +56,7 @@
                     </div>
                     <div class="mb-3">
                         <small class="text-muted fw-bold text-uppercase d-block mb-1">Tipe Peran</small>
-                        <span class="fw-bold fs-6">{% if is_courier %}Kurir{% else %}Admin{% endif %}</span>
+                        <span class="fw-bold fs-6">{{ emp.get_role_display }}</span>
                     </div>
                     <div class="mb-4">
                         <small class="text-muted fw-bold text-uppercase d-block mb-1">Tanggal Bergabung</small>
@@ -136,10 +132,9 @@
                                     <small class="text-danger mt-1 d-block fw-semibold"><i class="bi bi-info-circle"></i> Anda tidak bisa mengubah peran Anda sendiri.</small>
                                 {% else %}
                                     <select id="role" name="role" class="dark-input">
-                                        <option value="ADMIN"
-                                                {% if emp.role == "ADMIN" %}selected{% endif %}>Admin</option>
-                                        <option value="KURIR"
-                                                {% if emp.role == "KURIR" %}selected{% endif %}>Kurir</option>
+                                        {% for code, label in staff_roles %}
+                                            <option value="{{ code }}" {% if emp.role == code %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
                                     </select>
                                 {% endif %}
                             </div>
@@ -175,6 +170,48 @@
                 </div>
             </div>
         </div>
+        {% if work_kind == "bookings" %}
+        <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
+            style="animation-delay: 0.4s;
+                   color: #2B3674">
+            <i class="bi bi-scissors me-2"></i> Layanan Terbaru yang Ditangani
+        </h4>
+        <div class="card-custom p-0 animate-fade-up" style="animation-delay: 0.5s">
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>ID Booking</th>
+                            <th>Hewan</th>
+                            <th>Layanan</th>
+                            <th>Pelanggan</th>
+                            <th>Status</th>
+                            <th>Jadwal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in recent_bookings %}
+                            <tr>
+                                <td><a class="order-link" href="{% url 'service:manage_bookings' %}?q={{ b.pk }}">#{{ b.pk }}</a></td>
+                                <td class="fw-bold">{{ b.pet_name }}</td>
+                                <td>{{ b.service.name }}</td>
+                                <td>{{ b.customer.name }}</td>
+                                <td><span class="s-{{ b.status|lower }}">{{ b.get_status_display }}</span></td>
+                                <td class="text-muted fw-semibold">{{ b.schedule|date:"d M Y, H:i" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="bi bi-scissors text-muted opacity-50" style="font-size: 3rem;"></i>
+                                    <h5 class="fw-bold mt-3 text-dark">Belum ada layanan yang ditangani</h5>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
         <!-- TABEL BAWAH: Riwayat Order/Delivery -->
         <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
             style="animation-delay: 0.4s;
@@ -217,5 +254,6 @@
                 </table>
             </div>
         </div>
+        {% endif %}
     </div>
 {% endblock %}

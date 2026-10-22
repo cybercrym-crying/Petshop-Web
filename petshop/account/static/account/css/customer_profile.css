@@ -221,3 +221,15 @@ body {
   font-size: 0.75rem;
   font-weight: 700;
 }
+
+/* Status booking layanan */
+.s-proses,
+.s-selesai {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.s-proses { background-color: rgba(140, 115, 194, 0.14); color: #6b4fb0; }
+.s-selesai { background-color: var(--t-bg-e8fcf1,#e8fcf1); color: var(--t-tx-05a660,#05a660); }
+[data-theme="dark"] .s-proses { color: #c4aef0; }

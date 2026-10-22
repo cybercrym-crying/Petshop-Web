@@ -57,3 +57,13 @@
             .s-paid, .s-delivered { background-color: var(--t-bg-e8fcf1,#E8FCF1); color: var(--t-tx-05a660,#05A660); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;}
             .s-pending, .s-process { background-color: var(--t-bg-fff8e5,#FFF8E5); color: var(--t-tx-e5a500,#E5A500); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;}
             .s-canceled { background-color: var(--t-bg-fff0f0,#FFF0F0); color: var(--t-tx-e31a1a,#E31A1A); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+
+/* Peran & status booking tambahan (kasir, groomer, customer) */
+.role-cashier { background-color: rgba(59, 130, 246, 0.1); color: #1d4ed8; border-color: rgba(59, 130, 246, 0.25); }
+.role-groomer { background-color: rgba(140, 115, 194, 0.12); color: #6b4fb0; border-color: rgba(140, 115, 194, 0.3); }
+.role-customer { background-color: rgba(100, 116, 139, 0.1); color: #475569; border-color: rgba(100, 116, 139, 0.25); }
+.s-proses { background-color: rgba(140, 115, 194, 0.14); color: #6b4fb0; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+.s-selesai { background-color: var(--t-bg-e8fcf1,#E8FCF1); color: var(--t-tx-05a660,#05A660); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+[data-theme="dark"] .role-cashier { color: #93c5fd; }
+[data-theme="dark"] .role-groomer, [data-theme="dark"] .s-proses { color: #c4aef0; }
+[data-theme="dark"] .role-customer { color: #cbd5e1; }

@@ -218,6 +218,30 @@ class ManageTransactionViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, f"Order #{self.order.pk}")
 
+    def test_modal_shows_resi_and_whatsapp_share_link(self):
+        r = self.client.get("/staff/admin/manage_transaction/")
+        self.assertContains(r, self.order.tracking_number)
+        self.assertContains(r, "Kirim Resi ke Pelanggan")
+        # Link lacak ikut di dalam teks WhatsApp (ter-encode di parameter ?text=).
+        self.assertContains(r, f"//testserver/lacak/{self.order.tracking_number}/")
+
+    def test_search_by_resi(self):
+        hit = self.client.get(
+            "/staff/admin/manage_transaction/",
+            {"view": "list", "q": self.order.tracking_number[-6:]},
+        )
+        self.assertContains(hit, f"Order #{self.order.pk}")
+        miss = self.client.get(
+            "/staff/admin/manage_transaction/", {"view": "list", "q": "ZZZZZZ"}
+        )
+        self.assertNotContains(miss, f"Order #{self.order.pk}")
+
+    def test_modal_says_when_closed_without_photo(self):
+        self.order.mark_on_delivery(self.courier)
+        self.act("delivered")
+        r = self.client.get("/staff/admin/manage_transaction/")
+        self.assertContains(r, "Tidak ada foto bukti")
+
     def test_full_flow(self):
         # Admin hanya menugaskan kurir; kurir yang mulai mengirim.
         self.act("assign_courier", courier=self.courier.pk)
@@ -346,7 +370,7 @@ class BoardViewTests(TestCase):
         self.assertEqual(r.context["view"], "board")
         self.assertEqual(
             self.counts(r),
-            {"confirmed": 1, "on-delivery": 1, "delivered": 0, "cancelled": 1},
+            {"pending": 0, "confirmed": 1, "on-delivery": 1, "delivered": 0, "cancelled": 1},
         )
         for o in (a, b, c):
             self.assertContains(r, f"Order #{o.pk}")  # modal detail tetap ada
@@ -451,7 +475,7 @@ class SeedDemoTests(TestCase):
             User.objects.filter(username__startswith="demo_", role=Role.COURIER).count(),
             3,
         )
-        self.assertEqual(Customer.objects.count(), len(CUSTOMERS))
+        self.assertEqual(Customer.objects.count(), len(CUSTOMERS) + 1)  # + demo_customer
         self.assertEqual(Product.objects.count(), len(PRODUCTS))
         self.assertEqual(Order.objects.count(), 24)
         statuses = set(Order.objects.values_list("order_status", flat=True))
@@ -573,3 +597,186 @@ class PaymentRegistryTests(SimpleTestCase):
         self.assertFalse(PAYMENT_REGISTRY["TUNAI"].can_be_late())
         self.assertFalse(PAYMENT_REGISTRY["TRANSFER"].paid_after_accepted())
         self.assertTrue(PAYMENT_REGISTRY["TRANSFER"].can_be_late())
+
+
+class TrackingNumberTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user("adm_t", password="x", role=Role.ADMIN)
+        self.customer = Customer.objects.create(
+            name="Budi", phone_number="0899", address="x"
+        )
+
+    def make_order(self):
+        return Order.objects.create(
+            admin=self.admin, customer=self.customer, payment_method="TUNAI"
+        )
+
+    def test_resi_is_generated_with_expected_format(self):
+        import re
+
+        order = self.make_order()
+        self.assertRegex(order.tracking_number, r"^PS-\d{6}-[A-HJKMNP-Z2-9]{6}$")
+
+    def test_resi_is_unique_per_order(self):
+        resis = {self.make_order().tracking_number for _ in range(20)}
+        self.assertEqual(len(resis), 20)
+
+    def test_resi_does_not_change_on_resave(self):
+        order = self.make_order()
+        first = order.tracking_number
+        order.total_payment = 5000
+        order.save()
+        order.refresh_from_db()
+        self.assertEqual(order.tracking_number, first)
+
+    def test_checkout_order_gets_resi(self):
+        cart = Cart.objects.create(user=self.admin)
+        CartItem.objects.create(cart=cart, product=make_product("R", 3), quantity=1)
+        order = cart.checkout(
+            customer=self.customer, admin=self.admin, payment_method="TUNAI"
+        )
+        self.assertTrue(order.tracking_number)
+
+    def test_normalize_accepts_loose_input(self):
+        from transaction.models import normalize_tracking_number
+
+        self.assertEqual(
+            normalize_tracking_number(" ps 261022 k7m2qx "), "PS-261022-K7M2QX"
+        )
+        self.assertEqual(
+            normalize_tracking_number("PS261022K7M2QX"), "PS-261022-K7M2QX"
+        )
+        self.assertEqual(normalize_tracking_number("PS-1"), "")
+        self.assertEqual(normalize_tracking_number(""), "")
+
+    def test_timestamps_follow_the_status(self):
+        courier = User.objects.create_user("cr_t", password="x", role=Role.COURIER)
+        order = self.make_order()
+        self.assertIsNone(order.shipped_at)
+        order.mark_on_delivery(courier)
+        self.assertIsNotNone(order.shipped_at)
+        self.assertIsNone(order.delivered_at)
+        order.mark_delivered()
+        self.assertIsNotNone(order.delivered_at)
+        self.assertFalse(order.has_delivery_proof)  # admin boleh tutup tanpa foto
+
+
+
+class OnlineOrderTests(TestCase):
+    """Customer login memesan langsung; tamu tetap lewat WhatsApp."""
+
+    def setUp(self):
+        from account.models import Customer
+
+        self.customer = Customer.objects.create(
+            name="Siti Aminah", phone_number="081300000001", address="Jl. Mawar 1"
+        )
+        self.customer.set_password("rahasia-123")
+        self.customer.save()
+        self.admin = User.objects.create_user("adm_online", password="x", role=Role.ADMIN)
+        self.p1 = make_product("Whiskas", stock=10)
+        self.p2 = make_product("Pasir", stock=2)
+
+    def login(self):
+        self.client.login(username=self.customer.username, password="rahasia-123")
+
+    def place(self, items, **extra):
+        import json
+
+        body = {"items": items, "payment_method": "TUNAI", "address": "Jl. Melati 7", **extra}
+        return self.client.post(
+            "/checkout/pesan/", data=json.dumps(body), content_type="application/json"
+        )
+
+    def test_guest_sees_whatsapp_checkout_and_member_sees_system_checkout(self):
+        r = self.client.get("/checkout")
+        self.assertTemplateUsed(r, "customer/checkout.html")
+        self.assertContains(r, "Pesan via WhatsApp")
+        self.assertContains(r, "/login?next=/checkout")
+        self.login()
+        r = self.client.get("/checkout")
+        self.assertTemplateUsed(r, "customer/checkout_member.html")
+        self.assertNotContains(r, "Pesan via WhatsApp")
+
+    def test_staff_gets_guest_checkout(self):
+        self.client.login(username="adm_online", password="x")
+        self.assertTemplateUsed(self.client.get("/checkout"), "customer/checkout.html")
+
+    def test_place_order_uses_server_prices_and_reduces_stock(self):
+        self.login()
+        r = self.place([{"id": self.p1.pk, "quantity": 3, "price": 1}, {"id": self.p2.pk, "quantity": 1}])
+        self.assertEqual(r.status_code, 200, r.content)
+        data = r.json()
+        order = Order.objects.get(pk=data["order_id"])
+        self.assertEqual(order.order_status, "MENUNGGU")
+        self.assertEqual(order.channel, "ONLINE")
+        self.assertIsNone(order.admin)
+        self.assertEqual(order.customer, self.customer)
+        self.assertEqual(order.total_payment, 3 * self.p1.selling_price + self.p2.selling_price)
+        self.p1.refresh_from_db()
+        self.assertEqual(self.p1.stock, 7)
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.address, "Jl. Melati 7")
+        self.assertIn(f"baru={order.pk}", data["redirect"])
+
+    def test_insufficient_stock_creates_nothing(self):
+        self.login()
+        r = self.place([{"id": self.p1.pk, "quantity": 1}, {"id": self.p2.pk, "quantity": 5}])
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("Pasir", r.json()["message"])
+        self.assertFalse(Order.objects.exists())
+        self.p1.refresh_from_db()
+        self.assertEqual(self.p1.stock, 10)
+
+    def test_validation_errors(self):
+        self.login()
+        self.assertEqual(self.place([]).status_code, 400)
+        self.assertEqual(self.place([{"id": self.p1.pk, "quantity": 1}], address="").status_code, 400)
+        self.assertEqual(
+            self.place([{"id": self.p1.pk, "quantity": 1}], payment_method="BITCOIN").status_code, 400
+        )
+        self.assertEqual(self.place([{"id": 99999, "quantity": 1}]).status_code, 400)
+        self.assertFalse(Order.objects.exists())
+
+    def test_guest_cannot_post_orders(self):
+        r = self.place([{"id": self.p1.pk, "quantity": 1}])
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Order.objects.exists())
+
+    def test_my_orders_and_customer_cancel_only_while_waiting(self):
+        self.login()
+        order = Order.objects.get(pk=self.place([{"id": self.p1.pk, "quantity": 2}]).json()["order_id"])
+        r = self.client.get(f"/pesanan-saya/?baru={order.pk}")
+        self.assertContains(r, f"Pesanan #{order.pk} berhasil dibuat")
+        self.assertContains(r, order.tracking_number)
+        self.client.post(f"/pesanan-saya/{order.pk}/batal/")
+        order.refresh_from_db()
+        self.assertEqual(order.order_status, "DIBATALKAN")
+        self.p1.refresh_from_db()
+        self.assertEqual(self.p1.stock, 10)  # stok kembali
+
+        other = Order.objects.get(pk=self.place([{"id": self.p1.pk, "quantity": 1}]).json()["order_id"])
+        other.confirm(self.admin)
+        self.client.post(f"/pesanan-saya/{other.pk}/batal/")
+        other.refresh_from_db()
+        self.assertEqual(other.order_status, "DIKONFIRMASI")
+
+    def test_admin_confirms_from_board(self):
+        self.login()
+        order_id = self.place([{"id": self.p1.pk, "quantity": 1}]).json()["order_id"]
+        self.client.login(username="adm_online", password="x")
+        r = self.client.get("/staff/admin/manage_transaction/")
+        counts = {c["css"]: c["count"] for c in r.context["columns"]}
+        self.assertEqual(counts["pending"], 1)
+        self.assertTrue(next(c for c in r.context["columns"] if c["css"] == "pending")["active"])
+        self.assertEqual(r.context["pending_online_orders"], 1)
+        self.client.post(f"/staff/admin/transaction/{order_id}/status/", {"action": "confirm"})
+        order = Order.objects.get(pk=order_id)
+        self.assertEqual(order.order_status, "DIKONFIRMASI")
+        self.assertEqual(order.admin.username, "adm_online")
+        self.assertIsNotNone(order.confirmed_at)
+        steps = self.client.get(f"/lacak/{order.tracking_number}/").context["steps"]
+        self.assertEqual(
+            [s["title"] for s in steps],
+            ["Pesanan dibuat", "Dikonfirmasi toko", "Sedang dikirim kurir", "Pesanan sampai"],
+        )

@@ -50,7 +50,7 @@ class MutationType(models.TextChoices):
 LOW_STOCK_THRESHOLD = 10  # stok 1..10 dianggap menipis, 0 = habis
 
 
-# OOP: PEWARISAN - InsufficientStock mewarisi PetshopError (hierarki exception).
+# OOP: PEWARISAN InsufficientStock mewarisi PetshopError (hierarki exception).
 class InsufficientStock(PetshopError):
     def __init__(self, product, requested):
         self.product = product
@@ -60,7 +60,7 @@ class InsufficientStock(PetshopError):
         )
 
 
-# OOP: ABSTRAKSI - StockMovement hanya menyatakan "mutasi stok harus bisa
+# OOP: ABSTRAKSI  StockMovement hanya menyatakan "mutasi stok harus bisa
 # menghitung stok baru"; rumusnya diserahkan ke StockIn / StockOut.
 class StockMovement(ABC):
     code = None
@@ -69,7 +69,7 @@ class StockMovement(ABC):
     def apply(self, product, quantity) -> int: ...
 
 
-# OOP: PEWARISAN + POLIMORFISME - StockIn dan StockOut punya apply() yang sama
+# OOP: PEWARISAN + POLIMORFISME StockIn dan StockOut punya apply() yang sama
 # namanya tapi beda hasil; Product.apply_mutation tidak perlu if-else jenis mutasi.
 class StockIn(StockMovement):
     code = MutationType.IN
@@ -102,7 +102,7 @@ class ProductQuerySet(models.QuerySet):
         return self.filter(is_active=True, selling_price__isnull=False)
 
 
-# OOP: PEWARISAN - Product mewarisi TimeStampedModel (created_at, updated_at).
+# OOP: PEWARISAN  Product mewarisi TimeStampedModel
 class Product(TimeStampedModel):
     objects = ProductQuerySet.as_manager()
 
@@ -125,8 +125,7 @@ class Product(TimeStampedModel):
     def isSellable(self):
         return self.is_active and self.selling_price is not None
 
-    # OOP: ENKAPSULASI - info turunan dihitung oleh Product sendiri,
-    # view tidak perlu menempelkan atribut manual.
+    # OOP: ENKAPSULASI  info turunan dihitung oleh Product sendiri,
     @property
     def stock_state(self):
         if self.stock == 0:
@@ -139,9 +138,8 @@ class Product(TimeStampedModel):
             return None
         return self.selling_price - self.purchase_price
 
-    # OOP: ENKAPSULASI - pencatatan stok awal milik Product, bukan view.
+    # OOP: ENKAPSULASI  pencatatan stok awal milik Product, bukan view.
     def record_initial_stock(self, user=None):
-        """Catat stok awal (saat produk baru dibuat) ke riwayat mutasi."""
         if self.stock > 0:
             return StockMutation.objects.create(
                 product=self,
@@ -151,10 +149,9 @@ class Product(TimeStampedModel):
                 createdBy=user,
             )
 
-    # OOP: ENKAPSULASI + POLIMORFISME - semua perubahan stok lewat sini;
+    # OOP: ENKAPSULASI + POLIMORFISME  semua perubahan stok lewat sini;
     # rumus stok dipilih lewat get_movement(...).apply(), bukan if-else.
     def apply_mutation(self, mutation_type, quantity, user=None, note=""):
-        """Satu-satunya jalan ubah stok: kunci baris, cek, update, catat mutasi."""
         if quantity <= 0:
             raise ValueError("Jumlah mutasi harus lebih dari 0.")
         with transaction.atomic():

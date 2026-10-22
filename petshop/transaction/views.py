@@ -1,11 +1,14 @@
+from urllib.parse import quote
+
 from account.decorators import roleRequired
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.urls import reverse
 from django.db import transaction
 from django.db.models import Count, F, Q, Sum
 from common.exceptions import PetshopError
 from product.models import Product, InsufficientStock
-from account.models import Customer, User, Role
+from account.models import POS_ROLES, Customer, User, Role, person_search
 from .models import (
     Cart,
     CartItem,
@@ -19,12 +22,13 @@ from .models import (
 
 # Kolom board = status order. Kolom terbuka tampil semua; kolom selesai dibatasi.
 BOARD_COLUMNS = (
+    (OrderStatus.PENDING, "pending", "Pesanan Online Baru"),
     (OrderStatus.CONFIRMED, "confirmed", "Dikonfirmasi"),
     (OrderStatus.ON_DELIVERY, "on-delivery", "Dalam Pengiriman"),
     (OrderStatus.DELIVERED, "delivered", "Terkirim"),
     (OrderStatus.CANCELLED, "cancelled", "Dibatalkan"),
 )
-OPEN_STATUSES = (OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
+OPEN_STATUSES = (OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
 CLOSED_COLUMN_LIMIT = 12
 
 
@@ -43,12 +47,28 @@ def _with_overdue(order):
     return order
 
 
+def _with_share_link(order, request):
+    """Tautan WhatsApp berisi resi + link lacak, siap dikirim admin ke pelanggan."""
+    track_url = request.build_absolute_uri(
+        reverse("customer:track_detail", args=[order.tracking_number])
+    )
+    text = (
+        f"Halo {order.customer.name}, pesanan Anda di Seelly Petshop "
+        f"(order #{order.pk}) sudah kami proses.\n"
+        f"No. resi: {order.tracking_number}\n"
+        f"Lacak pesanan & lihat bukti pengiriman: {track_url}"
+    )
+    order.track_url = track_url
+    order.share_wa_url = f"{order.customer.whatsapp_url}?text={quote(text)}"
+    return order
+
+
 def _get_or_create_cart(user):
     cart, _ = Cart.objects.get_or_create(user=user)
     return cart
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def make_transaction(request):
     cart = _get_or_create_cart(request.user)
     products = Product.objects.sellable()
@@ -66,13 +86,13 @@ def make_transaction(request):
             "products": products,
             "cart_items": cart_items,
             "cart_total": cart_total,
-            "customers": Customer.objects.all(),
+            "customers": Customer.objects.order_by("first_name", "last_name"),
             "couriers": User.couriers(),
         },
     )
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def add_to_cart(request, pk):
     if request.method == "POST":
         product = get_object_or_404(Product.objects.sellable(), pk=pk)
@@ -93,7 +113,7 @@ def add_to_cart(request, pk):
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def remove_from_cart(request, pk):
     if request.method == "POST":
         item = get_object_or_404(CartItem, pk=pk, cart__user=request.user)
@@ -101,7 +121,7 @@ def remove_from_cart(request, pk):
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def update_cart_quantity(request, pk):
     if request.method == "POST":
         cart = get_object_or_404(Cart, user=request.user)
@@ -117,7 +137,7 @@ def update_cart_quantity(request, pk):
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def cancel_transaction(request):
     if request.method == "POST":
         Cart.objects.filter(user=request.user).delete()
@@ -125,7 +145,7 @@ def cancel_transaction(request):
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def submit_transaction(request):
     if request.method == "POST":
         cart = get_object_or_404(Cart, user=request.user)
@@ -157,7 +177,7 @@ def submit_transaction(request):
     return redirect("transaction:make_transaction")
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def manage_transaction(request):
     view = "list" if request.GET.get("view") == "list" else "board"
     q = request.GET.get("q", "").strip()
@@ -169,7 +189,8 @@ def manage_transaction(request):
         .order_by("-date")
     )
     if q:
-        cond = Q(customer__name__icontains=q)
+        orders, cond = person_search(orders, q, prefix="customer__")
+        cond |= Q(tracking_number__icontains=q)
         digits = q.lstrip("#")
         if digits.isdigit() and len(digits) <= 9:
             cond |= Q(pk=int(digits))
@@ -186,7 +207,8 @@ def manage_transaction(request):
             count = qs.count()
             is_open = status in OPEN_STATUSES
             shown = [
-                _with_overdue(o) for o in (qs if is_open else qs[:CLOSED_COLUMN_LIMIT])
+                _with_share_link(_with_overdue(o), request)
+                for o in (qs if is_open else qs[:CLOSED_COLUMN_LIMIT])
             ]
             columns.append(
                 {
@@ -198,9 +220,16 @@ def manage_transaction(request):
                     "hidden": count - len(shown),
                 }
             )
+        # Tab yang terbuka pertama: pesanan online baru bila ada, selain itu Dikonfirmasi.
+        active = next(
+            (c for c in columns if c["css"] == "pending" and c["count"]),
+            next(c for c in columns if c["css"] == "confirmed"),
+        )
+        for col in columns:
+            col["active"] = col is active
         transactions = [o for col in columns for o in col["orders"]]
     else:
-        transactions = [_with_overdue(o) for o in orders]
+        transactions = [_with_share_link(_with_overdue(o), request) for o in orders]
 
     active = Order.objects.filter(order_status__in=OPEN_STATUSES).aggregate(
         n=Count("pk"), total=Sum("total_payment")
@@ -229,7 +258,7 @@ def manage_transaction(request):
     )
 
 
-@roleRequired(Role.ADMIN)
+@roleRequired(*POS_ROLES)
 def update_status(request, pk):
     if request.method != "POST":
         return redirect("transaction:manage_transaction")
@@ -238,7 +267,12 @@ def update_status(request, pk):
     try:
         with transaction.atomic():
             order = get_object_or_404(Order.objects.select_for_update(), pk=pk)
-            if action == "paid":
+            if action == "confirm":
+                order.confirm(request.user)
+                messages.success(
+                    request, f"Pesanan online #{order.pk} dikonfirmasi."
+                )
+            elif action == "paid":
                 order.mark_paid()
                 messages.success(request, f"Order #{order.pk} ditandai lunas.")
             elif action == "assign_courier":

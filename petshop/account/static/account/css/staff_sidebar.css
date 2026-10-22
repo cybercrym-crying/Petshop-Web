@@ -38,6 +38,7 @@ html.staff-open .staff-backdrop { opacity: 1; pointer-events: auto; }
 .staff-link i { font-size: 1.15rem; flex: none; }
 .staff-link:hover { background: var(--ss-hover); color: var(--ss-text); }
 .staff-link.is-active { background: var(--ss-active); color: var(--ss-active-ink); }
+.staff-badge { margin-left: auto; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; background: #ff7a00; color: #fff; font-size: 0.75rem; font-weight: 800; line-height: 22px; text-align: center; }
 .staff-foot { margin-top: auto; padding-top: 1.1rem; border-top: 1px solid var(--ss-border); display: flex; flex-direction: column; gap: 0.6rem; }
 .staff-who { border: 1.5px solid var(--ss-outline); border-radius: 999px; padding: 0.5rem 1rem; text-align: center; font-weight: 700; font-size: 0.9rem; color: var(--ss-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .staff-logout-form { margin: 0; display: flex; flex-direction: column; }

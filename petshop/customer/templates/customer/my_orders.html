@@ -1,0 +1,83 @@
+{% extends "customer/base.html" %}
+{% load static rupiah %}
+{% block title %}Pesanan Saya - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <section class="container section co-page co-orders">
+        <header class="co-head">
+            <div>
+                <h1 class="co-title"><i class="fas fa-box" aria-hidden="true"></i> Pesanan Saya</h1>
+                <p class="muted mb-0">Halo {{ user.name }}, pantau semua pesanan Anda di sini.</p>
+            </div>
+            <a href="{% url 'customer:shop' %}" class="btn-ghost"><i class="fas fa-store" aria-hidden="true"></i> Belanja Lagi</a>
+        </header>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="co-alert co-alert--{% if message.tags == 'error' %}error{% else %}{{ message.tags|default:'info' }}{% endif %}" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% if new_order %}
+            <div class="co-success" role="status">
+                <i class="fas fa-circle-check" aria-hidden="true"></i>
+                <div>
+                    <strong>Pesanan #{{ new_order.pk }} berhasil dibuat!</strong>
+                    <p>Nomor resi <b>{{ new_order.tracking_number }}</b>. Admin akan mengonfirmasi pesanan Anda{% if new_order.payment_method == "TRANSFER" %} dan mengirim nomor rekening lewat WhatsApp{% endif %}.</p>
+                </div>
+            </div>
+        {% endif %}
+        <ul class="co-order-list">
+            {% for order in orders %}
+                <li class="co-order{% if new_order and order.pk == new_order.pk %} is-new{% endif %}">
+                    <div class="co-order__top">
+                        <div>
+                            <div class="co-order__id">Pesanan #{{ order.pk }} · <span class="co-resi">{{ order.tracking_number }}</span></div>
+                            <div class="muted">{{ order.date|date:"d M Y, H:i" }} · {{ order.get_channel_display }}</div>
+                        </div>
+                        <span class="co-status co-status--{{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
+                    </div>
+                    <ul class="co-order__items">
+                        {% for d in order.details.all %}
+                            <li><span>{{ d.product.name }} <small>×{{ d.quantity }}</small></span><span>Rp {{ d.subtotal|rupiah }}</span></li>
+                        {% endfor %}
+                    </ul>
+                    <div class="co-order__foot">
+                        <div>
+                            <div class="co-order__total">Rp {{ order.total_payment|rupiah }}</div>
+                            <div class="muted">{{ order.get_payment_method_display }} · {{ order.get_payment_status_display }}</div>
+                        </div>
+                        <div class="co-order__actions">
+                            {% if order.order_status != "DIBATALKAN" %}
+                                <a href="{% url 'customer:track_detail' order.tracking_number %}" class="btn-soft">
+                                    <i class="fas fa-location-dot" aria-hidden="true"></i> {% if order.order_status == "DALAM_PENGIRIMAN" %}Lacak Kurir{% else %}Lacak{% endif %}
+                                </a>
+                            {% endif %}
+                            {% if order.order_status == "MENUNGGU" %}
+                                <form method="post" action="{% url 'customer:cancel_my_order' order.pk %}" data-confirm="Batalkan pesanan #{{ order.pk }}?">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ghost co-cancel">Batalkan</button>
+                                </form>
+                            {% endif %}
+                            <a href="{{ wa_link }}?text={% filter urlencode %}Halo admin, saya mau tanya pesanan #{{ order.pk }} (resi {{ order.tracking_number }}).{% endfilter %}"
+                               class="btn-ghost" target="_blank" rel="noopener">
+                                <i class="fab fa-whatsapp" aria-hidden="true"></i> Tanya Admin
+                            </a>
+                        </div>
+                    </div>
+                    {% if order.customer_note %}<p class="co-order__note">Catatan Anda: {{ order.customer_note }}</p>{% endif %}
+                </li>
+            {% empty %}
+                <li class="empty-state">
+                    <i class="fas fa-box-open" aria-hidden="true"></i>
+                    <h2>Belum ada pesanan</h2>
+                    <p>Pesanan yang Anda buat setelah login akan muncul di sini.</p>
+                    <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">Mulai Belanja</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/common.js' %}"></script>
+{% endblock %}

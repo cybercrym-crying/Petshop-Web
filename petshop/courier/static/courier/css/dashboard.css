@@ -451,3 +451,11 @@ dialog#order-modal::backdrop {
     font-size: 1.6rem;
   }
 }
+
+.order-card__resi {
+  margin: -2px 0 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  opacity: 0.65;
+}

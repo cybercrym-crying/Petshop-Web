@@ -1,12 +1,28 @@
+import json
+from datetime import timedelta
+
+from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import transaction
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.utils import timezone
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from product.models import PetType, Product, ProductCondition
-from account.models import Customer
-from transaction.models import Order, OrderStatus
+from account.decorators import roleRequired
+from account.models import Customer, Role
+from common.exceptions import PetshopError
+from courier.models import CourierLocation
+from transaction.models import (
+    Order,
+    OrderStatus,
+    PaymentMethod,
+    normalize_tracking_number,
+)
 
 from .templatetags.customer_extras import CONDITION_LABEL, CATEGORY_LABELS, PET_LABEL
 
@@ -51,8 +67,10 @@ def cart_page(request):
 # Kategori di halaman Belanja: kode (sama dengan Category.name di database) -> gambar.
 CATEGORY_IMAGES = {
     "MAKANAN": "customer/img/pet-food.png",
-    "PERLENGKAPAN": "customer/img/pet-toys.png",
+    "PERLENGKAPAN": "customer/img/equipment-pets.png",
     "AKSESORIS": "customer/img/pet-accessories.png",
+    "KESEHATAN": "customer/img/healtcare-cat.png",
+    "MAINAN": "customer/img/pet-toys.png",
 }
 DEFAULT_CATEGORY_IMAGE = "customer/img/product-placeholder.svg"
 POPULAR_LIMIT = 8
@@ -346,5 +364,252 @@ def product_detail(request, pk):
     )
 
 
+def _is_customer(user):
+    return user.is_authenticated and user.role == Role.CUSTOMER
+
+
 def checkout_page(request):
-    return render(request, "customer/checkout.html")
+    """Checkout dipisah: customer yang login memesan langsung ke sistem,
+    pengunjung (belum login) tetap memesan lewat WhatsApp admin."""
+    if _is_customer(request.user):
+        return render(
+            request,
+            "customer/checkout_member.html",
+            _site_context(
+                active_page="shop",
+                payment_methods=PaymentMethod.choices,
+                place_url=reverse("customer:place_order"),
+            ),
+        )
+    return render(
+        request,
+        "customer/checkout.html",
+        {"next_url": reverse("customer:checkout")},
+    )
+
+
+ADDRESS_MAX = 255
+
+
+@roleRequired(Role.CUSTOMER)
+@require_POST
+def place_order(request):
+    """Buat pesanan online dari keranjang (JSON). Harga & stok dicek di server."""
+    try:
+        payload = json.loads(request.body or b"{}")
+    except (ValueError, UnicodeDecodeError):
+        return _order_error("Data pesanan tidak bisa dibaca.")
+    items = payload.get("items") if isinstance(payload, dict) else None
+    if not isinstance(items, list):
+        return _order_error("Keranjang Anda kosong.")
+    lines = [
+        (item.get("id"), item.get("quantity"))
+        for item in items[:100]
+        if isinstance(item, dict)
+    ]
+    address = str(payload.get("address") or "").strip()
+    if not address:
+        return _order_error("Alamat pengiriman wajib diisi.", field="address")
+    if len(address) > ADDRESS_MAX:
+        return _order_error("Alamat terlalu panjang (maks. 255 karakter).", field="address")
+
+    customer = request.user
+    if not customer.phone_number:
+        return _order_error("Lengkapi nomor telepon di akun Anda terlebih dahulu.")
+    try:
+        with transaction.atomic():
+            if address != customer.address:
+                # Alamat pengiriman = alamat akun (dipakai kurir & admin).
+                customer.address = address
+                customer.save(update_fields=["address"])
+            order = Order.place_online(
+                customer,
+                lines,
+                str(payload.get("payment_method") or ""),
+                note=str(payload.get("note") or ""),
+            )
+    except PetshopError as error:
+        return _order_error(str(error))
+    return JsonResponse(
+        {
+            "ok": True,
+            "order_id": order.pk,
+            "tracking_number": order.tracking_number,
+            "redirect": f"{reverse('customer:my_orders')}?baru={order.pk}",
+        }
+    )
+
+
+def _order_error(message, field=None):
+    return JsonResponse({"ok": False, "message": message, "field": field}, status=400)
+
+
+@roleRequired(Role.CUSTOMER)
+def my_orders(request):
+    orders = (
+        Order.objects.filter(customer=request.user)
+        .select_related("courier")
+        .prefetch_related("details__product")
+        .order_by("-date")
+    )
+    new_id = request.GET.get("baru", "")
+    new_order = (
+        orders.filter(pk=int(new_id)).first() if new_id.isdigit() else None
+    )
+    return render(
+        request,
+        "customer/my_orders.html",
+        _site_context(
+            active_page="orders",
+            orders=orders,
+            new_order=new_order,
+        ),
+    )
+
+
+@roleRequired(Role.CUSTOMER)
+@require_POST
+def cancel_my_order(request, pk):
+    order = get_object_or_404(Order, pk=pk, customer=request.user)
+    try:
+        order.cancel_by_customer(request.user)
+    except PetshopError as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, f"Pesanan #{order.pk} dibatalkan.")
+    return redirect("customer:my_orders")
+
+
+def _mask_name(name):
+    """'Budi Santoso' -> 'Budi S****' (halaman lacak bisa dibuka siapa pun yang punya resi)."""
+    parts = (name or "").split()
+    if not parts:
+        return ""
+    return " ".join([parts[0]] + [f"{p[0]}{'*' * min(len(p) - 1, 4)}" for p in parts[1:]])
+
+
+def _tracking_steps(order):
+    """Linimasa status pesanan; langkah terakhir yang selesai = posisi pesanan sekarang."""
+    if order.is_online:
+        # Pesanan dari situs: dibuat pelanggan dulu, lalu dikonfirmasi toko.
+        steps = [
+            {
+                "icon": "fa-cart-shopping",
+                "title": "Pesanan dibuat",
+                "time": order.date,
+                "done": True,
+            },
+            {
+                "icon": "fa-clipboard-check",
+                "title": "Dikonfirmasi toko"
+                if order.order_status != OrderStatus.PENDING
+                else "Menunggu konfirmasi toko",
+                "time": order.confirmed_at,
+                "done": order.order_status
+                not in (OrderStatus.PENDING, OrderStatus.CANCELLED),
+            },
+        ]
+    else:
+        steps = [
+            {
+                "icon": "fa-clipboard-check",
+                "title": "Pesanan dikonfirmasi",
+                "time": order.date,
+                "done": True,
+            },
+        ]
+    steps += [
+        {
+            "icon": "fa-truck-fast",
+            "title": "Sedang dikirim kurir",
+            "time": order.shipped_at,
+            "done": order.order_status
+            in (OrderStatus.ON_DELIVERY, OrderStatus.DELIVERED),
+        },
+        {
+            "icon": "fa-box-open",
+            "title": "Pesanan sampai",
+            "time": order.delivered_at,
+            "done": order.order_status == OrderStatus.DELIVERED,
+        },
+    ]
+    current = max((i for i, step in enumerate(steps) if step["done"]), default=0)
+    for i, step in enumerate(steps):
+        step["current"] = i == current
+    return steps
+
+
+def track_order(request, resi=None):
+    """Lacak pesanan lewat nomor resi: ?resi=... (form) atau /lacak/<resi>/ (tautan)."""
+    raw = (resi if resi is not None else request.GET.get("resi", "")).strip()
+    order = None
+    error = ""
+    if raw:
+        code = normalize_tracking_number(raw)
+        if code:
+            order = (
+                Order.objects.select_related("customer", "courier")
+                .prefetch_related("details__product")
+                .filter(tracking_number=code)
+                .first()
+            )
+        if order is None:
+            error = "Resi tidak ditemukan. Periksa kembali nomor resi Anda (contoh: PS-261022-K7M2QX)."
+    context = {"raw": raw, "error": error, "order": None}
+    if order is not None:
+        context.update(
+            order=order,
+            steps=_tracking_steps(order),
+            masked_name=_mask_name(order.customer.name),
+            courier_name=(order.courier.get_full_name() or order.courier.username)
+            if order.courier
+            else "",
+            items=list(order.details.all()),
+        )
+    response = render(
+        request,
+        "customer/track.html",
+        _site_context(active_page="track", **context),
+    )
+    # Halaman ini memuat foto bukti: jangan disimpan cache bersama.
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+LIVE_STALE_AFTER = timedelta(minutes=3)
+LIVE_POLL_SECONDS = 15
+
+
+@never_cache
+def track_location(request, resi):
+    """Posisi kurir (JSON) untuk peta di halaman lacak; hanya selama paket diantar."""
+    code = normalize_tracking_number(resi)
+    order = (
+        Order.objects.select_related("courier").filter(tracking_number=code).first()
+        if code
+        else None
+    )
+    if order is None:
+        return JsonResponse({"found": False}, status=404)
+    data = {
+        "found": True,
+        "status": order.order_status,
+        "live": False,
+        "points": [],
+        "last": None,
+        "stale": False,
+        "poll": LIVE_POLL_SECONDS,
+    }
+    if order.order_status == OrderStatus.ON_DELIVERY:
+        trail = CourierLocation.trail_for(order)
+        if trail:
+            last = trail[-1]
+            data.update(
+                live=True,
+                points=[[float(p.latitude), float(p.longitude)] for p in trail],
+                last=last.as_point(),
+                stale=timezone.now() - last.recorded_at > LIVE_STALE_AFTER,
+            )
+    response = JsonResponse(data)
+    response["Cache-Control"] = "private, no-store"
+    return response

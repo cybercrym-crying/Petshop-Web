@@ -10,16 +10,20 @@ class CustomUserAdmin(UserAdmin):
         "first_name",
         "last_name",
         "role",
+        "phone_number",
         "is_staff",
         "is_active",
     )
     list_filter = ("role", "is_staff", "is_active")
-    search_fields = ("username", "email", "first_name", "last_name")
+    search_fields = ("username", "email", "first_name", "last_name", "phone_number")
     ordering = ("username",)
 
     fieldsets = (
         (None, {"fields": ("username", "password")}),
-        ("Informasi Pribadi", {"fields": ("first_name", "last_name", "email")}),
+        (
+            "Informasi Pribadi",
+            {"fields": ("first_name", "last_name", "email", "phone_number", "address")},
+        ),
         ("Peran", {"fields": ("role",)}),
         (
             "Hak Akses",
@@ -47,6 +51,8 @@ class CustomUserAdmin(UserAdmin):
                     "first_name",
                     "last_name",
                     "role",
+                    "phone_number",
+                    "address",
                     "password1",
                     "password2",
                     "is_active",

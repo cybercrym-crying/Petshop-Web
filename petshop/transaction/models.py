@@ -1,3 +1,5 @@
+import secrets
+import uuid
 from datetime import timedelta
 
 from django.db import models, transaction
@@ -8,8 +10,34 @@ from common.exceptions import PetshopError
 from common.models import TimeStampedModel
 from abc import ABC, abstractmethod
 
-
 UNPAID_GRACE = timedelta(hours=1)  # batas toleransi transfer belum dibayar
+
+# Resi: tanpa 0/O/1/I/L supaya tidak salah baca saat diketik pelanggan.
+TRACKING_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+TRACKING_SUFFIX_LENGTH = 6
+
+
+def normalize_tracking_number(raw):
+    """'ps 241022 k7m2qx' / 'PS241022K7M2QX' -> 'PS-241022-K7M2QX'."""
+    compact = "".join(ch for ch in (raw or "").upper() if ch.isalnum())
+    if len(compact) != 2 + 6 + TRACKING_SUFFIX_LENGTH or not compact.startswith("PS"):
+        return ""
+    return f"PS-{compact[2:8]}-{compact[8:]}"
+
+
+def new_tracking_number(when=None):
+    """Resi acak berformat PS-YYMMDD-XXXXXX (suffix acak, tidak bisa ditebak urut)."""
+    when = when or timezone.localtime()
+    suffix = "".join(
+        secrets.choice(TRACKING_ALPHABET) for _ in range(TRACKING_SUFFIX_LENGTH)
+    )
+    return f"PS-{when:%y%m%d}-{suffix}"
+
+
+def delivery_proof_path(instance, filename):
+    """Nama file diacak (uuid) supaya URL foto bukti tidak bisa ditebak."""
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else "jpg"
+    return f"delivery_proofs/{timezone.now():%Y/%m}/{uuid.uuid4().hex}.{extension}"
 
 
 # OOP: ABSTRAKSI - Payment hanya mendefinisikan "apa" yang harus bisa dilakukan
@@ -86,14 +114,27 @@ class PaymentStatus(models.TextChoices):
 
 
 class OrderStatus(models.TextChoices):
+    PENDING = "MENUNGGU", "Menunggu Konfirmasi"
     CONFIRMED = "DIKONFIRMASI", "Dikonfirmasi"
     ON_DELIVERY = "DALAM_PENGIRIMAN", "Dalam Pengiriman"
     DELIVERED = "TERKIRIM", "Terkirim"
     CANCELLED = "DIBATALKAN", "Dibatalkan"
 
 
+class OrderChannel(models.TextChoices):
+    STORE = "TOKO", "Toko / Kasir"
+    ONLINE = "ONLINE", "Online (situs)"
+
+
+ONLINE_MAX_QTY = 99  # batas wajar per barang untuk satu pesanan online
+
+
 class Order(models.Model):
-    admin = models.ForeignKey("account.User", on_delete=models.PROTECT)
+    # Pegawai yang membuat (kasir/admin) atau yang mengonfirmasi order online.
+    # Kosong selama order online belum dikonfirmasi.
+    admin = models.ForeignKey(
+        "account.User", on_delete=models.PROTECT, null=True, blank=True
+    )
     courier = models.ForeignKey(
         "account.User",
         on_delete=models.PROTECT,
@@ -101,8 +142,12 @@ class Order(models.Model):
         null=True,
         blank=True,
     )
+    # Pelanggan = User ber-role CUSTOMER (tabel Customer lama sudah dihapus).
     customer = models.ForeignKey(
-        "account.Customer", on_delete=models.PROTECT, related_name="orders"
+        "account.User",
+        on_delete=models.PROTECT,
+        related_name="orders",
+        limit_choices_to={"role": "CUSTOMER"},
     )
     order_status = models.CharField(
         max_length=20,
@@ -116,7 +161,26 @@ class Order(models.Model):
     total_payment = models.PositiveBigIntegerField(default=0)
     date = models.DateTimeField(default=timezone.now)
 
+    # Resi transaksi: dibuat otomatis saat order dibuat, dibagikan ke pelanggan.
+    tracking_number = models.CharField(
+        max_length=20, unique=True, null=True, blank=True, editable=False
+    )
+    # Jejak pengiriman: kapan mulai diantar, kapan sampai, dan bukti foto kurir.
+    shipped_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    delivery_photo = models.ImageField(
+        upload_to=delivery_proof_path, null=True, blank=True
+    )
+    delivery_note = models.CharField(max_length=255, blank=True, default="")
+
+    channel = models.CharField(
+        max_length=10, choices=OrderChannel.choices, default=OrderChannel.STORE
+    )
+    customer_note = models.CharField(max_length=255, blank=True, default="")
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+
     _ALLOWED_TRANSITIONS = {
+        OrderStatus.PENDING: {OrderStatus.CONFIRMED, OrderStatus.CANCELLED},
         OrderStatus.CONFIRMED: {
             OrderStatus.ON_DELIVERY,
             OrderStatus.DELIVERED,
@@ -125,16 +189,35 @@ class Order(models.Model):
         OrderStatus.ON_DELIVERY: {OrderStatus.DELIVERED, OrderStatus.CANCELLED},
     }
 
+    # OOP: ENKAPSULASI - resi dibuat Order sendiri; pemanggil (checkout, seed,
+    # admin) tidak perlu tahu formatnya.
+    def save(self, *args, **kwargs):
+        if self._state.adding and not self.tracking_number:
+            self.tracking_number = self._unique_tracking_number()
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def _unique_tracking_number(cls):
+        for _ in range(10):
+            candidate = new_tracking_number()
+            if not cls.objects.filter(tracking_number=candidate).exists():
+                return candidate
+        raise PetshopError("Gagal membuat resi unik, coba lagi.")
+
     @property
     def is_open(self):
         return self.order_status in self._ALLOWED_TRANSITIONS
 
-    # OOP: POLIMORFISME - perilaku bergantung pada objek Payment, bukan if-else.
+    @property
+    def has_delivery_proof(self):
+        return bool(self.delivery_photo)
+
+    # OOP: POLIMORFISME  perilaku bergantung pada objek Payment, bukan if-else.
     @property
     def payment_handler(self):
         return get_payment(self.payment_method)
 
-    # OOP: ENKAPSULASI - aturan "kapan order telat bayar" milik Order sendiri,
+    # OOP: ENKAPSULASI  "kapan order telat bayar" milik Order sendiri,
     # view cukup membaca `order.is_overdue`.
     @property
     def is_overdue(self):
@@ -145,7 +228,7 @@ class Order(models.Model):
             and self.date < timezone.now() - UNPAID_GRACE
         )
 
-    # OOP: ENKAPSULASI + POLIMORFISME - siap dikirim atau belum ditentukan
+    # OOP: ENKAPSULASI dan POLIFORM siap dikirim atau belum ditentukan
     # Order bersama Payment-nya, bukan string "cod"/"paid" di view.
     @property
     def is_ready_to_ship(self):
@@ -154,7 +237,7 @@ class Order(models.Model):
             or self.payment_status == PaymentStatus.PAID
         )
 
-    # OOP: ENKAPSULASI - satu-satunya jalan ganti status; aturan transisi
+    # OOP: ENKAPSULASI  satu-satunya jalan ganti status; aturan transisi
     # tersimpan di _ALLOWED_TRANSITIONS dan tidak boleh dilewati.
     def _move_to(self, new_status):
         if new_status not in self._ALLOWED_TRANSITIONS.get(self.order_status, set()):
@@ -163,7 +246,7 @@ class Order(models.Model):
             )
         self.order_status = new_status
 
-    # OOP: ENKAPSULASI - admin hanya menugaskan kurir; status tidak berubah.
+    # OOP: ENKAPSULASI  admin hanya menugaskan kurir; status tidak berubah.
     # Aturan pembayaran (transfer harus lunas, tunai boleh belum) dijaga di sini.
     def assign_courier(self, courier):
         if courier is None:
@@ -190,13 +273,113 @@ class Order(models.Model):
                 f"Order #{self.pk}: transfer belum lunas, belum bisa dikirim."
             )
         self._move_to(OrderStatus.ON_DELIVERY)
-        self.save(update_fields=["order_status", "courier"])
+        self.shipped_at = timezone.now()
+        self.save(update_fields=["order_status", "courier", "shipped_at"])
 
-    def mark_delivered(self):
+    # Kurir wajib melampirkan foto (dijaga form kurir); admin boleh menutup order
+    # tanpa foto, jadi `photo` opsional di level model.
+    def mark_delivered(self, photo=None, note=""):
         self._move_to(OrderStatus.DELIVERED)
         if self.payment_handler.paid_after_accepted():
             self.payment_status = PaymentStatus.PAID
-        self.save(update_fields=["order_status", "payment_status"])
+        self.delivered_at = timezone.now()
+        fields = ["order_status", "payment_status", "delivered_at"]
+        if photo is not None:
+            self.delivery_photo = photo
+            fields.append("delivery_photo")
+        if note:
+            self.delivery_note = note[:255]
+            fields.append("delivery_note")
+        self.save(update_fields=fields)
+
+    @property
+    def is_online(self):
+        return self.channel == OrderChannel.ONLINE
+
+    @property
+    def is_waiting_confirmation(self):
+        return self.order_status == OrderStatus.PENDING
+
+    # Admin/kasir menerima pesanan online: Menunggu Konfirmasi -> Dikonfirmasi.
+    def confirm(self, user):
+        self._move_to(OrderStatus.CONFIRMED)
+        self.confirmed_at = timezone.now()
+        fields = ["order_status", "confirmed_at"]
+        if self.admin_id is None:
+            self.admin = user
+            fields.append("admin")
+        self.save(update_fields=fields)
+
+    def cancel_by_customer(self, customer):
+        """Pelanggan hanya boleh membatalkan pesanannya selama belum dikonfirmasi."""
+        if self.customer_id != customer.pk:
+            raise InvalidTransition("Pesanan ini bukan milik Anda.")
+        if self.order_status != OrderStatus.PENDING:
+            raise InvalidTransition(
+                f"Pesanan #{self.pk} sudah diproses toko, hubungi admin untuk pembatalan."
+            )
+        self.cancel()
+
+    # OOP: ENKAPSULASI - satu pintu pesanan online dari pelanggan yang login.
+    # Harga & stok diambil dari database (bukan dari keranjang di browser).
+    @classmethod
+    @transaction.atomic
+    def place_online(cls, customer, lines, payment_method, note=""):
+        """lines: [(product_id, jumlah), ...] dari keranjang pelanggan."""
+        if payment_method not in PaymentMethod.values:
+            raise CheckoutError("Metode pembayaran tidak valid.")
+        wanted = {}
+        for product_id, qty in lines:
+            try:
+                product_id, qty = int(product_id), int(qty)
+            except (TypeError, ValueError):
+                raise CheckoutError("Data keranjang tidak valid.")
+            if qty <= 0:
+                continue
+            wanted[product_id] = wanted.get(product_id, 0) + qty
+        if not wanted:
+            raise CheckoutError("Keranjang Anda kosong.")
+        for product_id, qty in wanted.items():
+            if qty > ONLINE_MAX_QTY:
+                raise CheckoutError(
+                    f"Maksimal {ONLINE_MAX_QTY} pcs per barang untuk pesanan online."
+                )
+
+        products = Product.objects.sellable().in_bulk(list(wanted))
+        missing = [pk for pk in wanted if pk not in products]
+        if missing:
+            raise CheckoutError(
+                "Sebagian barang di keranjang sudah tidak dijual. "
+                "Hapus barang tersebut dari keranjang lalu coba lagi."
+            )
+
+        order = cls.objects.create(
+            admin=None,
+            customer=customer,
+            channel=OrderChannel.ONLINE,
+            order_status=OrderStatus.PENDING,
+            payment_method=payment_method,
+            customer_note=(note or "").strip()[:255],
+        )
+        total = 0
+        for product_id, qty in wanted.items():
+            product = products[product_id]
+            # InsufficientStock (PetshopError) membatalkan seluruh pesanan.
+            product.apply_mutation(
+                MutationType.OUT, qty, user=customer, note=f"Order online #{order.pk}"
+            )
+            subtotal = product.selling_price * qty
+            OrderDetail.objects.create(
+                transaction=order,
+                product=product,
+                quantity=qty,
+                unit_price=product.selling_price,
+                subtotal=subtotal,
+            )
+            total += subtotal
+        order.total_payment = total
+        order.save(update_fields=["total_payment"])
+        return order
 
     def mark_paid(self):
         if self.order_status == OrderStatus.CANCELLED:
@@ -276,7 +459,10 @@ class Cart(TimeStampedModel):
         items = list(self.items.select_related("product"))
         if not items:
             raise CheckoutError("Belum ada item di order.")
-        if courier is not None and get_payment(payment_method).must_be_paid_before_delivery():
+        if (
+            courier is not None
+            and get_payment(payment_method).must_be_paid_before_delivery()
+        ):
             raise CheckoutError(
                 "Order transfer: kurir bisa ditugaskan setelah pembayaran lunas."
             )

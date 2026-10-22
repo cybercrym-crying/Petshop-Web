@@ -204,8 +204,12 @@
                                         {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }} ({{ c.phone_number }})</option>{% endfor %}
                                     </select>
                                     <small class="text-white-50 d-block mt-1" style="font-size: 0.75rem;">
-                                        Belum ada? <a href="{% url 'manage_account' %}?tab=customer"
+                                        {% if request.user.role == "ADMIN" %}
+                                            Belum ada? <a href="{% url 'manage_account' %}?tab=customer"
     class="text-warning text-decoration-none">Tambah Data</a>
+                                        {% else %}
+                                            Belum ada? Minta admin menambahkan pelanggan, atau pelanggan bisa daftar sendiri di situs.
+                                        {% endif %}
                                     </small>
                                 </div>
                                 <div class="row g-3">

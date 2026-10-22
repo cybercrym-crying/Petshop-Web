@@ -29,7 +29,19 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"  # production: set DJANGO_DEBUG=0
 
-ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h]
+# Domain produksi + localhost untuk development. Bisa ditimpa lewat env
+# DJANGO_ALLOWED_HOSTS="a.com,b.com".
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS", "petshop.sinarputra.web.id,localhost,127.0.0.1"
+    ).split(",")
+    if h.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://petshop.sinarputra.web.id",
+]
 
 
 # Application definition
@@ -47,6 +59,8 @@ INSTALLED_APPS = [
     "transaction.apps.TransactionConfig",
     "customer.apps.CustomerConfig",
     "courier.apps.CourierConfig",
+    "service.apps.ServiceConfig",
+    "chatbot.apps.ChatbotConfig",
 ]
 
 MIDDLEWARE = [
@@ -71,6 +85,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "transaction.context_processors.pending_online_orders",
             ],
         },
     },

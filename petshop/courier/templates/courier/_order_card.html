@@ -3,6 +3,7 @@
          data-detail-url="{% url 'courier:order_detail' order.pk %}"
          tabindex="0">
     <h2 class="order-card__name">{{ order.customer.name }}</h2>
+    {% if order.tracking_number %}<p class="order-card__resi">{{ order.tracking_number }}</p>{% endif %}
     <p class="order-card__address">
         <i class="bi bi-geo-alt me-1 text-brand"></i> {{ order.customer.address }}
     </p>
@@ -32,15 +33,10 @@
             </button>
         </form>
     {% elif action == "delivered" %}
-        <form method="post"
-              action="{% url 'courier:update_status' order.pk %}"
-              class="order-card__action">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="delivered">
-            <input type="hidden" name="status" value="{{ current }}">
-            <button type="submit" class="btn-green w-100">
-                <i class="bi bi-check2-circle me-2"></i> Selesaikan
-            </button>
-        </form>
+        {# Selesai butuh foto bukti, jadi diarahkan ke halaman detail (form foto). #}
+        <a href="{% url 'courier:order_detail' order.pk %}#bukti"
+           class="btn-green w-100 order-card__action text-center text-decoration-none d-block">
+            <i class="bi bi-camera me-2"></i> Selesaikan
+        </a>
     {% endif %}
 </article>

@@ -1,12 +1,20 @@
+from datetime import timedelta
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
+from django.http import JsonResponse
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from account.decorators import roleRequired
-from account.models import Role
+from account.models import Role, person_search
 from common.exceptions import PetshopError
+from .forms import DeliveryProofForm
+from .models import CourierLocation
 from transaction.models import Order, OrderStatus, PaymentMethod, PaymentStatus
 
 BOARD_DONE_LIMIT = 15
@@ -49,7 +57,7 @@ def dashboard(request):
     )
 
     if q:
-        filters = Q(customer__name__icontains=q)
+        orders, filters = person_search(orders, q, prefix="customer__")
         if q.isdigit():
             filters |= Q(pk=int(q))
         orders = orders.filter(filters)
@@ -80,6 +88,9 @@ def dashboard(request):
             }[current],
             "total_pending": pending_orders.count(),
             "total_on_delivery": on_delivery_orders.count(),
+            "has_active_delivery": Order.objects.filter(
+                courier=request.user, order_status=OrderStatus.ON_DELIVERY
+            ).exists(),
             "total_delivered": delivered_orders.count(),
             "done_limit": BOARD_DONE_LIMIT,
         },
@@ -111,7 +122,11 @@ def order_detail(request, pk):
         pk=pk,
         courier=request.user,
     )
-    return render(request, "courier/order_detail.html", {"order": order})
+    return render(
+        request,
+        "courier/order_detail.html",
+        {"order": order, "proof_form": DeliveryProofForm()},
+    )
 
 
 @roleRequired(Role.COURIER)
@@ -130,8 +145,19 @@ def update_status(request, pk):
             order.mark_on_delivery(request.user)
             messages.success(request, f"Order #{order.pk} sedang dikirim.")
         elif action == "delivered":
-            order.mark_delivered()
-            messages.success(request, f"Order #{order.pk} berhasil dikirim.")
+            # Selesai = wajib foto bukti, supaya admin & pelanggan tahu barang sampai.
+            form = DeliveryProofForm(request.POST, request.FILES)
+            if not form.is_valid():
+                for errors in form.errors.values():
+                    for error in errors:
+                        messages.error(request, error)
+                return redirect("courier:order_detail", pk=order.pk)
+            order.mark_delivered(
+                photo=form.cleaned_data["photo"], note=form.cleaned_data["note"]
+            )
+            messages.success(
+                request, f"Order #{order.pk} berhasil dikirim, foto bukti tersimpan."
+            )
         else:
             messages.error(request, "Aksi tidak tersedia.")
     except PetshopError as error:
@@ -139,3 +165,57 @@ def update_status(request, pk):
 
     status = _board_status(request.POST.get("status"))
     return redirect(f"{reverse('courier:dashboard')}?status={status}")
+
+
+MIN_PING_INTERVAL = timedelta(seconds=5)  # HP mengirim tiap ±15 dtk; ini sekadar rem
+
+
+def _coordinate(raw, limit):
+    try:
+        value = Decimal(str(raw)).quantize(Decimal("0.000001"))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+    return value if -limit <= value <= limit else None
+
+
+@roleRequired(Role.COURIER)
+@require_POST
+def share_location(request):
+    """Terima lokasi GPS dari HP kurir (navigator.geolocation di browser).
+
+    Lokasi hanya disimpan selama kurir sedang mengantar paket, jadi kurir
+    tidak terlacak di luar jam pengiriman.
+    """
+    active = Order.objects.filter(
+        courier=request.user, order_status=OrderStatus.ON_DELIVERY
+    ).count()
+    if not active:
+        return JsonResponse(
+            {"ok": False, "reason": "no_active", "message": "Tidak ada paket yang sedang diantar."},
+            status=409,
+        )
+
+    lat = _coordinate(request.POST.get("lat"), 90)
+    lng = _coordinate(request.POST.get("lng"), 180)
+    if lat is None or lng is None:
+        return JsonResponse({"ok": False, "reason": "invalid", "message": "Koordinat tidak valid."}, status=400)
+    try:
+        accuracy = max(0, min(int(float(request.POST.get("accuracy") or 0)), 100000)) or None
+    except ValueError:
+        accuracy = None
+
+    now = timezone.now()
+    last = CourierLocation.objects.filter(courier=request.user).order_by("-recorded_at").first()
+    if last and now - last.recorded_at < MIN_PING_INTERVAL:
+        return JsonResponse({"ok": True, "saved": False, "active_orders": active})
+
+    CourierLocation.objects.create(
+        courier=request.user,
+        latitude=lat,
+        longitude=lng,
+        accuracy=accuracy,
+        recorded_at=now,
+    )
+    return JsonResponse(
+        {"ok": True, "saved": True, "active_orders": active, "at": now.isoformat()}
+    )

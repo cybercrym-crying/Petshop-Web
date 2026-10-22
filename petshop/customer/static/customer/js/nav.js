@@ -53,11 +53,59 @@
     });
   }
 
+  function setupSearchToggle() {
+    var toggle = document.getElementById("nav-search-toggle");
+    var form = document.getElementById("nav-search");
+    if (!toggle || !form) return;
+    toggle.addEventListener("click", function () {
+      var open = !form.classList.contains("open");
+      form.classList.toggle("open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) {
+        var input = form.querySelector("input");
+        if (input) input.focus();
+      }
+    });
+    document.addEventListener("click", function (event) {
+      if (!form.classList.contains("open")) return;
+      if (form.contains(event.target) || toggle.contains(event.target)) return;
+      form.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  function setupAccountMenu() {
+    var root = document.querySelector("[data-account]");
+    if (!root) return;
+    var button = root.querySelector("button[aria-haspopup]");
+    var menu = root.querySelector(".sn-menu");
+
+    function setOpen(open) {
+      menu.hidden = !open;
+      button.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    button.addEventListener("click", function () {
+      setOpen(menu.hidden);
+    });
+    document.addEventListener("click", function (event) {
+      if (!root.contains(event.target)) setOpen(false);
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !menu.hidden) {
+        setOpen(false);
+        button.focus();
+      }
+    });
+  }
+
   window.addEventListener("storage", refreshBadges);
   document.addEventListener("wishlist:change", refreshBadges);
 
   document.addEventListener("DOMContentLoaded", function () {
     setupMenu();
+    setupSearchToggle();
+    setupAccountMenu();
     refreshBadges();
   });
 

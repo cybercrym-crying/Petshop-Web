@@ -1,0 +1,109 @@
+{% extends "account/staff_base.html" %}
+{% load static %}
+{% block title %}PetAdmin - FAQ Chatbot{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
+    <link href="{% static 'chatbot/css/staff.css' %}?v=2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4 animate-fade-up">
+            <div>
+                <p class="eyebrow">Situs Pelanggan</p>
+                <h1 class="page-title mb-1">FAQ Chatbot</h1>
+                <p class="text-muted fw-medium mb-0">Jawaban otomatis untuk pertanyaan yang sering ditanya di situs. Pelanggan juga bisa mengetik nomor resi untuk cek status pesanan.</p>
+            </div>
+            <button class="btn-orange" data-bs-toggle="modal" data-bs-target="#faqModalNew">
+                <i class="bi bi-plus-lg me-2"></i> Tambah FAQ
+            </button>
+        </div>
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="faq-stats animate-fade-up">
+            <div class="card-custom faq-stat"><span>{{ stats.total }}</span>Pertanyaan masuk</div>
+            <div class="card-custom faq-stat"><span>{{ stats.answered }}</span>Terjawab otomatis</div>
+            <div class="card-custom faq-stat is-warn"><span>{{ unanswered|length }}</span>Topik belum terjawab</div>
+        </div>
+        <div class="row g-4">
+            <div class="col-12 col-xl-8">
+                <div class="card-custom animate-fade-up">
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Pertanyaan</th>
+                                    <th>Kata kunci</th>
+                                    <th class="text-center">Dipakai</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for f in faqs %}
+                                    <tr class="{% if not f.is_active %}faq-off{% endif %}">
+                                        <td>
+                                            <div class="fw-bold text-dark">{{ f.question }}</div>
+                                            <div class="faq-answer">{{ f.answer|truncatechars:110 }}</div>
+                                            <div class="faq-tags">
+                                                {% if f.is_quick %}<span class="faq-tag is-quick">Pilihan cepat</span>{% endif %}
+                                                {% if not f.is_active %}<span class="faq-tag">Nonaktif</span>{% endif %}
+                                                {% if f.link_url %}<span class="faq-tag"><i class="bi bi-link-45deg"></i> {{ f.link_url }}</span>{% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="faq-kw">{{ f.keywords|default:"-"|truncatechars:80 }}</td>
+                                        <td class="text-center fw-bold">{{ f.hits }}</td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn-sm-action" data-bs-toggle="modal" data-bs-target="#faqModal{{ f.pk }}">
+                                                <i class="bi bi-pencil"></i> Ubah
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center py-5 text-muted">Belum ada FAQ.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-4">
+                <div class="card-custom faq-side animate-fade-up">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="h6 fw-bold mb-0"><i class="bi bi-question-diamond me-1"></i> Pertanyaan belum terjawab</h2>
+                        {% if unanswered %}
+                            <form method="post" action="{% url 'chatbot:clear_unanswered' %}" data-confirm="Hapus semua catatan pertanyaan belum terjawab?">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-sm-action">Bersihkan</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    <p class="text-muted small">Tambahkan sebagai FAQ baru, atau masukkan katanya ke kata kunci FAQ yang sudah ada.</p>
+                    <ul class="faq-unanswered">
+                        {% for u in unanswered %}
+                            <li>
+                                <span class="faq-q">“{{ u.message }}”{% if u.total > 1 %} <b>×{{ u.total }}</b>{% endif %}</span>
+                                <a href="?dari={{ u.message|urlencode }}" class="btn-sm-action">Jadikan FAQ</a>
+                            </li>
+                        {% empty %}
+                            <li class="text-muted">Semua pertanyaan sudah terjawab. 🎉</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include "chatbot/_faq_modal.html" with f=None %}
+    {% for f in faqs %}
+        {% include "chatbot/_faq_modal.html" with f=f %}
+    {% endfor %}
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'chatbot/js/manage_faq.js' %}?v=1"></script>
+{% endblock %}
