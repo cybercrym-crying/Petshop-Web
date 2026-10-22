@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>PetAdmin - Catat Stok Mutasi</title>
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet" />
+        <link rel="stylesheet" href="{% static 'product/css/add_stock_mutation.css' %}?v=dm1">
+    </head>
+    <body>
+        {% include "product/_page_header.html" %}
+        <main class="container-fluid px-xl-5 px-4 py-5">
+            <div class="text-center mb-5 animate-fade-up" style="animation-delay: 0s;">
+                <p class="eyebrow"><i class="bi bi-box-seam me-1"></i> Manajemen Inventaris</p>
+                <h1 class="page-title">Catat Mutasi Stok</h1>
+                <p class="text-muted fw-medium">Tambahkan stok produk yang masuk atau kurangi stok yang keluar / rusak.</p>
+            </div>
+            <div class="animate-fade-up" style="animation-delay: 0.1s;">{% include "product/_messages.html" %}</div>
+            <div class="form-wrapper animate-fade-up" style="animation-delay: 0.2s;">
+                <form method="post" class="custom-form">
+                    {% csrf_token %}
+                    {% for error in form.non_field_errors %}
+                        <div class="alert alert-danger rounded-4 fw-semibold border-0 shadow-sm"><i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}</div>
+                    {% endfor %}
+                    <div class="row g-4">
+                        {% for field in form %}
+                            <div class="col-12 {% if field.name == 'quantity' or field.name == 'mutationType' %}col-md-6{% endif %}">
+                                <label class="form-label-custom"
+                                       for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-2 fw-semibold"><i class="bi bi-info-circle-fill me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                                {% if field.help_text %}
+                                    <small class="text-muted d-block mt-2 fw-medium">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex flex-column flex-sm-row gap-3 mt-5 pt-4 border-top">
+                        <a href="{% url 'product:product_list' %}"
+                           class="btn-cancel flex-grow-1"><i class="bi bi-arrow-left me-2"></i> Kembali</a>
+                        <button type="submit"
+                                class="btn-orange flex-grow-1"><i class="bi bi-check2-circle me-2"></i> Simpan Mutasi</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

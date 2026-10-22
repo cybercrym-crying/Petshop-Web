@@ -1,0 +1,114 @@
+{% load static %}
+{% comment %}
+Sidebar admin yang berdiri sendiri: cukup di-include tepat setelah <body>.
+Dipakai oleh account/staff_base.html dan oleh partials/staff_nav.html (halaman app lain) jadi nggak duplikat dan bentrok antar elemen.
+{% endcomment %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet" />
+<link href="{% static 'account/css/staff_sidebar.css' %}?v=4"
+      rel="stylesheet" />
+<link href="{% static 'account/css/staff_theme.css' %}?v=2"
+      rel="stylesheet" />
+<script src="{% static 'account/js/staff_sidebar.js' %}?v=3"></script>
+{% with rm=request.resolver_match %}
+    <header class="staff-topbar">
+        <button type="button"
+                class="staff-burger"
+                data-staff-toggle
+                aria-controls="staffSidebar"
+                aria-expanded="false"
+                aria-label="Buka menu">
+            <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+        <span class="staff-brand-name">PetAdmin</span>
+        <button type="button"
+                class="staff-burger staff-theme-icon"
+                data-staff-theme-toggle
+                aria-pressed="false"
+                aria-label="Aktifkan mode gelap">
+            <i class="bi bi-moon-stars when-light" aria-hidden="true"></i>
+            <i class="bi bi-sun when-dark" aria-hidden="true"></i>
+        </button>
+    </header>
+    <div class="staff-backdrop" data-staff-backdrop></div>
+    <aside class="staff-sidebar" id="staffSidebar" aria-label="Menu admin">
+        <div class="staff-brand">
+            <span class="staff-logo">L</span>
+            <span class="staff-brand-name">PetAdmin</span>
+            <button type="button"
+                    class="staff-close"
+                    data-staff-toggle
+                    aria-controls="staffSidebar"
+                    aria-label="Tutup menu">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+        <nav class="staff-nav">
+            {% with role=request.user.role %}
+                <p class="staff-group">Transaksi</p>
+                <a href="{% url 'transaction:make_transaction' %}"
+                   class="staff-link{% if rm.namespace == 'transaction' and rm.url_name == 'make_transaction' %} is-active{% endif %}"
+                   {% if rm.namespace == 'transaction' and rm.url_name == 'make_transaction' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-cart3" aria-hidden="true"></i>Buat Transaksi
+                </a>
+                <a href="{% url 'transaction:manage_transaction' %}"
+                   class="staff-link{% if rm.namespace == 'transaction' and rm.url_name != 'make_transaction' %} is-active{% endif %}"
+                   {% if rm.namespace == 'transaction' and rm.url_name != 'make_transaction' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-clipboard-check" aria-hidden="true"></i>Kelola Transaksi
+                    {% if pending_online_orders %}<span class="staff-badge" title="Pesanan online menunggu konfirmasi">{{ pending_online_orders }}</span>{% endif %}
+                </a>
+                <p class="staff-group">Layanan</p>
+                <a href="{% url 'service:manage_bookings' %}"
+                   class="staff-link{% if rm.namespace == 'service' and rm.url_name == 'manage_bookings' %} is-active{% endif %}"
+                   {% if rm.namespace == 'service' and rm.url_name == 'manage_bookings' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-calendar2-heart" aria-hidden="true"></i>Booking Layanan
+                </a>
+                {% if role == "ADMIN" %}
+                    <a href="{% url 'service:manage_services' %}"
+                       class="staff-link{% if rm.namespace == 'service' and rm.url_name == 'manage_services' %} is-active{% endif %}"
+                       {% if rm.namespace == 'service' and rm.url_name == 'manage_services' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-scissors" aria-hidden="true"></i>Jenis Layanan
+                    </a>
+                    <a href="{% url 'chatbot:manage_faq' %}"
+                       class="staff-link{% if rm.namespace == 'chatbot' %} is-active{% endif %}"
+                       {% if rm.namespace == 'chatbot' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-chat-dots" aria-hidden="true"></i>FAQ Chatbot
+                    </a>
+                    <p class="staff-group">Produk &amp; Stok</p>
+                    <a href="{% url 'product:manage_product' %}"
+                       class="staff-link{% if rm.url_name == 'manage_product' %} is-active{% endif %}"
+                       {% if rm.url_name == 'manage_product' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-box-seam" aria-hidden="true"></i>Kelola Produk
+                    </a>
+                    <a href="{% url 'product:product_list' %}"
+                       class="staff-link{% if rm.url_name == 'product_list' %} is-active{% endif %}"
+                       {% if rm.url_name == 'product_list' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-tags" aria-hidden="true"></i>Stok &amp; Harga
+                    </a>
+                    <p class="staff-group">Akun</p>
+                    <a href="{% url 'manage_account' %}"
+                       class="staff-link{% if rm.url_name == 'manage_account' or rm.url_name == 'employee_profile' or rm.url_name == 'customer_profile' or rm.url_name == 'add_employee' or rm.url_name == 'edit_employee' or rm.url_name == 'add_customer' or rm.url_name == 'edit_customer' %} is-active{% endif %}">
+                        <i class="bi bi-people" aria-hidden="true"></i>Kelola Akun
+                    </a>
+                {% endif %}
+            {% endwith %}
+        </nav>
+        <div class="staff-foot">
+            <button type="button"
+                    class="staff-theme"
+                    data-staff-theme-toggle
+                    aria-pressed="false"
+                    aria-label="Aktifkan mode gelap">
+                <span class="when-light"><i class="bi bi-moon-stars" aria-hidden="true"></i> Mode gelap</span>
+                <span class="when-dark"><i class="bi bi-sun" aria-hidden="true"></i> Mode terang</span>
+            </button>
+            <div class="staff-who">{{ request.user.get_full_name|default:request.user.username }} <small>· {{ request.user.get_role_display }}</small></div>
+            <form method="post" action="{% url 'logout' %}" class="staff-logout-form">
+                {% csrf_token %}
+                <button type="submit" class="staff-logout">Keluar</button>
+            </form>
+        </div>
+    </aside>
+{% endwith %}

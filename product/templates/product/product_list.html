@@ -1,0 +1,196 @@
+{% load static rupiah %}
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>PetAdmin - Stok &amp; Harga</title>
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet" />
+        <link rel="stylesheet" href="{% static 'product/css/product_list.css' %}?v=dm1">
+    </head>
+    <body>
+        {% include "product/_page_header.html" %}
+        <main class="container-fluid px-xl-5 px-4 py-4">
+            <!-- Header (Disamakan dengan manage_product) -->
+            <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 animate-fade-up"
+                 style="animation-delay: 0s">
+                <div>
+                    <p class="eyebrow">Dasbor</p>
+                    <h1 class="page-title">Stok &amp; Harga</h1>
+                    <p class="text-muted mt-1 fw-medium mb-0">
+                        {{ counts.all }} total produk tersimpan.
+                        {% if restock_needed %}<span class="text-danger ms-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> <b>{{ restock_needed }} perlu restock</b></span>{% endif %}
+                    </p>
+                </div>
+                <div class="d-flex gap-2 mt-3 mt-md-0">
+                    <a href="{% url 'product:manage_product' %}"
+                       class="btn-cancel"><i class="bi bi-box-seam me-2"></i> Kelola Produk</a>
+                    <a href="{% url 'product:add_stock_mutation' %}"
+                       class="btn-orange"><i class="bi bi-plus-lg me-2"></i> Catat Stok</a>
+                </div>
+            </div>
+            {% include "product/_messages.html" %}
+            <!-- Statistik & Filter Tiles -->
+            <div class="row g-3 mb-4 animate-fade-up" style="animation-delay: 0.1s;">
+                <div class="col-6 col-xl-3">
+                    <a href="?{% if q %}q={{ q|urlencode }}{% endif %}"
+                       class="stat-tile {% if not active_filter %}active{% endif %}">
+                        <div class="stat-num">{{ counts.all }}</div>
+                        <div class="stat-label"><i class="bi bi-boxes me-1"></i> Semua Produk</div>
+                    </a>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <a href="?filter=low{% if q %}&q={{ q|urlencode }}{% endif %}"
+                       class="stat-tile {% if active_filter == 'low' %}active{% endif %}">
+                        <div class="stat-num text-warning">{{ counts.low }}</div>
+                        <div class="stat-label"><i class="bi bi-graph-down-arrow me-1"></i> Stok Menipis</div>
+                    </a>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <a href="?filter=empty{% if q %}&q={{ q|urlencode }}{% endif %}"
+                       class="stat-tile {% if active_filter == 'empty' %}active{% endif %}">
+                        <div class="stat-num text-danger">{{ counts.empty }}</div>
+                        <div class="stat-label"><i class="bi bi-x-circle me-1"></i> Stok Habis</div>
+                    </a>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <a href="?filter=noprice{% if q %}&q={{ q|urlencode }}{% endif %}"
+                       class="stat-tile {% if active_filter == 'noprice' %}active{% endif %}">
+                        <div class="stat-num text-secondary">{{ counts.noprice }}</div>
+                        <div class="stat-label"><i class="bi bi-tag-fill me-1"></i> Belum Ada Harga</div>
+                    </a>
+                </div>
+            </div>
+            <!-- Toolbar Pencarian -->
+            <div class="d-flex flex-wrap gap-3 align-items-center mb-4 animate-fade-up"
+                 style="animation-delay: 0.2s">
+                <form method="get"
+                      class="d-flex flex-grow-1 gap-2"
+                      style="max-width: 500px"
+                      role="search">
+                    {% if active_filter %}<input type="hidden" name="filter" value="{{ active_filter }}">{% endif %}
+                    <input type="search"
+                           name="q"
+                           value="{{ q }}"
+                           class="filter-input"
+                           placeholder="Cari nama produk..."
+                           aria-label="Cari">
+                    <button type="submit"
+                            class="btn-cancel border-0 shadow-sm"
+                            style="background-color: white">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    {% if q %}<a href="?{% if active_filter %}filter={{ active_filter }}{% endif %}"
+   class="btn-cancel text-danger border-0">Reset</a>{% endif %}
+                </form>
+            </div>
+            <!-- Tabel Produk -->
+            <div class="card-custom animate-fade-up mb-5"
+                 style="animation-delay: 0.3s">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover">
+                        <thead>
+                            <tr>
+                                <th>Informasi Produk</th>
+                                <th>Harga Beli</th>
+                                <th>Harga Jual</th>
+                                <th>Ketersediaan</th>
+                                <th>Status</th>
+                                <th class="text-end">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in productList %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark" style="font-size: 1.05rem;">{{ p.name }}</div>
+                                        <small class="text-muted fw-semibold">{{ p.category.name }}</small>
+                                    </td>
+                                    <td class="fw-medium text-muted">Rp {{ p.purchase_price|rupiah }}</td>
+                                    <td>
+                                        {% if p.selling_price is not None %}
+                                            <div class="fw-bold"
+                                                 style="color: #5c418c">Rp {{ p.selling_price|rupiah }}</div>
+                                            <small class="fw-semibold {% if p.margin < 0 %}text-danger{% else %}text-success{% endif %}">
+                                                Margin Rp {{ p.margin|rupiah }}
+                                            </small>
+                                        {% else %}
+                                            <span class="badge bg-light text-secondary border border-secondary-subtle">Belum diset</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge-stock {% if p.stock_state == 'empty' %}empty{% elif p.stock_state == 'low' %}low{% else %}good{% endif %}">
+                                            {{ p.stock }} Unit
+                                            {% if p.stock_state == "empty" %} (Habis){% elif p.stock_state == "low" %} (Menipis){% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge-is-active {% if p.is_active %}active{% else %}inactive{% endif %}">
+                                            {% if p.is_active %}Aktif{% else %}Nonaktif{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <a href="{% url 'product:set_selling_price' p.pk %}"
+                                               class="btn-sm-action {% if p.selling_price is None %}primary{% endif %}">Atur Harga</a>
+                                            <a href="{% url 'product:add_stock_mutation' %}?product={{ p.pk }}"
+                                               class="btn-sm-action {% if p.stock_state != 'ok' %}primary{% endif %}">+ Stok</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <i class="bi bi-inbox text-muted opacity-50" style="font-size: 3rem;"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">Data tidak ditemukan</h5>
+                                        <p class="text-muted">{% if q or active_filter %}Tidak ada produk yang cocok dengan pencarian Anda.{% else %}Belum ada data produk di sistem.{% endif %}</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Riwayat Mutasi Terakhir -->
+            <h4 class="fw-bold mb-3 animate-fade-up"
+                style="animation-delay: 0.4s;
+                       color: #2B3674">Riwayat Stok Terakhir</h4>
+            <div class="card-custom animate-fade-up" style="animation-delay: 0.5s;">
+                <div class="feed-wrapper">
+                    {% for m in recentMutations %}
+                        <div class="feed-item">
+                            <div class="feed-icon {% if m.mutationType == 'MASUK' %}in{% else %}out{% endif %}">
+                                {% if m.mutationType == "MASUK" %}
+                                    <i class="bi bi-arrow-down-left"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-up-right"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="fw-bold mb-1">{{ m.product.name }}</h6>
+                                    <b class="fs-5 {% if m.mutationType == 'MASUK' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if m.mutationType == "MASUK" %}+{% else %}−{% endif %}{{ m.quantity }}
+                                    </b>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-muted fw-medium">{{ m.note|default:"Tidak ada catatan" }}</small>
+                                    <small class="text-muted fw-semibold">
+                                        <i class="bi bi-clock me-1"></i> {{ m.date|date:"d M Y, H:i" }} • {% if m.createdBy %}{{ m.createdBy.username }}{% else %}Sistem{% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4 text-muted fw-medium">Belum ada riwayat pergerakan stok saat ini.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

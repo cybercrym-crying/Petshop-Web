@@ -1,0 +1,132 @@
+body {
+  background-color: var(--c-bg);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: var(--c-text);
+  margin: 0;
+}
+
+.text-brand {
+  color: var(--c-brand) !important;
+}
+
+.navbar-custom {
+  background: var(--c-surface);
+  padding: 12px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--c-border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.brand-logo {
+  background: linear-gradient(135deg, #8c73c2, #5c418c);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+.brand-name {
+  color: var(--c-text);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.5px;
+}
+
+.pf-crumb {
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.pf-crumb a {
+  color: var(--c-brand);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.pf-crumb a:hover {
+  color: var(--c-brand-dark);
+  text-decoration: underline;
+}
+.pf-crumb span {
+  color: var(--c-muted-2);
+  margin: 0 5px;
+}
+
+.card-custom {
+  background-color: var(--c-surface);
+  border-radius: 20px;
+  border: 1px solid var(--c-border);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+.table-custom {
+  margin-bottom: 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-custom th {
+  background-color: var(--c-surface-2);
+  color: var(--c-text-2);
+  font-weight: 700;
+  border-bottom: 2px solid var(--c-border);
+  padding: 16px 20px;
+  white-space: nowrap;
+  text-align: left;
+}
+.table-custom td {
+  padding: 16px 20px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-text-3);
+}
+.table-custom tbody tr:hover {
+  background-color: var(--c-surface-2);
+}
+
+.badge-status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.badge-status.delivered {
+  background: var(--c-ok-bg);
+  color: var(--c-ok-text);
+  border-color: var(--c-ok-border);
+}
+
+.btn-sm-action {
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+  border: 1px solid var(--c-border);
+  border-radius: 50px;
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-sm-action:hover {
+  background: var(--c-brand);
+  border-color: var(--c-brand);
+  color: white;
+}

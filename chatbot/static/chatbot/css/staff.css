@@ -1,0 +1,16 @@
+.faq-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.faq-stat { display: flex; flex-direction: column; font-weight: 600; color: #718096; }
+.faq-stat span { font-size: 1.8rem; font-weight: 800; color: #2b3674; line-height: 1.1; }
+.faq-stat.is-warn span { color: #e5a500; }
+[data-theme="dark"] .faq-stat span { color: #e6e9f7; }
+.faq-answer { color: #718096; font-size: 0.85rem; margin-top: 2px; white-space: pre-line; }
+.faq-kw { color: #718096; font-size: 0.85rem; max-width: 240px; }
+.faq-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.faq-tag { padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; background: rgba(100, 116, 139, 0.12); color: #64748b; }
+.faq-tag.is-quick { background: rgba(140, 115, 194, 0.15); color: #6b4fb0; }
+.faq-off td { opacity: 0.55; }
+.faq-unanswered { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.faq-unanswered li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px dashed rgba(100, 116, 139, 0.25); }
+.faq-q { font-size: 0.9rem; word-break: break-word; }
+.faq-unanswered form { margin: 0; }
+.faq-stat, .faq-side { padding: 18px 20px !important; }

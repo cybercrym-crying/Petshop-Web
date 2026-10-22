@@ -1,0 +1,147 @@
+/* Halaman layanan di situs pelanggan (memakai variabel customer/css/base.css). */
+.svc-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.svc-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.svc-title i { color: var(--purple-700); }
+
+.svc-messages { margin-bottom: 20px; display: grid; gap: 8px; }
+.svc-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--purple-100);
+  color: var(--purple-900);
+}
+.svc-alert--success { background: #dcfce7; color: #14532d; }
+.svc-alert--error { background: #fee2e2; color: #7f1d1d; }
+.svc-alert--warning { background: #fef3c7; color: #92400e; }
+
+.svc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (min-width: 992px) {
+  .svc-layout { grid-template-columns: minmax(0, 1fr) 380px; }
+  .svc-booking { position: sticky; top: calc(var(--header-h) + 16px); }
+}
+
+.svc-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.svc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+.svc-card__top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.svc-card h2 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.svc-card p { font-size: 0.9rem; margin: 0; flex: 1; }
+.svc-card__foot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 0.85rem; }
+.svc-price { font-size: 1.15rem; font-weight: 700; color: var(--purple-700); }
+.svc-chip {
+  flex: none;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--purple-100);
+  color: var(--purple-700);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.svc-pick { margin-top: 6px; }
+
+.svc-booking {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 24px;
+}
+.svc-booking h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 12px; }
+.svc-auth { display: flex; gap: 10px; flex-wrap: wrap; }
+.svc-field { margin-bottom: 14px; }
+.svc-field label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; }
+.svc-field input,
+.svc-field select,
+.svc-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--white);
+}
+.svc-field input:focus,
+.svc-field select:focus,
+.svc-field textarea:focus { outline: 2px solid var(--purple-300); border-color: var(--purple-500); }
+.svc-field.has-error input,
+.svc-field.has-error select { border-color: var(--danger); }
+.svc-error { color: var(--danger); font-size: 0.82rem; margin: 4px 0 0; }
+.svc-hint { font-size: 0.82rem; }
+
+/* Booking saya */
+.svc-mine { max-width: 860px; }
+.svc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.svc-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+.svc-item__main { display: grid; gap: 2px; font-size: 0.92rem; }
+.svc-item__title strong { font-size: 1.1rem; }
+.svc-note { margin-top: 6px; padding: 8px 10px; border-radius: 8px; background: var(--purple-50); font-size: 0.85rem; }
+.svc-status {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.svc-status--pending { background: #fef3c7; color: #92400e; }
+.svc-status--proses { background: var(--purple-100); color: var(--purple-700); }
+.svc-status--selesai { background: #dcfce7; color: var(--success); }
+.svc-progress {
+  grid-column: 1 / -1;
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.svc-progress li { border-top: 4px solid var(--line); padding-top: 4px; }
+.svc-progress li.is-done { border-color: var(--purple-500); color: var(--purple-700); }

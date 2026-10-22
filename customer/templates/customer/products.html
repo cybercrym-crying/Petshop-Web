@@ -1,0 +1,146 @@
+{% extends "customer/base.html" %}
+{% load static %}
+{% block title %}{{ title }} - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=2">
+{% endblock %}
+{% block content %}
+    <div class="container section shop-layout">
+        <!-- FILTER -->
+        <aside class="filter-panel" id="filter-panel" aria-label="Filter produk">
+            <form method="get" id="filter-form" action="{% url 'customer:products' %}">
+                {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+                <h2 class="filter-title">Filter</h2>
+                <details class="filter-group" open>
+                    <summary>
+                        <span>Jenis Hewan</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
+                    </summary>
+                    <div class="filter-options">
+                        {% for option in pet_options %}
+                            <label class="check-row">
+                                <input type="checkbox" name="pet" value="{{ option.code }}" {% if option.checked %}checked{% endif %}>
+                                <span class="check-box" aria-hidden="true"></span>
+                                <span class="check-label">{{ option.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </details>
+                <details class="filter-group" open>
+                    <summary>
+                        <span>Kategori</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
+                    </summary>
+                    <div class="filter-options">
+                        {% for option in category_options %}
+                            <label class="check-row">
+                                <input type="checkbox" name="category" value="{{ option.code }}" {% if option.checked %}checked{% endif %}>
+                                <span class="check-box" aria-hidden="true"></span>
+                                <span class="check-label">{{ option.label }}</span>
+                                <span class="check-count">{{ option.count }}</span>
+                            </label>
+                        {% empty %}
+                            <p class="muted mb-0">Belum ada kategori.</p>
+                        {% endfor %}
+                    </div>
+                </details>
+                <fieldset class="filter-group price-group">
+                    <legend>Harga</legend>
+                    <label class="price-input">
+                        <span>Rp</span>
+                        <input type="number" name="min_price" min="0" step="1000" inputmode="numeric"
+                               placeholder="Harga minimum" aria-label="Harga minimum"
+                               value="{{ min_price|default_if_none:'' }}">
+                    </label>
+                    <label class="price-input">
+                        <span>Rp</span>
+                        <input type="number" name="max_price" min="0" step="1000" inputmode="numeric"
+                               placeholder="Harga maksimum" aria-label="Harga maksimum"
+                               value="{{ max_price|default_if_none:'' }}">
+                    </label>
+                </fieldset>
+                <details class="filter-group" open>
+                    <summary>
+                        <span>Kondisi</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
+                    </summary>
+                    <div class="filter-options">
+                        {% for option in condition_options %}
+                            <label class="check-row">
+                                <input type="checkbox" name="condition" value="{{ option.code }}" {% if option.checked %}checked{% endif %}>
+                                <span class="check-box" aria-hidden="true"></span>
+                                <span class="check-label">{{ option.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </details>
+                <button type="submit" class="btn-primary-seelly w-100">Terapkan Filter</button>
+                {% if has_filters %}
+                    <a href="{% url 'customer:products' %}" class="filter-reset">Atur ulang semua</a>
+                {% endif %}
+            </form>
+        </aside>
+        <!-- HASIL -->
+        <section class="shop-results" aria-labelledby="shop-title">
+            <div class="shop-head">
+                <div>
+                    <h1 class="shop-title" id="shop-title">{{ title }}</h1>
+                    <p class="shop-sub">{{ blurb }}</p>
+                    <p class="shop-count">{{ total }} produk</p>
+                </div>
+                <div class="shop-tools">
+                    <button type="button"
+                            class="btn-soft filter-toggle"
+                            id="filter-toggle"
+                            aria-expanded="false"
+                            aria-controls="filter-panel">
+                        <i class="fas fa-sliders" aria-hidden="true"></i> Filter
+                    </button>
+                    <label class="sort-box">
+                        <span>Urutkan</span>
+                        <select name="sort" form="filter-form" id="sort-select">
+                            {% for value, label in sort_options %}
+                                <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+            </div>
+            {% if filter_chips %}
+                <div class="active-filters" aria-label="Filter aktif">
+                    {% for chip in filter_chips %}<span class="filter-chip">{{ chip }}</span>{% endfor %}
+                </div>
+            {% endif %}
+            <div class="product-grid product-grid-shop" id="product-grid">
+                {% for item in products %}
+                    {% include "customer/_product_card.html" %}
+                {% empty %}
+                    <div class="empty-state">
+                        <img src="{% static 'customer/img/product-placeholder.svg' %}" alt="">
+                        <p>Tidak ada produk yang cocok dengan filter Anda.</p>
+                        <a href="{% url 'customer:products' %}" class="btn-primary-seelly">Hapus Filter</a>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if page_obj.paginator.num_pages > 1 %}
+                <nav class="pagination-seelly" aria-label="Halaman produk">
+                    {% if page_obj.has_previous %}
+                        <a href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
+                           aria-label="Halaman sebelumnya"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
+                    {% endif %}
+                    {% for number in page_obj.paginator.page_range %}
+                        {% if number == page_obj.number %}
+                            <span class="current" aria-current="page">{{ number }}</span>
+                        {% else %}
+                            <a href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ number }}">{{ number }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <a href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+                           aria-label="Halaman berikutnya"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'customer/js/shop.js' %}?v=2"></script>
+{% endblock %}

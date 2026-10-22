@@ -1,0 +1,33 @@
+<nav class="navbar-custom d-flex align-items-center justify-content-between">
+    <a href="{% url 'customer:home' %}"
+       class="fw-bold fs-4 text-decoration-none text-dark">Petshop</a>
+    
+    <div class="d-none d-md-flex align-items-center">
+        <!-- Menu Publik (untuk semua orang) -->
+        <a href="{% url 'customer:shop' %}" class="nav-link-custom">Katalog Produk</a>
+        <a href="{% url 'customer:about' %}" class="nav-link-custom">Tentang Kami</a>
+        
+        <!-- Menu untuk User yang Sudah Login -->
+        {% if user.is_authenticated %}
+            {% if user.role_behavior.can_access_admin %}
+                <a href="{% url 'staff_admin_dashboard' %}" class="nav-link-custom">Dasbor Admin</a>
+                <a href="{% url 'product:manage_product' %}" class="nav-link-custom">Kelola Produk</a>
+                <a href="{% url 'manage_account' %}" class="nav-link-custom">Kelola Akun</a>
+                <a href="{% url 'transaction:manage_transaction' %}" class="nav-link-custom">Kelola Transaksi</a>
+            {% endif %}
+        {% endif %}
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        {% if user.is_authenticated %}
+            <span class="text-muted" style="font-size: 0.85rem;">Halo, {{ user.username }}</span>
+            <form method="post" action="{% url 'logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill">Keluar</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login_form' %}"
+               class="btn btn-brand btn-sm rounded-pill px-3">Masuk</a>
+        {% endif %}
+    </div>
+</nav>

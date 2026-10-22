@@ -1,0 +1,374 @@
+.sn-header {
+  --sn-purple-700: #6b21a8;
+  --sn-purple-600: #7e2fb8;
+  --sn-purple-500: #9b4fcf;
+  --sn-purple-100: #f2e8f9;
+  --sn-purple-50: #faf5fd;
+  --sn-ink: #261a33;
+  --sn-line: #eadcf4;
+  --sn-accent: #f59e0b;
+  --sn-height: 72px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--sn-line);
+  box-shadow: 0 2px 10px rgba(107, 33, 168, 0.08);
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--sn-ink);
+}
+
+.sn-header *,
+.sn-header *::before,
+.sn-header *::after {
+  box-sizing: border-box;
+}
+
+.sn-header [hidden] {
+  display: none !important;
+}
+
+.sn-header a {
+  text-decoration: none;
+}
+
+.sn-bar {
+  position: relative;
+  min-height: var(--sn-height);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.sn-brand {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--sn-ink);
+  white-space: nowrap;
+}
+.sn-brand i {
+  color: var(--sn-purple-600);
+  font-size: 1.3rem;
+}
+.sn-brand:hover {
+  color: var(--sn-purple-700);
+}
+
+.sn-links {
+  display: flex;
+  gap: 2px;
+  margin: 0 auto;
+}
+
+.sn-link {
+  position: relative;
+  padding: 8px 11px;
+  color: var(--sn-ink);
+  font-weight: 500;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  border-radius: 999px;
+  transition: background 0.2s, color 0.2s;
+}
+.sn-link:hover {
+  background: var(--sn-purple-100);
+  color: var(--sn-purple-700);
+}
+.sn-link.active {
+  color: var(--sn-purple-700);
+  background: var(--sn-purple-100);
+}
+
+.sn-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sn-toggle {
+  display: none;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--sn-purple-100);
+  color: var(--sn-purple-700);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* ---- Pencarian ---- */
+.sn-search {
+  flex: none;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  background: var(--sn-purple-50);
+  border: 1px solid var(--sn-line);
+  border-radius: 999px;
+  padding: 2px 4px 2px 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.sn-search:focus-within {
+  border-color: var(--sn-purple-500);
+  box-shadow: 0 0 0 3px rgba(155, 79, 207, 0.18);
+}
+.sn-search input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  width: 170px;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sn-ink);
+  outline: none;
+}
+.sn-search button {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sn-ink);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.sn-search button:hover {
+  background: var(--sn-purple-700);
+}
+.sn-icon.sn-search-toggle {
+  display: none;
+}
+
+/* ---- Ikon ---- */
+.sn-icon {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sn-ink);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.sn-icon:hover,
+.sn-icon.is-active,
+.sn-icon[aria-expanded="true"] {
+  background: var(--sn-purple-100);
+  color: var(--sn-purple-700);
+}
+
+.sn-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--sn-accent);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  border: 2px solid #fff;
+  box-sizing: content-box;
+}
+
+/* ---- Menu akun ---- */
+.sn-account {
+  position: relative;
+  margin-left: 4px;
+}
+.sn-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--sn-purple-700);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.sn-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 220px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--sn-line);
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(38, 26, 51, 0.16);
+}
+.sn-menu__who {
+  display: grid;
+  padding: 8px 12px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--sn-line);
+  line-height: 1.3;
+}
+.sn-menu__who small {
+  color: #6f6479;
+}
+.sn-menu form {
+  margin: 0;
+}
+.sn-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--sn-ink);
+  font: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+}
+.sn-menu__item i {
+  width: 18px;
+  color: var(--sn-purple-600);
+  text-align: center;
+}
+.sn-menu__item:hover {
+  background: var(--sn-purple-50);
+  color: var(--sn-purple-700);
+}
+.sn-menu__logout,
+.sn-menu__logout i {
+  color: #b91c1c;
+}
+
+.sn-header :focus-visible {
+  outline: 3px solid var(--sn-purple-500);
+  outline-offset: 2px;
+}
+
+/* Layar sedang: kolom cari jadi tombol ikon supaya menu tetap satu baris. */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .sn-icon.sn-search-toggle {
+    display: inline-flex;
+  }
+  .sn-search {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 12px;
+    z-index: 60;
+    width: 320px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(38, 26, 51, 0.16);
+  }
+  .sn-search.open {
+    display: flex;
+  }
+  .sn-search input {
+    width: auto;
+  }
+}
+
+/* Tablet & HP: menu hamburger; baris kedua kolom cari selebar layar. */
+@media (max-width: 1199.98px) {
+  .sn-bar {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .sn-brand {
+    margin-right: auto;
+  }
+  .sn-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    order: 3;
+  }
+  .sn-actions {
+    order: 2;
+  }
+  .sn-search {
+    order: 4;
+    flex: 1 1 100%;
+  }
+  .sn-search input {
+    width: 100%;
+  }
+  .sn-links {
+    display: none;
+    order: 5;
+    width: 100%;
+    flex-direction: column;
+    margin: 0;
+    padding-bottom: 8px;
+  }
+  .sn-links.open {
+    display: flex;
+  }
+  .sn-link {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .sn-bar {
+    gap: 8px;
+  }
+  .sn-brand {
+    gap: 6px;
+  }
+  .sn-brand span {
+    font-size: 1rem;
+  }
+  .sn-actions {
+    gap: 0;
+  }
+  .sn-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.05rem;
+  }
+  .sn-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.72rem;
+  }
+  .sn-toggle {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Kolom cari sudah punya cincin fokus sendiri (:focus-within). */
+.sn-header .sn-search input:focus-visible {
+  outline: none;
+}

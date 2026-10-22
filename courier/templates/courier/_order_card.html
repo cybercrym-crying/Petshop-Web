@@ -1,0 +1,42 @@
+<article class="order-card"
+         data-order-id="{{ order.pk }}"
+         data-detail-url="{% url 'courier:order_detail' order.pk %}"
+         tabindex="0">
+    <h2 class="order-card__name">{{ order.customer.name }}</h2>
+    {% if order.tracking_number %}<p class="order-card__resi">{{ order.tracking_number }}</p>{% endif %}
+    <p class="order-card__address">
+        <i class="bi bi-geo-alt me-1 text-brand"></i> {{ order.customer.address }}
+    </p>
+    <dl class="order-card__details">
+        <div class="order-card__row">
+            <dt>Telepon</dt>
+            <dd>{{ order.customer.phone_number }}</dd>
+        </div>
+        <div class="order-card__row">
+            <dt>Barang</dt>
+            <dd>{{ order.details.count }} Barang</dd>
+        </div>
+        <div class="order-card__row">
+            <dt>Total</dt>
+            <dd class="text-brand">Rp {{ order.total_payment }} {% if order.payment_method == "TUNAI" %}(COD){% else %}({{ order.get_payment_method_display }}){% endif %}</dd>
+        </div>
+    </dl>
+    {% if action == "on_delivery" %}
+        <form method="post"
+              action="{% url 'courier:update_status' order.pk %}"
+              class="order-card__action">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="on_delivery">
+            <input type="hidden" name="status" value="{{ current }}">
+            <button type="submit" class="btn-orange w-100">
+                <i class="bi bi-truck me-2"></i> Mulai Kirim
+            </button>
+        </form>
+    {% elif action == "delivered" %}
+        {# Selesai butuh foto bukti, jadi diarahkan ke halaman detail (form foto). #}
+        <a href="{% url 'courier:order_detail' order.pk %}#bukti"
+           class="btn-green w-100 order-card__action text-center text-decoration-none d-block">
+            <i class="bi bi-camera me-2"></i> Selesaikan
+        </a>
+    {% endif %}
+</article>
