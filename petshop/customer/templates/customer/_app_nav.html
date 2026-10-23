@@ -1,0 +1,78 @@
+{% load i18n %}
+{# Bilah atas area pelanggan: tanpa menu promosi landing page. #}
+<header class="sn-header ca-header">
+    <nav class="sn-bar ca-bar" aria-label="{% translate 'Navigasi akun pelanggan' %}">
+        <button type="button"
+                class="sn-icon ca-menu-btn"
+                data-ca-menu
+                aria-controls="ca-side"
+                aria-expanded="false"
+                aria-label="{% translate 'Buka menu' %}">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+        <a href="{% url 'customer:dashboard' %}" class="sn-brand ca-brand">
+            <i class="fas fa-paw" aria-hidden="true"></i>
+            <span>Seelly Petshop</span>
+            <small class="ca-brand__tag">{% translate "Area Pelanggan" %}</small>
+        </a>
+        <form class="sn-search"
+              id="nav-search"
+              action="{% url 'customer:shop' %}"
+              method="get"
+              role="search">
+            <input type="search"
+                   name="q"
+                   value="{{ query|default:'' }}"
+                   placeholder="{% translate 'Cari produk...' %}"
+                   aria-label="{% translate 'Cari produk' %}">
+            <button type="submit" aria-label="{% translate 'Cari' %}">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </button>
+        </form>
+        <div class="sn-actions">
+            <button type="button"
+                    class="sn-icon sn-search-toggle"
+                    id="nav-search-toggle"
+                    aria-controls="nav-search"
+                    aria-expanded="false"
+                    aria-label="{% translate 'Cari produk' %}">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </button>
+            {% include "partials/_lang_toggle.html" %}
+            <a class="sn-icon"
+               href="{% url 'customer:cart' %}"
+               aria-label="{% translate 'Keranjang' %}">
+                <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                <span class="sn-badge" id="cart-count" hidden>0</span>
+            </a>
+            <a class="sn-icon"
+               href="{% url 'store:notifications' %}"
+               aria-label="{% translate 'Notifikasi' %}{% if unread_notifications %}, {% blocktranslate trimmed with n=unread_notifications %}{{ n }} belum dibaca{% endblocktranslate %}{% endif %}">
+                <i class="far fa-bell" aria-hidden="true"></i>
+                {% if unread_notifications %}<span class="sn-badge">{{ unread_notifications }}</span>{% endif %}
+            </a>
+            <div class="sn-account" data-account>
+                <button type="button"
+                        class="sn-icon sn-account__btn"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="nav-account-menu"
+                        aria-label="{% blocktranslate trimmed with user_name=user.name %}Akun {{ user_name }}{% endblocktranslate %}">
+                    <span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>
+                </button>
+                <div class="sn-menu" id="nav-account-menu" hidden>
+                    <div class="sn-menu__who">
+                        <strong>{{ user.name }}</strong>
+                        <small>{{ user.get_role_display }}</small>
+                    </div>
+                    <a href="{% url 'customer:account' %}" class="sn-menu__item"><i class="far fa-user" aria-hidden="true"></i> {% translate "Akun Saya" %}</a>
+                    <a href="{% url 'store:notifications' %}" class="sn-menu__item"><i class="far fa-bell" aria-hidden="true"></i> {% translate "Notifikasi" %}</a>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="sn-menu__item sn-menu__logout"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> {% translate "Keluar" %}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

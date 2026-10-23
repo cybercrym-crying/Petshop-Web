@@ -1,0 +1,14 @@
+{% load i18n %}
+{% load static %}
+{# Kunci layar kurir saat GPS mati. Di-include di semua halaman kurir. #}
+<div data-gps-guard data-url="{% url 'courier:share_location' %}" data-csrf="{{ csrf_token }}" data-stale="{{ store.gps_stale_seconds }}" hidden></div>
+<div class="gps-lock" data-gps-lock role="alertdialog" aria-modal="true" aria-labelledby="gps-lock-title" hidden>
+    <div class="gps-lock__box">
+        <i class="bi bi-geo-alt-fill gps-lock__icon" aria-hidden="true"></i>
+        <h2 id="gps-lock-title">{% translate "Nyalakan GPS untuk melanjutkan" %}</h2>
+        <p data-gps-lock-text>{% translate "Mencari posisi GPS…" %}</p>
+        <button type="button" class="btn-orange" data-gps-retry><i class="bi bi-arrow-repeat me-1"></i> {% translate "Coba lagi" %}</button>
+        <p class="gps-lock__note">{% translate "Fitur kurir terkunci selama GPS mati agar pelanggan dan toko selalu tahu posisi paket." %}</p>
+    </div>
+</div>
+<script src="{% static 'courier/js/gps_guard.js' %}?v=1" defer></script>

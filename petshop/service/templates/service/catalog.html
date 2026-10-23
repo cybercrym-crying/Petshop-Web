@@ -1,18 +1,23 @@
 {% extends "customer/base.html" %}
-{% load static rupiah %}
-{% block title %}Layanan Grooming - Seelly Petshop{% endblock %}
+{% load i18n %}
+{% load static rupiah l10n %}
+{% block title %}{% translate "Layanan Grooming - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
 {% endblock %}
 {% block content %}
     <section class="container section svc-page">
         <header class="svc-head">
             <div>
-                <h1 class="svc-title"><i class="fas fa-scissors" aria-hidden="true"></i> Layanan Grooming &amp; Perawatan</h1>
-                <p class="muted mb-0">Pilih layanan, tentukan jadwal datang, dan groomer kami siap merawat hewan kesayangan Anda.</p>
+                <h1 class="svc-title"><i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Layanan Grooming &amp; Perawatan" %}</h1>
+                <p class="muted mb-0">{% translate "Pilih layanan, tentukan jadwal datang, dan groomer kami siap merawat hewan kesayangan Anda." %}</p>
             </div>
             {% if is_customer %}
-                <a href="{% url 'service:my_bookings' %}" class="btn-ghost"><i class="fas fa-calendar-check" aria-hidden="true"></i> Booking Saya</a>
+                <div class="svc-head__links">
+                    <a href="{% url 'service:my_pets' %}" class="btn-ghost"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Hewan Saya" %}</a>
+                    <a href="{% url 'service:my_bookings' %}" class="btn-ghost"><i class="fas fa-calendar-check" aria-hidden="true"></i> {% translate "Booking Saya" %}</a>
+                </div>
             {% endif %}
         </header>
         {% include "service/_site_messages.html" %}
@@ -26,49 +31,81 @@
                                 <span class="svc-chip">{{ s.get_pet_type_display }}</span>
                             </div>
                             {% if s.description %}<p class="muted">{{ s.description }}</p>{% endif %}
+                            <details class="svc-steps-preview">
+                                <summary>{% translate "Tahapan pengerjaan" %}</summary>
+                                <ol>{% for name in s.step_names %}<li>{{ name }}</li>{% endfor %}</ol>
+                            </details>
                             <div class="svc-card__foot">
                                 <span class="svc-price">Rp {{ s.price|rupiah }}</span>
-                                <span class="muted"><i class="far fa-clock" aria-hidden="true"></i> ± {{ s.duration_minutes }} menit</span>
+                                <span class="muted"><i class="far fa-clock" aria-hidden="true"></i> {% blocktranslate trimmed with s_duration_minutes=s.duration_minutes %}± {{ s_duration_minutes }} menit{% endblocktranslate %}</span>
                             </div>
-                            <a class="btn-soft svc-pick" href="?layanan={{ s.pk }}#booking">Pilih layanan ini</a>
+                            <a class="btn-soft svc-pick" href="?layanan={{ s.pk }}#booking">{% translate "Pilih layanan ini" %}</a>
                         </li>
                     {% empty %}
                         <li class="empty-state">
                             <i class="fas fa-scissors" aria-hidden="true"></i>
-                            <h2>Belum ada layanan</h2>
-                            <p>Layanan grooming akan segera tersedia.</p>
+                            <h2>{% translate "Belum ada layanan" %}</h2>
+                            <p>{% translate "Layanan grooming akan segera tersedia." %}</p>
                         </li>
                     {% endfor %}
                 </ul>
             </div>
             <aside class="svc-booking" id="booking" aria-labelledby="booking-title">
-                <h2 id="booking-title">Booking Layanan</h2>
+                <h2 id="booking-title">{% translate "Booking Layanan" %}</h2>
                 {% if not user.is_authenticated %}
-                    <p class="muted">Masuk atau daftar akun customer untuk membuat booking dan memantau statusnya (Pending → Proses → Selesai).</p>
+                    <p class="muted">{% translate "Masuk atau daftar akun customer untuk membuat booking dan memantau statusnya (konfirmasi → check-in & antrean → tiap tahap dengan foto → selesai)." %}</p>
                     <div class="svc-auth">
-                        <a class="btn-primary-seelly" href="{% url 'login_form' %}?next={% url 'service:catalog' %}">Masuk</a>
-                        <a class="btn-ghost" href="{% url 'register' %}?next={% url 'service:catalog' %}">Daftar</a>
+                        <a class="btn-primary-seelly" href="{% url 'login_form' %}?next={% url 'service:catalog' %}">{% translate "Masuk" %}</a>
+                        <a class="btn-ghost" href="{% url 'register' %}?next={% url 'service:catalog' %}">{% translate "Daftar" %}</a>
                     </div>
                 {% elif not is_customer %}
-                    <p class="muted">Anda masuk sebagai pegawai. Booking untuk pelanggan dibuat lewat menu <strong>Booking Layanan</strong> di halaman staf.</p>
+                    <p class="muted">{% translate "Anda masuk sebagai pegawai. Booking untuk pelanggan dibuat lewat menu" %} <strong>{% translate "Booking Layanan" %}</strong> {% translate "di halaman staf." %}</p>
                 {% else %}
-                    <form method="post" novalidate>
+                    <form method="post" novalidate data-booking-form>
                         {% csrf_token %}
                         {% if form.non_field_errors %}<div class="svc-alert svc-alert--error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-                        {% for field in form %}
-                            <div class="svc-field{% if field.errors %} has-error{% endif %}">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="muted">(opsional)</span>{% endif %}</label>
-                                {{ field }}
-                                {% for error in field.errors %}<p class="svc-error">{{ error }}</p>{% endfor %}
+                        {% include "service/_field.html" with field=form.service %}
+                        {% if form.pet.field.queryset.exists %}
+                            {% include "service/_field.html" with field=form.pet %}
+                        {% else %}
+                            {{ form.pet }}
+                        {% endif %}
+                        <div data-new-pet>
+                            {% include "service/_field.html" with field=form.pet_name hide_optional=True %}
+                            {% include "service/_field.html" with field=form.pet_type hide_optional=True %}
+                            {% if not form.pet.field.queryset.exists %}
+                                <p class="muted svc-hint"><a href="{% url 'service:add_pet' %}">{% translate "Simpan profil hewan" %}</a> {% translate "supaya booking berikutnya lebih cepat dan riwayat perawatannya tercatat." %}</p>
+                            {% endif %}
+                        </div>
+                        {% include "service/_field.html" with field=form.schedule %}
+                        {% include "service/_field.html" with field=form.note %}
+                        <fieldset class="svc-transport">
+                            <legend>{% translate "Antar-jemput hewan" %} <span class="muted">{% translate "(opsional)" %}</span></legend>
+                            <label class="svc-check">{{ form.pickup }} {{ form.pickup.label }}</label>
+                            <label class="svc-check">{{ form.return_trip }} {{ form.return_trip.label }}</label>
+                            <div class="svc-transport__detail" data-transport-detail>
+                                <p class="muted svc-hint">{% blocktranslate trimmed with store_pickup_base_fee=store.pickup_base_fee|rupiah store_pickup_base_km=store.pickup_base_km|unlocalize store_pickup_per_km=store.pickup_per_km|rupiah %}Kurir dengan kandang khusus hewan. Tarif Rp {{ store_pickup_base_fee }} untuk {{ store_pickup_base_km }} km pertama + Rp {{ store_pickup_per_km }}/km, per perjalanan. Dibayar di toko bersama biaya layanan.{% endblocktranslate %}</p>
+                                {% include "service/_field.html" with field=form.address %}
+                                <button type="button" class="btn-ghost btn-sm-soft" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
+                                <div class="svc-map" data-map-picker data-default-lat="{{ store.latitude|unlocalize }}" data-default-lng="{{ store.longitude|unlocalize }}" role="application" aria-label="{% translate 'Peta lokasi jemput/antar' %}"></div>
+                                {{ form.latitude }}{{ form.longitude }}
+                                <p class="muted svc-hint">{% translate "Ketuk peta atau geser pin ke titik rumah Anda." %}</p>
                             </div>
-                        {% endfor %}
-                        <p class="muted svc-hint">Jam layanan 08.00–20.00 WITA. Bayar di toko setelah layanan selesai.</p>
+                        </fieldset>
+                        <p class="muted svc-hint">{% blocktranslate trimmed with store_hours_display=store.hours_display %}Jam layanan {{ store_hours_display }}. Booking dikonfirmasi toko, lalu tunjukkan QR booking saat check-in. Bayar di toko setelah layanan selesai.{% endblocktranslate %}</p>
                         <button type="submit" class="btn-primary-seelly w-100">
-                            <i class="fas fa-calendar-plus" aria-hidden="true"></i> Buat Booking
+                            <i class="fas fa-calendar-plus" aria-hidden="true"></i> {% translate "Buat Booking" %}
                         </button>
                     </form>
                 {% endif %}
             </aside>
         </div>
     </section>
+{% endblock %}
+{% block extra_js %}
+    {% if is_customer %}
+        <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+        <script src="{% static 'store/js/map_picker.js' %}?v=1"></script>
+        <script src="{% static 'service/js/booking_form.js' %}?v=1"></script>
+    {% endif %}
 {% endblock %}

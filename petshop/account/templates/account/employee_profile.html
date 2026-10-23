@@ -1,6 +1,7 @@
 {% extends "account/staff_base.html" %}
+{% load i18n %}
 {% load static rupiah %}
-{% block title %}PetAdmin - {{ emp.display_name }}{% endblock %}
+{% block title %}Seelly - {{ emp.display_name }}{% endblock %}
 {% block extra_head %}
     <link href="{% static 'account/css/employee_profile.css' %}?v=dm1"
           rel="stylesheet" />
@@ -8,12 +9,12 @@
 {% block content %}
     <div class="container-fluid px-xl-4 px-3 py-4">
         <!-- Breadcrumb -->
-        <div class="pf-crumb animate-fade-up" style="animation-delay: 0s;">
-            <a href="{% url 'manage_account' %}"><i class="bi bi-arrow-left me-1"></i> Kelola Pengguna</a>
-            <span>/</span> Pegawai <span>/</span> <span class="text-dark fw-bold">{{ emp.display_name }}</span>
+        <div class="pf-crumb animate-fade-up anim-d0">
+            <a href="{% url 'manage_account' %}"><i class="bi bi-arrow-left me-1"></i> {% translate "Kelola Pengguna" %}</a>
+            <span>/</span> {% translate "Pegawai" %} <span>/</span> <span class="text-dark fw-bold">{{ emp.display_name }}</span>
         </div>
         {% if messages %}
-            <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="mb-4 animate-fade-up anim-d1">
                 {% for message in messages %}
                     <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
                          role="alert">
@@ -21,14 +22,14 @@
                         <button type="button"
                                 class="btn-close"
                                 data-bs-dismiss="alert"
-                                aria-label="Tutup"></button>
+                                aria-label="{% translate 'Tutup' %}"></button>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
         <div class="row g-4 mb-4">
             <!-- KIRI: Profil Ringkas -->
-            <div class="col-12 col-xl-4 animate-fade-up" style="animation-delay: 0.2s">
+            <div class="col-12 col-xl-4 animate-fade-up anim-d2">
                 <div class="card-custom h-100 text-center text-xl-start">
                     <div class="d-flex flex-column align-items-center align-items-xl-start">
                         <i class="emp-av tone-{{ emp.tone|default:'5' }}">{{ emp.initials }}</i>
@@ -37,29 +38,29 @@
                         <div class="d-flex gap-2 mb-4 justify-content-center justify-content-xl-start">
                             <span class="badge-role {{ emp.role_behavior.badge_class }}">{{ emp.get_role_display }}</span>
                             {% if emp.is_active %}
-                                <span class="badge-role status-active">Aktif</span>
+                                <span class="badge-role status-active">{% translate "Aktif" %}</span>
                             {% else %}
-                                <span class="badge-role status-inactive">Tidak Aktif</span>
+                                <span class="badge-role status-inactive">{% translate "Tidak Aktif" %}</span>
                             {% endif %}
                         </div>
                     </div>
                     <hr class="text-muted opacity-25">
                     <div class="mb-3">
-                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Nomor HP</small>
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1">{% translate "Nomor HP" %}</small>
                         <span class="fw-bold fs-6">{{ emp.phone_number|default:"-" }}</span>
                         {% if wa_url %}
                             <a href="{{ wa_url }}"
                                target="_blank"
                                rel="noopener"
-                               class="ms-2 badge bg-success text-decoration-none py-1 px-2"><i class="bi bi-whatsapp"></i> Chat</a>
+                               class="ms-2 badge bg-success text-decoration-none py-1 px-2"><i class="bi bi-whatsapp"></i> {% translate "Chat" %}</a>
                         {% endif %}
                     </div>
                     <div class="mb-3">
-                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Tipe Peran</small>
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1">{% translate "Tipe Peran" %}</small>
                         <span class="fw-bold fs-6">{{ emp.get_role_display }}</span>
                     </div>
                     <div class="mb-4">
-                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Tanggal Bergabung</small>
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1">{% translate "Tanggal Bergabung" %}</small>
                         <span class="fw-bold fs-6">{{ emp.date_joined|date:"d M Y" }}</span>
                     </div>
                     <!-- Statistik -->
@@ -76,16 +77,16 @@
                 </div>
             </div>
             <!-- KANAN: Form Edit Akun -->
-            <div class="col-12 col-xl-8 animate-fade-up" style="animation-delay: 0.3s">
+            <div class="col-12 col-xl-8 animate-fade-up anim-d3">
                 <div class="card-custom h-100">
                     <h4 class="fw-bold mb-4"
-                        style="color: #2B3674"><i class="bi bi-person-gear me-2"></i>Informasi Akun</h4>
+                        style="color: #2B3674"><i class="bi bi-person-gear me-2"></i>{% translate "Informasi Akun" %}</h4>
                     <form method="post" action="{% url 'edit_employee' emp.pk %}">
                         {% csrf_token %}
                         <input type="hidden" name="next" value="{{ request.path }}">
                         <div class="row g-4 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="first_name">Nama Depan</label>
+                                <label class="form-label-custom" for="first_name">{% translate "Nama Depan" %}</label>
                                 <input type="text"
                                        id="first_name"
                                        name="first_name"
@@ -94,7 +95,7 @@
                                        required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="last_name">Nama Belakang</label>
+                                <label class="form-label-custom" for="last_name">{% translate "Nama Belakang" %}</label>
                                 <input type="text"
                                        id="last_name"
                                        name="last_name"
@@ -104,7 +105,7 @@
                             </div>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label-custom" for="username">Nama Pengguna</label>
+                            <label class="form-label-custom" for="username">{% translate "Nama Pengguna" %}</label>
                             <input type="text"
                                    id="username"
                                    name="username"
@@ -114,22 +115,22 @@
                         </div>
                         <div class="row g-4 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="phone_number">Nomor HP</label>
+                                <label class="form-label-custom" for="phone_number">{% translate "Nomor HP" %}</label>
                                 <input type="text"
                                        id="phone_number"
                                        name="phone_number"
                                        value="{{ emp.phone_number }}"
                                        class="dark-input"
-                                       placeholder="08xxxxx">
+                                       placeholder="{% translate '08xxxxx' %}">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="role">Peran</label>
+                                <label class="form-label-custom" for="role">{% translate "Peran" %}</label>
                                 {% if is_self %}
                                     <select id="role" class="dark-input" disabled>
                                         <option>{{ emp.get_role_display }}</option>
                                     </select>
                                     <input type="hidden" name="role" value="{{ emp.role }}">
-                                    <small class="text-danger mt-1 d-block fw-semibold"><i class="bi bi-info-circle"></i> Anda tidak bisa mengubah peran Anda sendiri.</small>
+                                    <small class="text-danger mt-1 d-block fw-semibold"><i class="bi bi-info-circle"></i> {% translate "Anda tidak bisa mengubah peran Anda sendiri." %}</small>
                                 {% else %}
                                     <select id="role" name="role" class="dark-input">
                                         {% for code, label in staff_roles %}
@@ -140,29 +141,29 @@
                             </div>
                         </div>
                         <div class="mb-5">
-                            <label class="form-label-custom" for="password">Kata Sandi Baru (Opsional)</label>
+                            <label class="form-label-custom" for="password">{% translate "Kata Sandi Baru (Opsional)" %}</label>
                             <input type="password"
                                    id="password"
                                    name="password"
                                    autocomplete="new-password"
                                    class="dark-input"
-                                   placeholder="Biarkan kosong jika tidak ingin mengubah kata sandi">
+                                   placeholder="{% translate 'Biarkan kosong jika tidak ingin mengubah kata sandi' %}">
                         </div>
                         <div class="d-flex flex-wrap gap-3 justify-content-end mt-4 pt-4 border-top">
                             {% if not is_self %}
                                 <button type="submit"
                                         form="deleteEmployee"
-                                        class="btn-danger-custom me-auto"><i class="bi bi-person-x me-1"></i> Hapus Akun</button>
+                                        class="btn-danger-custom me-auto"><i class="bi bi-person-x me-1"></i> {% translate "Hapus Akun" %}</button>
                             {% endif %}
-                            <a href="{% url 'manage_account' %}" class="btn-cancel">Batal</a>
-                            <button type="submit" class="btn-orange px-4">Simpan Perubahan</button>
+                            <a href="{% url 'manage_account' %}" class="btn-cancel">{% translate "Batal" %}</a>
+                            <button type="submit" class="btn-orange px-4">{% translate "Simpan Perubahan" %}</button>
                         </div>
                     </form>
                     {% if not is_self %}
                         <form id="deleteEmployee"
                               method="post"
                               action="{% url 'delete_employee' emp.pk %}"
-                              data-confirm="Apakah Anda yakin ingin menghapus pegawai ini secara permanen?">
+                              data-confirm="{% translate 'Apakah Anda yakin ingin menghapus pegawai ini secara permanen?' %}">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ request.path }}">
                         </form>
@@ -174,19 +175,19 @@
         <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
             style="animation-delay: 0.4s;
                    color: #2B3674">
-            <i class="bi bi-scissors me-2"></i> Layanan Terbaru yang Ditangani
+            <i class="bi bi-scissors me-2"></i> {% translate "Layanan Terbaru yang Ditangani" %}
         </h4>
-        <div class="card-custom p-0 animate-fade-up" style="animation-delay: 0.5s">
+        <div class="card-custom p-0 animate-fade-up anim-d5">
             <div class="table-responsive">
-                <table class="table table-custom">
+                <table data-stack class="table table-custom">
                     <thead>
                         <tr>
-                            <th>ID Booking</th>
-                            <th>Hewan</th>
-                            <th>Layanan</th>
-                            <th>Pelanggan</th>
-                            <th>Status</th>
-                            <th>Jadwal</th>
+                            <th>{% translate "ID Booking" %}</th>
+                            <th>{% translate "Hewan" %}</th>
+                            <th>{% translate "Layanan" %}</th>
+                            <th>{% translate "Pelanggan" %}</th>
+                            <th>{% translate "Status" %}</th>
+                            <th>{% translate "Jadwal" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -202,8 +203,8 @@
                         {% empty %}
                             <tr>
                                 <td colspan="6" class="text-center py-5">
-                                    <i class="bi bi-scissors text-muted opacity-50" style="font-size: 3rem;"></i>
-                                    <h5 class="fw-bold mt-3 text-dark">Belum ada layanan yang ditangani</h5>
+                                    <i class="bi bi-scissors text-muted opacity-50 icon-xl"></i>
+                                    <h5 class="fw-bold mt-3 text-dark">{% translate "Belum ada layanan yang ditangani" %}</h5>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -216,19 +217,19 @@
         <h4 class="fw-bold mb-3 mt-5 animate-fade-up"
             style="animation-delay: 0.4s;
                    color: #2B3674">
-            <i class="bi bi-clock-history me-2"></i> {% if is_courier %}Pengiriman Terbaru{% else %}Order Terbaru yang Dibuat{% endif %}
+            <i class="bi bi-clock-history me-2"></i> {% if is_courier %}{% translate "Pengiriman Terbaru" %}{% else %}{% translate "Order Terbaru yang Dibuat" %}{% endif %}
         </h4>
-        <div class="card-custom p-0 animate-fade-up" style="animation-delay: 0.5s">
+        <div class="card-custom p-0 animate-fade-up anim-d5">
             <div class="table-responsive">
-                <table class="table table-custom">
+                <table data-stack class="table table-custom">
                     <thead>
                         <tr>
-                            <th>ID Pesanan</th>
-                            <th>Pelanggan</th>
-                            <th>Total Pembayaran</th>
-                            <th>Status Bayar</th>
-                            <th>Status Order</th>
-                            <th>Tanggal</th>
+                            <th>{% translate "ID Pesanan" %}</th>
+                            <th>{% translate "Pelanggan" %}</th>
+                            <th>{% translate "Total Pembayaran" %}</th>
+                            <th>{% translate "Status Bayar" %}</th>
+                            <th>{% translate "Status Order" %}</th>
+                            <th>{% translate "Tanggal" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -239,14 +240,14 @@
                                 <td class="fw-bold">{{ o.customer.name }}</td>
                                 <td class="fw-bold" style="color: #2B3674;">Rp {{ o.total_payment|rupiah }}</td>
                                 <td><span class="s-{{ o.payment_status|lower }}">{{ o.get_payment_status_display }}</span></td>
-                                <td><span class="s-{{ o.order_status|lower }}">{{ o.get_order_status_display }}</span></td>
+                                <td><span class="s-{{ o.order_status|lower }}">{{ o.status_display }}</span></td>
                                 <td class="text-muted fw-semibold">{{ o.date|date:"d M Y, H:i" }}</td>
                             </tr>
                         {% empty %}
                             <tr>
                                 <td colspan="6" class="text-center py-5">
-                                    <i class="bi bi-receipt text-muted opacity-50" style="font-size: 3rem;"></i>
-                                    <h5 class="fw-bold mt-3 text-dark">Belum ada riwayat pesanan</h5>
+                                    <i class="bi bi-receipt text-muted opacity-50 icon-xl"></i>
+                                    <h5 class="fw-bold mt-3 text-dark">{% translate "Belum ada riwayat pesanan" %}</h5>
                                 </td>
                             </tr>
                         {% endfor %}

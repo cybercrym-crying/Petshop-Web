@@ -1,7 +1,7 @@
 /* Widget chatbot FAQ (situs pelanggan). Semua kelas berawalan .cb supaya tidak bentrok. */
 .cb {
   --cb-purple: #6b21a8;
-  --cb-purple-2: #7e2fb8;
+  --cb-purple-2: #4c1577;
   --cb-soft: #f2e8f9;
   --cb-line: #eadcf4;
   --cb-ink: #261a33;
@@ -10,7 +10,7 @@
   right: 20px;
   bottom: 20px;
   z-index: 90;
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 15px;
   line-height: 1.5;
   color: var(--cb-ink);

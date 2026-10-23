@@ -1,0 +1,77 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% translate "Seelly - Ajukan Retur" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
+    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
+    <link href="{% static 'transaction/css/pos_pages.css' %}?v=2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="mb-4">
+            <p class="eyebrow">{% translate "Penjualan" %}</p>
+            <h1 class="page-title mb-1">
+                {% blocktranslate trimmed with no=order.receipt_no|default:order.pk %}Ajukan retur {{ no }}{% endblocktranslate %}
+            </h1>
+            <p class="text-muted mb-0">
+                {% blocktranslate trimmed with buyer=order.buyer_display deadline=deadline|date:"d M Y, H:i" %}
+                    Pembeli: {{ buyer }}. Batas retur: {{ deadline }}. Retur disetujui admin; stok kembali setelah disetujui.
+                {% endblocktranslate %}
+            </p>
+        </div>
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
+        {% endfor %}
+        {% if not can_return %}
+            <div class="alert alert-warning rounded-4 border-0">{% translate "Transaksi ini tidak bisa diretur (belum selesai, belum lunas, atau sudah lewat batas waktu)." %}</div>
+        {% else %}
+            <form method="post" class="card-custom so-card">
+                {% csrf_token %}
+                <div class="table-responsive">
+                    <table data-stack class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Barang" %}</th>
+                                <th class="text-end">{% translate "Dibeli" %}</th>
+                                <th class="text-end">{% translate "Bisa diretur" %}</th>
+                                <th class="pos-qty-col">{% translate "Jumlah retur" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in details %}
+                                <tr>
+                                    <td>{{ d.product.name }}<div class="small text-muted">Rp {{ d.unit_price|rupiah }}</div></td>
+                                    <td class="text-end">{{ d.quantity }}</td>
+                                    <td class="text-end">{{ d.returnable }}</td>
+                                    <td>
+                                        <input type="number" name="qty_{{ d.pk }}" min="0" max="{{ d.returnable }}" value="0" class="form-control form-control-sm" aria-label="{% translate 'Jumlah retur' %}" {% if not d.returnable %}disabled{% endif %}>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4" class="text-muted">{% translate "Transaksi ini tidak berisi barang." %}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label small fw-bold" for="retReason">{% translate "Alasan retur" %}</label>
+                        <input id="retReason" name="reason" class="form-control" maxlength="255" required placeholder="{% translate 'mis. kemasan rusak, salah ukuran' %}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold" for="retMethod">{% translate "Uang dikembalikan lewat" %}</label>
+                        <select id="retMethod" name="refund_method" class="form-select">
+                            {% for value, label in refund_methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <p class="small text-muted mt-2 mb-3">{% translate "Nilai pengembalian dihitung otomatis sesuai harga setelah diskon dan pajak. Untuk tukar barang, setujui retur lalu buat transaksi baru." %}</p>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary fw-bold">{% translate "Ajukan retur" %}</button>
+                    {% if order.receipt_no %}<a href="{% url 'transaction:receipt' order.pk %}" class="btn btn-outline-secondary">{% translate "Kembali ke struk" %}</a>{% endif %}
+                </div>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

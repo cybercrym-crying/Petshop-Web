@@ -128,3 +128,49 @@
   .co-card, .co-order { padding: 16px; }
   .co-order__actions { width: 100%; }
 }
+
+/* Petunjuk transfer manual (pesanan transfer yang belum lunas). */
+.co-transfer {
+  margin-top: 12px; padding: 14px 16px; border-radius: var(--radius-sm);
+  background: var(--purple-100); display: grid; gap: 8px;
+}
+.co-transfer__lead { margin: 0; font-size: 0.9rem; }
+.co-transfer__banks { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.co-transfer__banks li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; font-size: 0.9rem; }
+.co-transfer__bank { font-weight: 700; }
+.co-transfer__no { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; letter-spacing: 0.02em; }
+.co-transfer__btn { justify-self: start; }
+.co-pay__opt .co-transfer { margin-top: 8px; padding: 10px 12px; }
+.co-transfer__ok { color: var(--success); font-weight: 600; }
+.co-transfer__warn { color: #b45309; font-weight: 600; }
+.co-proof__total { font-size: 1.6rem; font-weight: 800; color: var(--purple-700); margin: 0 0 4px; }
+.co-proof .cam video, .co-proof .cam img { max-height: 420px; }
+.co-map-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.co-map-head label { margin: 0; }
+.co-map-locate { padding: 6px 12px; font-size: 0.85rem; }
+.co-req { font-size: 0.75rem; font-weight: 700; color: var(--danger); text-transform: uppercase; margin-left: 4px; }
+.co-map { height: 300px; border-radius: var(--radius-sm); border: 1px solid var(--line); overflow: hidden; z-index: 0; }
+.co-map.is-missing { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15); }
+.co-subrow { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; color: var(--muted); font-size: 0.93rem; }
+.co-ship-bad { color: var(--danger); font-weight: 600; }
+@media (max-width: 520px) { .co-map { height: 240px; } }
+.co-qr { margin: 12px 0; padding: 10px 14px; border: 1px dashed var(--purple-300); border-radius: var(--radius-sm); background: var(--purple-50); }
+.co-qr summary { cursor: pointer; font-weight: 600; color: var(--purple-700); }
+.co-qr__body { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.co-qr__body img { background: #fff; border-radius: 8px; padding: 6px; }
+.co-qr__body p { flex: 1; min-width: 200px; margin: 0; font-size: 0.9rem; }
+
+/* Aksi pesanan: satu aksi utama, batal dipisah di ujung dan berupa tautan teks */
+.co-order__actions { align-items: center; }
+.co-order__actions .btn-primary-seelly { padding: 8px 16px; font-size: 0.88rem; }
+.co-cancel-form { margin-left: auto !important; }
+.co-cancel { background: none; border: 0; padding: 8px 4px; min-height: 40px; color: var(--danger); font-weight: 600; font-size: 0.88rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.co-cancel:hover { background: none; color: #991b1b; }
+@media (max-width: 640px) {
+  .co-cancel-form { flex-basis: 100%; margin-left: 0 !important; padding-top: 6px; border-top: 1px dashed var(--line); }
+}
+
+/* Di HP nomor resi turun ke baris sendiri agar tidak terpotong */
+@media (max-width: 560px) {
+  .co-order__id .co-resi { display: block; font-size: 0.86rem; white-space: nowrap; }
+}

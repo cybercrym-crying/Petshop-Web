@@ -1,27 +1,45 @@
-<footer class="footer-seelly" id="kontak">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="footer-logo mb-3">🐾 Seelly Petshop</div>
-                <div class="social-icons">
-                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                </div>
+{% load i18n %}
+<footer class="site-footer" id="kontak">
+    <div class="container footer-grid">
+        <div class="footer-col footer-about">
+            <div class="footer-brand">
+                <i class="fas fa-paw" aria-hidden="true"></i> Seelly Petshop
             </div>
-            <div class="col-md-6 footer-contact text-md-end mt-3 mt-md-0">
-                <h5>Hubungi Kami</h5>
-                <p>
-                    <i class="fab fa-whatsapp"></i>
-                    <a href="{{ wa_link }}" target="_blank" rel="noopener">{{ wa_display }}</a>
-                </p>
-                <p>
-                    <i class="fas fa-envelope"></i> SeellyPetshop@outlook.com
-                </p>
-            </div>
+            <p>{% translate "Makanan, perlengkapan, dan layanan grooming untuk hewan kesayangan. Pesan online, kami antar ke rumah." %}</p>
         </div>
-        <hr>
-        <div class="text-center text-muted small">© 2026 Seelly Petshop. Hak cipta dilindungi.</div>
+        <nav class="footer-col" aria-label="{% translate 'Tautan toko' %}">
+            <h2>{% translate "Belanja" %}</h2>
+            <a href="{% url 'customer:products' %}">{% translate "Semua produk" %}</a>
+            <a href="{% url 'service:catalog' %}">{% translate "Layanan grooming" %}</a>
+            <a href="{% url 'customer:wishlist' %}">{% translate "Favorit saya" %}</a>
+            <a href="{% url 'customer:track' %}">{% translate "Lacak pesanan" %}</a>
+        </nav>
+        <nav class="footer-col" aria-label="{% translate 'Tautan akun' %}">
+            <h2>{% translate "Akun" %}</h2>
+            {% if user.is_authenticated and user.role == "CUSTOMER" %}
+                <a href="{% url 'customer:account' %}">{% translate "Profil saya" %}</a>
+                <a href="{% url 'customer:my_orders' %}">{% translate "Pesanan saya" %}</a>
+                <a href="{% url 'service:my_bookings' %}">{% translate "Booking saya" %}</a>
+            {% else %}
+                <a href="{% url 'login_form' %}">{% translate "Masuk" %}</a>
+                <a href="{% url 'register' %}">{% translate "Daftar akun" %}</a>
+            {% endif %}
+            <a href="{% url 'customer:about' %}">{% translate "Tentang kami" %}</a>
+        </nav>
+        <div class="footer-col footer-contact">
+            <h2>{% translate "Hubungi Kami" %}</h2>
+            <p>
+                <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                <a href="{{ wa_link }}" target="_blank" rel="noopener">{{ wa_display }}</a>
+            </p>
+            <p>
+                <i class="fas fa-envelope" aria-hidden="true"></i>
+                <a href="mailto:SeellyPetshop@outlook.com">{% translate "SeellyPetshop@outlook.com" %}</a>
+            </p>
+            <p>
+                <i class="far fa-clock" aria-hidden="true"></i> {% translate "Layanan 08.00–20.00 WITA" %}
+            </p>
+        </div>
     </div>
+    <div class="container footer-copy">© {% now "Y" %} {% translate "Seelly Petshop. Hak cipta dilindungi." %}</div>
 </footer>

@@ -1,0 +1,63 @@
+{% load i18n %}
+{% load static rupiah %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        {% include "courier/_head.html" %}
+        <title>{% translate "Ambil Paket - Kurir" %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        {% include "courier/_nav.html" %}
+        <main class="container-fluid px-xl-5 px-3 py-4">
+            <p class="eyebrow"><i class="bi bi-qr-code-scan me-1"></i> {% translate "Ambil paket" %}</p>
+            <h1 class="page-title">{% translate "Scan QR label paket" %}</h1>
+            <p class="text-muted">{% translate "Pindai QR di label setiap paket yang Anda bawa. Paket langsung berstatus" %} <b>{% translate "Dalam Pengiriman" %}</b>{% blocktranslate trimmed with max_packages=max_packages %}, pelanggan mendapat notifikasi, dan rute dihitung ulang. Maks. {{ max_packages }} paket per rute.{% endblocktranslate %}</p>
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+            {% endfor %}
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    {% if pet_trip %}
+                        {% include "courier/_pet_duty.html" %}
+                    {% else %}
+                    <form method="post" class="scan-card">
+                        {% csrf_token %}
+                        <div data-qr-scanner data-target="#pickup-code" data-autosubmit data-autostart>
+                            <video data-qr-video playsinline muted hidden></video>
+                            <p class="scan-status" data-qr-status>{% translate "Membuka kamera…" %}</p>
+                            <button type="button" class="btn-route is-primary w-100" data-qr-start data-needs-gps>{% translate "Scan QR" %}</button>
+                        </div>
+                        <label class="form-label small fw-bold mt-3" for="pickup-code">{% translate "Atau ketik nomor resi" %}</label>
+                        <div class="scan-manual">
+                            <input id="pickup-code" name="code" class="form-control" placeholder="{% translate 'PS-261022-K7M2QX' %}" autocomplete="off" required>
+                            <button type="submit" class="btn-route" data-needs-gps>{% translate "Ambil" %}</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="h6 fw-bold">{% blocktranslate trimmed with carrying=carrying|length max_packages=max_packages %}Sedang dibawa ({{ carrying }}/{{ max_packages }}){% endblocktranslate %}</h2>
+                    <ol class="stop-list mb-4">
+                        {% for o in carrying %}
+                            <li><a href="{% url 'courier:order_detail' o.pk %}"><span class="stop-num">{{ o.route_position|default:"-" }}</span><span>#{{ o.pk }} {{ o.customer.name }}<small>{{ o.tracking_number }}</small></span></a></li>
+                        {% empty %}
+                            <li class="text-muted small">{% translate "Belum ada." %}</li>
+                        {% endfor %}
+                    </ol>
+                    <h2 class="h6 fw-bold">{% blocktranslate trimmed with ready=ready|length %}Siap diambil di toko ({{ ready }}){% endblocktranslate %}</h2>
+                    <ul class="stop-list">
+                        {% for o in ready %}
+                            <li><a href="{% url 'courier:order_detail' o.pk %}"><span class="stop-num">{{ o.packing_label }}</span><span>#{{ o.pk }} {{ o.customer.name }}<small>{{ o.tracking_number }}{% if o.packed_at %} {% translate "· sudah dikemas" %}{% else %} {% translate "· belum dikemas" %}{% endif %}{% if o.courier %} {% translate "· ditugaskan ke Anda" %}{% endif %}</small></span></a></li>
+                        {% empty %}
+                            <li class="text-muted small">{% translate "Tidak ada paket yang menunggu kurir." %}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </main>
+        <script src="{% static 'vendor/jsqr/jsQR.js' %}"></script>
+        <script src="{% static 'js/qr_scanner.js' %}?v=1"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

@@ -1,0 +1,32 @@
+{% load i18n %}{# Daftar "Perlu dikerjakan" (lihat account/dashboard.staff_tasks). #}
+{% if tasks and tiles %}
+    <ul class="ui-tiles">
+        {% for t in tasks %}
+            <li>
+                <a class="ui-tile tile-{{ t.tone }}" href="{{ t.url }}">
+                    <span class="ui-tile__n">{{ t.n }}</span>
+                    <span class="ui-tile__label">{{ t.label }}</span>
+                    {% if t.hint %}<span class="ui-tile__hint">{{ t.hint }}</span>{% endif %}
+                    <span class="ui-tile__cta">{{ t.cta }} <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% elif tasks %}
+    <ul class="ui-tasks">
+        {% for t in tasks %}
+            <li>
+                <a class="ui-task" href="{{ t.url }}">
+                    <span class="ui-task__n tone-{{ t.tone }}">{{ t.n }}</span>
+                    <span class="ui-task__body">
+                        <span class="ui-task__label">{{ t.label }}</span>
+                        {% if t.hint %}<span class="ui-task__hint">{{ t.hint }}</span>{% endif %}
+                    </span>
+                    <span class="ui-task__cta">{{ t.cta }}</span>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="ui-done"><i class="bi bi-check2-circle" aria-hidden="true"></i> {% translate "Semua beres. Tidak ada yang menunggu." %}</p>
+{% endif %}

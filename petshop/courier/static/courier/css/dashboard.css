@@ -44,7 +44,7 @@ body {
   text-decoration: none;
 }
 .brand-logo {
-  background: linear-gradient(135deg, #8c73c2, #5c418c);
+  background: #6b21a8;
   color: white;
   width: 40px;
   height: 40px;
@@ -329,13 +329,13 @@ dialog#order-modal::backdrop {
   color: var(--c-brand-soft-text);
 }
 .btn--confirm {
-  background: linear-gradient(135deg, #ff9000, #ff7300);
+  background: #6b21a8;
   color: white;
   border: none;
   border-radius: 50px;
   padding: 12px 24px;
   font-weight: 700;
-  box-shadow: 0 4px 15px rgba(255, 115, 0, 0.25);
+  box-shadow: 0 4px 15px rgba(107, 33, 168, 0.18);
   text-decoration: none;
   text-align: center;
   cursor: pointer;
@@ -344,7 +344,7 @@ dialog#order-modal::backdrop {
 }
 .btn--confirm:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 115, 0, 0.35);
+  box-shadow: 0 8px 20px rgba(107, 33, 168, 0.28);
   color: white;
 }
 
@@ -354,7 +354,7 @@ dialog#order-modal::backdrop {
 }
 .stat-box.is-active {
   border-color: var(--c-brand);
-  box-shadow: 0 10px 25px rgba(140, 115, 194, 0.18);
+  box-shadow: 0 10px 25px rgba(107, 33, 168, 0.12);
 }
 
 .btn-orange,
@@ -372,11 +372,11 @@ dialog#order-modal::backdrop {
   transition: all 0.3s;
 }
 .btn-orange {
-  background: linear-gradient(135deg, #ff9000, #ff7300);
-  box-shadow: 0 4px 15px rgba(255, 115, 0, 0.25);
+  background: #6b21a8;
+  box-shadow: 0 4px 15px rgba(107, 33, 168, 0.18);
 }
 .btn-green {
-  background: linear-gradient(135deg, #05a660, #04824b);
+  background: #0b7a52;
   box-shadow: 0 4px 15px rgba(5, 166, 96, 0.25);
 }
 .btn-orange:hover,
@@ -459,3 +459,4 @@ dialog#order-modal::backdrop {
   letter-spacing: 0.5px;
   opacity: 0.65;
 }
+.board-title { color: var(--c-text); }

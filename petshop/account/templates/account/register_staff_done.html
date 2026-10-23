@@ -1,0 +1,30 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{% translate "Seelly Petshop - Pendaftaran Terkirim" %}</title>
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+        <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux2">
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body class="auth-register">
+        {% include "partials/_lang_toggle.html" with extra="lang-toggle--corner" %}
+        <div class="bg-blob blob-purple"></div>
+        <div class="bg-blob blob-orange"></div>
+        <div class="login-glass-card login-glass-card--single">
+            <div class="panel-right">
+                <h2 class="form-title"><i class="bi bi-hourglass-split"></i> {% translate "Pendaftaran terkirim" %}</h2>
+                <p class="form-sub">{% blocktranslate trimmed with staff_name=staff.name %}Terima kasih, {{ staff_name }}. Pendaftaran Anda sebagai{% endblocktranslate %} <strong>{{ staff.get_role_display }}</strong> {% translate "sedang diperiksa admin." %}</p>
+                <p class="form-sub">{% translate "Setelah disetujui, masuk dengan nama pengguna" %} <strong>{{ staff.username }}</strong> {% translate "dan kata sandi yang Anda buat." %}</p>
+                <a href="{% url 'login_form' %}" class="btn-login text-center text-decoration-none d-block">{% translate "Ke halaman masuk" %}</a>
+                <p class="foot-text"><a href="{% url 'customer:home' %}" class="link-purple">{% translate "Kembali ke beranda" %}</a></p>
+            </div>
+        </div>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

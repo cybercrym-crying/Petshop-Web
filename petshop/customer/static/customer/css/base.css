@@ -35,7 +35,7 @@ html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 12px)
 
 body {
   margin: 0;
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   background: var(--cream);
   color: var(--ink);
   line-height: 1.55;
@@ -155,47 +155,85 @@ h1, h2, h3 { line-height: 1.25; }
 .empty-state h2 { font-size: 1.3rem; }
 .empty-state p { color: var(--muted); margin-bottom: 18px; }
 
+/* ---------- page heading (dipakai halaman keranjang, checkout, akun) ---------- */
+
+.crumbs { font-size: 0.88rem; color: var(--muted); margin-bottom: 8px; }
+.crumbs a { color: var(--muted); text-decoration: none; }
+.crumbs a:hover { color: var(--purple-700); text-decoration: underline; }
+.page-title { font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 800; color: var(--purple-900); margin: 0 0 6px; }
+.page-sub { color: var(--muted); margin: 0 0 22px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- pesan flash (service/_site_messages.html) ---------- */
+
+.svc-messages { margin-bottom: 20px; display: grid; gap: 8px; }
+.svc-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--purple-100);
+  color: var(--purple-900);
+}
+.svc-alert--success { background: #dcfce7; color: #14532d; }
+.svc-alert--error { background: #fee2e2; color: #7f1d1d; }
+.svc-alert--warning { background: #fef3c7; color: #92400e; }
+
 /* ---------- footer ---------- */
 
 .site-footer {
-  margin-top: 48px;
-  background: linear-gradient(180deg, #f1e4fa, #e2c7f1);
-  color: var(--ink);
+  margin-top: 56px;
+  background: var(--purple-900);
+  color: #e9dcf5;
 }
-.footer-inner {
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  padding-top: 36px;
-  padding-bottom: 24px;
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
+  gap: 32px;
+  padding-top: 44px;
+  padding-bottom: 28px;
 }
-.footer-brand { font-weight: 700; font-size: 1.25rem; margin-bottom: 14px; }
-.footer-brand i { color: var(--purple-700); }
-.social-icons { display: flex; gap: 10px; }
-.social-icons a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #fff;
-  color: var(--ink);
+.footer-brand { font-weight: 700; font-size: 1.25rem; margin-bottom: 10px; color: #fff; }
+.footer-brand i { color: var(--accent); }
+.footer-about p { color: #cbb7dc; font-size: 0.92rem; max-width: 320px; }
+.footer-col h2 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.footer-col > a {
+  display: block;
+  padding: 4px 0;
+  color: #e9dcf5;
   text-decoration: none;
-  transition: background 0.2s, color 0.2s, transform 0.2s;
+  font-size: 0.93rem;
 }
-.social-icons a:hover { background: var(--purple-700); color: #fff; transform: translateY(-2px); }
-.footer-contact h2 { font-size: 1.05rem; font-weight: 700; color: var(--purple-700); margin-bottom: 10px; }
-.footer-contact p { margin: 0 0 6px; }
-.footer-contact i { width: 22px; color: var(--purple-700); }
+.footer-col > a:hover, .footer-contact a:hover { color: #fff; text-decoration: underline; }
+.footer-contact p { margin: 0 0 8px; font-size: 0.93rem; }
+.footer-contact a { color: #e9dcf5; text-decoration: none; }
+.footer-contact i { width: 22px; color: var(--accent); }
 .footer-copy {
-  padding-top: 14px;
-  padding-bottom: 20px;
-  border-top: 1px solid rgba(107, 33, 168, 0.18);
+  padding-top: 16px;
+  padding-bottom: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   text-align: center;
-  color: var(--muted);
+  color: #b9a5cb;
   font-size: 0.85rem;
+}
+@media (max-width: 860px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 520px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 22px; }
 }
 
 /* ---------- "Added to Cart" modal ---------- */

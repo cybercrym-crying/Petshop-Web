@@ -39,6 +39,18 @@ class Fixtures:
         data.update(kw)
         return ServiceBooking.book(**data)
 
+    def queued(self, **kw):
+        """Booking yang sudah check-in di kasir (masuk antrean)."""
+        b = self.book(**kw)
+        b.check_in(self.kasir)
+        return b
+
+    def finish_all(self, booking, groomer):
+        from common.tests_helpers import tiny_photo
+
+        while booking.status == BookingStatus.PROCESS:
+            booking.complete_step(groomer, tiny_photo())
+
 
 class CustomerTableRemovedTests(TestCase):
     def test_customer_is_a_user_with_customer_role(self):
@@ -54,7 +66,8 @@ class CustomerTableRemovedTests(TestCase):
         User.objects.create_user("adm", password="x", role=Role.ADMIN)
         Customer.objects.create(name="A", phone_number="0811", address="x")
         self.assertEqual(Customer.objects.count(), 1)
-        self.assertEqual(User.objects.count(), 2)
+        # Selain akun sistem "Pelanggan umum" untuk pembeli tanpa akun di kasir.
+        self.assertEqual(User.objects.filter(is_walk_in=False).count(), 2)
 
     def test_customer_phone_stays_unique_but_staff_may_share(self):
         from django.db import IntegrityError, transaction
@@ -71,7 +84,7 @@ class CustomerTableRemovedTests(TestCase):
         groomer = User(role=Role.GROOMER)
         self.assertIsInstance(kasir.role_behavior, CashierRole)
         self.assertIsInstance(groomer.role_behavior, GroomerRole)
-        self.assertEqual(kasir.dashboard_url_name, "transaction:make_transaction")
+        self.assertEqual(kasir.dashboard_url_name, "transaction:cashier_home")
         self.assertEqual(groomer.dashboard_url_name, "service:groomer_dashboard")
         self.assertFalse(kasir.role_behavior.can_access_admin())
 
@@ -80,7 +93,7 @@ class BookingFlowTests(Fixtures, TestCase):
     def setUp(self):
         self.make_people()
 
-    def test_new_booking_is_pending_with_price_snapshot(self):
+    def test_new_booking_waits_for_confirmation_with_price_snapshot(self):
         b = self.book()
         self.assertEqual(b.status, BookingStatus.PENDING)
         self.assertEqual(b.price, 50000)
@@ -89,33 +102,43 @@ class BookingFlowTests(Fixtures, TestCase):
         b.refresh_from_db()
         self.assertEqual(b.price, 50000)
 
-    def test_pending_to_process_to_done(self):
-        b = self.book()
+    def test_queue_to_steps_to_ready_to_done(self):
+        from common.tests_helpers import tiny_photo
+
+        b = self.queued()
         b.start(self.groomer)
         self.assertEqual((b.status, b.groomer), (BookingStatus.PROCESS, self.groomer))
         self.assertIsNotNone(b.started_at)
-        b.finish(self.groomer, note="Bersih")
+        self.assertEqual(b.progress(), (0, 3))  # tahapan bawaan
+        b.complete_step(self.groomer, tiny_photo())
+        b.complete_step(self.groomer, tiny_photo())
+        b.complete_step(self.groomer, tiny_photo(), note="Bersih")
         b.refresh_from_db()
-        self.assertEqual(b.status, BookingStatus.DONE)
+        self.assertEqual(b.status, BookingStatus.READY)
         self.assertEqual(b.groomer_note, "Bersih")
+        b.hand_to_owner()
+        self.assertEqual(b.status, BookingStatus.DONE)
 
     def test_cannot_skip_or_go_back(self):
         b = self.book()
         with self.assertRaises(InvalidBookingTransition):
-            b.finish(self.groomer)
+            b.start(self.groomer)  # belum check-in
+        b.check_in(self.kasir)
+        with self.assertRaises(InvalidBookingTransition):
+            b.complete_step(self.groomer)
         b.start(self.groomer)
-        b.finish(self.groomer)
+        self.finish_all(b, self.groomer)
         with self.assertRaises(InvalidBookingTransition):
             b.start(self.groomer)
         self.assertTrue(issubclass(InvalidBookingTransition, PetshopError))
 
     def test_other_groomer_cannot_take_or_finish(self):
-        b = self.book(groomer=self.groomer)
+        b = self.queued(groomer=self.groomer)
         with self.assertRaises(InvalidBookingTransition):
             b.start(self.groomer2)
         b.start(self.groomer)
         with self.assertRaises(InvalidBookingTransition):
-            b.finish(self.groomer2)
+            b.complete_step(self.groomer2)
 
     def test_service_pet_type_is_checked(self):
         dog_only = Service.objects.create(name="Anjing saja", price=1, pet_type="ANJING")
@@ -134,26 +157,34 @@ class GroomerPageTests(Fixtures, TestCase):
         self.client.login(username="ksr", password="x")
         self.assertEqual(self.client.get(self.URL).status_code, 403)
 
-    def test_pending_tab_shows_unassigned_and_mine_only(self):
-        free = self.book(pet_name="Bebas")
-        mine = self.book(pet_name="Punyaku", groomer=self.groomer)
-        other = self.book(pet_name="Orang Lain", groomer=self.groomer2)
+    def test_queue_tab_shows_unassigned_and_mine_only(self):
+        free = self.queued(pet_name="Bebas")
+        mine = self.queued(pet_name="Punyaku", groomer=self.groomer)
+        other = self.queued(pet_name="Orang Lain", groomer=self.groomer2)
+        not_checked_in = self.book(pet_name="Belum Datang")
         r = self.client.get(self.URL)
         self.assertEqual(r.status_code, 200)
         shown = {b.pk for b in r.context["bookings"]}
         self.assertEqual(shown, {free.pk, mine.pk})
         self.assertNotIn(other.pk, shown)
+        self.assertNotIn(not_checked_in.pk, shown)
 
     def test_take_and_finish_through_page(self):
-        b = self.book()
+        from common.tests_helpers import tiny_photo
+
+        b = self.queued()
         url = reverse("service:groomer_update_status", args=[b.pk])
         r = self.client.post(url, {"action": "start"})
         self.assertRedirects(r, f"{self.URL}?status=proses", fetch_redirect_response=False)
         b.refresh_from_db()
         self.assertEqual((b.status, b.groomer), (BookingStatus.PROCESS, self.groomer))
-        self.client.post(url, {"action": "finish", "note": "Wangi"})
+        # Tahap wajib foto ditolak tanpa foto.
+        self.client.post(url, {"action": "step"})
+        self.assertEqual(b.progress(), (0, 3))
+        for _ in range(3):
+            self.client.post(url, {"action": "step", "photo": tiny_photo(), "note": "Wangi"})
         b.refresh_from_db()
-        self.assertEqual(b.status, BookingStatus.DONE)
+        self.assertEqual(b.status, BookingStatus.READY)
         r = self.client.get(self.URL, {"status": "selesai"})
         self.assertContains(r, "Mochi")
 
@@ -206,7 +237,8 @@ class StaffAndCustomerPagesTests(Fixtures, TestCase):
         self.assertRedirects(r, reverse("service:my_bookings"), fetch_redirect_response=False)
         r = self.client.get(reverse("service:my_bookings"))
         self.assertContains(r, "Luna")
-        self.assertContains(r, "Pending")
+        self.assertContains(r, "Menunggu konfirmasi")
+        self.assertContains(r, "QR booking")
 
     def test_booking_outside_opening_hours_rejected(self):
         self.customer.set_password("rahasia-123")
@@ -247,7 +279,7 @@ class StaffAndCustomerPagesTests(Fixtures, TestCase):
         self.assertEqual(self.client.get(reverse("service:my_bookings")).status_code, 200)
 
     def test_groomer_profile_shows_booking_stats(self):
-        b = self.book()
+        b = self.queued()
         b.start(self.groomer)
         self.client.login(username="adm", password="x")
         r = self.client.get(f"/staff/admin/employee/{self.groomer.pk}/")

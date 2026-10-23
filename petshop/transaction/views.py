@@ -1,6 +1,7 @@
 from urllib.parse import quote
 
 from account.decorators import roleRequired
+from django.utils.translation import gettext as _
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
@@ -9,6 +10,7 @@ from django.db.models import Count, F, Q, Sum
 from common.exceptions import PetshopError
 from product.models import Product, InsufficientStock
 from account.models import POS_ROLES, Customer, User, Role, person_search
+from .notify import order_event
 from .models import (
     Cart,
     CartItem,
@@ -30,14 +32,6 @@ BOARD_COLUMNS = (
 )
 OPEN_STATUSES = (OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
 CLOSED_COLUMN_LIMIT = 12
-
-
-def _resolve_customer(post):
-    """Customer dipilih dari dropdown; customer baru ditambah lewat Manage Account."""
-    customer = Customer.objects.filter(pk=post.get("customer") or None).first()
-    if customer is None:
-        raise CheckoutError("Pilih pelanggan terlebih dahulu.")
-    return customer
 
 
 def _with_overdue(order):
@@ -64,32 +58,8 @@ def _with_share_link(order, request):
 
 
 def _get_or_create_cart(user):
-    cart, _ = Cart.objects.get_or_create(user=user)
+    cart, _created = Cart.objects.get_or_create(user=user)
     return cart
-
-
-@roleRequired(*POS_ROLES)
-def make_transaction(request):
-    cart = _get_or_create_cart(request.user)
-    products = Product.objects.sellable()
-    q = request.GET.get("q")
-    if q:
-        products = products.filter(name__icontains=q)
-
-    cart_items = cart.items.select_related("product")
-    cart_total = cart.total
-
-    return render(
-        request,
-        "transaction/make_transaction.html",
-        {
-            "products": products,
-            "cart_items": cart_items,
-            "cart_total": cart_total,
-            "customers": Customer.objects.order_by("first_name", "last_name"),
-            "couriers": User.couriers(),
-        },
-    )
 
 
 @roleRequired(*POS_ROLES)
@@ -125,13 +95,16 @@ def remove_from_cart(request, pk):
 def update_cart_quantity(request, pk):
     if request.method == "POST":
         cart = get_object_or_404(Cart, user=request.user)
+        item = get_object_or_404(cart.items, pk=pk)
+        step = request.POST.get("step")
         try:
-            quantity = int(request.POST.get("quantity", ""))
+            # Tombol - / + di layar kasir mengirim "step"; kolom angka mengirim "quantity". 0 = hapus.
+            quantity = item.quantity + int(step) if step in ("-1", "1") else int(request.POST.get("quantity", ""))
         except ValueError:
-            messages.error(request, "Jumlah harus berupa angka.")
+            messages.error(request, _("Jumlah harus berupa angka."))
             return redirect("transaction:make_transaction")
         try:
-            cart.set_quantity(get_object_or_404(cart.items, pk=pk).pk, quantity)
+            cart.set_quantity(item.pk, quantity)
         except InsufficientStock as e:
             messages.error(request, str(e))
     return redirect("transaction:make_transaction")
@@ -141,47 +114,19 @@ def update_cart_quantity(request, pk):
 def cancel_transaction(request):
     if request.method == "POST":
         Cart.objects.filter(user=request.user).delete()
-        messages.success(request, "Transaksi dibatalkan.")
-    return redirect("transaction:make_transaction")
-
-
-@roleRequired(*POS_ROLES)
-def submit_transaction(request):
-    if request.method == "POST":
-        cart = get_object_or_404(Cart, user=request.user)
-
-        try:
-            customer = _resolve_customer(request.POST)
-        except CheckoutError as e:
-            messages.error(request, str(e))
-            return redirect("transaction:make_transaction")
-
-        paymentMethod = request.POST.get("payment_method")
-        if paymentMethod not in PaymentMethod.values:
-            messages.error(request, "Metode pembayaran tidak valid.")
-            return redirect("transaction:make_transaction")
-
-        courier = User.couriers().filter(pk=request.POST.get("courier") or None).first()
-
-        try:
-            cart.checkout(
-                customer=customer,
-                admin=request.user,
-                payment_method=paymentMethod,
-                courier=courier,
-            )
-        except PetshopError as e:
-            messages.error(request, str(e))
-        else:
-            messages.success(request, "Transaksi berhasil dibuat.")
+        messages.success(request, _("Transaksi dibatalkan."))
     return redirect("transaction:make_transaction")
 
 
 @roleRequired(*POS_ROLES)
 def manage_transaction(request):
+    cancelled = Order.cancel_expired()
+    if cancelled:
+        messages.info(request, f"{cancelled} pesanan transfer dibatalkan otomatis karena lewat batas bayar.")
     view = "list" if request.GET.get("view") == "list" else "board"
     q = request.GET.get("q", "").strip()
     only_unpaid = request.GET.get("payment") == "pending"
+    only_proof = request.GET.get("payment") == "proof"
 
     orders = (
         Order.objects.select_related("customer", "admin", "courier")
@@ -195,10 +140,12 @@ def manage_transaction(request):
         if digits.isdigit() and len(digits) <= 9:
             cond |= Q(pk=int(digits))
         orders = orders.filter(cond)
-    if only_unpaid:
+    if only_unpaid or only_proof:
         orders = orders.filter(payment_status=PaymentStatus.PENDING).exclude(
             order_status=OrderStatus.CANCELLED
         )
+    if only_proof:
+        orders = orders.exclude(payment_proof="").exclude(payment_proof__isnull=True)
 
     columns = []
     if view == "board":
@@ -253,9 +200,100 @@ def manage_transaction(request):
             "transactions": transactions,  # dipakai tabel (list) dan modal detail
             "active": active,
             "overdue_unpaid": overdue_unpaid,
+            "proof_orders": list(_proof_waiting().select_related("customer").order_by("payment_proof_at")[:20]),
+            "only_proof": only_proof,
             "couriers": User.couriers(),
         },
     )
+
+
+def _proof_waiting():
+    return (
+        Order.objects.filter(payment_status=PaymentStatus.PENDING)
+        .exclude(order_status=OrderStatus.CANCELLED)
+        .exclude(payment_proof="")
+        .exclude(payment_proof__isnull=True)
+    )
+
+
+@roleRequired(*POS_ROLES)
+def payment_check(request, pk):
+    """Cek bukti transfer: cocokkan dengan mutasi rekening lalu setujui atau tolak."""
+    order = get_object_or_404(Order.objects.select_related("customer"), pk=pk)
+    if request.method == "POST":
+        decision = request.POST.get("decision")
+        try:
+            with transaction.atomic():
+                order = Order.objects.select_for_update().get(pk=pk)
+                if decision == "approve":
+                    order.verify_payment(request.user)
+                    order_event(
+                        order, "Pembayaran diverifikasi", request.user,
+                        customer_title=f"Pembayaran pesanan #{order.pk} diterima",
+                        customer_body="Pesanan Anda masuk antrean packing.",
+                    )
+                    messages.success(request, f"Order #{order.pk} lunas dan masuk antrean packing.")
+                elif decision == "reject":
+                    note = request.POST.get("note", "")
+                    order.reject_payment(request.user, note)
+                    order_event(
+                        order, "Bukti transfer ditolak", request.user, detail=note,
+                        customer_title=f"Bukti transfer pesanan #{order.pk} perlu dikirim ulang",
+                        customer_body=note,
+                    )
+                    messages.warning(request, f"Bukti order #{order.pk} ditolak; pelanggan diminta kirim ulang.")
+                else:
+                    messages.error(request, _("Aksi tidak dikenal."))
+        except InvalidTransition as e:
+            messages.error(request, str(e))
+            return redirect("transaction:payment_check", pk=pk)
+        return redirect(f"{reverse('transaction:manage_transaction')}?payment=proof")
+    return render(
+        request,
+        "transaction/payment_check.html",
+        {"order": order, "waiting": _proof_waiting().exclude(pk=order.pk).order_by("payment_proof_at")[:10]},
+    )
+
+
+def _packing_queue():
+    return (
+        Order.objects.filter(order_status=OrderStatus.CONFIRMED, packing_seq__isnull=False)
+        .select_related("customer", "courier")
+        .prefetch_related("details__product")
+        .order_by("packed_at", "packing_date", "packing_seq")
+    )
+
+
+@roleRequired(*POS_ROLES)
+def packing_queue(request):
+    """Antrean packing: urut nomor packing; kasir mengemas, mencetak label, lalu menandai siap diambil kurir."""
+    Order.cancel_expired()
+    queue = list(_packing_queue())
+    return render(
+        request,
+        "transaction/packing_queue.html",
+        {
+            "to_pack": [o for o in queue if not o.packed_at],
+            "packed": [o for o in queue if o.packed_at],
+            "couriers": User.couriers(),
+        },
+    )
+
+
+@roleRequired(*POS_ROLES)
+def print_label(request, pk):
+    order = get_object_or_404(
+        Order.objects.select_related("customer", "courier").prefetch_related("details__product"), pk=pk
+    )
+    return render(request, "transaction/label.html", {"order": order})
+
+
+@roleRequired(*POS_ROLES)
+def label_qr(request, pk):
+    from .qr import qr_response
+
+    order = get_object_or_404(Order, pk=pk)
+    return qr_response(order.tracking_number)
 
 
 @roleRequired(*POS_ROLES)
@@ -269,17 +307,34 @@ def update_status(request, pk):
             order = get_object_or_404(Order.objects.select_for_update(), pk=pk)
             if action == "confirm":
                 order.confirm(request.user)
+                order_event(
+                    order, "Dikonfirmasi toko", request.user,
+                    customer_title=f"Pesanan #{order.pk} dikonfirmasi",
+                    customer_body=(
+                        f"Nomor packing {order.packing_label}." if order.packing_seq
+                        else "Silakan selesaikan pembayaran transfer."
+                    ),
+                )
                 messages.success(
                     request, f"Pesanan online #{order.pk} dikonfirmasi."
                 )
             elif action == "paid":
-                order.mark_paid()
+                order.verify_payment(request.user)
+                order_event(
+                    order, "Ditandai lunas", request.user,
+                    customer_title=f"Pembayaran pesanan #{order.pk} diterima",
+                )
                 messages.success(request, f"Order #{order.pk} ditandai lunas.")
+            elif action == "packed":
+                order.mark_packed(request.user)
+                order_event(order, "Selesai dikemas", request.user)
+                messages.success(request, f"Order #{order.pk} siap diambil kurir.")
             elif action == "assign_courier":
                 courier = User.couriers().filter(
                     pk=request.POST.get("courier") or None
                 ).first()
                 order.assign_courier(courier)
+                order_event(order, "Kurir ditugaskan", request.user, detail=courier.name)
                 messages.success(
                     request,
                     f"Kurir {courier.get_full_name() or courier.username} "
@@ -287,18 +342,65 @@ def update_status(request, pk):
                 )
             elif action == "delivered":
                 order.mark_delivered()
+                order_event(order, "Ditutup manual oleh toko", request.user)
                 messages.success(request, f"Order #{order.pk} selesai diantar.")
             elif action == "cancel":
+                if order.receipt_no:
+                    # Transaksi kasir: hanya admin, wajib alasan (lihat pos.void).
+                    raise InvalidTransition(
+                        f"Order #{order.pk} adalah transaksi kasir: batalkan lewat halaman struk (admin, dengan alasan)."
+                    )
                 order.cancel()
+                order_event(
+                    order, "Dibatalkan toko", request.user,
+                    customer_title=f"Pesanan #{order.pk} dibatalkan toko",
+                )
                 messages.success(
                     request, f"Order #{order.pk} dibatalkan, stok dikembalikan."
                 )
                 if order.payment_status == PaymentStatus.PAID:
                     messages.warning(
-                        request, "Order sudah lunas: kembalikan dana ke pelanggan."
+                        request, _("Order sudah lunas: kembalikan dana ke pelanggan.")
                     )
             else:
-                messages.error(request, "Aksi tidak dikenal.")
+                messages.error(request, _("Aksi tidak dikenal."))
     except InvalidTransition as e:
         messages.error(request, str(e))
+    if request.POST.get("next") == "packing":
+        return redirect("transaction:packing_queue")
     return redirect("transaction:manage_transaction")
+
+
+@roleRequired(*POS_ROLES)
+def remittances(request):
+    """Kasir menerima setoran uang COD dari kurir dan mencatat selisih bila ada."""
+    from courier.models import CashRemittance, RemittanceStatus
+
+    if request.method == "POST":
+        remittance = get_object_or_404(CashRemittance, pk=request.POST.get("remittance"))
+        try:
+            amount = int(str(request.POST.get("received_amount", "")).replace(".", "").strip())
+        except ValueError:
+            amount = None
+        try:
+            remittance.receive(request.user, amount, request.POST.get("note", ""))
+        except PetshopError as e:
+            messages.error(request, str(e))
+        else:
+            from store.models import ActivityLog, Notification
+
+            ActivityLog.record(remittance, "Setoran diterima kasir", request.user,
+                               detail=f"Rp {amount:,}".replace(",", "."))
+            Notification.send(remittance.courier, f"Setoran #{remittance.pk} diterima kasir",
+                              f"Rp {amount:,}".replace(",", "."), reverse("courier:cash"))
+            messages.success(request, f"Setoran #{remittance.pk} dari {remittance.courier.name} diterima.")
+        return redirect("transaction:remittances")
+    pending = CashRemittance.objects.filter(status=RemittanceStatus.SUBMITTED).select_related("courier").prefetch_related("orders__customer")
+    on_hand = (
+        Order.objects.filter(cash_collected__gt=0, remittance__isnull=True)
+        .values("courier__first_name", "courier__last_name", "courier__username")
+        .annotate(total=Sum("cash_collected"), n=Count("pk"))
+        .order_by("-total")
+    )
+    done = CashRemittance.objects.filter(status=RemittanceStatus.RECEIVED).select_related("courier", "received_by")[:20]
+    return render(request, "transaction/remittances.html", {"pending": pending, "on_hand": on_hand, "done": done})

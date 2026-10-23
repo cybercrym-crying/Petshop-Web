@@ -14,6 +14,16 @@
       });
   };
 
+  /* Video latar hero berhenti bila pengguna memilih kurangi animasi. */
+  function calmHeroVideo() {
+    var video = document.querySelector("[data-hero-video]");
+    if (!video || !window.matchMedia) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      video.removeAttribute("autoplay");
+      video.pause();
+    }
+  }
+
   /* Sort select submits the filter form straight away. */
   function setupSort() {
     var select = document.getElementById("sort-select");
@@ -59,6 +69,7 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     popular();
+    calmHeroVideo();
     setupSort();
     setupFilterToggle();
     setupDetailQuantity();

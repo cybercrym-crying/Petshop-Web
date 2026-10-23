@@ -116,7 +116,7 @@
   border-radius: 50px;
   background: var(--c-brand-soft);
   color: var(--c-brand-soft-text);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 /* Detail */
@@ -285,3 +285,76 @@
     padding: 20px;
   }
 }
+
+/* Tahapan pengerjaan berurutan dengan foto */
+.gr-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.gr-steps li { display: flex; gap: 14px; padding: 12px; border: 1px solid var(--c-border); border-radius: 14px; background: var(--c-surface); opacity: 0.65; }
+.gr-steps li.is-done { opacity: 1; border-color: var(--c-ok-border); background: var(--c-ok-bg); }
+.gr-steps li.is-now { opacity: 1; border: 2px solid var(--c-brand); }
+.gr-steps__no { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: var(--c-brand-soft); color: var(--c-brand-dark); }
+.gr-steps li.is-done .gr-steps__no { background: var(--c-ok-text); color: #fff; }
+.gr-steps__body { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.gr-steps__body small { color: var(--c-muted); }
+.gr-steps__body img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; margin-top: 4px; }
+.gr-step-form { margin-top: 8px; }
+.groomer-upcoming li { padding: 6px 0; border-bottom: 1px dashed var(--c-border); font-size: 0.9rem; }
+.bk-terjadwal { background: rgba(2, 132, 199, 0.12); color: #0369a1; border-color: rgba(2, 132, 199, 0.3); }
+.bk-dijemput,
+.bk-diantar { background: rgba(234, 88, 12, 0.12); color: #c2410c; border-color: rgba(234, 88, 12, 0.3); }
+.bk-antre { background: rgba(202, 138, 4, 0.14); color: #a16207; border-color: rgba(202, 138, 4, 0.35); }
+.bk-siap { background: rgba(22, 163, 74, 0.14); color: #15803d; border-color: rgba(22, 163, 74, 0.35); }
+.bk-tidak_datang,
+.bk-batal { background: rgba(107, 114, 128, 0.12); color: #4b5563; border-color: rgba(107, 114, 128, 0.3); }
+[data-bs-theme="dark"] .bk-terjadwal { color: #7dd3fc; }
+[data-bs-theme="dark"] .bk-dijemput,
+[data-bs-theme="dark"] .bk-diantar { color: #fdba74; }
+[data-bs-theme="dark"] .bk-antre { color: #fde047; }
+[data-bs-theme="dark"] .bk-siap { color: #86efac; }
+
+/* Dasbor groomer: ringkas, pekerjaan berjalan di atas */
+.g-main { max-width: 1100px; }
+.g-head { margin-bottom: 14px; }
+.g-head__who { margin: 0; font-size: 0.85rem; color: var(--c-muted); }
+.g-head__title { margin: 2px 0 0; font-size: 1.5rem; font-weight: 800; color: var(--c-text); }
+.g-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.g-tile { display: block; padding: 12px; border-radius: 14px; background: var(--c-surface); border: 1px solid var(--c-border); text-align: center; text-decoration: none; color: var(--c-text); }
+.g-tile b { display: block; font-size: 1.4rem; font-weight: 800; }
+.g-tile span { font-size: 0.8rem; color: var(--c-muted); }
+.g-tile.is-run b { color: var(--c-run-text); }
+.g-tile.is-ok b { color: var(--c-ok-text); }
+.g-tile.is-active { border-color: var(--c-brand); box-shadow: 0 0 0 1px var(--c-brand) inset; }
+.g-now { display: flex; flex-direction: column; gap: 12px; padding: 16px; margin-bottom: 20px; border-radius: 16px; background: var(--c-surface); border: 1px solid var(--c-border); max-width: 640px; }
+.g-now__top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.g-pill { padding: 4px 10px; border-radius: 999px; background: var(--c-run-bg); color: var(--c-run-text); font-size: 0.82rem; font-weight: 700; }
+.g-now__since { font-size: 0.82rem; color: var(--c-muted); }
+.g-now__pet { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--c-text); }
+.g-now__sub { margin: 2px 0 0; font-size: 0.9rem; color: var(--c-text-2); }
+.g-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.g-steps li { display: flex; align-items: center; gap: 10px; font-size: 0.92rem; color: var(--c-text); }
+.g-steps__dot { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 0.75rem; font-weight: 800; background: var(--c-surface-2); color: var(--c-text-2); border: 1px solid var(--c-border); }
+.g-steps .is-done .g-steps__dot { background: var(--c-ok-bg); color: var(--c-ok-text); border-color: var(--c-ok-border); }
+.g-steps .is-now .g-steps__dot { background: var(--c-brand); color: #fff; border-color: var(--c-brand); }
+.g-steps .is-now .g-steps__name { font-weight: 700; }
+.g-steps__name { flex: 1; min-width: 0; }
+.g-steps__note { font-size: 0.78rem; color: var(--c-muted); }
+.g-btn { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 16px; border-radius: 12px; background: var(--c-brand); color: #fff; font-weight: 800; text-decoration: none; text-align: center; }
+.g-btn:hover { background: var(--c-brand-dark); color: #fff; }
+[data-bs-theme="dark"] .g-btn { color: #14112b; }
+
+/* Kartu antrean ringkas: satu baris info, catatan sebagai daftar kecil */
+.booking-card .booking-service { margin-bottom: 6px; }
+.g-meta { display: flex; flex-wrap: wrap; gap: 2px 0; margin: 0 0 4px; font-size: 0.88rem; color: var(--c-text-2); }
+.g-meta > span:not(:last-child)::after { content: "·"; margin: 0 6px; color: var(--c-muted); }
+.g-meta .text-brand { font-weight: 700; }
+.g-notes { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.g-notes li { display: flex; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--c-surface-2); font-size: 0.84rem; line-height: 1.4; color: var(--c-text-2); }
+.g-notes li.is-owner { background: var(--c-warn-bg); color: var(--c-text); }
+.g-notes i { flex: none; margin-top: 2px; }
+.booking-card .order-card__action { margin-top: 12px; }
+.brand-paw { width: 22px; height: 22px; }
+.brand-role { margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--c-brand-soft); color: var(--c-brand-soft-text); font-size: 0.72rem; font-weight: 700; letter-spacing: 0; vertical-align: middle; }
+.booking-card { padding: 16px; }
+/* Hanya antrean pertama yang memakai tombol ungu penuh; sisanya garis tepi. */
+.g-btn-outline { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; border: 1.5px solid var(--c-brand); border-radius: 50px; background: transparent; color: var(--c-brand); font-weight: 700; }
+.g-btn-outline:hover { background: var(--c-brand-soft); }
+.g-btn-outline:focus-visible { outline: 3px solid #f28c28; outline-offset: 2px; }

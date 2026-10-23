@@ -1,0 +1,22 @@
+/* Halaman kasir: shift, retur, laporan kasir, label kode barang. */
+.pos-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; background: var(--t-bg-f4f7fe,#F4F7FE); color: var(--t-tx-2b3674,#2B3674); }
+.pos-pill-ok, .pos-pill-disetujui { background: var(--t-bg-e8fcf1,#E8FCF1); color: var(--t-tx-05a660,#05A660); }
+.pos-pill-menunggu { background: var(--t-bg-fff8e5,#FFF8E5); color: var(--t-tx-e5a500,#E5A500); }
+.pos-pill-ditolak { background: var(--t-bg-fff0f0,#FFF0F0); color: var(--t-tx-e31a1a,#E31A1A); }
+.pos-tabs { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 999px; background: var(--t-bg-ffffff,#FFFFFF); border: 1px solid var(--t-bd-e2e8f0,#E2E8F0); }
+.pos-tabs a { padding: 4px 14px; border-radius: 999px; text-decoration: none; font-size: 0.85rem; font-weight: 600; color: var(--t-tx-2b3674,#2B3674); }
+.pos-tabs a.active { background: var(--t-bg-4318ff,#6b21a8); color: #fff; }
+.pos-stat span { display: block; font-size: 0.8rem; color: #718096; font-weight: 600; }
+.pos-stat strong { display: block; font-size: 1.4rem; font-weight: 800; color: var(--t-tx-2b3674,#2B3674); }
+.pos-stat small { color: #718096; }
+.pos-qty-col { width: 130px; }
+.pos-labels { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.pos-label { display: flex; gap: 10px; align-items: center; padding: 10px; border: 1px dashed #A0AEC0; border-radius: 10px; background: #fff; color: #000; break-inside: avoid; }
+.pos-label strong, .pos-label span { display: block; font-size: 0.8rem; line-height: 1.3; }
+.pos-label strong { font-size: 0.85rem; }
+.pos-label-missing { opacity: 0.6; }
+@media print {
+    .no-print, #staffSidebar, .staff-topbar { display: none !important; }
+    .staff-main { margin: 0 !important; padding: 0 !important; }
+    .pos-labels { grid-template-columns: repeat(3, 1fr); }
+}

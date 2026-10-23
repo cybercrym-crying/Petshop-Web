@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load static rupiah customer_extras %}
 <article class="product-card" data-product-id="{{ item.id }}">
     <div class="product-photo">
@@ -14,9 +15,9 @@
         </a>
         <span class="chip chip-category">{{ item.category.name|category_label }}</span>
         {% if item.stock == 0 %}
-            <span class="chip chip-stock chip-out">Stok habis</span>
+            <span class="chip chip-stock chip-out">{% translate "Stok habis" %}</span>
         {% elif item.stock <= 5 %}
-            <span class="chip chip-stock">Sisa {{ item.stock }}</span>
+            <span class="chip chip-stock">{% blocktranslate trimmed with item_stock=item.stock %}Sisa {{ item_stock }}{% endblocktranslate %}</span>
         {% endif %}
         <button type="button"
                 class="wishlist-btn"
@@ -24,7 +25,7 @@
                 data-id="{{ item.id }}"
                 data-name="{{ item.name }}"
                 aria-pressed="false"
-                aria-label="Tambah {{ item.name }} ke favorit">
+                aria-label="{% blocktranslate trimmed with item_name=item.name %}Tambah {{ item_name }} ke favorit{% endblocktranslate %}">
             <i class="far fa-heart" aria-hidden="true"></i>
         </button>
     </div>
@@ -45,9 +46,9 @@
                 {% if item.stock == 0 %}disabled{% endif %}>
             <i class="fas fa-cart-plus" aria-hidden="true"></i>
             {% if item.stock == 0 %}
-                Stok habis
+                {% translate "Stok habis" %}
             {% else %}
-                Tambah ke Keranjang
+                <span class="btn-add-cart__long">{% translate "Tambah ke Keranjang" %}</span><span class="btn-add-cart__short" aria-hidden="true">{% translate "Keranjang" %}</span>
             {% endif %}
         </button>
     </div>

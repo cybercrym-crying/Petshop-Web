@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,14 +23,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-gyt3u+$4+b06fx0h@vo9u+^=7mhk5dechvle8f*&w1d0g5bq)t",  # hanya untuk development
-)
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"  # production: set DJANGO_DEBUG=0
+
+# SECURITY WARNING: keep the secret key used in production secret!
+# Kunci bawaan hanya untuk development; saat DEBUG mati kunci wajib dari env.
+_DEV_SECRET_KEY = "django-insecure-dev-only-ganti-di-production"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or (_DEV_SECRET_KEY if DEBUG else "")
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY wajib diisi saat DJANGO_DEBUG=0 (lihat .env.example)."
+    )
 
 # Domain produksi + localhost untuk development. Bisa ditimpa lewat env
 # DJANGO_ALLOWED_HOSTS="a.com,b.com".
@@ -40,8 +46,28 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://petshop.sinarputra.web.id",
+    o.strip()
+    for o in os.environ.get(
+        "DJANGO_CSRF_TRUSTED_ORIGINS", "https://petshop.sinarputra.web.id"
+    ).split(",")
+    if o.strip()
 ]
+
+# Keamanan cookie & HTTPS hanya aktif di production (DEBUG mati), supaya
+# runserver lokal lewat http tetap bisa login.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "1") == "1"
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "3600"))
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+SESSION_COOKIE_HTTPONLY = True
+X_FRAME_OPTIONS = "DENY"
+# Batas ukuran upload yang diterima Django di memori (foto produk/bukti kirim).
+DATA_UPLOAD_MAX_MEMORY_SIZE = 12 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
 
 # Application definition
@@ -61,11 +87,14 @@ INSTALLED_APPS = [
     "courier.apps.CourierConfig",
     "service.apps.ServiceConfig",
     "chatbot.apps.ChatbotConfig",
+    "store.apps.StoreConfig",
+    "common.apps.CommonConfig",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "common.middleware.LanguageCookieMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -83,9 +112,11 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+                "django.template.context_processors.i18n",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "transaction.context_processors.pending_online_orders",
+                "store.context_processors.store",
             ],
         },
     },
@@ -100,7 +131,9 @@ WSGI_APPLICATION = "petshop.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": os.environ.get("DJANGO_DB_PATH", str(BASE_DIR / "db.sqlite3")),
+        # Tunggu kunci tulis SQLite sebentar daripada langsung "database is locked".
+        "OPTIONS": {"timeout": 20},
     }
 }
 
@@ -123,10 +156,23 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Tes memakai hasher cepat (MD5) supaya suite tidak lambat; production tetap
+# memakai PBKDF2 bawaan Django.
+if "test" in sys.argv[1:2]:
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
 LANGUAGE_CODE = "id"
+
+# Tombol ID/EN di navbar. Teks antarmuka diterjemahkan lewat locale/en/LC_MESSAGES/django.po
+# (kompilasi dengan `python manage.py build_locale`).
+LANGUAGES = [("id", "Bahasa Indonesia"), ("en", "English")]
+LOCALE_PATHS = [BASE_DIR / "locale"]
+LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60
+LANGUAGE_COOKIE_SAMESITE = "Lax"
 
 TIME_ZONE = "Asia/Makassar"  # WITA (Samarinda/Balikpapan)
 
@@ -148,3 +194,14 @@ AUTH_USER_MODEL = "account.User"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "login_form"
+
+# Log error server ke konsol (ditangkap systemd/gunicorn); tidak mencatat
+# isi request sehingga kata sandi/token tidak ikut tertulis.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "loggers": {
+        "django.request": {"handlers": ["console"], "level": "ERROR"},
+    },
+}

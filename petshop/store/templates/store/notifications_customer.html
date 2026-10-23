@@ -1,0 +1,25 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "Notifikasi - Seelly Petshop" %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'store/css/notifications.css' %}?v=ux2">
+{% endblock %}
+{% block content %}
+    <section class="container notif-page">
+        <nav class="crumbs" aria-label="{% translate 'Breadcrumb' %}">
+            <a href="{% url 'customer:dashboard' %}">{% translate "Dasbor" %}</a> {% translate "/ Notifikasi" %}
+        </nav>
+        <div class="notif-head">
+            <h1 class="page-title">{% translate "Notifikasi" %}</h1>
+            {% if unread_notifications %}
+                <form method="post" action="{% url 'store:read_all' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-soft">{% translate "Tandai semua dibaca" %}</button>
+                </form>
+            {% endif %}
+        </div>
+        {% include "service/_site_messages.html" %}
+        {% include "store/_notification_list.html" %}
+    </section>
+{% endblock %}

@@ -99,6 +99,39 @@
     });
   }
 
+  // Area pelanggan: laci menu di HP (tombol bilah atas & tombol "Menu" di bawah).
+  function setupAppMenu() {
+    var side = document.getElementById("ca-side");
+    var buttons = document.querySelectorAll("[data-ca-menu]");
+    var scrim = document.querySelector("[data-ca-close]");
+    if (!side || !buttons.length) return;
+
+    function setOpen(open) {
+      document.body.classList.toggle("ca-menu-open", open);
+      if (scrim) scrim.hidden = !open;
+      buttons.forEach(function (b) {
+        b.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+      if (open) {
+        var first = side.querySelector("a, button");
+        if (first) first.focus();
+      }
+    }
+
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        setOpen(!document.body.classList.contains("ca-menu-open"));
+      });
+    });
+    if (scrim) scrim.addEventListener("click", function () { setOpen(false); });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && document.body.classList.contains("ca-menu-open")) {
+        setOpen(false);
+        buttons[0].focus();
+      }
+    });
+  }
+
   window.addEventListener("storage", refreshBadges);
   document.addEventListener("wishlist:change", refreshBadges);
 
@@ -106,6 +139,7 @@
     setupMenu();
     setupSearchToggle();
     setupAccountMenu();
+    setupAppMenu();
     refreshBadges();
   });
 

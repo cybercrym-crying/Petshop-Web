@@ -1,47 +1,167 @@
 {% extends "customer/base.html" %}
+{% load i18n %}
 {% load static rupiah %}
-{% block title %}Booking Saya - Seelly Petshop{% endblock %}
+{% block title %}{% translate "Booking Saya - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
 {% endblock %}
 {% block content %}
     <section class="container section svc-page svc-mine">
         <header class="svc-head">
             <div>
-                <h1 class="svc-title"><i class="fas fa-calendar-check" aria-hidden="true"></i> Booking Saya</h1>
-                <p class="muted mb-0">Halo {{ user.name }}, berikut status layanan untuk hewan Anda.</p>
+                <h1 class="svc-title"><i class="fas fa-calendar-check" aria-hidden="true"></i> {% translate "Booking Saya" %}</h1>
+                <p class="muted mb-0">{% blocktranslate trimmed with user_name=user.name %}Halo {{ user_name }}, ikuti setiap tahap perawatan hewan Anda di sini.{% endblocktranslate %}</p>
             </div>
-            <a href="{% url 'service:catalog' %}#booking" class="btn-primary-seelly"><i class="fas fa-plus" aria-hidden="true"></i> Booking Baru</a>
+            <div class="svc-head__links">
+                <a href="{% url 'service:my_pets' %}" class="btn-ghost"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Hewan Saya" %}</a>
+                <a href="{% url 'service:catalog' %}#booking" class="btn-primary-seelly"><i class="fas fa-plus" aria-hidden="true"></i> {% translate "Booking Baru" %}</a>
+            </div>
         </header>
         {% include "service/_site_messages.html" %}
         <ul class="svc-list">
             {% for b in bookings %}
-                <li class="svc-item">
+                <li class="svc-item" id="booking-{{ b.pk }}">
                     <div class="svc-item__main">
                         <div class="svc-item__title">
                             <strong>{{ b.pet_name }}</strong>
                             <span class="muted">· {{ b.get_pet_type_display }} · #{{ b.pk }}</span>
                         </div>
-                        <div>{{ b.service.name }} <span class="muted">· Rp {{ b.price|rupiah }}</span></div>
+                        <div>{{ b.service.name }} <span class="muted">· Rp {{ b.total_price|rupiah }}{% if b.transport_fee %} {% blocktranslate trimmed with b_transport_fee=b.transport_fee|rupiah %}(termasuk antar-jemput Rp {{ b_transport_fee }}){% endblocktranslate %}{% endif %}</span></div>
                         <div class="muted"><i class="far fa-clock" aria-hidden="true"></i> {{ b.schedule|date:"l, d M Y · H:i" }}</div>
-                        {% if b.groomer %}<div class="muted"><i class="fas fa-user" aria-hidden="true"></i> Groomer: {{ b.groomer.display_name }}</div>{% endif %}
-                        {% if b.groomer_note %}<div class="svc-note">Catatan groomer: {{ b.groomer_note }}</div>{% endif %}
+                        {% if b.groomer %}<div class="muted"><i class="fas fa-user" aria-hidden="true"></i> {% blocktranslate trimmed with b_groomer_display_name=b.groomer.display_name %}Groomer: {{ b_groomer_display_name }}{% endblocktranslate %}</div>{% endif %}
+                        {% if b.needs_transport %}
+                            <div class="muted"><i class="fas fa-motorcycle" aria-hidden="true"></i>
+                                {% if b.pickup_requested and b.return_requested %}{% translate "Dijemput &amp; diantar pulang" %}{% elif b.pickup_requested %}{% translate "Dijemput dari rumah" %}{% else %}{% translate "Diantar pulang" %}{% endif %}
+                                {% if b.pet_courier %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name %}· Kurir {{ b_pet_courier_display_name }}{% endblocktranslate %}{% endif %}
+                            </div>
+                        {% endif %}
                     </div>
-                    <ol class="svc-progress" aria-label="Status booking">
-                        <li class="is-done">Pending</li>
-                        <li class="{% if b.status != 'PENDING' %}is-done{% endif %}">Proses</li>
-                        <li class="{% if b.status == 'SELESAI' %}is-done{% endif %}">Selesai</li>
-                    </ol>
                     <span class="svc-status svc-status--{{ b.status|lower }}">{{ b.get_status_display }}</span>
+
+                    {% if b.status == "BATAL" %}
+                        <p class="muted mb-0 svc-wide">{% blocktranslate trimmed with b_cancelled_at=b.cancelled_at|date:"d M Y, H:i" %}Dibatalkan {{ b_cancelled_at }}{% endblocktranslate %}</p>
+                    {% elif b.status == "TIDAK_DATANG" %}
+                        <p class="muted mb-0 svc-wide">{% translate "Hewan tidak datang sesuai jadwal. Silakan booking ulang." %}</p>
+                    {% else %}
+                        <ol class="svc-stages" aria-label="{% translate 'Tahap booking' %}">
+                            <li class="is-done">{% translate "Dibooking" %}</li>
+                            <li class="{% if b.confirmed_at or b.checked_in_at %}is-done{% endif %}">{% translate "Terjadwal" %}</li>
+                            {% if b.pickup_requested %}<li class="{% if b.pet_collected_at %}is-done{% elif b.status == 'DIJEMPUT' %}is-now{% endif %}">{% translate "Dijemput" %}</li>{% endif %}
+                            <li class="{% if b.checked_in_at %}is-done{% endif %}{% if b.status == 'ANTRE' %} is-now{% endif %}">{% translate "Antrean" %}</li>
+                            <li class="{% if b.finished_at %}is-done{% elif b.status == 'PROSES' %}is-now{% endif %}">{% translate "Dikerjakan" %}{% if b.status == 'PROSES' %} {{ b.steps_done }}/{{ b.step_list|length }}{% endif %}</li>
+                            {% if b.return_requested %}<li class="{% if b.closed_at %}is-done{% elif b.status == 'DIANTAR' or b.status == 'SIAP' %}is-now{% endif %}">{% translate "Diantar" %}</li>{% else %}<li class="{% if b.closed_at %}is-done{% elif b.status == 'SIAP' %}is-now{% endif %}">{% translate "Diambil" %}</li>{% endif %}
+                            <li class="{% if b.status == 'SELESAI' %}is-done{% endif %}">{% translate "Selesai" %}</li>
+                        </ol>
+                    {% endif %}
+
+                    {% if b.status == "ANTRE" %}
+                        <div class="svc-queue svc-wide">
+                            <span class="svc-queue__no">{{ b.queue_label }}</span>
+                            <div>
+                                <strong>{% if b.queue_ahead == 0 %}{% translate "Berikutnya dikerjakan" %}{% else %}{% blocktranslate trimmed with b_queue_ahead=b.queue_ahead %}{{ b_queue_ahead }} hewan di depan{% endblocktranslate %}{% endif %}</strong>
+                                <p class="muted mb-0">{% blocktranslate trimmed with b_queue_eta=b.queue_eta b_checked_in_at=b.checked_in_at|date:"H:i" %}Perkiraan mulai ±{{ b_queue_eta }} menit lagi · check-in {{ b_checked_in_at }}{% endblocktranslate %}</p>
+                            </div>
+                        </div>
+                    {% elif b.status == "SIAP" and not b.return_requested %}
+                        <p class="svc-ready svc-wide"><i class="fas fa-circle-check" aria-hidden="true"></i> {% blocktranslate trimmed with b_pet_name=b.pet_name %}{{ b_pet_name }} sudah selesai dan siap diambil di toko.{% endblocktranslate %}</p>
+                    {% endif %}
+
+                    {% if b.in_transport %}
+                        <div class="track-live svc-wide" data-track-live data-live-status="DIJEMPUT DIANTAR"
+                             data-url="{% url 'service:booking_location' b.pk %}"
+                             data-courier="{{ b.pet_courier.display_name|default:'Kurir' }}">
+                            <div class="track-live__head">
+                                <span class="muted">{% if b.status == "DIJEMPUT" %}{% if b.pet_collected_at %}{% blocktranslate trimmed with b_pet_name=b.pet_name %}{{ b_pet_name }} dibawa ke toko{% endblocktranslate %}{% else %}{% translate "Kurir menuju rumah Anda" %}{% endif %}{% else %}{% blocktranslate trimmed with b_pet_name=b.pet_name %}{{ b_pet_name }} diantar pulang{% endblocktranslate %}{% endif %}</span>
+                                <span class="track-live__updated" data-live-updated>{% translate "Memuat lokasi…" %}</span>
+                            </div>
+                            <div class="track-live__map" data-live-map role="img" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Peta posisi kurir booking #{{ b_pk }}{% endblocktranslate %}" hidden></div>
+                            <p class="track-note" data-live-eta hidden></p>
+                            <p class="track-note" data-live-empty>{% translate "Menunggu lokasi kurir. Peta muncul otomatis." %}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if b.status == "PENDING" or b.status == "TERJADWAL" or b.status == "DIJEMPUT" and not b.pet_collected_at or b.status == "DIANTAR" %}
+                        <details class="co-qr svc-wide"{% if b.is_today or b.in_transport %} open{% endif %}>
+                            <summary><i class="fas fa-qrcode" aria-hidden="true"></i> {% translate "QR booking (" %}{% if b.in_transport %}{% translate "tunjukkan ke kurir" %}{% else %}{% translate "tunjukkan saat check-in" %}{% endif %})</summary>
+                            <div class="co-qr__body">
+                                <img src="{% url 'service:booking_qr' b.pk %}" alt="{% blocktranslate trimmed with b_pk=b.pk %}QR booking #{{ b_pk }}{% endblocktranslate %}" width="160" height="160" loading="lazy">
+                                <p class="muted">{% blocktranslate trimmed with b_pet_name=b.pet_name %}Kasir memindai QR ini saat {{ b_pet_name }} tiba di toko{% endblocktranslate %}{% if b.needs_transport %}{% translate ", dan kurir memindainya saat menjemput/menyerahkan hewan" %}{% endif %}{% translate ". Kode cadangan:" %} <b class="co-resi">{{ b.checkin_code }}</b></p>
+                            </div>
+                        </details>
+                    {% endif %}
+
+                    {% if b.checked_in_at %}
+                        <div class="svc-checkin svc-wide">
+                            <strong>{% translate "Pemeriksaan saat datang" %}</strong>
+                            <span class="muted">{% if b.checkin_weight_kg %}{% blocktranslate trimmed with b_checkin_weight_kg=b.checkin_weight_kg %}Berat {{ b_checkin_weight_kg }} kg ·{% endblocktranslate %} {% endif %}{{ b.checkin_condition|default:"Kondisi baik" }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if b.step_list %}
+                        <ol class="svc-steplist svc-wide">
+                            {% for s in b.step_list %}
+                                <li class="{% if s.done_at %}is-done{% endif %}">
+                                    {% if s.photo %}<a href="{{ s.photo.url }}" target="_blank" rel="noopener"><img src="{{ s.photo.url }}" alt="{% blocktranslate trimmed with s_name=s.name %}Foto tahap {{ s_name }}{% endblocktranslate %}" loading="lazy" width="64" height="64"></a>{% else %}<span class="svc-steplist__dot">{{ forloop.counter }}</span>{% endif %}
+                                    <div>
+                                        <strong>{{ s.name }}</strong>
+                                        <span class="muted">{% if s.done_at %}{{ s.done_at|date:"H:i" }}{% if s.note %} · {{ s.note }}{% endif %}{% else %}{% translate "menunggu" %}{% endif %}</span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    {% endif %}
+                    {% if b.groomer_note %}<div class="svc-note svc-wide">{% blocktranslate trimmed with b_groomer_note=b.groomer_note %}Catatan groomer: {{ b_groomer_note }}{% endblocktranslate %}</div>{% endif %}
+                    {% if b.return_photo %}
+                        <p class="svc-wide mb-0"><a href="{{ b.return_photo.url }}" target="_blank" rel="noopener"><i class="far fa-image" aria-hidden="true"></i> {% translate "Foto saat diserahkan kurir" %}</a></p>
+                    {% endif %}
+
+                    {% if b.status == "SELESAI" %}
+                        {% if b.rating %}
+                            <p class="svc-rated svc-wide" aria-label="{% blocktranslate trimmed with b_rating=b.rating %}Ulasan {{ b_rating }} dari 5{% endblocktranslate %}">{% for _ in "12345" %}<i class="fa{% if forloop.counter <= b.rating %}s{% else %}r{% endif %} fa-star" aria-hidden="true"></i>{% endfor %} {{ b.review }}</p>
+                        {% else %}
+                            <form method="post" action="{% url 'service:rate_booking' b.pk %}" class="svc-rate svc-wide">
+                                {% csrf_token %}
+                                <fieldset class="svc-stars">
+                                    <legend>{% translate "Beri nilai layanan ini" %}</legend>
+                                    {% for n in "54321" %}
+                                        <input type="radio" id="star-{{ b.pk }}-{{ n }}" name="stars" value="{{ n }}" required>
+                                        <label for="star-{{ b.pk }}-{{ n }}" title="{% blocktranslate trimmed with n=n %}{{ n }} bintang{% endblocktranslate %}"><i class="fas fa-star" aria-hidden="true"></i><span class="visually-hidden">{% blocktranslate trimmed with n=n %}{{ n }} bintang{% endblocktranslate %}</span></label>
+                                    {% endfor %}
+                                </fieldset>
+                                <input type="text" name="review" maxlength="255" placeholder="{% translate 'Ceritakan pengalaman Anda (opsional)' %}" aria-label="{% translate 'Ceritakan pengalaman Anda (opsional)' %}">
+                                <button type="submit" class="btn-soft btn-sm-soft">{% translate "Kirim ulasan" %}</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+
+                    <div class="svc-item__side svc-wide">
+                        {% if b.can_cancel %}
+                            <form method="post" action="{% url 'service:cancel_my_booking' b.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-soft btn-sm-soft"
+                                        data-confirm="{% blocktranslate trimmed with b_pk=b.pk b_pet_name=b.pet_name %}Batalkan booking #{{ b_pk }} untuk {{ b_pet_name }}?{% endblocktranslate %}">{% translate "Batalkan" %}</button>
+                            </form>
+                        {% endif %}
+                        {% if b.status != "PENDING" and b.status != "BATAL" %}
+                            <a class="btn-ghost btn-sm-soft" href="{% url 'store:complaints' %}?booking={{ b.pk }}"><i class="far fa-flag" aria-hidden="true"></i> {% translate "Ajukan komplain" %}</a>
+                        {% endif %}
+                    </div>
                 </li>
             {% empty %}
                 <li class="empty-state">
                     <i class="fas fa-paw" aria-hidden="true"></i>
-                    <h2>Belum ada booking</h2>
-                    <p>Yuk jadwalkan grooming pertama untuk hewan kesayangan Anda.</p>
-                    <a href="{% url 'service:catalog' %}" class="btn-primary-seelly">Lihat Layanan</a>
+                    <h2>{% translate "Belum ada booking" %}</h2>
+                    <p>{% translate "Yuk jadwalkan grooming pertama untuk hewan kesayangan Anda." %}</p>
+                    <a href="{% url 'service:catalog' %}" class="btn-primary-seelly">{% translate "Lihat Layanan" %}</a>
                 </li>
             {% endfor %}
         </ul>
     </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'customer/js/track_map.js' %}?v=5"></script>
 {% endblock %}

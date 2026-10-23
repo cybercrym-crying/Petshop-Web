@@ -1,15 +1,14 @@
+{% load i18n %}
 {% load static %}
 {% comment %}
 Sidebar admin yang berdiri sendiri: cukup di-include tepat setelah <body>.
 Dipakai oleh account/staff_base.html dan oleh partials/staff_nav.html (halaman app lain) jadi nggak duplikat dan bentrok antar elemen.
 {% endcomment %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+<link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
+<link href="{% static 'account/css/staff_sidebar.css' %}?v=ux3"
       rel="stylesheet" />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet" />
-<link href="{% static 'account/css/staff_sidebar.css' %}?v=4"
-      rel="stylesheet" />
-<link href="{% static 'account/css/staff_theme.css' %}?v=2"
+<link href="{% static 'account/css/staff_theme.css' %}?v=4"
       rel="stylesheet" />
 <script src="{% static 'account/js/staff_sidebar.js' %}?v=3"></script>
 {% with rm=request.resolver_match %}
@@ -19,95 +18,201 @@ Dipakai oleh account/staff_base.html dan oleh partials/staff_nav.html (halaman a
                 data-staff-toggle
                 aria-controls="staffSidebar"
                 aria-expanded="false"
-                aria-label="Buka menu">
+                aria-label="{% translate 'Buka menu' %}">
             <i class="bi bi-list" aria-hidden="true"></i>
         </button>
-        <span class="staff-brand-name">PetAdmin</span>
+        <span class="staff-logo staff-logo--sm"><svg class="staff-paw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
+        <span class="staff-brand-name">Seelly</span>
+        <span class="staff-role">{{ request.user.get_role_display }}</span>
+        <a href="{% url 'store:notifications' %}" class="staff-burger staff-bell" aria-label="{% translate 'Notifikasi' %}{% if unread_notifications %}, {% blocktranslate trimmed with n=unread_notifications %}{{ n }} belum dibaca{% endblocktranslate %}{% endif %}">
+            <i class="bi bi-bell" aria-hidden="true"></i>
+            {% if unread_notifications %}<span class="staff-bell__count">{{ unread_notifications }}</span>{% endif %}
+        </a>
+        {% include "partials/_lang_toggle.html" %}
         <button type="button"
                 class="staff-burger staff-theme-icon"
                 data-staff-theme-toggle
                 aria-pressed="false"
-                aria-label="Aktifkan mode gelap">
+                aria-label="{% translate 'Aktifkan mode gelap' %}">
             <i class="bi bi-moon-stars when-light" aria-hidden="true"></i>
             <i class="bi bi-sun when-dark" aria-hidden="true"></i>
         </button>
     </header>
     <div class="staff-backdrop" data-staff-backdrop></div>
-    <aside class="staff-sidebar" id="staffSidebar" aria-label="Menu admin">
+    <aside class="staff-sidebar" id="staffSidebar" aria-label="{% translate 'Menu admin' %}">
         <div class="staff-brand">
-            <span class="staff-logo">L</span>
-            <span class="staff-brand-name">PetAdmin</span>
+            <span class="staff-logo"><svg class="staff-paw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
+            <span class="staff-brand-name">Seelly</span>
+            <span class="staff-role">{{ request.user.get_role_display }}</span>
             <button type="button"
                     class="staff-close"
                     data-staff-toggle
                     aria-controls="staffSidebar"
-                    aria-label="Tutup menu">
+                    aria-label="{% translate 'Tutup menu' %}">
                 <i class="bi bi-x-lg" aria-hidden="true"></i>
             </button>
         </div>
-        <nav class="staff-nav">
+        <div class="staff-me">
+            <span class="staff-avatar" aria-hidden="true">{{ request.user.first_name|default:request.user.username|make_list|first|upper }}{{ request.user.last_name|make_list|first|upper }}</span>
+            <span class="staff-me__text">
+                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                <small>{{ request.user.get_role_display }}</small>
+            </span>
+        </div>
+        {% if cashier_shift_known %}
+            <a href="{% url 'transaction:shift' %}" class="staff-shift {% if cashier_shift %}is-open{% else %}is-closed{% endif %}">
+                <span class="staff-shift__dot" aria-hidden="true"></span>
+                {% if cashier_shift %}
+                    {% blocktranslate trimmed with since=cashier_shift.opened_at|time:"H.i" %}Kasir buka sejak {{ since }}{% endblocktranslate %}
+                {% else %}
+                    {% translate "Kasir belum dibuka" %}
+                {% endif %}
+            </a>
+        {% endif %}
+        <nav class="staff-nav" aria-label="{% translate 'Menu staf' %}">
             {% with role=request.user.role %}
-                <p class="staff-group">Transaksi</p>
+                <p class="staff-group">{% translate "Utama" %}</p>
+                {% if request.user.is_admin_level %}
+                    <a href="{% url 'staff_admin_dashboard' %}"
+                       class="staff-link{% if rm.url_name == 'staff_admin_dashboard' %} is-active{% endif %}"
+                       {% if rm.url_name == 'staff_admin_dashboard' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-speedometer2" aria-hidden="true"></i>{% translate "Beranda" %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'transaction:cashier_home' %}"
+                       class="staff-link{% if rm.namespace == 'transaction' and rm.url_name == 'cashier_home' %} is-active{% endif %}"
+                       {% if rm.namespace == 'transaction' and rm.url_name == 'cashier_home' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-house" aria-hidden="true"></i>{% translate "Beranda" %}
+                    </a>
+                {% endif %}
                 <a href="{% url 'transaction:make_transaction' %}"
                    class="staff-link{% if rm.namespace == 'transaction' and rm.url_name == 'make_transaction' %} is-active{% endif %}"
                    {% if rm.namespace == 'transaction' and rm.url_name == 'make_transaction' %}aria-current="page"{% endif %}>
-                    <i class="bi bi-cart3" aria-hidden="true"></i>Buat Transaksi
+                    <i class="bi bi-cart3" aria-hidden="true"></i>{% translate "Kasir (Transaksi Offline)" %}
                 </a>
+                <a href="{% url 'transaction:shift' %}"
+                   class="staff-link{% if rm.namespace == 'transaction' and rm.url_name == 'shift' %} is-active{% endif %}"
+                   {% if rm.namespace == 'transaction' and rm.url_name == 'shift' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-cash-coin" aria-hidden="true"></i>{% translate "Kas &amp; Shift" %}
+                </a>
+                <p class="staff-group">{% translate "Penjualan" %}</p>
                 <a href="{% url 'transaction:manage_transaction' %}"
-                   class="staff-link{% if rm.namespace == 'transaction' and rm.url_name != 'make_transaction' %} is-active{% endif %}"
-                   {% if rm.namespace == 'transaction' and rm.url_name != 'make_transaction' %}aria-current="page"{% endif %}>
-                    <i class="bi bi-clipboard-check" aria-hidden="true"></i>Kelola Transaksi
-                    {% if pending_online_orders %}<span class="staff-badge" title="Pesanan online menunggu konfirmasi">{{ pending_online_orders }}</span>{% endif %}
+                   class="staff-link{% if rm.url_name == 'manage_transaction' %} is-active{% endif %}"
+                   {% if rm.url_name == 'manage_transaction' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-clipboard-check" aria-hidden="true"></i>{% translate "Kelola Transaksi" %}
+                    {% if pending_online_orders %}<span class="staff-badge" title="{% translate 'Pesanan online menunggu konfirmasi' %}">{{ pending_online_orders }}</span>{% endif %}
                 </a>
-                <p class="staff-group">Layanan</p>
+                <a href="{% url 'transaction:manage_transaction' %}?payment=proof"
+                   class="staff-link{% if rm.url_name == 'payment_check' %} is-active{% endif %}"
+                   {% if rm.url_name == 'payment_check' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-receipt" aria-hidden="true"></i>{% translate "Cek Bukti Transfer" %}
+                    {% if proof_waiting_count %}<span class="staff-badge" title="{% translate 'Bukti transfer menunggu dicek' %}">{{ proof_waiting_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'transaction:packing_queue' %}"
+                   class="staff-link{% if rm.url_name == 'packing_queue' %} is-active{% endif %}"
+                   {% if rm.url_name == 'packing_queue' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-box2" aria-hidden="true"></i>{% translate "Antrean Packing" %}
+                    {% if to_pack_count %}<span class="staff-badge" title="{% translate 'Pesanan belum dikemas' %}">{{ to_pack_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'transaction:remittances' %}"
+                   class="staff-link{% if rm.url_name == 'remittances' %} is-active{% endif %}"
+                   {% if rm.url_name == 'remittances' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-cash-stack" aria-hidden="true"></i>{% translate "Setoran COD" %}
+                    {% if remittance_count %}<span class="staff-badge" title="{% translate 'Setoran kurir menunggu diterima' %}">{{ remittance_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'transaction:returns' %}"
+                   class="staff-link{% if rm.namespace == 'transaction' and rm.url_name == 'returns' or rm.url_name == 'return_create' %} is-active{% endif %}"
+                   {% if rm.namespace == 'transaction' and rm.url_name == 'returns' or rm.url_name == 'return_create' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>{% translate "Retur" %}
+                    {% if pending_return_count %}<span class="staff-badge" title="{% translate 'Retur menunggu persetujuan' %}">{{ pending_return_count }}</span>{% endif %}
+                </a>
+                <p class="staff-group">{% translate "Layanan" %}</p>
                 <a href="{% url 'service:manage_bookings' %}"
                    class="staff-link{% if rm.namespace == 'service' and rm.url_name == 'manage_bookings' %} is-active{% endif %}"
                    {% if rm.namespace == 'service' and rm.url_name == 'manage_bookings' %}aria-current="page"{% endif %}>
-                    <i class="bi bi-calendar2-heart" aria-hidden="true"></i>Booking Layanan
+                    <i class="bi bi-calendar2-heart" aria-hidden="true"></i>{% translate "Booking Layanan" %}
+                    {% if booking_pending_count %}<span class="staff-badge" title="{% translate 'Booking menunggu konfirmasi' %}">{{ booking_pending_count }}</span>{% endif %}
                 </a>
-                {% if role == "ADMIN" %}
-                    <a href="{% url 'service:manage_services' %}"
-                       class="staff-link{% if rm.namespace == 'service' and rm.url_name == 'manage_services' %} is-active{% endif %}"
-                       {% if rm.namespace == 'service' and rm.url_name == 'manage_services' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-scissors" aria-hidden="true"></i>Jenis Layanan
-                    </a>
-                    <a href="{% url 'chatbot:manage_faq' %}"
-                       class="staff-link{% if rm.namespace == 'chatbot' %} is-active{% endif %}"
-                       {% if rm.namespace == 'chatbot' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-chat-dots" aria-hidden="true"></i>FAQ Chatbot
-                    </a>
-                    <p class="staff-group">Produk &amp; Stok</p>
+                <a href="{% url 'service:check_in' %}"
+                   class="staff-link{% if rm.url_name == 'check_in' %} is-active{% endif %}"
+                   {% if rm.url_name == 'check_in' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-qr-code-scan" aria-hidden="true"></i>{% translate "Check-in &amp; Antrean" %}
+                    {% if queue_count %}<span class="staff-badge" title="{% translate 'Hewan antre / siap diambil' %}">{{ queue_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'store:staff_complaints' %}"
+                   class="staff-link{% if rm.url_name == 'staff_complaints' or rm.url_name == 'staff_complaint' %} is-active{% endif %}"
+                   {% if rm.url_name == 'staff_complaints' or rm.url_name == 'staff_complaint' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-flag" aria-hidden="true"></i>{% translate "Komplain" %}
+                    {% if complaint_open_count %}<span class="staff-badge" title="{% translate 'Komplain baru' %}">{{ complaint_open_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'store:reviews' %}"
+                   class="staff-link{% if rm.url_name == 'reviews' %} is-active{% endif %}"
+                   {% if rm.url_name == 'reviews' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-star" aria-hidden="true"></i>{% translate "Ulasan Pelanggan" %}
+                </a>
+                {% if request.user.is_admin_level %}
+                    <p class="staff-group">{% translate "Toko" %}</p>
                     <a href="{% url 'product:manage_product' %}"
                        class="staff-link{% if rm.url_name == 'manage_product' %} is-active{% endif %}"
                        {% if rm.url_name == 'manage_product' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-box-seam" aria-hidden="true"></i>Kelola Produk
+                        <i class="bi bi-box-seam" aria-hidden="true"></i>{% translate "Kelola Produk" %}
                     </a>
                     <a href="{% url 'product:product_list' %}"
                        class="staff-link{% if rm.url_name == 'product_list' %} is-active{% endif %}"
                        {% if rm.url_name == 'product_list' %}aria-current="page"{% endif %}>
-                        <i class="bi bi-tags" aria-hidden="true"></i>Stok &amp; Harga
+                        <i class="bi bi-tags" aria-hidden="true"></i>{% translate "Stok &amp; Harga" %}
                     </a>
-                    <p class="staff-group">Akun</p>
+                    <a href="{% url 'transaction:product_codes' %}"
+                       class="staff-link{% if rm.url_name == 'product_codes' %} is-active{% endif %}"
+                       {% if rm.url_name == 'product_codes' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-upc-scan" aria-hidden="true"></i>{% translate "Kode Barang &amp; Label" %}
+                    </a>
+                    <a href="{% url 'transaction:cashier_report' %}"
+                       class="staff-link{% if rm.url_name == 'cashier_report' %} is-active{% endif %}"
+                       {% if rm.url_name == 'cashier_report' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-bar-chart-line" aria-hidden="true"></i>{% translate "Laporan Kasir" %}
+                    </a>
+                    <a href="{% url 'service:manage_services' %}"
+                       class="staff-link{% if rm.namespace == 'service' and rm.url_name == 'manage_services' %} is-active{% endif %}"
+                       {% if rm.namespace == 'service' and rm.url_name == 'manage_services' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-scissors" aria-hidden="true"></i>{% translate "Jenis Layanan" %}
+                    </a>
+                    <a href="{% url 'chatbot:manage_faq' %}"
+                       class="staff-link{% if rm.namespace == 'chatbot' %} is-active{% endif %}"
+                       {% if rm.namespace == 'chatbot' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-chat-dots" aria-hidden="true"></i>{% translate "FAQ Chatbot" %}
+                    </a>
                     <a href="{% url 'manage_account' %}"
-                       class="staff-link{% if rm.url_name == 'manage_account' or rm.url_name == 'employee_profile' or rm.url_name == 'customer_profile' or rm.url_name == 'add_employee' or rm.url_name == 'edit_employee' or rm.url_name == 'add_customer' or rm.url_name == 'edit_customer' %} is-active{% endif %}">
-                        <i class="bi bi-people" aria-hidden="true"></i>Kelola Akun
+                       class="staff-link{% if rm.url_name == 'manage_account' or rm.url_name == 'employee_profile' or rm.url_name == 'customer_profile' or rm.url_name == 'add_employee' or rm.url_name == 'edit_employee' or rm.url_name == 'add_customer' or rm.url_name == 'edit_customer' %} is-active{% endif %}"
+                       {% if rm.url_name == 'manage_account' or rm.url_name == 'employee_profile' or rm.url_name == 'customer_profile' or rm.url_name == 'add_employee' or rm.url_name == 'edit_employee' or rm.url_name == 'add_customer' or rm.url_name == 'edit_customer' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-people" aria-hidden="true"></i>{% translate "Kelola Akun" %}
+                        {% if pending_staff_count %}<span class="staff-badge" title="{% translate 'Registrasi staf menunggu persetujuan' %}">{{ pending_staff_count }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'store:settings' %}"
+                       class="staff-link{% if rm.namespace == 'store' and rm.url_name == 'settings' %} is-active{% endif %}"
+                       {% if rm.namespace == 'store' and rm.url_name == 'settings' %}aria-current="page"{% endif %}>
+                        <i class="bi bi-shop" aria-hidden="true"></i>{% translate "Pengaturan Toko" %}
                     </a>
                 {% endif %}
             {% endwith %}
         </nav>
         <div class="staff-foot">
+            <a href="{% url 'store:notifications' %}" class="staff-link staff-link--bell">
+                <i class="bi bi-bell" aria-hidden="true"></i>{% translate "Notifikasi" %}
+                {% if unread_notifications %}<span class="staff-badge">{{ unread_notifications }}</span>{% endif %}
+            </a>
             <button type="button"
                     class="staff-theme"
                     data-staff-theme-toggle
                     aria-pressed="false"
-                    aria-label="Aktifkan mode gelap">
-                <span class="when-light"><i class="bi bi-moon-stars" aria-hidden="true"></i> Mode gelap</span>
-                <span class="when-dark"><i class="bi bi-sun" aria-hidden="true"></i> Mode terang</span>
+                    aria-label="{% translate 'Aktifkan mode gelap' %}">
+                <span class="when-light"><i class="bi bi-moon-stars" aria-hidden="true"></i> {% translate "Mode gelap" %}</span>
+                <span class="when-dark"><i class="bi bi-sun" aria-hidden="true"></i> {% translate "Mode terang" %}</span>
             </button>
-            <div class="staff-who">{{ request.user.get_full_name|default:request.user.username }} <small>· {{ request.user.get_role_display }}</small></div>
+            {% include "partials/_lang_toggle.html" with extra="lang-toggle--block" %}
             <form method="post" action="{% url 'logout' %}" class="staff-logout-form">
                 {% csrf_token %}
-                <button type="submit" class="staff-logout">Keluar</button>
+                <button type="submit" class="staff-logout">{% translate "Keluar" %}</button>
             </form>
         </div>
     </aside>

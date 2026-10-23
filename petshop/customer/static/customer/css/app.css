@@ -1,0 +1,332 @@
+/* Area pelanggan (setelah login): bilah atas ringkas, menu samping di layar lebar,
+   menu bawah + laci menu di HP. Landing page publik tetap memakai nav.css saja. */
+
+.ca-app {
+  --ca-top: 72px;
+  --ca-side: 248px;
+  background: var(--purple-50, #faf5fd);
+}
+
+/* ---------- bilah atas ---------- */
+.ca-bar {
+  max-width: none;
+  padding: 0 20px;
+  flex-wrap: nowrap;
+}
+.ca-brand {
+  margin-right: auto;
+}
+.ca-brand__tag {
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--purple-100, #f2e8f9);
+  color: var(--purple-700, #6b21a8);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ca-menu-btn {
+  display: none;
+}
+
+/* ---------- kerangka ---------- */
+.ca-shell {
+  display: grid;
+  grid-template-columns: var(--ca-side) minmax(0, 1fr);
+  min-height: calc(100vh - var(--ca-top));
+}
+.ca-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ca-main > :last-child {
+  margin-top: auto;
+}
+
+/* ---------- menu samping ---------- */
+.ca-side {
+  position: sticky;
+  top: var(--ca-top);
+  align-self: start;
+  height: calc(100vh - var(--ca-top));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 12px;
+  background: #fff;
+  border-right: 1px solid var(--line, #eadcf4);
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+.ca-side__who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 14px;
+  border-bottom: 1px solid var(--line, #eadcf4);
+  margin-bottom: 6px;
+}
+.ca-side__who .sn-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--purple-700, #6b21a8);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+.ca-side__who strong {
+  display: block;
+  line-height: 1.25;
+  color: var(--ink, #261a33);
+}
+.ca-side__who small {
+  color: var(--muted, #6f6479);
+  font-size: 0.8rem;
+}
+.ca-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ca-nav__group {
+  margin: 12px 10px 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #6f6479);
+}
+.ca-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--ink, #261a33);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ca-link i {
+  width: 20px;
+  text-align: center;
+  color: var(--purple-600, #7e2fb8);
+}
+.ca-link:hover {
+  background: var(--purple-50, #faf5fd);
+  color: var(--purple-700, #6b21a8);
+}
+.ca-link.is-active {
+  background: var(--purple-100, #f2e8f9);
+  color: var(--purple-700, #6b21a8);
+}
+.ca-link:focus-visible,
+.ca-tab:focus-visible {
+  outline: 3px solid var(--purple-300, #d2aee9);
+  outline-offset: 1px;
+}
+.ca-count {
+  margin-left: auto;
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent, #f59e0b);
+  color: #1f1300;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+.ca-side__out {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line, #eadcf4);
+}
+.ca-side__out .ca-link,
+.ca-side__out .ca-link i {
+  color: var(--danger, #dc2626);
+}
+
+/* ---------- kaki halaman ringkas ---------- */
+.ca-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  padding: 18px 24px;
+  border-top: 1px solid var(--line, #eadcf4);
+  color: var(--muted, #6f6479);
+  font-size: 0.85rem;
+}
+.ca-foot a {
+  color: var(--purple-700, #6b21a8);
+  font-weight: 600;
+}
+
+/* ---------- menu bawah HP ---------- */
+.ca-tabs,
+.ca-scrim {
+  display: none;
+}
+
+@media (max-width: 1199.98px) {
+  /* Kolom cari hanya muncul lewat tombol kaca pembesar supaya bilah atas tetap satu baris. */
+  .ca-header .sn-search {
+    display: none;
+  }
+  .ca-header .sn-search.open {
+    display: flex;
+  }
+  .ca-header .sn-icon.sn-search-toggle {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .ca-app {
+    --ca-top: 64px;
+  }
+  .ca-bar {
+    padding: 0 12px;
+  }
+  .ca-menu-btn {
+    display: inline-flex;
+  }
+  .ca-shell {
+    display: block;
+  }
+  .ca-main {
+    min-height: calc(100vh - var(--ca-top));
+    padding-bottom: 72px; /* ruang untuk menu bawah */
+  }
+  .ca-side {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1080;
+    width: min(300px, 86vw);
+    height: 100%;
+    transform: translateX(-105%);
+    transition: transform 0.2s ease;
+    box-shadow: 0 10px 40px rgba(38, 26, 51, 0.25);
+  }
+  .ca-menu-open .ca-side {
+    transform: none;
+  }
+  .ca-scrim:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1070;
+    background: rgba(38, 26, 51, 0.45);
+  }
+  .ca-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 1040;
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    background: #fff;
+    border-top: 1px solid var(--line, #eadcf4);
+    box-shadow: 0 -4px 16px rgba(38, 26, 51, 0.06);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+  .ca-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 54px;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--muted, #6f6479);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .ca-tab i {
+    font-size: 1.1rem;
+  }
+  .ca-tab.is-active {
+    color: var(--purple-700, #6b21a8);
+    background: var(--purple-100, #f2e8f9);
+  }
+  /* Tombol chatbot naik di atas menu bawah. */
+  .ca-app .cb:not(.is-open) {
+    bottom: 80px;
+  }
+  .ca-foot {
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ca-brand__tag {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ca-side {
+    transition: none;
+  }
+}
+
+/* ---------- judul halaman Belanja di area pelanggan ---------- */
+.shop-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-bottom: 0;
+}
+.shop-head__eyebrow {
+  margin: 0 0 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted, #6f6479);
+}
+
+/* ---------- bilah atas HP: tetap satu baris, kolom cari turun di bawahnya ---------- */
+@media (max-width: 1199.98px) {
+  .ca-header .sn-bar {
+    position: relative;
+    flex-wrap: nowrap;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .ca-header .sn-search.open {
+    position: absolute;
+    top: 100%;
+    left: 12px;
+    right: 12px;
+    z-index: 5;
+    margin-top: 4px;
+    background: #fff;
+  }
+}
+@media (max-width: 480px) {
+  .ca-brand span {
+    display: none;
+  }
+  .ca-header .sn-actions {
+    gap: 0;
+  }
+}

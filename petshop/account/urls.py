@@ -6,10 +6,21 @@ urlpatterns = [
     path("login", views.loginForm, name="login_form"),
     path("logout", views.logoutForm, name="logout"),
     path("daftar", views.register, name="register"),
+    path("daftar/staf", views.register_staff, name="register_staff"),
+    path(
+        "staff/admin/staf/<int:pk>/persetujuan/",
+        views.decide_staff,
+        name="decide_staff",
+    ),
     path(
         "staff/admin/dashboard",
         views.staff_admin_dashboard,
         name="staff_admin_dashboard",
+    ),
+    path(
+        "staff/admin/laporan-penjualan.csv",
+        views.sales_report_csv,
+        name="sales_report_csv",
     ),
     path(
         "staff/admin/manage_account",

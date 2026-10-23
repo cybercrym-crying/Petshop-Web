@@ -1,0 +1,6 @@
+{% extends "error_base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Server Bermasalah" %}{% endblock %}
+{% block code %}500{% endblock %}
+{% block heading %}{% translate "Maaf, ada gangguan di server kami" %}{% endblock %}
+{% block text %}{% translate "Permintaan Anda belum berhasil diproses. Silakan coba lagi beberapa saat lagi. Bila berlanjut, hubungi admin lewat WhatsApp." %}{% endblock %}

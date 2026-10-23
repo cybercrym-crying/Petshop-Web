@@ -1,0 +1,46 @@
+{% load i18n %}
+{% load static rupiah %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        {% include "courier/_head.html" %}
+        <title>{% translate "Setoran COD - Kurir" %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        {% include "courier/_nav.html" %}
+        <main class="container-fluid px-xl-5 px-3 py-4" style="max-width: 900px">
+            <p class="eyebrow"><i class="bi bi-cash-stack me-1"></i> {% translate "Setoran" %}</p>
+            <h1 class="page-title">{% translate "Uang COD yang harus disetor" %}</h1>
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+            {% endfor %}
+            <section class="next-card mb-4">
+                <div class="next-card__label">{% translate "Total dipegang" %}</div>
+                <h2>Rp {{ on_hand_total|rupiah }}</h2>
+                <p>{% blocktranslate trimmed with on_hand=on_hand|length %}{{ on_hand }} paket COD sudah diserahkan dan uangnya belum disetor ke kasir.{% endblocktranslate %}</p>
+                {% if on_hand %}
+                    <form method="post" data-confirm="{% blocktranslate trimmed with on_hand_total=on_hand_total|rupiah %}Setor Rp {{ on_hand_total }} ke kasir sekarang?{% endblocktranslate %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-route is-primary w-100"><i class="bi bi-box-arrow-in-down"></i> {% translate "Setor ke kasir" %}</button>
+                    </form>
+                    <ul class="stop-list">
+                        {% for o in on_hand %}
+                            <li><a href="{% url 'courier:order_detail' o.pk %}"><span class="stop-num"><i class="bi bi-cash"></i></span><span>#{{ o.pk }} {{ o.customer.name }}<small>{{ o.delivered_at|date:"d M H:i" }} · Rp {{ o.cash_collected|rupiah }}</small></span></a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </section>
+            <h2 class="h6 fw-bold">{% translate "Riwayat setoran" %}</h2>
+            <ul class="stop-list">
+                {% for r in remittances %}
+                    <li><div class="stop-item"><span class="stop-num"><i class="bi {% if r.status == 'DITERIMA' %}bi-check2{% else %}bi-hourglass{% endif %}"></i></span><span>{% blocktranslate trimmed with r_pk=r.pk r_amount=r.amount|rupiah %}Setoran #{{ r_pk }} · Rp {{ r_amount }}{% endblocktranslate %}<small>{{ r.submitted_at|date:"d M Y H:i" }} · {{ r.get_status_display }}{% if r.received_by %} {% blocktranslate trimmed with r_received_by_name=r.received_by.name %}oleh {{ r_received_by_name }}{% endblocktranslate %}{% endif %}{% if r.difference %} {% blocktranslate trimmed with r_difference=r.difference|rupiah %}· selisih Rp {{ r_difference }}{% endblocktranslate %}{% endif %}{% if r.note %} · {{ r.note }}{% endif %}</small></span></div></li>
+                {% empty %}
+                    <li class="text-muted small">{% translate "Belum pernah menyetor." %}</li>
+                {% endfor %}
+            </ul>
+        </main>
+        <script src="{% static 'js/common.js' %}"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

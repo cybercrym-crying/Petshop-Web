@@ -43,3 +43,8 @@
     if (el.matches && el.matches("[data-autosubmit]") && el.form) el.form.submit();
   });
 })();
+
+/* data-print: tombol cetak halaman (label paket, struk). */
+document.addEventListener("click", function (event) {
+  if (event.target.closest("[data-print]")) window.print();
+});

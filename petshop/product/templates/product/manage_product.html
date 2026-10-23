@@ -1,33 +1,33 @@
+{% load i18n %}
 {% load static rupiah humanize %}
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Kelola Produk</title>
+        <title>{% translate "Seelly - Kelola Produk" %}</title>
         <!-- Bootstrap CSS -->
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
               rel="stylesheet" />
         <!-- Bootstrap Icons -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-              rel="stylesheet">
+        <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
         <!-- Google Fonts: Plus Jakarta Sans -->
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-              rel="stylesheet" />
+        <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
         <link rel="stylesheet"
-              href="{% static 'product/css/manage_product.css' %}?v=dm1">
+              href="{% static 'product/css/manage_product.css' %}?v=ux2">
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
         <main class="container-fluid px-xl-5 px-4 py-4">
             <!-- Header -->
-            <div class="page-header animate-fade-up" style="animation-delay: 0s;">
-                <p class="eyebrow">Dasbor</p>
-                <h1 class="page-title">Kelola Produk</h1>
+            <div class="page-header animate-fade-up anim-d0">
+                <p class="eyebrow">{% translate "Toko" %}</p>
+                <h1 class="page-title">{% translate "Kelola Produk" %}</h1>
             </div>
             <!-- Messages Area (Disatukan di atas) -->
             {% if messages %}
-                <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
+                <div class="mb-4 animate-fade-up anim-d1">
                     {% for message in messages %}
                         <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
                              role="alert">
@@ -35,21 +35,21 @@
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="alert"
-                                    aria-label="Tutup"></button>
+                                    aria-label="{% translate 'Tutup' %}"></button>
                         </div>
                     {% endfor %}
                 </div>
             {% endif %}
             <!-- Toolbar (Search, Filter, Buttons) -->
-            <div class="toolbar animate-fade-up" style="animation-delay: 0.2s;">
+            <div class="toolbar animate-fade-up anim-d2">
                 <form method="get"
                       action="{% url 'product:manage_product' %}"
                       class="filter-group">
                     <select name="category"
                             class="filter-input filter-category"
-                            aria-label="Filter kategori"
+                            aria-label="{% translate 'Filter kategori' %}"
                             data-autosubmit>
-                        <option value="">Semua Kategori</option>
+                        <option value="">{% translate "Semua Kategori" %}</option>
                         {% for cat in categories %}
                             <option value="{{ cat.pk }}"
                                     {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>
@@ -61,17 +61,17 @@
                            name="q"
                            value="{{ request.GET.q }}"
                            class="filter-input filter-search"
-                           placeholder="Cari nama produk..."
-                           aria-label="Cari produk" />
+                           placeholder="{% translate 'Cari nama produk...' %}"
+                           aria-label="{% translate 'Cari produk' %}" />
                 </form>
                 <div class="btn-action-group">
                     <a href="{% url 'product:product_list' %}" class="btn-cancel">
-                        <i class="bi bi-box-seam me-1"></i> Stok &amp; Harga
+                        <i class="bi bi-box-seam me-1"></i> {% translate "Stok &amp; Harga" %}
                     </a>
                     <button class="btn-orange"
                             data-bs-toggle="modal"
                             data-bs-target="#addProductModal">
-                        <i class="bi bi-plus-lg me-1"></i> Tambah Produk
+                        <i class="bi bi-plus-lg me-1"></i> {% translate "Tambah Produk" %}
                     </button>
                 </div>
             </div>
@@ -79,32 +79,34 @@
             <div class="row g-4 product-grid">
                 {% for p in products %}
                     <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-                        <!-- Kartu Produk dengan class animasi -->
                         <article class="product-card animate-fade-up"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="{% blocktranslate trimmed with name=p.name %}Lihat detail {{ name }}{% endblocktranslate %}"
                                  data-bs-toggle="modal"
                                  data-bs-target="#detailProduct{{ p.pk }}">
                             <div class="product-photo">
                                 {% if p.photo %}
                                     <img src="{{ p.photo.url }}" alt="{{ p.name }}" />
                                 {% else %}
-                                    <i class="bi bi-image text-muted opacity-50" style="font-size: 3rem;"></i>
+                                    <i class="bi bi-image text-muted opacity-50 product-photo__empty" aria-hidden="true"></i>
                                 {% endif %}
                             </div>
                             <div class="product-body">
                                 <h3 class="product-name">{{ p.name }}</h3>
                                 <div class="product-selling-price">
                                     {% if p.selling_price %}
-                                        Rp {{ p.selling_price|floatformat:0|intcomma }}
+                                        Rp {{ p.selling_price|rupiah }}
                                     {% else %}
-                                        <span class="fs-6 text-muted fw-normal">Harga belum diset</span>
+                                        <span class="fs-6 text-muted fw-normal">{% translate "Harga belum diset" %}</span>
                                     {% endif %}
                                 </div>
                                 <div class="badges-wrapper">
                                     <span class="badge-stock {% if p.stock == 0 %}empty{% elif p.stock <= 10 %}low{% else %}good{% endif %}">
-                                        Stok {{ p.stock }}
+                                        {% blocktranslate trimmed with p_stock=p.stock %}Stok {{ p_stock }}{% endblocktranslate %}
                                     </span>
                                     <span class="badge-is-active {% if p.is_active %}active{% else %}inactive{% endif %}">
-                                        {% if p.is_active %}Aktif{% else %}Tidak Aktif{% endif %}
+                                        {% if p.is_active %}{% translate "Aktif" %}{% else %}{% translate "Tidak Aktif" %}{% endif %}
                                     </span>
                                 </div>
                             </div>
@@ -113,13 +115,13 @@
                 {% empty %}
                     <div class="col-12">
                         <div class="empty-state">
-                            <i class="bi bi-box-seam d-block mb-3" style="font-size: 3rem;"></i>
+                            <i class="bi bi-box-seam d-block mb-3 icon-xl"></i>
                             {% if request.GET.q or request.GET.category %}
-                                <h5 class="fw-bold mb-0">Tidak ada produk yang cocok dengan filter.</h5>
-                                <p class="mt-2">Coba sesuaikan kata kunci atau kategori pencarian Anda.</p>
+                                <h5 class="fw-bold mb-0">{% translate "Tidak ada produk yang cocok dengan filter." %}</h5>
+                                <p class="mt-2">{% translate "Coba sesuaikan kata kunci atau kategori pencarian Anda." %}</p>
                             {% else %}
-                                <h5 class="fw-bold mb-0">Belum ada produk.</h5>
-                                <p class="mt-2">Klik tombol "+ Tambah Produk" di atas untuk menambahkan produk pertama Anda.</p>
+                                <h5 class="fw-bold mb-0">{% translate "Belum ada produk." %}</h5>
+                                <p class="mt-2">{% translate 'Klik tombol "+ Tambah Produk" di atas untuk menambahkan produk pertama Anda.' %}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -136,39 +138,57 @@
                     <div class="modal-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <h2 class="modal-title-custom">Tambah Produk Baru</h2>
-                                <p class="modal-sub">Isi detail produk di sini</p>
+                                <h2 class="modal-title-custom">{% translate "Tambah Produk Baru" %}</h2>
+                                <p class="modal-sub">{% translate "Isi detail produk di sini" %}</p>
                             </div>
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="modal"
-                                    aria-label="Tutup"></button>
+                                    aria-label="{% translate 'Tutup' %}"></button>
                         </div>
                         <form method="post"
                               action="{% url 'product:add_product' %}"
                               enctype="multipart/form-data">
                             {% csrf_token %}
                             <div class="mb-4">
-                                <label class="form-label-custom" for="add-name">Nama Produk</label>
+                                <label class="form-label-custom" for="add-name">{% translate "Nama Produk" %}</label>
                                 <input type="text"
                                        id="add-name"
                                        name="name"
                                        class="dark-input"
                                        required
-                                       placeholder="Contoh: Whiskas Tuna 1Kg" />
+                                       placeholder="{% translate 'Contoh: Whiskas Tuna 1Kg' %}" />
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label-custom" for="add-sku">{% translate "Kode Barang (SKU / barcode)" %}</label>
+                                <input type="text"
+                                       id="add-sku"
+                                       name="sku"
+                                       maxlength="40"
+                                       class="dark-input"
+                                       autocomplete="off"
+                                       placeholder="{% translate 'Opsional, mis. 8991234567890 atau SLY-0001' %}" />
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label-custom" for="add-description">{% translate "Deskripsi" %}</label>
+                                <textarea id="add-description"
+                                          name="description"
+                                          rows="3"
+                                          class="dark-input"
+                                          placeholder="Ukuran, bahan, cara pakai, cocok untuk hewan apa"></textarea>
                             </div>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-category">Kategori</label>
+                                    <label class="form-label-custom" for="add-category">{% translate "Kategori" %}</label>
                                     <select id="add-category" name="category" class="dark-input" required>
-                                        <option value="" selected disabled>- Pilih Kategori -</option>
+                                        <option value="" selected disabled>{% translate "- Pilih Kategori -" %}</option>
                                         {% for cat in categories %}
                                             <option value="{{ cat.pk }}">{{ cat.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-stock">Stok Awal</label>
+                                    <label class="form-label-custom" for="add-stock">{% translate "Stok Awal" %}</label>
                                     <input type="number"
                                            id="add-stock"
                                            name="stock"
@@ -181,28 +201,28 @@
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label-custom"
-                                           for="add-purchase-price">Harga Beli (Rp)</label>
+                                           for="add-purchase-price">{% translate "Harga Beli (Rp)" %}</label>
                                     <input type="number"
                                            id="add-purchase-price"
                                            name="purchase_price"
                                            min="0"
                                            class="dark-input"
                                            required
-                                           placeholder="Modal beli" />
+                                           placeholder="{% translate 'Modal beli' %}" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-selling-price">Harga Jual (Rp)</label>
+                                    <label class="form-label-custom" for="add-selling-price">{% translate "Harga Jual (Rp)" %}</label>
                                     <input type="number"
                                            id="add-selling-price"
                                            name="selling_price"
                                            min="0"
                                            class="dark-input"
-                                           placeholder="Harga jual (opsional)" />
+                                           placeholder="{% translate 'Harga jual (opsional)' %}" />
                                 </div>
                             </div>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-pet-type">Tipe Hewan</label>
+                                    <label class="form-label-custom" for="add-pet-type">{% translate "Tipe Hewan" %}</label>
                                     <select id="add-pet-type" name="pet_type" class="dark-input">
                                         {% for value, label in pet_types %}
                                             <option value="{{ value }}"
@@ -211,7 +231,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-condition">Kondisi</label>
+                                    <label class="form-label-custom" for="add-condition">{% translate "Kondisi" %}</label>
                                     <select id="add-condition" name="condition" class="dark-input">
                                         {% for value, label in conditions %}
                                             <option value="{{ value }}"
@@ -222,7 +242,7 @@
                             </div>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-photo">Foto Produk</label>
+                                    <label class="form-label-custom" for="add-photo">{% translate "Foto Produk" %}</label>
                                     <input type="file"
                                            id="add-photo"
                                            name="photo"
@@ -231,16 +251,16 @@
                                            style="padding: 9px 16px" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-custom" for="add-is-active">Status</label>
+                                    <label class="form-label-custom" for="add-is-active">{% translate "Status" %}</label>
                                     <select id="add-is-active" name="is_active" class="dark-input" required>
-                                        <option value="true" selected>Aktif</option>
-                                        <option value="false">Tidak Aktif</option>
+                                        <option value="true" selected>{% translate "Aktif" %}</option>
+                                        <option value="false">{% translate "Tidak Aktif" %}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
-                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn-orange px-5">Simpan Produk</button>
+                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                                <button type="submit" class="btn-orange px-5">{% translate "Simpan Produk" %}</button>
                             </div>
                         </form>
                     </div>
@@ -258,19 +278,19 @@
                         <div class="modal-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div>
-                                    <h2 class="modal-title-custom">Detail Produk</h2>
-                                    <p class="modal-sub">Perbarui atau hapus informasi produk disini</p>
+                                    <h2 class="modal-title-custom">{% translate "Detail Produk" %}</h2>
+                                    <p class="modal-sub">{% translate "Perbarui atau hapus informasi produk disini" %}</p>
                                 </div>
                                 <button type="button"
                                         class="btn-close"
                                         data-bs-dismiss="modal"
-                                        aria-label="Tutup"></button>
+                                        aria-label="{% translate 'Tutup' %}"></button>
                             </div>
                             <div class="photo-preview shadow-sm">
                                 {% if p.photo %}
                                     <img src="{{ p.photo.url }}" alt="{{ p.name }}" />
                                 {% else %}
-                                    <i class="bi bi-image text-muted opacity-50" style="font-size: 3rem;"></i>
+                                    <i class="bi bi-image text-muted opacity-50 product-photo__empty" aria-hidden="true"></i>
                                 {% endif %}
                             </div>
                             <form method="post"
@@ -278,7 +298,7 @@
                                   enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="mb-4">
-                                    <label class="form-label-custom" for="detail-name-{{ p.pk }}">Nama Produk</label>
+                                    <label class="form-label-custom" for="detail-name-{{ p.pk }}">{% translate "Nama Produk" %}</label>
                                     <input type="text"
                                            id="detail-name-{{ p.pk }}"
                                            name="name"
@@ -286,10 +306,27 @@
                                            class="dark-input"
                                            required />
                                 </div>
+                                <div class="mb-4">
+                                    <label class="form-label-custom" for="detail-sku-{{ p.pk }}">{% translate "Kode Barang (SKU / barcode)" %}</label>
+                                    <input type="text"
+                                           id="detail-sku-{{ p.pk }}"
+                                           name="sku"
+                                           value="{{ p.sku|default:'' }}"
+                                           maxlength="40"
+                                           class="dark-input"
+                                           autocomplete="off" />
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label-custom" for="detail-description-{{ p.pk }}">{% translate "Deskripsi" %}</label>
+                                    <textarea id="detail-description-{{ p.pk }}"
+                                              name="description"
+                                              rows="3"
+                                              class="dark-input">{{ p.description }}</textarea>
+                                </div>
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-category-{{ p.pk }}">Kategori</label>
+                                               for="detail-category-{{ p.pk }}">{% translate "Kategori" %}</label>
                                         <select id="detail-category-{{ p.pk }}"
                                                 name="category"
                                                 class="dark-input"
@@ -304,7 +341,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-stock-{{ p.pk }}">Stok (Sekarang)</label>
+                                               for="detail-stock-{{ p.pk }}">{% translate "Stok (Sekarang)" %}</label>
                                         <input type="number"
                                                id="detail-stock-{{ p.pk }}"
                                                name="stock"
@@ -312,13 +349,13 @@
                                                min="0"
                                                class="dark-input fw-bold"
                                                readonly
-                                               title="Stok diubah lewat form Mutasi Stok, bukan di sini" />
+                                               title="{% translate 'Stok diubah lewat form Mutasi Stok, bukan di sini' %}" />
                                     </div>
                                 </div>
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-purchase-price-{{ p.pk }}">Harga Beli (Rp)</label>
+                                               for="detail-purchase-price-{{ p.pk }}">{% translate "Harga Beli (Rp)" %}</label>
                                         <input type="number"
                                                id="detail-purchase-price-{{ p.pk }}"
                                                name="purchase_price"
@@ -329,7 +366,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-selling-price-{{ p.pk }}">Harga Jual (Rp)</label>
+                                               for="detail-selling-price-{{ p.pk }}">{% translate "Harga Jual (Rp)" %}</label>
                                         <input type="number"
                                                id="detail-selling-price-{{ p.pk }}"
                                                name="selling_price"
@@ -341,7 +378,7 @@
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-pet-type-{{ p.pk }}">Tipe Hewan</label>
+                                               for="detail-pet-type-{{ p.pk }}">{% translate "Tipe Hewan" %}</label>
                                         <select id="detail-pet-type-{{ p.pk }}" name="pet_type" class="dark-input">
                                             {% for value, label in pet_types %}
                                                 <option value="{{ value }}"
@@ -351,7 +388,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-condition-{{ p.pk }}">Kondisi</label>
+                                               for="detail-condition-{{ p.pk }}">{% translate "Kondisi" %}</label>
                                         <select id="detail-condition-{{ p.pk }}" name="condition" class="dark-input">
                                             {% for value, label in conditions %}
                                                 <option value="{{ value }}"
@@ -363,7 +400,7 @@
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-photo-{{ p.pk }}">Ubah Gambar</label>
+                                               for="detail-photo-{{ p.pk }}">{% translate "Ubah Gambar" %}</label>
                                         <input type="file"
                                                id="detail-photo-{{ p.pk }}"
                                                name="photo"
@@ -373,32 +410,32 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label-custom"
-                                               for="detail-is-active-{{ p.pk }}">Status</label>
+                                               for="detail-is-active-{{ p.pk }}">{% translate "Status" %}</label>
                                         <select id="detail-is-active-{{ p.pk }}"
                                                 name="is_active"
                                                 class="dark-input"
                                                 required>
-                                            <option value="true" {% if p.is_active %}selected{% endif %}>Aktif</option>
+                                            <option value="true" {% if p.is_active %}selected{% endif %}>{% translate "Aktif" %}</option>
                                             <option value="false"
-                                                    {% if not p.is_active %}selected{% endif %}>Tidak Aktif</option>
+                                                    {% if not p.is_active %}selected{% endif %}>{% translate "Tidak Aktif" %}</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="d-flex flex-wrap gap-2 justify-content-end mt-5 border-top pt-4">
-                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batalkan</button>
+                                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batalkan" %}</button>
                                     <button type="submit"
                                             form="deleteProduct{{ p.pk }}"
                                             class="btn-delete me-auto">
-                                        <i class="bi bi-trash3 me-1"></i> Hapus
+                                        <i class="bi bi-trash3 me-1"></i> {% translate "Hapus" %}
                                     </button>
-                                    <button type="submit" class="btn-orange px-4">Perbarui Produk</button>
+                                    <button type="submit" class="btn-orange px-4">{% translate "Perbarui Produk" %}</button>
                                 </div>
                             </form>
                             <!-- Form Hapus (Terpisah) -->
                             <form id="deleteProduct{{ p.pk }}"
                                   method="post"
                                   action="{% url 'product:delete_product' p.pk %}"
-                                  data-confirm="Apakah Anda yakin ingin menghapus produk '{{ p.name }}'?">
+                                  data-confirm="{% blocktranslate trimmed with p_name=p.name %}Apakah Anda yakin ingin menghapus produk '{{ p_name }}'?{% endblocktranslate %}">
                                 {% csrf_token %}
                             </form>
                         </div>
@@ -406,7 +443,8 @@
                 </div>
             </div>
         {% endfor %}
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
         <script src="{% static 'js/common.js' %}"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>
 </html>

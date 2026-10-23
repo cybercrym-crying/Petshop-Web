@@ -6,12 +6,14 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("i18n/", include("django.conf.urls.i18n")),
     path("", include("account.urls")),
     path("", include("product.urls")),
     path("", include("transaction.urls")),
     path("", include("courier.urls")),
     path("", include("service.urls")),
     path("", include("chatbot.urls")),
+    path("", include("store.urls")),
     # Alamat lama situs customer (/customer/...) dialihkan permanen ke alamat baru (/...).
     path("customer/", RedirectView.as_view(url="/", permanent=True, query_string=True)),
     path(

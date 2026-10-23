@@ -1,0 +1,121 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% translate "Seelly - Pengaturan Toko" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
+    <link href="{% static 'vendor/leaflet/leaflet.css' %}" rel="stylesheet" />
+    <link href="{% static 'store/css/settings.css' %}?v=ux2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="mb-4 animate-fade-up">
+            <p class="eyebrow">{% translate "Toko" %}</p>
+            <h1 class="page-title mb-1">{% translate "Pengaturan Toko" %}</h1>
+            <p class="text-muted fw-medium mb-0">{% translate "Alamat dan titik peta toko dipakai untuk menghitung ongkir, rute kurir, dan antar-jemput hewan. Nomor WhatsApp dan rekening tampil di situs pelanggan." %}</p>
+            {% if store.updated_by %}<p class="small text-muted mt-1 mb-0">{% blocktranslate trimmed with store_updated_at=store.updated_at|date:"d M Y H:i" store_updated_by_name=store.updated_by.name|default:store.updated_by.username %}Terakhir diubah {{ store_updated_at }} oleh {{ store_updated_by_name }}{% endblocktranslate %}</p>{% endif %}
+        </div>
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 shadow-sm border-0" role="alert">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <form method="post" novalidate class="store-settings" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+            <section class="card-custom store-card animate-fade-up">
+                <h2 class="store-card__title"><i class="bi bi-shop"></i> {% translate "Profil & lokasi" %}</h2>
+                <div class="row g-3">
+                    {% include "store/_field.html" with field=form.name %}
+                    {% include "store/_field.html" with field=form.email %}
+                    {% include "store/_field.html" with field=form.address col="col-12" %}
+                    <div class="col-12">
+                        <div class="store-map-tools">
+                            <span class="small text-muted">{% translate "Klik peta atau geser pin untuk menandai lokasi toko." %}</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-map-locate><i class="bi bi-crosshair"></i> {% translate "Pakai lokasi saya" %}</button>
+                        </div>
+                        <div class="store-map" data-map-picker role="application" aria-label="{% translate 'Peta lokasi toko' %}"></div>
+                    </div>
+                    {% include "store/_field.html" with field=form.latitude %}
+                    {% include "store/_field.html" with field=form.longitude %}
+                </div>
+            </section>
+            <section class="card-custom store-card animate-fade-up">
+                <h2 class="store-card__title"><i class="bi bi-clock"></i> {% translate "Jam buka & kontak" %}</h2>
+                <div class="row g-3">
+                    {% include "store/_field.html" with field=form.open_hour col="col-6 col-md-3" %}
+                    {% include "store/_field.html" with field=form.close_hour col="col-6 col-md-3" %}
+                    {% include "store/_field.html" with field=form.whatsapp %}
+                </div>
+            </section>
+            <section class="card-custom store-card animate-fade-up">
+                <h2 class="store-card__title"><i class="bi bi-bank"></i> {% translate "Rekening transfer" %}</h2>
+                <p class="small text-muted">{% translate 'Rekening aktif tampil di petunjuk transfer pelanggan. Centang "Hapus" untuk membuang rekening.' %}</p>
+                {{ banks.management_form }}
+                {% for f in banks.non_form_errors %}<div class="alert alert-danger">{{ f }}</div>{% endfor %}
+                <div class="store-banks">
+                    {% for bf in banks %}
+                        <div class="store-bank">
+                            {{ bf.id }}
+                            <div><label class="form-label small fw-semibold" for="{{ bf.bank.id_for_label }}">{% translate "Bank" %}</label>{{ bf.bank }}{% for e in bf.bank.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+                            <div><label class="form-label small fw-semibold" for="{{ bf.number.id_for_label }}">{% translate "Nomor rekening" %}</label>{{ bf.number }}{% for e in bf.number.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+                            <div><label class="form-label small fw-semibold" for="{{ bf.holder.id_for_label }}">{% translate "Atas nama" %}</label>{{ bf.holder }}{% for e in bf.holder.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+                            <div class="store-bank__checks">
+                                <label class="form-check-label small">{% blocktranslate trimmed with bf_is_active=bf.is_active %}{{ bf_is_active }} Aktif{% endblocktranslate %}</label>
+                                {% if bf.instance.pk %}<label class="form-check-label small text-danger">{% blocktranslate trimmed with bf_delete=bf.DELETE %}{{ bf_delete }} Hapus{% endblocktranslate %}</label>{% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <p class="small text-muted mb-0 mt-2">{% translate "Butuh baris tambahan? Simpan dulu, satu baris kosong baru akan muncul." %}</p>
+            </section>
+            <section class="card-custom store-card animate-fade-up">
+                <h2 class="store-card__title"><i class="bi bi-truck"></i> {% translate "Ongkos kirim produk" %}</h2>
+                <p class="small text-muted">{% blocktranslate trimmed with example_fee=example_fee|rupiah %}Ongkir = biaya dasar untuk jarak dasar + tarif per km berikutnya (dibulatkan ke atas). Dengan tarif tersimpan, alamat 7 km dari toko kena Rp {{ example_fee }}.{% endblocktranslate %}</p>
+                <div class="row g-3">
+                    {% include "store/_field.html" with field=form.shipping_base_fee col="col-md-3" %}
+                    {% include "store/_field.html" with field=form.shipping_base_km col="col-md-3" %}
+                    {% include "store/_field.html" with field=form.shipping_per_km col="col-md-3" %}
+                    {% include "store/_field.html" with field=form.max_delivery_km col="col-md-3" %}
+                </div>
+            </section>
+            <section class="card-custom store-card animate-fade-up">
+                <h2 class="store-card__title"><i class="bi bi-heart"></i> {% translate "Antar-jemput hewan" %}</h2>
+                <p class="small text-muted">{% translate "Dihitung per arah: dijemput saja atau diantar saja = 1×, jemput + antar pulang = 2×." %}</p>
+                <div class="row g-3">
+                    {% include "store/_field.html" with field=form.pickup_base_fee col="col-md-4" %}
+                    {% include "store/_field.html" with field=form.pickup_base_km col="col-md-4" %}
+                    {% include "store/_field.html" with field=form.pickup_per_km col="col-md-4" %}
+                </div>
+            </section>
+            <section class="card-custom store-card animate-fade-up">
+                <h2 class="store-card__title"><i class="bi bi-sliders"></i> {% translate "Operasional" %}</h2>
+                <div class="row g-3">
+                    {% include "store/_field.html" with field=form.max_packages_per_courier col="col-md-4" %}
+                    {% include "store/_field.html" with field=form.payment_deadline_hours col="col-md-4" %}
+                    {% include "store/_field.html" with field=form.gps_stale_seconds col="col-md-4" %}
+                    {% include "store/_field.html" with field=form.grooming_reminder_days col="col-md-4" %}
+                </div>
+            </section>
+            <section class="card-custom store-card animate-fade-up">
+                <h2 class="store-card__title"><i class="bi bi-receipt"></i> {% translate "Kasir &amp; struk" %}</h2>
+                <div class="row g-3">
+                    {% include "store/_field.html" with field=form.tax_percent col="col-md-4" %}
+                    {% include "store/_field.html" with field=form.cashier_discount_limit col="col-md-4" %}
+                    {% include "store/_field.html" with field=form.return_days col="col-md-4" %}
+                    {% include "store/_field.html" with field=form.qris_image %}
+                    {% include "store/_field.html" with field=form.receipt_footer %}
+                </div>
+            </section>
+            <div class="store-actions">
+                <button type="submit" class="btn-orange"><i class="bi bi-check2-circle me-1"></i> {% translate "Simpan pengaturan" %}</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=1"></script>
+{% endblock %}

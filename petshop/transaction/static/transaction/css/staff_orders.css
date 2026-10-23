@@ -1,0 +1,14 @@
+/* Halaman Cek Bukti Transfer & Antrean Packing */
+.so-card { padding: 20px 22px !important; }
+.so-proof img { width: 100%; max-height: 70vh; object-fit: contain; border-radius: 12px; background: var(--t-bg-f4f7fe,#f4f7fe); }
+.so-dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0; font-size: 0.93rem; }
+.so-dl dt { color: #718096; font-weight: 600; }
+.so-dl dd { margin: 0; }
+.so-amount { font-size: 1.4rem; font-weight: 800; color: #5c418c; }
+.so-list li { padding: 6px 0; border-bottom: 1px dashed var(--t-bd-e2e8f0,#e2e8f0); display: flex; justify-content: space-between; gap: 8px; }
+.so-pack { display: flex; gap: 16px; align-items: flex-start; height: 100%; }
+.so-pack__num { flex: none; min-width: 64px; padding: 8px 10px; border-radius: 14px; background: #5c418c; color: #fff; font-size: 1.5rem; font-weight: 800; text-align: center; }
+.so-pack__body { flex: 1; min-width: 0; }
+.so-items { margin: 8px 0 12px; padding-left: 18px; font-size: 0.88rem; }
+.so-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(229, 165, 0, 0.15); color: #a16207; }
+.so-pack__num small { display: block; font-size: 0.75rem; font-weight: 600; opacity: 0.8; }

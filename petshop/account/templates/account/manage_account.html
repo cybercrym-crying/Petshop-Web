@@ -1,23 +1,22 @@
 {% extends "account/staff_base.html" %}
+{% load i18n %}
 {% load static %}
-{% block title %}PetAdmin - Kelola Akun{% endblock %}
+{% block title %}{% translate "Seelly - Kelola Akun" %}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm1"
-          rel="stylesheet" />
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm1"
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm3"
           rel="stylesheet" />
 {% endblock %}
 {% block content %}
     <div class="container-fluid px-xl-4 px-3 py-4">
         <!-- Header -->
-        <div class="animate-fade-up" style="animation-delay: 0s;">
-            <p class="eyebrow">Dasbor</p>
-            <h1 class="page-title">Kelola Akun</h1>
-            <p class="text-muted fw-medium mb-4">Kelola data pegawai (admin, kasir, kurir, groomer) dan pelanggan di sini.</p>
+        <div class="animate-fade-up anim-d0">
+            <p class="eyebrow">{% translate "Toko" %}</p>
+            <h1 class="page-title">{% translate "Kelola Akun" %}</h1>
+            <p class="text-muted fw-medium mb-4">{% translate "Kelola data pegawai (admin, kasir, kurir, groomer) dan pelanggan di sini." %}</p>
         </div>
         <!-- Pesan / Notifikasi -->
         {% if messages %}
-            <div class="mb-4 animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="mb-4 animate-fade-up anim-d1">
                 {% for message in messages %}
                     <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0"
                          role="alert">
@@ -25,44 +24,47 @@
                         <button type="button"
                                 class="btn-close"
                                 data-bs-dismiss="alert"
-                                aria-label="Tutup"></button>
+                                aria-label="{% translate 'Tutup' %}"></button>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
         <!-- Tabs -->
-        <div class="custom-tabs d-flex flex-wrap animate-fade-up"
-             style="animation-delay: 0.1s"
+        <div class="custom-tabs d-flex flex-wrap animate-fade-up anim-d1"
              id="userTabs">
             <a href="?tab=employee"
-               class="nav-link {% if active_tab != 'customer' %}active{% endif %}">
-                <i class="bi bi-person-badge me-1"></i> Pegawai
+               class="nav-link {% if active_tab != 'customer' and active_tab != 'approval' %}active{% endif %}">
+                <i class="bi bi-person-badge me-1"></i> {% translate "Pegawai" %}
+            </a>
+            <a href="?tab=approval"
+               class="nav-link {% if active_tab == 'approval' %}active{% endif %}">
+                <i class="bi bi-person-check me-1"></i> {% translate "Persetujuan Staf" %}
+                {% if pending_staff %}<span class="badge rounded-pill text-bg-warning ms-1">{{ pending_staff|length }}</span>{% endif %}
             </a>
             <a href="?tab=customer"
                class="nav-link {% if active_tab == 'customer' %}active{% endif %}">
-                <i class="bi bi-people me-1"></i> Pelanggan
+                <i class="bi bi-people me-1"></i> {% translate "Pelanggan" %}
             </a>
         </div>
         <!-- TAB 1: EMPLOYEE -->
         <div id="tab-employee"
-             class="animate-fade-up {% if active_tab == 'customer' %}d-none{% endif %}"
-             style="animation-delay: 0.2s">
+             class="animate-fade-up {% if active_tab == 'customer' or active_tab == 'approval' %}d-none{% endif %} anim-d2">
             <div class="d-flex justify-content-end mb-3">
                 <button class="btn-orange"
                         data-bs-toggle="modal"
                         data-bs-target="#addEmployeeModal">
-                    <i class="bi bi-plus-lg me-2"></i> Tambah Pegawai
+                    <i class="bi bi-plus-lg me-2"></i> {% translate "Tambah Pegawai" %}
                 </button>
             </div>
             <div class="card-custom">
                 <div class="table-responsive">
-                    <table class="table table-custom">
+                    <table data-stack class="table table-custom emp-table">
                         <thead>
-                            <tr>
-                                <th>Pegawai</th>
-                                <th>Nomor HP</th>
-                                <th>Peran</th>
-                                <th>Aktivitas</th>
+                            <tr class="tbl-head">
+                                <th>{% translate "Pegawai" %}</th>
+                                <th>{% translate "Nomor HP" %}</th>
+                                <th>{% translate "Peran" %}</th>
+                                <th>{% translate "Aktivitas" %}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -73,29 +75,27 @@
                                         <div class="emp-cell">
                                             <i class="emp-av tone-{{ emp.tone|default:'5' }}">{{ emp.initials }}</i>
                                             <div>
-                                                <div class="fw-bold text-dark"
-                                                     style="font-size: 1.05rem">{{ emp.display_name }}</div>
+                                                <div class="fw-bold text-dark cell-name">{{ emp.display_name }}</div>
                                                 <small class="text-muted fw-semibold">@{{ emp.username }}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="fw-medium text-secondary">{{ emp.phone_number|default:"-" }}</td>
-                                    <td>
+                                    <td class="fw-medium text-secondary" data-label="No. HP">{{ emp.phone_number|default:"-" }}</td>
+                                    <td data-label="Peran">
                                         <span class="badge-role {{ emp.role_behavior.badge_class }}"><i class="bi {{ emp.role_behavior.badge_icon }} me-1"></i> {{ emp.role_behavior.label }}</span>
                                     </td>
-                                    <td class="text-muted fw-medium">
+                                    <td class="text-muted fw-medium" data-label="Aktivitas">
                                         <i class="bi {{ emp.role_behavior.summary_icon }} me-1"></i> {{ emp.role_summary }}
                                     </td>
-                                    <td class="text-end text-muted fs-5">
-                                        <i class="bi bi-chevron-right"></i>
+                                    <td class="text-end text-muted fs-5 cell-chevron">
+                                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
                                     </td>
                                 </tr>
                             {% empty %}
                                 <tr>
                                     <td colspan="5" class="text-center py-5">
-                                        <i class="bi bi-person-vcard text-muted opacity-50"
-                                           style="font-size: 3rem"></i>
-                                        <h5 class="fw-bold mt-3 text-dark">Belum ada data pegawai</h5>
+                                        <i class="bi bi-person-vcard text-muted opacity-50 empty-icon" aria-hidden="true"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">{% translate "Belum ada data pegawai" %}</h5>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -104,36 +104,76 @@
                 </div>
             </div>
         </div>
+        <!-- TAB: PERSETUJUAN STAF -->
+        <div id="tab-approval"
+             class="animate-fade-up {% if active_tab != 'approval' %}d-none{% endif %}">
+            <div class="card-custom">
+                {% for s in pending_staff %}
+                    <div class="approval-row">
+                        <div class="emp-cell">
+                            <i class="emp-av tone-{{ s.tone|default:'5' }}">{{ s.initials }}</i>
+                            <div>
+                                <div class="fw-bold text-dark cell-name">{{ s.display_name }} <span class="badge-role {{ s.role_behavior.badge_class }}"><i class="bi {{ s.role_behavior.badge_icon }} me-1"></i>{{ s.get_role_display }}</span></div>
+                                <small class="text-muted">{% blocktranslate trimmed with s_username=s.username s_phone_number=s.phone_number s_date_joined=s.date_joined|date:"d M Y, H:i" %}@{{ s_username }} · {{ s_phone_number }} · daftar {{ s_date_joined }}{% endblocktranslate %}</small>
+                                {% if s.address %}<div class="small text-muted">{{ s.address }}</div>{% endif %}
+                                {% if s.courier_profile %}
+                                    <div class="small text-muted">
+                                        <i class="bi bi-scooter"></i> {{ s.courier_profile.vehicle }} · {{ s.courier_profile.plate_number }}
+                                        {% if s.courier_profile.can_carry_pets %}· <i class="bi bi-heart"></i> {% translate "bisa antar-jemput hewan" %}{% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="approval-actions">
+                            <form method="post" action="{% url 'decide_staff' s.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="decision" value="approve" />
+                                <button type="submit" class="btn btn-primary btn-sm fw-semibold"><i class="bi bi-check-lg"></i> {% translate "Setujui" %}</button>
+                            </form>
+                            <form method="post" action="{% url 'decide_staff' s.pk %}" data-confirm="{% blocktranslate trimmed with s_display_name=s.display_name %}Tolak pendaftaran {{ s_display_name }}?{% endblocktranslate %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="decision" value="reject" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm fw-semibold"><i class="bi bi-x-lg"></i> {% translate "Tolak" %}</button>
+                            </form>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-check text-muted opacity-50 empty-icon" aria-hidden="true"></i>
+                        <h5 class="fw-bold mt-3 text-dark">{% translate "Tidak ada pendaftaran yang menunggu" %}</h5>
+                        <p class="text-muted mb-0">{% translate "Calon staf mendaftar lewat halaman" %} <a href="{% url 'register_staff' %}">{% translate "Daftar sebagai staf" %}</a>.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
         <!-- TAB 2: CUSTOMER -->
         <div id="tab-customer"
-             class="animate-fade-up {% if active_tab != 'customer' %}d-none{% endif %}"
-             style="animation-delay: 0.2s">
+             class="animate-fade-up {% if active_tab != 'customer' %}d-none{% endif %} anim-d2">
             <div class="d-flex justify-content-end mb-3">
                 <button class="btn-orange"
                         data-bs-toggle="modal"
                         data-bs-target="#addCustomerModal">
-                    <i class="bi bi-plus-lg me-2"></i> Tambah Pelanggan
+                    <i class="bi bi-plus-lg me-2"></i> {% translate "Tambah Pelanggan" %}
                 </button>
             </div>
             <div class="card-custom">
                 <div class="table-responsive">
-                    <table class="table table-custom">
+                    <table data-stack class="table table-custom cust-table">
                         <thead>
-                            <tr>
-                                <th>Nama</th>
-                                <th>Nomor HP</th>
-                                <th>Alamat</th>
+                            <tr class="tbl-head">
+                                <th>{% translate "Nama" %}</th>
+                                <th>{% translate "Nomor HP" %}</th>
+                                <th>{% translate "Alamat" %}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for cust in customers %}
-                                <tr data-href="{% url 'customer_profile' cust.pk %}"
-                                    style="cursor: pointer">
+                                <tr data-href="{% url 'customer_profile' cust.pk %}">
                                     <td>
-                                        <div class="fw-bold text-dark" style="font-size: 1.05rem">{{ cust.name }}</div>
-                                        <small class="text-muted fw-semibold">@{{ cust.username }}{% if not cust.has_usable_password %} · belum bisa login{% endif %}</small>
+                                        <div class="fw-bold text-dark cell-name">{{ cust.name }}</div>
+                                        <small class="text-muted fw-semibold">@{{ cust.username }}{% if not cust.has_usable_password %} {% translate "· belum bisa login" %}{% endif %}</small>
                                     </td>
-                                    <td>
+                                    <td data-label="No. HP">
                                         <div class="d-flex align-items-center gap-2">
                                             <span class="fw-medium text-secondary">{{ cust.phone_number }}</span>
                                             <a href="{{ cust.whatsapp_url }}"
@@ -145,17 +185,15 @@
                                             </a>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td data-label="Alamat">
                                         <div class="d-flex align-items-center gap-2">
-                                            <span class="fw-medium text-secondary text-truncate"
-                                                  style="max-width: 250px;
-                                                         display: inline-block">{{ cust.address }}</span>
+                                            <span class="fw-medium text-secondary text-truncate cell-address">{{ cust.address|default:"-" }}</span>
                                             <a href="{{ cust.maps_url }}"
                                                target="_blank"
                                                rel="noopener"
                                                class="btn-sm-action text-primary border-primary-subtle"
                                                data-stop-propagation>
-                                                <i class="bi bi-geo-alt"></i> Maps
+                                                <i class="bi bi-geo-alt"></i> {% translate "Maps" %}
                                             </a>
                                         </div>
                                     </td>
@@ -163,8 +201,8 @@
                             {% empty %}
                                 <tr>
                                     <td colspan="3" class="text-center py-5">
-                                        <i class="bi bi-people text-muted opacity-50" style="font-size: 3rem;"></i>
-                                        <h5 class="fw-bold mt-3 text-dark">Belum ada data pelanggan</h5>
+                                        <i class="bi bi-people text-muted opacity-50 empty-icon" aria-hidden="true"></i>
+                                        <h5 class="fw-bold mt-3 text-dark">{% translate "Belum ada data pelanggan" %}</h5>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -184,49 +222,49 @@
                 <div class="modal-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <h2 class="modal-title-custom">Tambah Pegawai Baru</h2>
-                            <p class="modal-sub">Isi detail akun untuk pegawai baru</p>
+                            <h2 class="modal-title-custom">{% translate "Tambah Pegawai Baru" %}</h2>
+                            <p class="modal-sub">{% translate "Isi detail akun untuk pegawai baru" %}</p>
                         </div>
                         <button type="button"
                                 class="btn-close"
                                 data-bs-dismiss="modal"
-                                aria-label="Tutup"></button>
+                                aria-label="{% translate 'Tutup' %}"></button>
                     </div>
                     <form method="post" action="{% url 'add_employee' %}">
                         {% csrf_token %}
                         <div class="row g-4 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label-custom">Nama Depan</label>
+                                <label class="form-label-custom">{% translate "Nama Depan" %}</label>
                                 <input type="text" name="first_name" class="dark-input" required />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom">Nama Belakang</label>
+                                <label class="form-label-custom">{% translate "Nama Belakang" %}</label>
                                 <input type="text" name="last_name" class="dark-input" required />
                             </div>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label-custom">Nama Pengguna</label>
+                            <label class="form-label-custom">{% translate "Nama Pengguna" %}</label>
                             <input type="text" name="username" class="dark-input" required />
                         </div>
                         <div class="mb-4">
-                            <label class="form-label-custom">Kata Sandi</label>
+                            <label class="form-label-custom">{% translate "Kata Sandi" %}</label>
                             <input type="password"
                                    name="password"
                                    class="dark-input"
-                                   placeholder="Minimal 8 karakter"
+                                   placeholder="{% translate 'Minimal 8 karakter' %}"
                                    required />
                         </div>
                         <div class="row g-4 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label-custom">Nomor Telepon</label>
+                                <label class="form-label-custom">{% translate "Nomor Telepon" %}</label>
                                 <input type="text"
                                        name="phone_number"
                                        class="dark-input"
-                                       placeholder="Contoh: 08xxxxx"
+                                       placeholder="{% translate 'Contoh: 08xxxxx' %}"
                                        required />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom">Peran</label>
+                                <label class="form-label-custom">{% translate "Peran" %}</label>
                                 <select name="role" class="dark-input" required>
                                     {% for code, label in staff_roles %}
                                         <option value="{{ code }}">{{ label }}</option>
@@ -235,8 +273,8 @@
                             </div>
                         </div>
                         <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
-                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn-orange px-5">Simpan Pegawai</button>
+                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                            <button type="submit" class="btn-orange px-5">{% translate "Simpan Pegawai" %}</button>
                         </div>
                     </form>
                 </div>
@@ -253,54 +291,54 @@
                 <div class="modal-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <h2 class="modal-title-custom">Tambah Pelanggan Baru</h2>
-                            <p class="modal-sub">Isi detail data pelanggan baru</p>
+                            <h2 class="modal-title-custom">{% translate "Tambah Pelanggan Baru" %}</h2>
+                            <p class="modal-sub">{% translate "Isi detail data pelanggan baru" %}</p>
                         </div>
                         <button type="button"
                                 class="btn-close"
                                 data-bs-dismiss="modal"
-                                aria-label="Tutup"></button>
+                                aria-label="{% translate 'Tutup' %}"></button>
                     </div>
                     <form method="post" action="{% url 'add_customer' %}">
                         {% csrf_token %}
                         <div class="mb-4">
-                            <label class="form-label-custom">Nama</label>
+                            <label class="form-label-custom">{% translate "Nama" %}</label>
                             <input type="text"
                                    name="name"
                                    class="dark-input"
-                                   placeholder="Nama Pelanggan"
+                                   placeholder="{% translate 'Nama Pelanggan' %}"
                                    required />
                         </div>
                         <div class="mb-4">
-                            <label class="form-label-custom">Nomor Telepon</label>
+                            <label class="form-label-custom">{% translate "Nomor Telepon" %}</label>
                             <input type="text"
                                    name="phone_number"
                                    class="dark-input"
-                                   placeholder="Contoh: 08xxxxx"
+                                   placeholder="{% translate 'Contoh: 08xxxxx' %}"
                                    required />
                         </div>
                         <div class="mb-4">
-                            <label class="form-label-custom">Alamat</label>
+                            <label class="form-label-custom">{% translate "Alamat" %}</label>
                             <textarea name="address"
                                       class="dark-input"
                                       rows="3"
                                       placeholder="Alamat lengkap pengiriman"
                                       required></textarea>
                         </div>
-                        <p class="modal-sub mb-3">Akun login (opsional). Kosongkan bila pelanggan tidak perlu login; nama pengguna otomatis memakai nomor HP.</p>
+                        <p class="modal-sub mb-3">{% translate "Akun login (opsional). Kosongkan bila pelanggan tidak perlu login; nama pengguna otomatis memakai nomor HP." %}</p>
                         <div class="row g-4 mb-2">
                             <div class="col-md-6">
-                                <label class="form-label-custom">Nama Pengguna</label>
-                                <input type="text" name="username" class="dark-input" placeholder="Opsional" />
+                                <label class="form-label-custom">{% translate "Nama Pengguna" %}</label>
+                                <input type="text" name="username" class="dark-input" placeholder="{% translate 'Opsional' %}" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom">Kata Sandi</label>
-                                <input type="password" name="password" class="dark-input" placeholder="Opsional, min. 8 karakter" />
+                                <label class="form-label-custom">{% translate "Kata Sandi" %}</label>
+                                <input type="password" name="password" class="dark-input" placeholder="{% translate 'Opsional, min. 8 karakter' %}" />
                             </div>
                         </div>
                         <div class="d-flex gap-2 justify-content-end mt-5 border-top pt-4">
-                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn-orange px-5">Simpan Pelanggan</button>
+                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                            <button type="submit" class="btn-orange px-5">{% translate "Simpan Pelanggan" %}</button>
                         </div>
                     </form>
                 </div>
@@ -318,18 +356,18 @@
                     <div class="modal-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <h2 class="modal-title-custom">Detail Pelanggan</h2>
-                                <p class="modal-sub">Perbarui atau hapus data pelanggan</p>
+                                <h2 class="modal-title-custom">{% translate "Detail Pelanggan" %}</h2>
+                                <p class="modal-sub">{% translate "Perbarui atau hapus data pelanggan" %}</p>
                             </div>
                             <button type="button"
                                     class="btn-close"
                                     data-bs-dismiss="modal"
-                                    aria-label="Tutup"></button>
+                                    aria-label="{% translate 'Tutup' %}"></button>
                         </div>
                         <form method="post" action="{% url 'edit_customer' cust.pk %}">
                             {% csrf_token %}
                             <div class="mb-4">
-                                <label class="form-label-custom">Nama</label>
+                                <label class="form-label-custom">{% translate "Nama" %}</label>
                                 <input type="text"
                                        name="name"
                                        value="{{ cust.name }}"
@@ -337,7 +375,7 @@
                                        required />
                             </div>
                             <div class="mb-4">
-                                <label class="form-label-custom">Nomor Telepon</label>
+                                <label class="form-label-custom">{% translate "Nomor Telepon" %}</label>
                                 <div class="d-flex gap-2">
                                     <input type="text"
                                            name="phone_number"
@@ -349,11 +387,11 @@
                                        rel="noopener"
                                        class="btn-cancel px-3"
                                        style="text-decoration:none"
-                                       title="Buka WhatsApp"><i class="bi bi-whatsapp text-success"></i></a>
+                                       title="{% translate 'Buka WhatsApp' %}"><i class="bi bi-whatsapp text-success"></i></a>
                                 </div>
                             </div>
                             <div class="mb-4">
-                                <label class="form-label-custom">Alamat</label>
+                                <label class="form-label-custom">{% translate "Alamat" %}</label>
                                 <div class="d-flex gap-2 align-items-start">
                                     <textarea name="address"
                                               class="dark-input"
@@ -366,21 +404,21 @@
                                        style="text-decoration:none;
                                               padding-top: 15px;
                                               padding-bottom: 15px"
-                                       title="Buka Maps"><i class="bi bi-geo-alt text-primary"></i></a>
+                                       title="{% translate 'Buka Maps' %}"><i class="bi bi-geo-alt text-primary"></i></a>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-2 justify-content-end mt-5 border-top pt-4">
-                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
+                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
                                 <button type="submit"
                                         form="deleteCustomer{{ cust.pk }}"
-                                        class="btn-danger-custom me-auto"><i class="bi bi-trash3 me-1"></i> Hapus</button>
-                                <button type="submit" class="btn-orange px-4">Perbarui</button>
+                                        class="btn-danger-custom me-auto"><i class="bi bi-trash3 me-1"></i> {% translate "Hapus" %}</button>
+                                <button type="submit" class="btn-orange px-4">{% translate "Perbarui" %}</button>
                             </div>
                         </form>
                         <form id="deleteCustomer{{ cust.pk }}"
                               method="post"
                               action="{% url 'delete_customer' cust.pk %}"
-                              data-confirm="Apakah Anda yakin ingin menghapus pelanggan {{ cust.name }}?">
+                              data-confirm="{% blocktranslate trimmed with cust_name=cust.name %}Apakah Anda yakin ingin menghapus pelanggan {{ cust_name }}?{% endblocktranslate %}">
                             {% csrf_token %}
                         </form>
                     </div>

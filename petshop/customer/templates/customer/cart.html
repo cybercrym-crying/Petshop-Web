@@ -1,82 +1,52 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="id">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Seelly Petshop - Keranjang Belanja</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-              rel="stylesheet">
-        <link rel="stylesheet"
-              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link rel="stylesheet" href="{% static 'customer/css/cart.css' %}">
-    </head>
-    <body>
-        <!-- Header -->
-        <div class="cart-header">
-            <div class="container d-flex align-items-center justify-content-between">
-                <a href="{% url 'customer:home' %}" class="logo text-decoration-none">
-                    <i class="fas fa-paw"></i> Seelly Petshop
-                </a>
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-link text-decoration-none"
-                            data-href="{% url 'customer:shop' %}">
-                        <i class="fas fa-shopping-cart fa-lg"
-                           style="color: var(--primary-purple)"></i>
-                        <span class="badge-count"
-                              id="cart-count"
-                              style="background: var(--primary-purple);
-                                     color: white;
-                                     border-radius: 50%;
-                                     padding: 2px 8px;
-                                     font-size: 0.8rem;
-                                     margin-left: 5px">0</span>
-                    </button>
-                </div>
-            </div>
+{% block title %}{% translate "Keranjang - Seelly Petshop" %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/cart.css' %}?v=4">
+{% endblock %}
+{% block content %}
+    <section class="container cart-page" data-cart-page>
+        <nav class="crumbs" aria-label="{% translate 'Breadcrumb' %}">
+            <a href="{% url 'customer:home' %}">{% translate "Beranda" %}</a> / <a href="{% url 'customer:shop' %}">{% translate "Belanja" %}</a> {% translate "/ Keranjang" %}
+        </nav>
+        <h1 class="page-title">{% translate "Keranjang Belanja" %}</h1>
+        <p class="page-sub">{% translate "Harga dan stok dicek ulang ke toko setiap kali halaman ini dibuka." %}</p>
+        <div class="cart-notice" data-cart-notice role="status" hidden></div>
+        <div class="cart-loading" data-cart-loading>
+            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> {% translate "Memeriksa harga dan stok terbaru…" %}
         </div>
-        <div class="cart-container">
-            <h1 class="cart-title">
-                <i class="fas fa-shopping-cart"></i> Keranjang Saya
-            </h1>
-            <div class="row">
-                <div class="col-lg-8">
-                    <table class="cart-table">
-                        <thead>
-                            <tr>
-                                <th>Produk</th>
-                                <th>Harga</th>
-                                <th>Jumlah</th>
-                                <th>Subtotal</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cart-items">
-                        </tbody>
-                    </table>
-                    <div id="empty-cart" class="empty-cart-message" style="display:none;">
-                        <i class="fas fa-shopping-cart"></i>
-                        <h4>Keranjang Anda Kosong</h4>
-                        <p class="text-muted">Yuk, mulai belanja!</p>
-                        <a href="{% url 'customer:shop' %}" class="btn-continue">Mulai Belanja</a>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="summary-card">
-                        <h5 class="fw-bold mb-3">Ringkasan Pesanan</h5>
-                        <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
-                        <div class="summary-row"><span>Ongkos Kirim</span><span>Rp 10.000</span></div>
-                        <div class="summary-row total"><span>Total</span><span id="total">Rp 10.000</span></div>
-                        <button class="btn-checkout"
-                                id="btn-checkout"
-                                data-checkout-url="{% url 'customer:checkout' %}">Lanjut ke Checkout</button>
-                    </div>
-                </div>
-            </div>
+        <div class="empty-state" data-cart-empty hidden>
+            <i class="fas fa-basket-shopping" aria-hidden="true"></i>
+            <h2>{% translate "Keranjang masih kosong" %}</h2>
+            <p>{% translate "Temukan makanan, mainan, dan perlengkapan untuk hewan kesayangan Anda." %}</p>
+            <a href="{% url 'customer:products' %}" class="btn-primary-seelly">{% translate "Mulai Belanja" %}</a>
         </div>
-        <script src="{% static 'customer/js/cart.js' %}"></script>
-        <script src="{% static 'js/common.js' %}"></script>
-        {% include "chatbot/_widget.html" %}
-    </body>
-</html>
-
+        <div class="cart-layout" data-cart-filled hidden>
+            <ul class="cart-list" data-cart-items aria-label="{% translate 'Barang di keranjang' %}">
+            </ul>
+            <aside class="cart-summary" aria-labelledby="cart-summary-title">
+                <h2 id="cart-summary-title">{% translate "Ringkasan" %}</h2>
+                <div class="cart-summary__row">
+                    <span>{% translate "Subtotal (" %}<span data-cart-count>0</span> {% translate "barang)" %}</span>
+                    <strong data-cart-subtotal>Rp 0</strong>
+                </div>
+                <div class="cart-summary__row cart-summary__muted">
+                    <span>{% translate "Ongkos kirim" %}</span>
+                    <span>{% translate "Dikonfirmasi admin" %}</span>
+                </div>
+                <div class="cart-summary__total">
+                    <span>{% translate "Total belanja" %}</span>
+                    <strong data-cart-total>Rp 0</strong>
+                </div>
+                <a href="{% url 'customer:checkout' %}"
+                   class="btn-primary-seelly w-100"
+                   data-cart-checkout>{% translate "Lanjut ke Checkout" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                <a href="{% url 'customer:products' %}" class="cart-summary__back">{% translate "Lanjut belanja" %}</a>
+            </aside>
+        </div>
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'customer/js/cart_page.js' %}"></script>
+{% endblock %}

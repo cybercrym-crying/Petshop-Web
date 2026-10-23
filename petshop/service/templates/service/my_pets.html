@@ -1,0 +1,54 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "Hewan Saya - Seelly Petshop" %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
+{% endblock %}
+{% block content %}
+    <section class="container section svc-page">
+        <header class="svc-head">
+            <div>
+                <h1 class="svc-title"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Hewan Saya" %}</h1>
+                <p class="muted mb-0">{% blocktranslate trimmed with reminder_days=reminder_days %}Profil hewan dipakai saat booking, menyimpan riwayat perawatan, dan mengingatkan jadwal grooming berikutnya (setiap {{ reminder_days }} hari).{% endblocktranslate %}</p>
+            </div>
+            <a href="{% url 'service:add_pet' %}" class="btn-primary-seelly"><i class="fas fa-plus" aria-hidden="true"></i> {% translate "Tambah Hewan" %}</a>
+        </header>
+        {% include "service/_site_messages.html" %}
+        <ul class="pet-grid">
+            {% for pet in pets %}
+                <li class="pet-card{% if pet.due %} is-due{% endif %}">
+                    <div class="pet-card__head">
+                        {% if pet.photo %}
+                            <img class="pet-card__photo" src="{{ pet.photo.url }}" alt="{% blocktranslate trimmed with pet_name=pet.name %}Foto {{ pet_name }}{% endblocktranslate %}" width="64" height="64">
+                        {% else %}
+                            <span class="pet-card__photo" aria-hidden="true"><i class="fas fa-paw"></i></span>
+                        {% endif %}
+                        <div>
+                            <h2>{{ pet.name }}</h2>
+                            <span class="muted">{{ pet.get_pet_type_display }}{% if pet.breed %} · {{ pet.breed }}{% endif %}{% if pet.sex %} · {{ pet.get_sex_display }}{% endif %}</span>
+                        </div>
+                    </div>
+                    <dl>
+                        {% if pet.age_display %}<dt>{% translate "Umur" %}</dt><dd>{{ pet.age_display }}</dd>{% endif %}
+                        {% if pet.weight_kg %}<dt>{% translate "Berat" %}</dt><dd>{{ pet.weight_kg }} kg</dd>{% endif %}
+                        <dt>{% translate "Terakhir" %}</dt><dd>{% if pet.last %}{{ pet.last.service.name }}, {{ pet.last.finished_at|date:"d M Y" }}{% else %}{% translate "Belum pernah" %}{% endif %}</dd>
+                        {% if pet.notes %}<dt>{% translate "Catatan" %}</dt><dd>{{ pet.notes }}</dd>{% endif %}
+                    </dl>
+                    {% if pet.due %}<p class="pet-due"><i class="fas fa-bell" aria-hidden="true"></i> {% translate "Sudah waktunya grooming lagi." %}</p>{% endif %}
+                    <div class="pet-card__actions">
+                        <a class="btn-primary-seelly btn-sm-soft" href="{% url 'service:catalog' %}?hewan={{ pet.pk }}#booking">{% translate "Booking" %}</a>
+                        <a class="btn-ghost btn-sm-soft" href="{% url 'service:edit_pet' pet.pk %}">{% translate "Ubah &amp; riwayat" %}</a>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="empty-state">
+                    <i class="fas fa-paw" aria-hidden="true"></i>
+                    <h2>{% translate "Belum ada profil hewan" %}</h2>
+                    <p>{% translate "Simpan nama, jenis, umur, dan catatan kesehatan hewan Anda." %}</p>
+                    <a href="{% url 'service:add_pet' %}" class="btn-primary-seelly">{% translate "Tambah Hewan" %}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endblock %}

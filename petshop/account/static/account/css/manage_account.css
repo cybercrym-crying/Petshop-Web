@@ -284,3 +284,43 @@ body {
 [data-theme="dark"] .role-cashier { color: #93c5fd; }
 [data-theme="dark"] .role-groomer { color: #c4aef0; }
 [data-theme="dark"] .role-customer { color: #cbd5e1; }
+
+/* Nama di tabel, alamat dipotong, ikon empty state (dulu inline style) */
+.cell-name { font-size: 1.05rem; }
+.cell-address { max-width: 250px; display: inline-block; }
+.empty-icon { font-size: 3rem; }
+.cust-table tbody tr[data-href] { cursor: pointer; }
+
+/* Di HP tabel pegawai/pelanggan berubah jadi kartu bertumpuk. */
+@media (max-width: 640px) {
+  .emp-table, .cust-table { min-width: 0 !important; }
+  .emp-table tr.tbl-head, .cust-table tr.tbl-head { display: none; }
+  .emp-table tbody tr, .cust-table tbody tr {
+    display: block;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--bs-border-color, #e5e7eb);
+  }
+  .emp-table tbody td, .cust-table tbody td {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 4px 0 !important;
+    border: 0 !important;
+  }
+  .emp-table tbody td[data-label]::before, .cust-table tbody td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 76px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color, #6b7280);
+  }
+  .emp-table td.cell-chevron { display: none; }
+  .cell-address { max-width: 160px; }
+}
+
+/* Persetujuan staf */
+.approval-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--t-bd-e2e8f0,#e2e8f0); }
+.approval-row:last-child { border-bottom: 0; }
+.approval-actions { display: flex; gap: 8px; }

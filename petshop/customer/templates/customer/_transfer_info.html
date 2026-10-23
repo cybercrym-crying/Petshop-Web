@@ -1,0 +1,29 @@
+{% load i18n %}
+{% load rupiah %}
+{# Instruksi transfer manual. Dipakai dengan atau tanpa `order`. #}
+<div class="co-transfer">
+    {% if order %}
+        {% if order.awaiting_payment_check %}
+            <p class="co-transfer__lead co-transfer__ok"><i class="fas fa-hourglass-half" aria-hidden="true"></i> {% blocktranslate trimmed with order_payment_proof_at=order.payment_proof_at|date:"d M, H:i" %}Bukti transfer terkirim {{ order_payment_proof_at }}. Kasir sedang mengecek mutasi rekening; Anda mendapat notifikasi begitu dinyatakan lunas.{% endblocktranslate %}</p>
+        {% else %}
+            {% if order.payment_reject_note %}
+                <p class="co-transfer__lead co-transfer__warn"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate trimmed with order_payment_reject_note=order.payment_reject_note %}Bukti sebelumnya ditolak: {{ order_payment_reject_note }}{% endblocktranslate %}</p>
+            {% endif %}
+            <p class="co-transfer__lead">{% translate "Transfer tepat" %} <b>Rp {{ order.total_payment|rupiah }}</b>{% if bank_accounts %} {% translate "ke salah satu rekening berikut" %}{% endif %}{% translate ", lalu foto bukti transfernya." %}{% if order.payment_due_at %} {% translate "Batas bayar" %} <b>{{ order.payment_due_at|date:"d M Y, H:i" }}</b>{% translate "; lewat dari itu pesanan dibatalkan otomatis." %}{% endif %}</p>
+        {% endif %}
+    {% endif %}
+    {% if bank_accounts %}
+        <ul class="co-transfer__banks">
+            {% for acc in bank_accounts %}
+                <li><span class="co-transfer__bank">{{ acc.bank }}</span> <span class="co-transfer__no">{{ acc.number }}</span> <span class="muted">a.n. {{ acc.holder }}</span></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="co-transfer__lead muted">{% translate "Nomor rekening dikirim admin lewat WhatsApp." %}</p>
+    {% endif %}
+    {% if order and not order.awaiting_payment_check %}
+        <a href="{% url 'customer:payment_proof' order.pk %}" class="btn-primary-seelly co-transfer__btn">
+            <i class="fas fa-camera" aria-hidden="true"></i> {% translate "Kirim Bukti Transfer" %}
+        </a>
+    {% endif %}
+</div>

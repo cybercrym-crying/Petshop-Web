@@ -1,0 +1,67 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% if pet %}{{ pet.name }}{% else %}{% translate "Tambah Hewan" %}{% endif %} - Seelly Petshop{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
+    <link rel="stylesheet" href="{% static 'css/camera.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <section class="container section svc-page">
+        <a href="{% url 'service:my_pets' %}" class="muted"><i class="fas fa-arrow-left" aria-hidden="true"></i> {% translate "Hewan Saya" %}</a>
+        <h1 class="svc-title mt-2">{% if pet %}{{ pet.name }}{% else %}{% translate "Tambah Hewan" %}{% endif %}</h1>
+        {% include "service/_site_messages.html" %}
+        <form method="post" enctype="multipart/form-data" class="pet-form" novalidate>
+            {% csrf_token %}
+            <div class="pet-form__grid">
+                {% include "service/_field.html" with field=form.name %}
+                {% include "service/_field.html" with field=form.pet_type %}
+                {% include "service/_field.html" with field=form.breed %}
+                {% include "service/_field.html" with field=form.sex %}
+                {% include "service/_field.html" with field=form.birth_date %}
+                {% include "service/_field.html" with field=form.weight_kg %}
+            </div>
+            {% include "service/_field.html" with field=form.notes %}
+            <div class="svc-field{% if form.photo.errors %} has-error{% endif %}">
+                <label>{% translate "Foto" %} <span class="muted">{% translate "(opsional)" %}</span></label>
+                {% if pet.photo %}
+                    <div class="pet-form__current">
+                        <img src="{{ pet.photo.url }}" alt="{% blocktranslate trimmed with pet_name=pet.name %}Foto {{ pet_name }} saat ini{% endblocktranslate %}">
+                        <label><input type="checkbox" name="photo-clear"> {% translate "Hapus foto ini" %}</label>
+                    </div>
+                {% endif %}
+                {% include "partials/_camera.html" with optional=True allow_file=True file_label="Pilih dari galeri" hint="Foto hewan membantu groomer mengenali hewan Anda." %}
+                {% for error in form.photo.errors %}<p class="svc-error">{{ error }}</p>{% endfor %}
+            </div>
+            <div class="pet-card__actions">
+                <button type="submit" class="btn-primary-seelly">{% translate "Simpan" %}</button>
+                {% if pet %}
+                    <button type="submit" name="action" value="archive" class="btn-ghost" formnovalidate
+                            data-confirm="{% blocktranslate trimmed with pet_name=pet.name %}Hapus {{ pet_name }} dari Hewan Saya? Riwayat booking tetap tersimpan.{% endblocktranslate %}">{% translate "Hapus profil" %}</button>
+                {% endif %}
+            </div>
+        </form>
+        {% if pet %}
+            <section class="pet-history">
+                <h2 class="h5 fw-bold">{% translate "Riwayat perawatan" %}</h2>
+                <ul class="svc-list">
+                    {% for b in history %}
+                        <li class="svc-item">
+                            <div class="svc-item__main">
+                                <strong>{{ b.service.name }}</strong>
+                                <span class="muted">{{ b.schedule|date:"d M Y" }}{% if b.groomer %} · {{ b.groomer.display_name }}{% endif %}{% if b.checkin_weight_kg %} · {{ b.checkin_weight_kg }} kg{% endif %}</span>
+                                {% if b.groomer_note %}<span class="svc-note">{{ b.groomer_note }}</span>{% endif %}
+                            </div>
+                            <span class="svc-status svc-status--{{ b.status|lower }}">{{ b.get_status_display }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="muted">{% blocktranslate trimmed with pet_name=pet.name %}Belum ada booking untuk {{ pet_name }}.{% endblocktranslate %}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/camera.js' %}?v=1"></script>
+{% endblock %}

@@ -1,0 +1,4 @@
+<a href="{% url 'store:notifications' %}" class="theme-toggle nav-bell" aria-label="Notifikasi{% if unread_notifications %}, {{ unread_notifications }} belum dibaca{% endif %}">
+    <i class="bi bi-bell-fill" aria-hidden="true"></i>
+    {% if unread_notifications %}<span class="nav-bell__count">{{ unread_notifications }}</span>{% endif %}
+</a>

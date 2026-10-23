@@ -1,0 +1,10 @@
+{% load i18n %}
+{# Kurir sedang antar-jemput hewan: paket ditahan sampai tugas itu selesai. #}
+<div class="alert alert-warning d-flex gap-2 align-items-start" role="status">
+    <i class="bi bi-heart-pulse fs-5" aria-hidden="true"></i>
+    <div>
+        <strong>{% blocktranslate trimmed with pet=pet_trip.pet_name %}Anda sedang antar-jemput {{ pet }}.{% endblocktranslate %}</strong>
+        {% translate "Selama tugas ini berjalan Anda tidak bisa mengambil atau mengantar paket. Selesaikan dulu, lalu paket bisa diambil lagi." %}
+        <a href="{% url 'service:courier_pet_trip' pet_trip.pk %}" class="alert-link d-inline-block mt-1">{% translate "Buka tugas hewan" %}</a>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+{% load i18n %}
+{# Menu samping area pelanggan (laci geser di HP). Item aktif dari nama view. #}
+{% with v=request.resolver_match.view_name %}
+    <aside class="ca-side" id="ca-side" aria-label="{% translate 'Menu pelanggan' %}">
+        <div class="ca-side__who">
+            <span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>
+            <div>
+                <strong>{{ user.name }}</strong>
+                <small>{% translate "Pelanggan" %}</small>
+            </div>
+        </div>
+        <nav class="ca-nav">
+            <a href="{% url 'customer:dashboard' %}" class="ca-link{% if v == 'customer:dashboard' %} is-active{% endif %}"{% if v == 'customer:dashboard' %} aria-current="page"{% endif %}><i class="fas fa-gauge" aria-hidden="true"></i> {% translate "Dasbor" %}</a>
+            <p class="ca-nav__group">{% translate "Belanja" %}</p>
+            <a href="{% url 'customer:shop' %}" class="ca-link{% if v == 'customer:shop' or v == 'customer:products' or v == 'customer:product_detail' %} is-active{% endif %}"><i class="fas fa-store" aria-hidden="true"></i> {% translate "Belanja Produk" %}</a>
+            <a href="{% url 'customer:cart' %}" class="ca-link{% if v == 'customer:cart' or v == 'customer:checkout' %} is-active{% endif %}"><i class="fas fa-shopping-cart" aria-hidden="true"></i> {% translate "Keranjang" %}</a>
+            <a href="{% url 'customer:my_orders' %}" class="ca-link{% if v == 'customer:my_orders' or v == 'customer:payment_proof' %} is-active{% endif %}"><i class="fas fa-box" aria-hidden="true"></i> {% translate "Pesanan Saya" %}</a>
+            <a href="{% url 'customer:wishlist' %}" class="ca-link{% if v == 'customer:wishlist' %} is-active{% endif %}"><i class="far fa-heart" aria-hidden="true"></i> {% translate "Favorit" %} <span class="ca-count" id="wishlist-count" hidden>0</span></a>
+            <a href="{% url 'customer:track' %}" class="ca-link{% if v == 'customer:track' or v == 'customer:track_detail' %} is-active{% endif %}"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Lacak Pesanan" %}</a>
+            <p class="ca-nav__group">{% translate "Layanan" %}</p>
+            <a href="{% url 'service:catalog' %}" class="ca-link{% if v == 'service:catalog' %} is-active{% endif %}"><i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Booking Layanan" %}</a>
+            <a href="{% url 'service:my_bookings' %}" class="ca-link{% if v == 'service:my_bookings' %} is-active{% endif %}"><i class="far fa-calendar-check" aria-hidden="true"></i> {% translate "Booking Saya" %}</a>
+            <a href="{% url 'service:my_pets' %}" class="ca-link{% if 'pet' in v and v != 'service:catalog' %} is-active{% endif %}"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Hewan Saya" %}</a>
+            <p class="ca-nav__group">{% translate "Akun & bantuan" %}</p>
+            <a href="{% url 'store:notifications' %}" class="ca-link{% if v == 'store:notifications' %} is-active{% endif %}"><i class="far fa-bell" aria-hidden="true"></i> {% translate "Notifikasi" %}{% if unread_notifications %} <span class="ca-count">{{ unread_notifications }}</span>{% endif %}</a>
+            <a href="{% url 'store:complaints' %}" class="ca-link{% if 'complaint' in v %} is-active{% endif %}"><i class="far fa-flag" aria-hidden="true"></i> {% translate "Komplain" %}</a>
+            <a href="{% url 'customer:account' %}" class="ca-link{% if v == 'customer:account' %} is-active{% endif %}"><i class="far fa-user" aria-hidden="true"></i> {% translate "Akun Saya" %}</a>
+            <a href="{% url 'customer:about' %}" class="ca-link{% if v == 'customer:about' %} is-active{% endif %}"><i class="fas fa-circle-info" aria-hidden="true"></i> {% translate "Info Toko" %}</a>
+        </nav>
+        <form method="post" action="{% url 'logout' %}" class="ca-side__out">
+            {% csrf_token %}
+            <button type="submit" class="ca-link"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> {% translate "Keluar" %}</button>
+        </form>
+    </aside>
+    <div class="ca-scrim" data-ca-close hidden></div>
+    {# Menu bawah di HP: empat tujuan utama + tombol menu lengkap. #}
+    <nav class="ca-tabs" aria-label="{% translate 'Menu cepat' %}">
+        <a href="{% url 'customer:dashboard' %}" class="ca-tab{% if v == 'customer:dashboard' %} is-active{% endif %}"><i class="fas fa-gauge" aria-hidden="true"></i><span>{% translate "Dasbor" %}</span></a>
+        <a href="{% url 'customer:shop' %}" class="ca-tab{% if v == 'customer:shop' or v == 'customer:products' or v == 'customer:product_detail' %} is-active{% endif %}"><i class="fas fa-store" aria-hidden="true"></i><span>{% translate "Belanja" %}</span></a>
+        <a href="{% url 'customer:my_orders' %}" class="ca-tab{% if v == 'customer:my_orders' %} is-active{% endif %}"><i class="fas fa-box" aria-hidden="true"></i><span>{% translate "Pesanan" %}</span></a>
+        <a href="{% url 'service:my_bookings' %}" class="ca-tab{% if v == 'service:my_bookings' or v == 'service:catalog' %} is-active{% endif %}"><i class="far fa-calendar-check" aria-hidden="true"></i><span>{% translate "Booking" %}</span></a>
+        <button type="button" class="ca-tab" data-ca-menu aria-controls="ca-side" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i><span>{% translate "Menu" %}</span></button>
+    </nav>
+{% endwith %}

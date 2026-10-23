@@ -1,0 +1,8 @@
+{% load i18n %}{# Perubahan terhadap periode sebelumnya. Pakai: include with c=<change> vs="kemarin" pct=True #}
+{% if c.dir == "flat" %}
+    <span class="ui-delta ui-delta--flat">{% blocktranslate trimmed %}Sama dengan {{ vs }}{% endblocktranslate %}</span>
+{% elif pct and c.pct is not None %}
+    <span class="ui-delta ui-delta--{{ c.dir }}">{% if c.dir == "up" %}▲{% else %}▼{% endif %} {% blocktranslate trimmed with n=c.pct %}{{ n }}% dari {{ vs }}{% endblocktranslate %}</span>
+{% else %}
+    <span class="ui-delta ui-delta--{{ c.dir }}">{% if c.dir == "up" %}▲{% else %}▼{% endif %} {% blocktranslate trimmed with n=c.diff %}{{ n }} dari {{ vs }}{% endblocktranslate %}</span>
+{% endif %}

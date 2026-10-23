@@ -1,0 +1,59 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "Seelly - Ulasan Pelanggan" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
+    <link href="{% static 'store/css/care.css' %}?v=1" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="mb-4">
+            <p class="eyebrow">{% translate "Layanan" %}</p>
+            <h1 class="page-title mb-1">{% translate "Ulasan Pelanggan" %}</h1>
+            <p class="text-muted fw-medium mb-0">{% translate "Nilai 1–5 yang diberikan pelanggan setelah pesanan sampai dan setelah layanan grooming selesai." %}</p>
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-xl-3"><div class="card-custom p-4"><div class="cp-meta">{% translate "Pengiriman pesanan" %}</div><div class="rv-kpi"><b>{{ order_avg.a|floatformat:1|default:"-" }}</b><span class="cp-meta">{% blocktranslate trimmed with order_avg_n=order_avg.n %}dari {{ order_avg_n }} ulasan{% endblocktranslate %}</span></div></div></div>
+            <div class="col-md-6 col-xl-3"><div class="card-custom p-4"><div class="cp-meta">{% translate "Layanan grooming" %}</div><div class="rv-kpi"><b>{{ booking_avg.a|floatformat:1|default:"-" }}</b><span class="cp-meta">{% blocktranslate trimmed with booking_avg_n=booking_avg.n %}dari {{ booking_avg_n }} ulasan{% endblocktranslate %}</span></div></div></div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card-custom p-4">
+                    <div class="cp-meta mb-1">{% translate "Per groomer" %}</div>
+                    <ul class="rv-list">{% for g in per_groomer %}<li><span>{{ g.groomer__first_name }} {{ g.groomer__last_name|default:g.groomer__username }}</span><b>{{ g.avg|floatformat:1 }} <small class="cp-meta">({{ g.n }})</small></b></li>{% empty %}<li class="cp-meta">{% translate "Belum ada." %}</li>{% endfor %}</ul>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card-custom p-4">
+                    <div class="cp-meta mb-1">{% translate "Per kurir" %}</div>
+                    <ul class="rv-list">{% for c in per_courier %}<li><span>{{ c.courier__first_name }} {{ c.courier__last_name|default:c.courier__username }}</span><b>{{ c.avg|floatformat:1 }} <small class="cp-meta">({{ c.n }})</small></b></li>{% empty %}<li class="cp-meta">{% translate "Belum ada." %}</li>{% endfor %}</ul>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-xl-6">
+                <section class="card-custom p-4">
+                    <h2 class="h6 fw-bold">{% translate "Ulasan pesanan terbaru" %}</h2>
+                    <ul class="rv-list">
+                        {% for o in orders %}
+                            <li><span><b>#{{ o.pk }}</b> {{ o.customer.name }}{% if o.review %} · “{{ o.review }}”{% endif %}<br><small class="cp-meta">{{ o.rated_at|date:"d M Y" }}{% if o.courier %} {% blocktranslate trimmed with o_courier_display_name=o.courier.display_name %}· kurir {{ o_courier_display_name }}{% endblocktranslate %}{% endif %}</small></span><span class="rv-stars" aria-label="{% blocktranslate trimmed with o_rating=o.rating %}{{ o_rating }} bintang{% endblocktranslate %}">{% for _ in "12345" %}{% if forloop.counter <= o.rating %}★{% else %}☆{% endif %}{% endfor %}</span></li>
+                        {% empty %}
+                            <li class="cp-meta">{% translate "Belum ada ulasan pesanan." %}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            </div>
+            <div class="col-xl-6">
+                <section class="card-custom p-4">
+                    <h2 class="h6 fw-bold">{% translate "Ulasan layanan terbaru" %}</h2>
+                    <ul class="rv-list">
+                        {% for b in bookings %}
+                            <li><span><b>#{{ b.pk }}</b> {{ b.pet_name }} · {{ b.service.name }}{% if b.review %} · “{{ b.review }}”{% endif %}<br><small class="cp-meta">{{ b.customer.name }} · {{ b.rated_at|date:"d M Y" }}{% if b.groomer %} · {{ b.groomer.display_name }}{% endif %}</small></span><span class="rv-stars" aria-label="{% blocktranslate trimmed with b_rating=b.rating %}{{ b_rating }} bintang{% endblocktranslate %}">{% for _ in "12345" %}{% if forloop.counter <= b.rating %}★{% else %}☆{% endif %}{% endfor %}</span></li>
+                        {% empty %}
+                            <li class="cp-meta">{% translate "Belum ada ulasan layanan." %}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock %}

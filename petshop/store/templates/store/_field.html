@@ -1,0 +1,6 @@
+<div class="{{ col|default:'col-md-6' }}">
+    <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+    {{ field }}
+    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+    {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+</div>

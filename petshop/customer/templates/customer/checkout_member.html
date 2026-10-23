@@ -1,93 +1,114 @@
 {% extends "customer/base.html" %}
-{% load static %}
-{% block title %}Checkout - Seelly Petshop{% endblock %}
+{% load i18n %}
+{% load static l10n %}
+{% block title %}{% translate "Checkout - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
 {% endblock %}
 {% block content %}
     <section class="container section co-page"
              data-member-checkout
              data-place-url="{{ place_url }}"
+             data-quote-url="{% url 'customer:shipping_quote' %}"
              data-csrf="{{ csrf_token }}">
         <header class="co-head">
-            <h1 class="co-title"><i class="fas fa-bag-shopping" aria-hidden="true"></i> Checkout</h1>
-            <p class="muted mb-0">Pesanan langsung masuk ke sistem toko. Anda bisa memantau statusnya di <a href="{% url 'customer:my_orders' %}">Pesanan Saya</a>.</p>
+            <h1 class="co-title"><i class="fas fa-bag-shopping" aria-hidden="true"></i> {% translate "Checkout" %}</h1>
+            <p class="muted mb-0">{% translate "Pesanan langsung masuk ke sistem toko. Anda bisa memantau statusnya di" %} <a href="{% url 'customer:my_orders' %}">{% translate "Pesanan Saya" %}</a>.</p>
         </header>
         <div class="co-alert co-alert--error" data-co-error role="alert" hidden></div>
         <div class="co-layout">
             <div class="co-main">
                 <section class="co-card" aria-labelledby="co-ship">
-                    <h2 id="co-ship" class="co-card__title"><i class="fas fa-location-dot" aria-hidden="true"></i> Dikirim ke</h2>
+                    <h2 id="co-ship" class="co-card__title"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Dikirim ke" %}</h2>
                     <dl class="co-who">
-                        <div><dt>Nama</dt><dd>{{ user.name }}</dd></div>
-                        <div><dt>No. WhatsApp</dt><dd>{{ user.phone_number|default:"-" }}</dd></div>
+                        <div><dt>{% translate "Nama" %}</dt><dd>{{ user.name }}</dd></div>
+                        <div><dt>{% translate "No. WhatsApp" %}</dt><dd>{{ user.phone_number|default:"-" }}</dd></div>
                     </dl>
                     <div class="co-field">
-                        <label for="co-address">Alamat pengiriman</label>
+                        <label for="co-address">{% translate "Alamat pengiriman" %}</label>
                         <textarea id="co-address" name="address" rows="3" maxlength="255" required
                                   placeholder="Jalan, RT/RW, kelurahan, kecamatan, kota">{{ user.address }}</textarea>
-                        <p class="co-hint">Perubahan alamat juga disimpan sebagai alamat utama akun Anda.</p>
+                        <p class="co-hint">{% translate "Perubahan alamat juga disimpan sebagai alamat utama akun Anda." %}</p>
+                    </div>
+                    <div class="co-field mb-0">
+                        <div class="co-map-head">
+                            <label>{% translate "Titik lokasi di peta" %} <span class="co-req">{% translate "wajib" %}</span></label>
+                            <button type="button" class="btn-ghost co-map-locate" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
+                        </div>
+                        <div class="co-map" data-map-picker data-default-lat="{{ store.latitude|unlocalize }}" data-default-lng="{{ store.longitude|unlocalize }}" role="application" aria-label="{% translate 'Peta titik pengiriman' %}"></div>
+                        <input type="hidden" id="co-lat" data-map-lat value="{{ last_pin.0|unlocalize|default:'' }}">
+                        <input type="hidden" id="co-lng" data-map-lng value="{{ last_pin.1|unlocalize|default:'' }}">
+                        <p class="co-hint" data-co-ship-info>{% translate 'Klik peta atau tekan "Pakai lokasi saya". Kurir memakai titik ini untuk rute antar, ongkir dihitung dari jaraknya.' %}</p>
                     </div>
                 </section>
                 <section class="co-card" aria-labelledby="co-pay">
-                    <h2 id="co-pay" class="co-card__title"><i class="fas fa-wallet" aria-hidden="true"></i> Pembayaran</h2>
+                    <h2 id="co-pay" class="co-card__title"><i class="fas fa-wallet" aria-hidden="true"></i> {% translate "Pembayaran" %}</h2>
                     <div class="co-pay">
                         {% for code, label in payment_methods %}
                             <label class="co-pay__opt">
                                 <input type="radio" name="payment_method" value="{{ code }}" {% if forloop.first %}checked{% endif %}>
                                 <span>
-                                    <strong>{% if code == "TUNAI" %}Bayar di Tempat (COD){% else %}{{ label }} Bank{% endif %}</strong>
-                                    <small>{% if code == "TUNAI" %}Bayar tunai ke kurir saat barang sampai.{% else %}Admin mengirim nomor rekening lewat WhatsApp; barang dikirim setelah lunas.{% endif %}</small>
+                                    <strong>{% if code == "TUNAI" %}{% translate "Bayar di Tempat (COD)" %}{% else %}{% blocktranslate trimmed with label=label %}{{ label }} Bank{% endblocktranslate %}{% endif %}</strong>
+                                    <small>{% if code == "TUNAI" %}{% translate "Bayar tunai ke kurir saat barang sampai." %}{% else %}{% blocktranslate trimmed with store_payment_deadline_hours=store.payment_deadline_hours %}Transfer ke rekening toko lalu foto bukti transfer dari Dasbor; barang dikirim setelah kasir memastikan dana masuk. Batas bayar {{ store_payment_deadline_hours }} jam.{% endblocktranslate %}{% endif %}</small>
+                                    {% if code != "TUNAI" and bank_accounts %}{% include "customer/_transfer_info.html" %}{% endif %}
                                 </span>
                             </label>
                         {% endfor %}
                     </div>
                 </section>
                 <section class="co-card" aria-labelledby="co-note-title">
-                    <h2 id="co-note-title" class="co-card__title"><i class="far fa-comment-dots" aria-hidden="true"></i> Catatan untuk toko <span class="muted">(opsional)</span></h2>
+                    <h2 id="co-note-title" class="co-card__title"><i class="far fa-comment-dots" aria-hidden="true"></i> {% translate "Catatan untuk toko" %} <span class="muted">{% translate "(opsional)" %}</span></h2>
                     <div class="co-field mb-0">
-                        <label class="visually-hidden" for="co-note">Catatan</label>
+                        <label class="visually-hidden" for="co-note">{% translate "Catatan" %}</label>
                         <textarea id="co-note" name="note" rows="2" maxlength="255" placeholder="mis. titip di pos satpam, kirim sore"></textarea>
                     </div>
                 </section>
             </div>
             <aside class="co-card co-summary" aria-labelledby="co-sum">
-                <h2 id="co-sum" class="co-card__title"><i class="fas fa-receipt" aria-hidden="true"></i> Ringkasan</h2>
+                <h2 id="co-sum" class="co-card__title"><i class="fas fa-receipt" aria-hidden="true"></i> {% translate "Ringkasan" %}</h2>
                 <ul class="co-items" data-co-items></ul>
                 <div class="co-empty" data-co-empty hidden>
                     <i class="fas fa-cart-shopping" aria-hidden="true"></i>
-                    <p>Keranjang Anda kosong.</p>
-                    <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">Mulai Belanja</a>
+                    <p>{% translate "Keranjang Anda kosong." %}</p>
+                    <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">{% translate "Mulai Belanja" %}</a>
+                </div>
+                <div class="co-subrow" data-co-ship-row>
+                    <span>{% translate "Ongkir" %} <small class="muted" data-co-distance></small></span>
+                    <span data-co-ship>{% translate "Pilih titik di peta" %}</span>
                 </div>
                 <div class="co-total" data-co-total-row>
-                    <span>Total</span>
+                    <span>{% translate "Total" %}</span>
                     <strong data-co-total>Rp 0</strong>
                 </div>
-                <p class="co-hint">Harga & stok dicek ulang oleh sistem saat pesanan dibuat. Ongkir dikonfirmasi admin.</p>
+                <p class="co-hint">{% blocktranslate trimmed with store_shipping_base_fee=store.shipping_base_fee store_shipping_base_km=store.shipping_base_km store_shipping_per_km=store.shipping_per_km %}Harga, stok, dan ongkir dihitung ulang oleh sistem saat pesanan dibuat. Tarif ongkir Rp {{ store_shipping_base_fee }} untuk {{ store_shipping_base_km }} km pertama, lalu Rp {{ store_shipping_per_km }}/km.{% endblocktranslate %}</p>
                 <button type="button" class="btn-primary-seelly co-submit" data-co-submit>
-                    <i class="fas fa-check" aria-hidden="true"></i> Buat Pesanan
+                    <i class="fas fa-check" aria-hidden="true"></i> {% translate "Buat Pesanan" %}
                 </button>
-                <a href="{% url 'customer:cart' %}" class="co-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Ubah keranjang</a>
+                <a href="{% url 'customer:cart' %}" class="co-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> {% translate "Ubah keranjang" %}</a>
             </aside>
         </div>
     </section>
     <dialog class="co-dialog" data-co-dialog aria-labelledby="co-dialog-title">
-        <h2 id="co-dialog-title"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Konfirmasi Pesanan</h2>
-        <p class="muted">Pastikan barang & alamat sudah benar.</p>
+        <h2 id="co-dialog-title"><i class="fas fa-clipboard-check" aria-hidden="true"></i> {% translate "Konfirmasi Pesanan" %}</h2>
+        <p class="muted">{% translate "Pastikan barang & alamat sudah benar." %}</p>
         <ul class="co-items co-items--compact" data-co-dialog-items></ul>
-        <div class="co-total"><span>Total</span><strong data-co-dialog-total></strong></div>
+        <div class="co-subrow"><span>{% translate "Ongkir" %}</span><span data-co-dialog-ship></span></div>
+        <div class="co-total"><span>{% translate "Total" %}</span><strong data-co-dialog-total></strong></div>
         <dl class="co-who co-who--dialog">
-            <div><dt>Alamat</dt><dd data-co-dialog-address></dd></div>
-            <div><dt>Pembayaran</dt><dd data-co-dialog-payment></dd></div>
+            <div><dt>{% translate "Alamat" %}</dt><dd data-co-dialog-address></dd></div>
+            <div><dt>{% translate "Pembayaran" %}</dt><dd data-co-dialog-payment></dd></div>
         </dl>
         <div class="co-dialog__actions">
-            <button type="button" class="btn-soft" data-co-cancel>Periksa Lagi</button>
+            <button type="button" class="btn-soft" data-co-cancel>{% translate "Periksa Lagi" %}</button>
             <button type="button" class="btn-primary-seelly" data-co-confirm>
-                <i class="fas fa-paper-plane" aria-hidden="true"></i> Ya, Pesan Sekarang
+                <i class="fas fa-paper-plane" aria-hidden="true"></i> {% translate "Ya, Pesan Sekarang" %}
             </button>
         </div>
     </dialog>
 {% endblock %}
 {% block extra_js %}
-    <script src="{% static 'customer/js/checkout_member.js' %}?v=1"></script>
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=1"></script>
+    <script src="{% static 'customer/js/checkout_member.js' %}?v=3"></script>
 {% endblock %}
