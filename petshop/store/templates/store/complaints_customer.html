@@ -1,0 +1,60 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "Komplain - Seelly Petshop" %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/camera.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
+    <link rel="stylesheet" href="{% static 'store/css/complaints.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <section class="container section svc-page">
+        <header class="svc-head">
+            <div>
+                <h1 class="svc-title"><i class="far fa-flag" aria-hidden="true"></i> {% translate "Komplain" %}</h1>
+                <p class="muted mb-0">{% translate "Ada masalah dengan pesanan atau layanan? Ceritakan di sini, sertakan foto bila perlu. Balasan admin masuk ke notifikasi Anda." %}</p>
+            </div>
+        </header>
+        {% include "service/_site_messages.html" %}
+        <div class="svc-layout">
+            <div>
+                <h2 class="h5 fw-bold">{% translate "Komplain saya" %}</h2>
+                <ul class="svc-list">
+                    {% for c in complaints %}
+                        <li class="svc-item" id="komplain-{{ c.pk }}">
+                            <div class="svc-item__main">
+                                <strong>#{{ c.pk }} · {{ c.get_category_display }}</strong>
+                                <span class="muted">{{ c.subject_label }} · {{ c.created_at|date:"d M Y, H:i" }}</span>
+                                <p class="mb-0">{{ c.message|linebreaksbr }}</p>
+                                {% if c.photo %}<a href="{{ c.photo.url }}" target="_blank" rel="noopener"><img class="cp-thumb" src="{{ c.photo.url }}" alt="{% blocktranslate trimmed with c_pk=c.pk %}Foto komplain #{{ c_pk }}{% endblocktranslate %}" width="96" height="96" loading="lazy"></a>{% endif %}
+                                {% if c.response %}
+                                    <div class="svc-note"><b>{% translate "Balasan toko" %}{% if c.handled_by %} ({{ c.handled_by.display_name }}){% endif %}:</b> {{ c.response|linebreaksbr }}</div>
+                                {% endif %}
+                            </div>
+                            <span class="svc-status cp-status--{{ c.status|lower }}">{{ c.get_status_display }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="muted">{% translate "Belum ada komplain. Semoga semuanya lancar!" %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <aside class="svc-booking" aria-labelledby="cp-title">
+                <h2 id="cp-title">{% translate "Ajukan komplain" %}</h2>
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    {% include "service/_field.html" with field=form.category %}
+                    {% include "service/_field.html" with field=form.order %}
+                    {% include "service/_field.html" with field=form.booking %}
+                    {% include "service/_field.html" with field=form.message %}
+                    <p class="svc-field mb-1"><label>{% translate "Foto" %} <span class="muted">{% translate "(opsional)" %}</span></label></p>
+                    {% include "partials/_camera.html" with optional=True allow_file=True file_label="Pilih dari galeri" hint="Foto barang rusak / kondisi hewan membantu kami menindaklanjuti." %}
+                    {% for error in form.photo.errors %}<p class="svc-error">{{ error }}</p>{% endfor %}
+                    <button type="submit" class="btn-primary-seelly w-100 mt-3"><i class="fas fa-paper-plane" aria-hidden="true"></i> {% translate "Kirim komplain" %}</button>
+                </form>
+            </aside>
+        </div>
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/camera.js' %}?v=1"></script>
+{% endblock %}

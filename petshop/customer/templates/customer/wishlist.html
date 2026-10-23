@@ -1,8 +1,9 @@
 {% extends "customer/base.html" %}
+{% load i18n %}
 {% load static %}
-{% block title %}Produk Favorit - Seelly Petshop{% endblock %}
+{% block title %}{% translate "Produk Favorit - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=ux3">
     <link rel="stylesheet" href="{% static 'customer/css/wishlist.css' %}">
 {% endblock %}
 {% block content %}
@@ -11,24 +12,24 @@
              data-items-url="{{ items_url }}">
         <header class="wishlist-head">
             <h1 class="wishlist-title">
-                <i class="fas fa-heart" aria-hidden="true"></i> Produk Favorit
+                <i class="fas fa-heart" aria-hidden="true"></i> {% translate "Produk Favorit" %}
             </h1>
             <p class="muted" id="wishlist-sub" aria-live="polite"></p>
         </header>
         <div class="product-grid" id="wishlist-grid" hidden></div>
         <div class="wishlist-state" id="wishlist-loading" role="status">
             <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
-            <p>Memuat produk favorit...</p>
+            <p>{% translate "Memuat produk favorit..." %}</p>
         </div>
         <div class="wishlist-state" id="wishlist-empty" hidden>
             <i class="far fa-heart" aria-hidden="true"></i>
-            <p>Belum ada produk favorit. Tekan ikon hati pada produk untuk menyimpannya.</p>
-            <a class="btn-primary-seelly" href="{% url 'customer:shop' %}">Mulai Belanja</a>
+            <p>{% translate "Belum ada produk favorit. Tekan ikon hati pada produk untuk menyimpannya." %}</p>
+            <a class="btn-primary-seelly" href="{% url 'customer:shop' %}">{% translate "Mulai Belanja" %}</a>
         </div>
         <div class="wishlist-state" id="wishlist-error" hidden>
             <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
-            <p>Produk favorit belum bisa dimuat. Periksa koneksi Anda lalu coba lagi.</p>
-            <button type="button" class="btn-primary-seelly" id="wishlist-retry">Coba Lagi</button>
+            <p>{% translate "Produk favorit belum bisa dimuat. Periksa koneksi Anda lalu coba lagi." %}</p>
+            <button type="button" class="btn-primary-seelly" id="wishlist-retry">{% translate "Coba Lagi" %}</button>
         </div>
     </section>
 {% endblock %}

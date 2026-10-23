@@ -1,0 +1,44 @@
+{% load i18n %}
+{% load static rupiah %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        {% include "courier/_head.html" %}
+        <title>{% translate "Antar-jemput Hewan - Kurir" %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        {% include "courier/_nav.html" %}
+        <main class="container-fluid px-xl-5 px-3 py-4">
+            <p class="eyebrow"><i class="bi bi-heart me-1"></i> {% translate "Antar-jemput hewan" %}</p>
+            <h1 class="page-title">{% translate "Tugas hewan grooming" %}</h1>
+            <p class="text-muted">{% translate "Jemput hewan di rumah pemilik (scan QR booking + foto), bawa ke kasir untuk check-in, lalu antar pulang setelah selesai (foto saat berangkat, scan QR + foto saat diserahkan). Pemilik bisa memantau posisi Anda di peta." %}</p>
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+            {% endfor %}
+            <ul class="stop-list mb-4">
+                {% for b in active %}
+                    <li>
+                        <a href="{% url 'service:courier_pet_trip' b.pk %}">
+                            <span class="stop-num">{{ b.schedule|date:"H:i" }}</span>
+                            <span>{{ b.pet_name }} · {{ b.customer.name }}
+                                <small>{{ b.get_status_display }} · {% if b.status == "SIAP" or b.status == "DIANTAR" or b.status == "PROSES" or b.status == "ANTRE" %}{% translate "antar pulang" %}{% else %}{% translate "jemput" %}{% endif %} · {{ b.transport_address|default:"-" }} · {{ b.transport_distance_km }} km</small>
+                            </span>
+                        </a>
+                    </li>
+                {% empty %}
+                    <li class="text-muted small">{% translate "Belum ada tugas antar-jemput hewan untuk Anda." %}</li>
+                {% endfor %}
+            </ul>
+            {% if done %}
+                <h2 class="h6 fw-bold">{% translate "Selesai terakhir" %}</h2>
+                <ul class="stop-list">
+                    {% for b in done %}
+                        <li><a href="{% url 'service:courier_pet_trip' b.pk %}"><span class="stop-num"><i class="bi bi-check2"></i></span><span>{{ b.pet_name }} · {{ b.customer.name }}<small>{{ b.closed_at|date:"d M H:i" }}</small></span></a></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </main>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

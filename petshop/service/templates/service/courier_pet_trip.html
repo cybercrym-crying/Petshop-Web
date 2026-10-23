@@ -1,0 +1,104 @@
+{% load i18n %}
+{% load static rupiah l10n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        {% include "courier/_head.html" %}
+        <link rel="stylesheet" href="{% static 'css/camera.css' %}?v=1">
+        <title>{% blocktranslate trimmed with booking_pet_name=booking.pet_name %}{{ booking_pet_name }} - Antar-jemput Hewan{% endblocktranslate %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        {% include "courier/_nav.html" %}
+        <main class="container-fluid px-xl-5 px-3 py-4 courier-narrow">
+            <a href="{% url 'service:courier_pets' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {% translate "Tugas hewan" %}</a>
+            <h1 class="page-title mt-2 mb-1">{{ booking.pet_name }} <small class="text-muted fs-6">{% blocktranslate trimmed with booking_pk=booking.pk %}· booking #{{ booking_pk }}{% endblocktranslate %}</small></h1>
+            <p class="text-muted mb-2">{{ booking.service.name }} · <span class="badge rounded-pill text-bg-light border">{{ booking.get_status_display }}</span></p>
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+            {% endfor %}
+            <section class="step">
+                <div class="step__title"><i class="bi bi-house"></i> {{ booking.customer.name }}</div>
+                <p class="small mb-1">{% blocktranslate trimmed with booking_transport_address=booking.transport_address|default:"-" booking_transport_distance_km=booking.transport_distance_km %}{{ booking_transport_address }} · {{ booking_transport_distance_km }} km dari toko{% endblocktranslate %}</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    {% if booking.transport_latitude is not None %}
+                        <a class="btn-route" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ booking.transport_latitude|unlocalize }},{{ booking.transport_longitude|unlocalize }}" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> {% translate "Navigasi" %}</a>
+                    {% endif %}
+                    {% if booking.customer.whatsapp_url %}<a class="btn-route" href="{{ booking.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {% translate "Hubungi" %}</a>{% endif %}
+                </div>
+                {% if booking.pet.notes or booking.customer_note %}<p class="small text-muted mt-2 mb-0"><i class="bi bi-info-circle"></i> {{ booking.pet.notes }} {{ booking.customer_note }}</p>{% endif %}
+            </section>
+
+            {% if step == "start_pickup" %}
+                <form method="post" class="step">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="start_pickup">
+                    <div class="step__title"><span class="step__num">1</span> {% translate "Berangkat menjemput" %}</div>
+                    <p class="small text-muted">{% translate "Pemilik mendapat notifikasi dan bisa memantau posisi Anda." %}</p>
+                    <button type="submit" class="btn-route is-primary w-100" data-needs-gps><i class="bi bi-scooter"></i> {% translate "Berangkat sekarang" %}</button>
+                </form>
+            {% elif step == "collect" or step == "deliver" %}
+                <form method="post" enctype="multipart/form-data" data-handover data-check-url="{% url 'service:courier_pet_check' booking.pk %}" data-csrf="{{ csrf_token }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="{{ step }}">
+                    <section class="step" data-step-scan>
+                        <div class="step__title"><span class="step__num">1</span> {% translate "Scan QR booking di HP pemilik" %}</div>
+                        <p class="small text-muted">{% translate "Pemilik membuka Booking Saya lalu menampilkan QR. Bila tidak bisa, minta pemilik membacakan kode 8 huruf." %}</p>
+                        <div data-qr-scanner data-target="#handover-code" data-autostart>
+                            <video data-qr-video playsinline muted hidden></video>
+                            <p class="scan-status" data-qr-status>{% translate "Membuka kamera…" %}</p>
+                            <button type="button" class="btn-route is-primary w-100" data-qr-start data-needs-gps>{% translate "Scan QR" %}</button>
+                        </div>
+                        <div class="scan-manual">
+                            <input id="handover-code" name="code" class="form-control" placeholder="{% translate 'Kode 8 huruf' %}" autocomplete="off" required>
+                            <button type="button" class="btn-route" data-check-code>{% translate "Cek" %}</button>
+                        </div>
+                        <p class="scan-status" data-check-status></p>
+                    </section>
+                    <section class="step is-locked" data-step-photo>
+                        <div class="step__title"><span class="step__num">2</span> {% if step == "collect" %}{% translate "Foto hewan saat Anda terima" %}{% else %}{% translate "Foto hewan saat diserahkan ke pemilik" %}{% endif %}</div>
+                        {% include "partials/_camera.html" with btn="btn-route is-primary" btn2="btn-route" hint="Foto hewan di kandang/boks atau bersama pemilik." %}
+                        <input type="hidden" name="latitude" data-gps-lat>
+                        <input type="hidden" name="longitude" data-gps-lng>
+                        <label class="form-label small fw-bold mt-3" for="pet-note">{% translate "Catatan (opsional)" %}</label>
+                        <input id="pet-note" name="note" maxlength="255" class="form-control mb-3" placeholder="{% translate 'mis. hewan agak gelisah' %}">
+                        <button type="submit" class="btn-route is-ok w-100" data-needs-gps><i class="bi bi-check2-circle"></i> {% if step == "collect" %}{% translate "Hewan sudah saya bawa" %}{% else %}{% translate "Selesai, hewan diterima pemilik" %}{% endif %}</button>
+                    </section>
+                </form>
+            {% elif step == "start_return" %}
+                <form method="post" enctype="multipart/form-data" class="step">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="start_return">
+                    <div class="step__title"><span class="step__num">1</span> {% translate "Foto hewan saat dibawa pulang" %}</div>
+                    {% include "partials/_camera.html" with btn="btn-route is-primary" btn2="btn-route" hint="Foto hewan di kandang/boks sebelum berangkat dari toko." %}
+                    <input type="hidden" name="latitude" data-gps-lat>
+                    <input type="hidden" name="longitude" data-gps-lng>
+                    <button type="submit" class="btn-route is-ok w-100 mt-3" data-needs-gps><i class="bi bi-scooter"></i> {% translate "Berangkat antar pulang" %}</button>
+                </form>
+            {% elif booking.status == "DIJEMPUT" %}
+                <section class="step">
+                    <div class="step__title"><i class="bi bi-shop"></i> {% translate "Bawa ke toko" %}</div>
+                    <p class="small mb-0">{% blocktranslate trimmed with booking_pet_name=booking.pet_name booking_pk=booking.pk %}Serahkan {{ booking_pet_name }} ke kasir untuk check-in. Kasir membuka booking #{{ booking_pk }} dari daftar "Belum check-in", memeriksa kondisinya, lalu hewan masuk antrean.{% endblocktranslate %}</p>
+                </section>
+            {% else %}
+                <section class="step">
+                    <p class="small mb-0">{% blocktranslate trimmed with booking_get_status_display=booking.get_status_display|lower %}Tidak ada langkah untuk Anda saat ini ({{ booking_get_status_display }}).{% endblocktranslate %}{% if booking.return_requested and booking.status != "SELESAI" %} {% translate "Anda mendapat notifikasi ketika hewan siap diantar pulang." %}{% endif %}</p>
+                </section>
+            {% endif %}
+
+            {% if log %}
+                <h2 class="h6 fw-bold mt-4">{% translate "Riwayat" %}</h2>
+                <ol class="timeline">
+                    {% for e in log %}
+                        <li><b>{{ e.action }}</b> <small class="text-muted">{{ e.created_at|date:"d M H:i" }}{% if e.actor %} · {{ e.actor.display_name }}{% endif %}</small>{% if e.photo %} · <a href="{{ e.photo.url }}" target="_blank" rel="noopener">{% translate "foto" %}</a>{% endif %}</li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
+        </main>
+        <script src="{% static 'vendor/jsqr/jsQR.js' %}"></script>
+        <script src="{% static 'js/qr_scanner.js' %}?v=1"></script>
+        <script src="{% static 'js/camera.js' %}?v=1"></script>
+        <script src="{% static 'courier/js/handover.js' %}?v=1"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

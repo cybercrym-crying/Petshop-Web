@@ -1,0 +1,108 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% translate "Seelly - Beranda Kasir" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'css/ui.css' %}?v=ux3" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="ui ui-wrap">
+        <header class="ui-head">
+            <div>
+                <p class="ui-date">{% now "l, j F Y" %}</p>
+                <h1 class="ui-title">{% blocktranslate trimmed with name=request.user.first_name|default:request.user.username %}Halo, {{ name }}{% endblocktranslate %}</h1>
+            </div>
+        </header>
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 mb-0">{{ message }}</div>
+        {% endfor %}
+
+        <section class="ui-card ui-shift" aria-labelledby="shift-title">
+            <div class="ui-shift__who">
+                {% if shift %}
+                    <span class="ui-pill tone-ok">{% blocktranslate trimmed with since=shift.opened_at|time:"H.i" %}Kasir buka sejak {{ since }}{% endblocktranslate %}</span>
+                {% else %}
+                    <span class="ui-pill tone-warn">{% translate "Kasir belum dibuka" %}</span>
+                {% endif %}
+                <h2 id="shift-title" class="ui-h2 mt-2">{% translate "Shift hari ini" %}</h2>
+                <p class="ui-hint mb-0">
+                    {% if shift %}
+                        {% blocktranslate trimmed with cash=shift.opening_cash|rupiah n=held_sales|length %}Modal awal Rp {{ cash }} · {{ n }} transaksi diparkir{% endblocktranslate %}
+                    {% else %}
+                        {% translate "Buka kasir dan catat modal awal (uang di laci) sebelum menerima pembayaran." %}
+                    {% endif %}
+                </p>
+            </div>
+            {% if shift %}
+                <div class="ui-facts ui-shift__facts">
+                    <div class="ui-fact"><span>{% translate "Penjualan" %}</span><b>Rp {{ summary.total|rupiah }}</b></div>
+                    <div class="ui-fact"><span>{% translate "Uang di laci" %}</span><b>Rp {{ summary.expected_cash|rupiah }}</b></div>
+                    <div class="ui-fact"><span>{% translate "Transfer + QRIS" %}</span><b>Rp {{ summary.noncash_sales|rupiah }}</b></div>
+                    <div class="ui-fact"><span>{% translate "Transaksi" %}</span><b>{{ summary.orders }}</b></div>
+                </div>
+            {% endif %}
+            <div class="ui-shift__go">
+                {% if shift %}
+                    <a href="{% url 'transaction:make_transaction' %}" class="ui-btn ui-btn--primary ui-btn--lg ui-btn--block">{% translate "Buka layar kasir" %}</a>
+                    <a href="{% url 'transaction:shift' %}" class="ui-btn ui-btn--block">{% translate "Rekap & tutup kasir" %}</a>
+                {% else %}
+                    <a href="{% url 'transaction:shift' %}" class="ui-btn ui-btn--primary ui-btn--lg ui-btn--block">{% translate "Buka kasir" %}</a>
+                {% endif %}
+            </div>
+        </section>
+
+        <div class="ui-grid-2">
+            <section class="ui-card" aria-labelledby="todo-title">
+                <div class="ui-card__head"><h2 id="todo-title" class="ui-h2">{% translate "Perlu dikerjakan" %}</h2></div>
+                {% include "partials/_tasks.html" %}
+            </section>
+            <div class="ui-stack">
+                <section class="ui-card" aria-labelledby="receipts-title">
+                    <div class="ui-card__head">
+                        <h2 id="receipts-title" class="ui-h2">{% translate "Struk terakhir Anda" %}</h2>
+                        <a href="{% url 'transaction:manage_transaction' %}?view=list" class="ui-link">{% translate "Semua transaksi" %}</a>
+                    </div>
+                    {% if recent %}
+                        <ul class="ui-rows">
+                            {% for o in recent %}
+                                <li class="ui-row">
+                                    <span class="ui-row__time">{{ o.date|time:"H.i" }}</span>
+                                    <span class="ui-row__body">
+                                        <span class="ui-row__title">{{ o.buyer_display }}</span>
+                                        <span class="ui-row__sub">{{ o.receipt_no }} · {{ o.get_fulfillment_display }} · {{ o.get_payment_method_display }}{% if o.is_voided %} · {% translate "DIBATALKAN" %}{% endif %}</span>
+                                    </span>
+                                    <span class="ui-row__end">Rp {{ o.total_payment|rupiah }}</span>
+                                    <a href="{% url 'transaction:receipt' o.pk %}" class="ui-link">{% translate "Struk" %}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="ui-empty">{% translate "Belum ada transaksi kasir dari Anda." %}</p>
+                    {% endif %}
+                </section>
+                <section class="ui-card" aria-labelledby="booking-title">
+                    <div class="ui-card__head">
+                        <h2 id="booking-title" class="ui-h2">{% translate "Booking hari ini" %}</h2>
+                        <a href="{% url 'service:check_in' %}" class="ui-link">{% translate "Check-in &amp; Antrean" %}</a>
+                    </div>
+                    {% if bookings %}
+                        <ul class="ui-rows">
+                            {% for booking in bookings %}
+                                <li class="ui-row">
+                                    <span class="ui-row__time">{{ booking.schedule|time:"H.i" }}</span>
+                                    <span class="ui-row__body">
+                                        <span class="ui-row__title">{{ booking.pet_name }} · {{ booking.service.name }}</span>
+                                        <span class="ui-row__sub">{{ booking.customer.name }}</span>
+                                    </span>
+                                    <span class="ui-pill tone-{{ booking.tone }}">{{ booking.get_status_display }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="ui-empty">{% translate "Tidak ada booking untuk hari ini." %}</p>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock %}

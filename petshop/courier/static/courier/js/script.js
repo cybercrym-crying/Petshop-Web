@@ -47,3 +47,12 @@
     }
   });
 })();
+
+/* Tombol "Buka detail" di modal mengikuti kartu order yang terakhir diklik. */
+document.addEventListener("click", function (event) {
+  var card = event.target.closest(".order-card");
+  var button = document.getElementById("modal-confirm-btn");
+  if (card && button) {
+    button.setAttribute("href", card.getAttribute("data-detail-url"));
+  }
+});

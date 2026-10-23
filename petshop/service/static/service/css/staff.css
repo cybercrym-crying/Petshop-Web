@@ -46,3 +46,64 @@
 .svc-assign select { padding: 6px 10px; font-size: 0.85rem; }
 .svc-inactive td { opacity: 0.55; }
 .svc-price { font-weight: 800; white-space: nowrap; }
+.bk-batal { background: rgba(107, 114, 128, 0.12); color: #4b5563; border-color: rgba(107, 114, 128, 0.3); }
+[data-theme="dark"] .bk-batal { color: #cbd5e1; }
+.btn-link-danger {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+[data-theme="dark"] .btn-link-danger { color: #fca5a5; }
+
+/* Status booking bertahap */
+.bk-terjadwal { background: rgba(2, 132, 199, 0.12); color: #0369a1; border-color: rgba(2, 132, 199, 0.3); }
+.bk-dijemput,
+.bk-diantar { background: rgba(234, 88, 12, 0.12); color: #c2410c; border-color: rgba(234, 88, 12, 0.3); }
+.bk-antre { background: rgba(202, 138, 4, 0.14); color: #a16207; border-color: rgba(202, 138, 4, 0.35); }
+.bk-siap { background: rgba(22, 163, 74, 0.14); color: #15803d; border-color: rgba(22, 163, 74, 0.35); }
+.bk-tidak_datang { background: rgba(107, 114, 128, 0.12); color: #4b5563; border-color: rgba(107, 114, 128, 0.3); }
+[data-theme="dark"] .bk-terjadwal { color: #7dd3fc; }
+[data-theme="dark"] .bk-dijemput,
+[data-theme="dark"] .bk-diantar { color: #fdba74; }
+[data-theme="dark"] .bk-antre { color: #fde047; }
+[data-theme="dark"] .bk-siap { color: #86efac; }
+[data-theme="dark"] .bk-tidak_datang { color: #cbd5e1; }
+.svc-queue-chip { display: inline-block; margin-left: 6px; padding: 3px 8px; border-radius: 6px; background: var(--t-bg-fef3c7,#fef3c7); color: var(--t-tx-b45309,#b45309); font-weight: 800; font-size: 0.75rem; }
+.svc-transport-chip { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 6px; background: var(--t-bg-e0f2fe,#e0f2fe); color: var(--t-tx-0284c7,#0284c7); font-size: 0.75rem; font-weight: 700; }
+.svc-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.svc-actions form { margin: 0; }
+
+/* Check-in & papan antrean */
+.ci-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+@media (min-width: 1200px) { .ci-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+.ci-card { padding: 20px; }
+.ci-scan video { width: 100%; max-height: 260px; border-radius: 12px; background: #000; object-fit: cover; }
+.ci-manual { display: flex; gap: 8px; margin-top: 10px; }
+.ci-booking { border: 2px solid var(--t-bd-e4dcf5,#e4dcf5); border-radius: 14px; padding: 16px; margin-top: 16px; }
+.ci-booking dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.9rem; margin: 10px 0; }
+.ci-booking dt { color: var(--t-tx-718096,#718096); font-weight: 600; }
+.ci-booking dd { margin: 0; }
+.ci-board { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ci-board li { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--t-bd-e2e8f0,#e2e8f0); background: var(--t-bg-ffffff,#ffffff); }
+.ci-no { min-width: 64px; text-align: center; font-weight: 800; font-size: 1.1rem; color: var(--t-tx-b45309,#b45309); background: var(--t-bg-fef3c7,#fef3c7); border-radius: 10px; padding: 6px 4px; }
+.ci-no.is-working { color: var(--t-tx-5c418c,#5c418c); background: var(--t-bg-f3eefc,#f3eefc); }
+.ci-no.is-ready { color: var(--t-tx-05a660,#05a660); background: var(--t-bg-e8fcf1,#e8fcf1); }
+.ci-board .ci-main { flex: 1; min-width: 0; }
+.ci-board .ci-main strong { display: block; }
+.ci-progress { height: 6px; border-radius: 999px; background: var(--t-bg-edf2f7,#edf2f7); overflow: hidden; margin-top: 4px; }
+.ci-progress span { display: block; height: 100%; background: #8c73c2; }
+.ci-section-title { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--t-tx-718096,#718096); margin: 18px 0 8px; }
+
+/* Tahapan layanan */
+.st-row { display: grid; grid-template-columns: 80px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--t-bd-e2e8f0,#e2e8f0); }
+.st-row label { font-size: 0.85rem; font-weight: 600; display: flex; gap: 6px; align-items: center; margin: 0; }
+@media (max-width: 575px) { .st-row { grid-template-columns: 64px minmax(0, 1fr); } }
+/* Aksi berbahaya diberi jarak dari aksi utama agar tidak salah tekan */
+.btn-link-danger { display: inline-flex; align-items: center; min-height: 36px; margin-top: 8px; padding: 4px 0; text-decoration: underline; text-underline-offset: 3px; }
+.st-row label { min-height: 40px; }
+.st-row input[type="checkbox"] { width: 20px; height: 20px; }
+@media (max-width: 575px) { .st-row { padding: 12px 0; } .st-row label { padding: 0 4px; } }

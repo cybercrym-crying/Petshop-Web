@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from django.utils.translation import gettext_lazy as _
 from django.db import models, transaction
 from django.utils import timezone
 from common.exceptions import PetshopError
@@ -26,25 +27,29 @@ class Category(models.Model):
     def __str__(self):
         return self.get_name_display()
 
+    class Meta:
+        verbose_name = "kategori"
+        verbose_name_plural = "kategori"
+
 
 class PetType(models.TextChoices):
-    ALL = "SEMUA", "Semua hewan"
-    CAT = "KUCING", "Kucing"
-    DOG = "ANJING", "Anjing"
-    BIRD = "BURUNG", "Burung"
-    RABBIT = "KELINCI", "Kelinci"
-    FISH = "IKAN", "Ikan"
-    HAMSTER = "HAMSTER", "Hamster"
+    ALL = "SEMUA", _("Semua hewan")
+    CAT = "KUCING", _("Kucing")
+    DOG = "ANJING", _("Anjing")
+    BIRD = "BURUNG", _("Burung")
+    RABBIT = "KELINCI", _("Kelinci")
+    FISH = "IKAN", _("Ikan")
+    HAMSTER = "HAMSTER", _("Hamster")
 
 
 class ProductCondition(models.TextChoices):
-    NEW = "BARU", "Baru"
-    USED = "BEKAS", "Bekas"
+    NEW = "BARU", _("Baru")
+    USED = "BEKAS", _("Bekas")
 
 
 class MutationType(models.TextChoices):
-    IN = "MASUK", "Stok Masuk"
-    OUT = "KELUAR", "Stok Keluar"
+    IN = "MASUK", _("Stok Masuk")
+    OUT = "KELUAR", _("Stok Keluar")
 
 
 LOW_STOCK_THRESHOLD = 10  # stok 1..10 dianggap menipis, 0 = habis
@@ -108,6 +113,8 @@ class Product(TimeStampedModel):
 
     category = models.ForeignKey(Category, null=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=255, null=False, blank=False)
+    # Kode barang (SKU / barcode pabrik). Dipindai kasir dengan scanner USB atau kamera.
+    sku = models.CharField(_("Kode barang (SKU/barcode)"), max_length=40, unique=True, null=True, blank=True)
     purchase_price = models.PositiveBigIntegerField(null=False, blank=False)
     selling_price = models.PositiveBigIntegerField(null=True, blank=True)
     stock = models.PositiveIntegerField(null=False, default=0)
@@ -118,6 +125,7 @@ class Product(TimeStampedModel):
         max_length=8, choices=ProductCondition.choices, default=ProductCondition.NEW
     )
     is_active = models.BooleanField(default=True)
+    description = models.TextField("Deskripsi", blank=True, default="")
 
     photo = models.ImageField(upload_to="products", null=True, blank=True)
 
@@ -170,6 +178,10 @@ class Product(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "produk"
+        verbose_name_plural = "produk"
+
 
 class StockMutation(models.Model):
     product = models.ForeignKey(
@@ -186,6 +198,8 @@ class StockMutation(models.Model):
     )
 
     class Meta:
+        verbose_name = "mutasi stok"
+        verbose_name_plural = "mutasi stok"
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(quantity__gt=0),

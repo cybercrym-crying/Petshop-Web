@@ -2,6 +2,9 @@
  * Widget chatbot FAQ. Riwayat percakapan disimpan di sessionStorage
  * (hilang saat tab ditutup) supaya tetap ada saat pindah halaman.
  */
+/* Terjemahan teks JS (lihat static/js/i18n.js). */
+function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
+
 (function () {
   "use strict";
 
@@ -105,7 +108,7 @@
     if (on && !el) {
       el = document.createElement("div");
       el.className = "cb-typing";
-      el.setAttribute("aria-label", "Asisten sedang mengetik");
+      el.setAttribute("aria-label", tr("Asisten sedang mengetik"));
       el.innerHTML = "<span></span><span></span><span></span>";
       log.appendChild(el);
       scrollDown();
@@ -184,7 +187,7 @@
     root.querySelectorAll("[data-cb-toggle]").forEach(function (b) {
       b.setAttribute("aria-expanded", open ? "true" : "false");
     });
-    launcher.setAttribute("aria-label", open ? "Tutup chat bantuan" : "Buka chat bantuan");
+    launcher.setAttribute("aria-label", open ? tr("Tutup chat bantuan") : tr("Buka chat bantuan"));
     if (open) {
       renderAll();
       begin();
@@ -225,5 +228,5 @@
   });
 
   if (state.open) setOpen(true);
-  else launcher.setAttribute("aria-label", "Buka chat bantuan");
+  else launcher.setAttribute("aria-label", tr("Buka chat bantuan"));
 })();

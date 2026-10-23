@@ -1,0 +1,121 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% translate "Seelly - Kas & Shift" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
+    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
+    <link href="{% static 'transaction/css/pos_pages.css' %}?v=2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="mb-4">
+            <p class="eyebrow">{% translate "Kasir" %}</p>
+            <h1 class="page-title mb-1">{% translate "Kas & Shift" %}</h1>
+            <p class="text-muted mb-0">{% translate "Buka kasir dengan modal awal di laci. Saat tutup, hitung uang tunai di laci; sistem membandingkan dengan yang seharusnya ada." %}</p>
+        </div>
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
+        {% endfor %}
+        <div class="row g-4">
+            <div class="col-xl-7">
+                {% if current %}
+                    <div class="card-custom so-card mb-4">
+                        <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+                            <div>
+                                <span class="pos-pill pos-pill-ok">{% translate "Kasir buka" %}</span>
+                                <div class="small text-muted mt-1">
+                                    {% blocktranslate trimmed with since=current.opened_at|date:"d M Y, H:i" %}Dibuka {{ since }}{% endblocktranslate %}
+                                </div>
+                            </div>
+                            <a href="{% url 'transaction:make_transaction' %}" class="btn btn-primary rounded-pill px-4">{% translate "Ke layar kasir" %}</a>
+                        </div>
+                        <dl class="so-dl mb-3">
+                            <dt>{% translate "Transaksi" %}</dt>
+                            <dd>{{ summary.orders }}{% if summary.voided %} <span class="text-danger small">({% blocktranslate trimmed with n=summary.voided %}{{ n }} dibatalkan{% endblocktranslate %})</span>{% endif %}</dd>
+                            {% for label, code, amount in summary.by_method %}
+                                <dt>{{ label }}</dt>
+                                <dd>Rp {{ amount|rupiah }}</dd>
+                            {% endfor %}
+                            <dt>{% translate "Total diskon" %}</dt>
+                            <dd>Rp {{ summary.discount|rupiah }}</dd>
+                        </dl>
+                        <h2 class="h6 fw-bold mb-2">{% translate "Uang tunai di laci" %}</h2>
+                        <ul class="list-unstyled so-list mb-3">
+                            <li><span>{% translate "Modal awal" %}</span><b>Rp {{ current.opening_cash|rupiah }}</b></li>
+                            <li><span>{% translate "+ Penjualan tunai" %}</span><b>Rp {{ summary.cash_sales|rupiah }}</b></li>
+                            {% if summary.remitted %}<li><span>{% translate "+ Setoran COD kurir yang Anda terima" %}</span><b>Rp {{ summary.remitted|rupiah }}</b></li>{% endif %}
+                            {% if summary.refunds %}<li><span>{% translate "- Uang retur dikembalikan" %}</span><b>Rp {{ summary.refunds|rupiah }}</b></li>{% endif %}
+                            <li class="fw-bold"><span>{% translate "Seharusnya ada" %}</span><b>Rp {{ summary.expected_cash|rupiah }}</b></li>
+                        </ul>
+                        <form method="post" class="row g-2 align-items-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="close">
+                            <div class="col-sm-4">
+                                <label class="form-label small fw-bold" for="closeAmount">{% translate "Uang dihitung (Rp)" %}</label>
+                                <input id="closeAmount" name="amount" class="form-control" inputmode="numeric" required>
+                            </div>
+                            <div class="col-sm-5">
+                                <label class="form-label small fw-bold" for="closeNote">{% translate "Catatan selisih" %}</label>
+                                <input id="closeNote" name="note" class="form-control" maxlength="255" placeholder="{% translate 'Wajib bila ada selisih' %}">
+                            </div>
+                            <div class="col-sm-3">
+                                <button type="submit" class="btn btn-danger fw-bold w-100" data-confirm="{% translate 'Tutup kasir sekarang? Transaksi baru perlu membuka kasir lagi.' %}">{% translate "Tutup kasir" %}</button>
+                            </div>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="card-custom so-card mb-4">
+                        <h2 class="h5 fw-bold mb-2">{% translate "Buka kasir" %}</h2>
+                        <p class="text-muted small">{% translate "Hitung uang kembalian yang ada di laci sebelum mulai melayani." %}</p>
+                        <form method="post" class="row g-2 align-items-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="open">
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-bold" for="openAmount">{% translate "Modal awal (Rp)" %}</label>
+                                <input id="openAmount" name="amount" class="form-control" inputmode="numeric" required placeholder="200000">
+                            </div>
+                            <div class="col-sm-6">
+                                <button type="submit" class="btn btn-primary fw-bold w-100">{% translate "Buka kasir" %}</button>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-xl-5">
+                <div class="card-custom so-card">
+                    <h2 class="h6 fw-bold mb-3">{% translate "Riwayat shift Anda" %}</h2>
+                    <div class="table-responsive">
+                        <table data-stack class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% translate "Dibuka" %}</th>
+                                    <th class="text-end">{% translate "Seharusnya" %}</th>
+                                    <th class="text-end">{% translate "Dihitung" %}</th>
+                                    <th class="text-end">{% translate "Selisih" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in history %}
+                                    <tr>
+                                        <td>
+                                            {{ s.opened_at|date:"d M, H:i" }}
+                                            {% if s.close_note %}<div class="small text-muted">{{ s.close_note }}</div>{% endif %}
+                                        </td>
+                                        <td class="text-end text-nowrap">Rp {{ s.expected_cash|rupiah }}</td>
+                                        <td class="text-end text-nowrap">Rp {{ s.counted_cash|rupiah }}</td>
+                                        <td class="text-end text-nowrap {% if s.difference < 0 %}text-danger{% elif s.difference > 0 %}text-warning{% else %}text-success{% endif %} fw-bold">
+                                            {% if s.difference < 0 %}-{% elif s.difference > 0 %}+{% endif %}Rp {{ s.difference|rupiah|cut:"-" }}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-muted">{% translate "Belum ada shift yang ditutup." %}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

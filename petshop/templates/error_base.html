@@ -1,0 +1,29 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex">
+        <title>{% block title %}{% translate "Terjadi Kesalahan" %}{% endblock %} - Seelly Petshop</title>
+        <link rel="icon" href="{% static 'customer/img/favicon.svg' %}" type="image/svg+xml">
+        <link rel="stylesheet" href="{% static 'css/error.css' %}">
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        <main class="err">
+            <a href="/" class="err-brand">🐾 Seelly Petshop</a>
+            <p class="err-code">{% block code %}{% endblock %}</p>
+            <h1 class="err-title">{% block heading %}{% endblock %}</h1>
+            <p class="err-text">{% block text %}{% endblock %}</p>
+            <div class="err-actions">
+                {% block actions %}
+                    <a href="/" class="err-btn">{% translate "Kembali ke Beranda" %}</a>
+                    <a href="/produk/" class="err-btn err-btn--ghost">{% translate "Lihat Produk" %}</a>
+                {% endblock %}
+            </div>
+        </main>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

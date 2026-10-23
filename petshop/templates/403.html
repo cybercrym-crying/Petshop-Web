@@ -1,9 +1,10 @@
-{% extends "base.html" %}
-{% block title %}Akses Ditolak{% endblock %}
-{% block content %}
-<div class="text-center py-5">
-    <h1 class="fw-bold" style="font-size: 3rem;">403</h1>
-    <p class="text-muted">Kamu tidak punya akses ke halaman ini. Coba login dengan akun yang sesuai role-nya.</p>
-    <a href="{% url 'customer:home' %}" class="btn btn-brand rounded-pill px-4">Kembali ke Beranda</a>
-</div>
+{% extends "error_base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Akses Ditolak" %}{% endblock %}
+{% block code %}403{% endblock %}
+{% block heading %}{% translate "Akses ditolak" %}{% endblock %}
+{% block text %}{% translate "Akun Anda tidak punya izin untuk membuka halaman ini. Masuk dengan akun yang sesuai perannya, atau kembali ke beranda." %}{% endblock %}
+{% block actions %}
+    <a href="/" class="err-btn">{% translate "Kembali ke Beranda" %}</a>
+    <a href="/login" class="err-btn err-btn--ghost">{% translate "Masuk dengan akun lain" %}</a>
 {% endblock %}

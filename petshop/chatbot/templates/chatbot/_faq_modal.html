@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="modal fade"
      id="faqModal{% if f %}{{ f.pk }}{% else %}New{% endif %}"
      tabindex="-1"
@@ -8,62 +9,62 @@
             <div class="modal-body p-4">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div>
-                        <h2 class="modal-title-custom">{% if f %}Ubah FAQ{% else %}Tambah FAQ{% endif %}</h2>
-                        <p class="modal-sub">Gunakan [[layanan]] untuk daftar harga layanan dan [[wa]] untuk nomor WhatsApp admin.</p>
+                        <h2 class="modal-title-custom">{% if f %}{% translate "Ubah FAQ" %}{% else %}{% translate "Tambah FAQ" %}{% endif %}</h2>
+                        <p class="modal-sub">{% translate "Gunakan [[layanan]] untuk daftar harga layanan dan [[wa]] untuk nomor WhatsApp admin." %}</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Tutup' %}"></button>
                 </div>
                 <form method="post" action="{% if f %}{% url 'chatbot:edit_faq' f.pk %}{% else %}{% url 'chatbot:add_faq' %}{% endif %}">
                     {% csrf_token %}
                     <div class="row g-4 mb-4">
                         <div class="col-12">
-                            <label class="form-label-custom">Pertanyaan</label>
+                            <label class="form-label-custom">{% translate "Pertanyaan" %}</label>
                             <input type="text" name="question" maxlength="200" class="dark-input" required
                                    value="{% if f %}{{ f.question }}{% else %}{{ prefill }}{% endif %}">
                         </div>
                         <div class="col-12">
-                            <label class="form-label-custom">Jawaban</label>
+                            <label class="form-label-custom">{% translate "Jawaban" %}</label>
                             <textarea name="answer" rows="5" class="dark-input" required>{{ f.answer|default:'' }}</textarea>
                         </div>
                         <div class="col-12">
-                            <label class="form-label-custom">Kata kunci <small class="text-muted fw-normal">(pisahkan dengan koma: cara lain pelanggan menanyakan hal ini)</small></label>
+                            <label class="form-label-custom">{% translate "Kata kunci" %} <small class="text-muted fw-normal">{% translate "(pisahkan dengan koma: cara lain pelanggan menanyakan hal ini)" %}</small></label>
                             <input type="text" name="keywords" maxlength="500" class="dark-input"
-                                   placeholder="ongkir, ongkos kirim, biaya kirim" value="{{ f.keywords|default:'' }}">
+                                   placeholder="{% translate 'ongkir, ongkos kirim, biaya kirim' %}" value="{{ f.keywords|default:'' }}">
                         </div>
                         <div class="col-md-7">
-                            <label class="form-label-custom">Tautan (opsional)</label>
-                            <input type="text" name="link_url" maxlength="200" class="dark-input" placeholder="/layanan/" value="{{ f.link_url|default:'' }}">
+                            <label class="form-label-custom">{% translate "Tautan (opsional)" %}</label>
+                            <input type="text" name="link_url" maxlength="200" class="dark-input" placeholder="{% translate '/layanan/' %}" value="{{ f.link_url|default:'' }}">
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label-custom">Teks tautan</label>
-                            <input type="text" name="link_label" maxlength="60" class="dark-input" placeholder="Booking layanan" value="{{ f.link_label|default:'' }}">
+                            <label class="form-label-custom">{% translate "Teks tautan" %}</label>
+                            <input type="text" name="link_label" maxlength="60" class="dark-input" placeholder="{% translate 'Booking layanan' %}" value="{{ f.link_label|default:'' }}">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label-custom">Urutan</label>
+                            <label class="form-label-custom">{% translate "Urutan" %}</label>
                             <input type="number" name="order" min="0" max="32000" class="dark-input" value="{% if f %}{{ f.order }}{% else %}100{% endif %}">
                         </div>
                         <div class="col-md-8 d-flex flex-column justify-content-end gap-2">
                             <label class="d-inline-flex align-items-center gap-2 fw-semibold">
                                 <input type="checkbox" name="is_quick" class="form-check-input m-0" {% if f.is_quick %}checked{% endif %}>
-                                Tampilkan sebagai tombol pilihan cepat
+                                {% translate "Tampilkan sebagai tombol pilihan cepat" %}
                             </label>
                             <label class="d-inline-flex align-items-center gap-2 fw-semibold">
                                 <input type="checkbox" name="is_active" class="form-check-input m-0" {% if not f or f.is_active %}checked{% endif %}>
-                                Aktif
+                                {% translate "Aktif" %}
                             </label>
                         </div>
                     </div>
                     <div class="d-flex gap-2 justify-content-end border-top pt-4">
                         {% if f %}
-                            <button type="submit" form="deleteFaq{{ f.pk }}" class="btn-danger-custom me-auto"><i class="bi bi-trash3 me-1"></i> Hapus</button>
+                            <button type="submit" form="deleteFaq{{ f.pk }}" class="btn-danger-custom me-auto"><i class="bi bi-trash3 me-1"></i> {% translate "Hapus" %}</button>
                         {% endif %}
-                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn-orange px-5">Simpan</button>
+                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                        <button type="submit" class="btn-orange px-5">{% translate "Simpan" %}</button>
                     </div>
                 </form>
                 {% if f %}
                     <form id="deleteFaq{{ f.pk }}" method="post" action="{% url 'chatbot:delete_faq' f.pk %}"
-                          data-confirm="Hapus FAQ “{{ f.question }}”?">
+                          data-confirm="{% blocktranslate trimmed with f_question=f.question %}Hapus FAQ “{{ f_question }}”?{% endblocktranslate %}">
                         {% csrf_token %}
                     </form>
                 {% endif %}

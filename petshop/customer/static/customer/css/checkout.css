@@ -6,10 +6,6 @@
     --text-dark: #1f2937;
 }
 
-body {
-    background: var(--bg-cream);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
 
 .checkout-header {
     background: white;
@@ -40,7 +36,7 @@ body {
 .checkout-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px 60px;
+    padding: 28px 20px 24px;
 }
 
 .delivery-section, .payment-section, .summary-section {

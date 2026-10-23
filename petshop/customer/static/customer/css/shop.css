@@ -712,7 +712,7 @@
   text-decoration: none;
 }
 .breadcrumb-seelly i {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
@@ -854,6 +854,8 @@
   color: var(--purple-600);
 }
 
+.detail-desc { margin: 0 0 16px; line-height: 1.65; color: var(--muted, #5b5470); }
+
 .detail-list {
   margin: 0;
 }
@@ -943,6 +945,7 @@
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   flex: 1;
+  min-width: 0; /* tanpa ini lebar jalur = lebar semua kartu, halaman HP ikut melebar */
   padding: 4px;
 }
 .carousel-track::-webkit-scrollbar {
@@ -1060,4 +1063,144 @@ details.filter-group > summary:focus-visible {
 }
 .empty-state p {
   margin: 0;
+}
+
+/* Hero video halaman Belanja (dipindah dari <style> di home_shop.html) */
+.video-hero-wrap-shop {
+    position: relative;
+    width: 100%;
+    min-height: 65vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 60px;
+    border-radius: 0 0 40px 40px;
+    text-align: center;
+}
+.hero-bg-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translateX(-50%) translateY(-50%);
+    object-fit: cover;
+    z-index: 0;
+}
+.hero-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(30, 27, 75, 0.8) 0%, rgba(92, 65, 140, 0.6) 50%, rgba(0, 0, 0, 0.4) 100%);
+    z-index: 1;
+}
+.hero-content-top {
+    z-index: 2;
+    padding: 80px 20px;
+}
+
+/* Tipografi Glassmorphism */
+.hero-eyebrow-glass {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    margin-bottom: 20px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.hero-title-light {
+    color: #ffffff;
+    font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 15px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.hero-title-light span { color: #FF9000; }
+.hero-desc-light {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+.hero-actions-center {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.btn-solid-light {
+    display: inline-flex;
+    align-items: center;
+    background: #ffffff;
+    color: #5c418c;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+.btn-solid-light:hover {
+    background: #FF9000;
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(255, 144, 0, 0.4);
+}
+.btn-outline-glass {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    padding: 10px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.btn-outline-glass:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: #ffffff;
+    color: #ffffff;
+    transform: translateY(-3px);
+}
+
+/* Polesan Kartu About & Steps agar selaras */
+.about-card, .step-card {
+    border-radius: 24px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    transition: transform 0.3s ease;
+}
+.step-card:hover { transform: translateY(-5px); }
+.step-icon { border-radius: 18px; }
+.about-card__text { font-size: 1.05rem; line-height: 1.6; }
+
+/* Kartu produk sempit (2 kolom di HP): label tombol dipendekkan agar tidak terlipat */
+.btn-add-cart__short { display: none; }
+@media (max-width: 520px) {
+  /* position: relative menahan label tersembunyi di dalam tombol; tanpa itu label lolos dari
+     jalur carousel dan halaman HP ikut melebar. */
+  .btn-add-cart { position: relative; min-height: 40px; white-space: nowrap; }
+  .btn-add-cart__long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .btn-add-cart__short { display: inline; }
 }

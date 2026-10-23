@@ -1,241 +1,275 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="id">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Seelly Petshop - Semua Kebutuhan Hewan Peliharaan</title>
-        <meta name="description"
-              content="Makanan, mainan, perawatan kesehatan, dan aksesori untuk hewan peliharaan. Pesan online dan kami antar sampai rumah.">
-        <link rel="icon"
-              href="{% static 'customer/img/favicon.svg' %}"
-              type="image/svg+xml">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-              rel="stylesheet">
-        <link rel="stylesheet"
-              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-              rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-              rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'customer/css/home.css' %}">
-        <link rel="stylesheet" href="{% static 'customer/css/nav.css' %}">
-    </head>
-    <body class="sx">
-        {% include "customer/_site_nav.html" with active="home" %}
-        <!-- HERO-->
-        <header class="sx-hero-wrap">
-            <div class="sx-hero-premium">
-                <div class="row align-items-center g-5 position-relative">
-                    <div class="col-lg-6 col-xl-7">
-                        <div class="hero-chip">
-                            <i class="fas fa-paw"></i> Hewan Sehat, Hidup Bahagia
-                        </div>
-                        <h1 class="hero-heading">
-                            Semua Kebutuhan Hewan Peliharaan,
-                            <br>
-                            Ada di <span>Satu Tempat</span>
-                        </h1>
-                        <p class="hero-subtext">
-                            Makanan, mainan, perawatan kesehatan, dan aksesori untuk sahabat berbulu kesayangan. Pesan dalam hitungan menit, kami antar sampai rumah.
-                        </p>
-                        <div class="hero-btn-group">
-                            <a href="{% url 'customer:shop' %}" class="btn-hero-primary">
-                                Toko <i class="fas fa-arrow-right"></i>
-                            </a>
-                            <a href="#location-maps" class="btn-hero-secondary">Jelajahi Lebih Lanjut</a>
-                        </div>
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% translate "Seelly Petshop - Semua Kebutuhan Hewan Peliharaan" %}{% endblock %}
+{% block body_class %}sx{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/home.css' %}?v=ux3">
+{% endblock %}
+{% block content %}
+    <!-- HERO -->
+    <header class="sx-hero-wrap">
+        <div class="sx-hero-premium">
+            <div class="row align-items-center g-5 position-relative">
+                <div class="col-lg-6 col-xl-7">
+                    <div class="hero-chip">
+                        <i class="fas fa-paw" aria-hidden="true"></i> {% translate "Hewan Sehat, Hidup Lebih Bahagia" %}
                     </div>
-                    <div class="col-lg-6 col-xl-5 text-center">
-                        <div class="hero-image-wrapper">
-                            <div class="hero-glow"></div>
-                            <img src="{% static 'customer/img/hero-home-dog.png' %}"
-                                 class="hero-dog-pic"
-                                 alt="Anjing gagah berwarna cokelat">
-                            <div class="hero-floating-card">
-                                <i class="fas fa-shield-cat"></i>
-                                <div class="text-start">
-                                    <strong>100%</strong>
-                                    <span>Kualitas Premium</span>
-                                </div>
+                    <h1 class="hero-heading">
+                        {% translate "Semua Kebutuhan Hewan Peliharaan," %}
+                        <br>
+                        {% translate "Ada di" %} <span>{% translate "Satu Tempat" %}</span>
+                    </h1>
+                    <p class="hero-subtext">
+                        {% translate "Makanan, mainan, perawatan kesehatan, aksesori, sampai grooming. Pesan online, pantau dengan nomor resi, dan kami antar sampai rumah." %}
+                    </p>
+                    <div class="hero-btn-group">
+                        <a href="{% url 'customer:products' %}" class="btn-hero-primary">
+                            {% translate "Belanja Sekarang" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                        <a href="{% url 'service:catalog' %}" class="btn-hero-secondary">
+                            <i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Booking Grooming" %}
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-xl-5 text-center">
+                    <div class="hero-image-wrapper">
+                        <div class="hero-glow"></div>
+                        <img src="{% static 'customer/img/hero-home-dog.png' %}"
+                             class="hero-dog-pic"
+                             width="560"
+                             height="560"
+                             alt="{% translate 'Anjing french bulldog memakai jaket kuning' %}">
+                        <div class="hero-floating-card">
+                            <i class="fas fa-truck-fast" aria-hidden="true"></i>
+                            <div class="text-start">
+                                <strong>{% translate "Antar ke rumah" %}</strong>
+                                <span>{% translate "COD atau transfer" %}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </header>
-        <!-- CARE -->
-        <section class="container sx-section">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6">
-                    <div class="sx-photo">
-                        <img src="{% static 'customer/img/hero-home-dog-2.jpg' %}"
-                             width="1000"
-                             height="500"
-                             loading="lazy"
-                             alt="Corgi dengan semangkuk makanan kering, kalung kulit, mainan kucing, dan obat hewan">
+        </div>
+    </header>
+    <!-- KEUNGGULAN SINGKAT -->
+    <section class="container sx-perks" aria-label="{% translate 'Kenapa belanja di sini' %}">
+        <div class="sx-perk">
+            <i class="fas fa-receipt" aria-hidden="true"></i>
+            <div>
+                <strong>{% translate "Lacak dengan resi" %}</strong>
+                <span>{% translate "Status pesanan & bukti kirim bisa dicek kapan saja." %}</span>
+            </div>
+        </div>
+        <div class="sx-perk">
+            <i class="fas fa-wallet" aria-hidden="true"></i>
+            <div>
+                <strong>{% translate "Bayar fleksibel" %}</strong>
+                <span>{% translate "Tunai saat barang sampai atau transfer bank." %}</span>
+            </div>
+        </div>
+        <div class="sx-perk">
+            <i class="far fa-calendar-check" aria-hidden="true"></i>
+            <div>
+                <strong>{% translate "Booking grooming" %}</strong>
+                <span>{% translate "Pilih layanan & jadwal, 08.00–20.00 WITA." %}</span>
+            </div>
+        </div>
+        <div class="sx-perk">
+            <i class="far fa-comments" aria-hidden="true"></i>
+            <div>
+                <strong>{% translate "Tanya kapan saja" %}</strong>
+                <span>{% translate "Chatbot FAQ dan admin via WhatsApp." %}</span>
+            </div>
+        </div>
+    </section>
+    <!-- CARA MEMESAN -->
+    <section class="container sx-section sx-steps-wrap" id="cara-pesan" aria-labelledby="cara-pesan-title">
+        <div class="sx-section-head">
+            <div>
+                <span class="sx-kicker"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Mudah diikuti" %}</span>
+                <h2 class="sx-h2 mb-0" id="cara-pesan-title">{% translate "Cara memesan" %}</h2>
+            </div>
+        </div>
+        <ol class="sx-steps">
+            <li>
+                <span class="sx-steps__no" aria-hidden="true">1</span>
+                <span><strong>{% translate "Daftar akun" %}</strong><span>{% translate "Isi nama, nomor HP, dan alamat pengantaran." %}</span>{% if not user.is_authenticated %}<a href="{% url 'register' %}">{% translate "Daftar sekarang" %}</a>{% endif %}</span>
+            </li>
+            <li>
+                <span class="sx-steps__no" aria-hidden="true">2</span>
+                <span><strong>{% translate "Pilih produk atau jadwal" %}</strong><span>{% translate "Masukkan produk ke keranjang, atau booking grooming di jam yang Anda mau." %}</span></span>
+            </li>
+            <li>
+                <span class="sx-steps__no" aria-hidden="true">3</span>
+                <span><strong>{% translate "Bayar" %}</strong><span>{% translate "Tunai saat barang sampai, atau transfer bank lalu unggah foto buktinya." %}</span></span>
+            </li>
+            <li>
+                <span class="sx-steps__no" aria-hidden="true">4</span>
+                <span><strong>{% translate "Pantau sampai tiba" %}</strong><span>{% translate "Status pesanan dan posisi kurir terlihat di akun Anda." %}</span></span>
+            </li>
+        </ol>
+    </section>
+    <!-- KATEGORI -->
+    <section class="container sx-section" id="kategori">
+        <div class="text-center mb-5">
+            <span class="sx-kicker"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Kategori Kami" %}</span>
+            <h2 class="sx-h2">{% translate "Perawatan Lengkap untuk Hewan Kesayangan" %}</h2>
+            <p class="sx-lead mx-auto sx-lead--narrow">{% translate "Dari makanan sehari-hari sampai waktu bermain, temukan yang dibutuhkan hewan peliharaan agar tetap bahagia dan sehat." %}</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-3">
+                <a class="sx-card" href="{% url 'customer:products' %}?category=MAKANAN">
+                    <img src="{% static 'customer/img/svc-food.jpg' %}"
+                         width="640"
+                         height="440"
+                         loading="lazy"
+                         alt="{% translate 'Semangkuk makanan kering hewan' %}">
+                    <div class="sx-card-body">
+                        <h3>{% translate "Makanan Hewan" %}</h3>
+                        <p>{% translate "Makanan bergizi untuk anjing, kucing, dan hewan lainnya." %}</p>
+                        <span class="sx-link">{% translate "Belanja Makanan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                     </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <a class="sx-card" href="{% url 'customer:products' %}?category=MAINAN">
+                    <img src="{% static 'customer/img/svc-toys.jpg' %}"
+                         width="640"
+                         height="440"
+                         loading="lazy"
+                         alt="{% translate 'Mainan kucing dari kain flanel' %}">
+                    <div class="sx-card-body">
+                        <h3>{% translate "Mainan Seru" %}</h3>
+                        <p>{% translate "Mainan yang membuat hewan peliharaan aktif dan senang." %}</p>
+                        <span class="sx-link">{% translate "Belanja Mainan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <a class="sx-card" href="{% url 'customer:products' %}?category=KESEHATAN">
+                    <img src="{% static 'customer/img/svc-health.jpg' %}"
+                         width="640"
+                         height="440"
+                         loading="lazy"
+                         alt="{% translate 'Aneka tablet dan kapsul obat hewan' %}">
+                    <div class="sx-card-body">
+                        <h3>{% translate "Kesehatan &amp; Perawatan" %}</h3>
+                        <p>{% translate "Produk perawatan agar hewan peliharaan tetap prima." %}</p>
+                        <span class="sx-link">{% translate "Belanja Kesehatan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <a class="sx-card" href="{% url 'customer:products' %}?category=AKSESORIS">
+                    <img src="{% static 'customer/img/svc-accessories.jpg' %}"
+                         width="640"
+                         height="440"
+                         loading="lazy"
+                         alt="{% translate 'Kalung anjing kulit hitam dengan lapisan ungu' %}">
+                    <div class="sx-card-body">
+                        <h3>{% translate "Aksesori" %}</h3>
+                        <p>{% translate "Kalung dan perlengkapan sehari-hari, dengan gaya." %}</p>
+                        <span class="sx-link">{% translate "Belanja Aksesori" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+    <!-- PRODUK TERLARIS (data nyata) -->
+    {% if popular_products %}
+        <section class="container sx-section pt-0" id="terlaris">
+            <div class="sx-section-head">
+                <div>
+                    <span class="sx-kicker"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Paling Dicari" %}</span>
+                    <h2 class="sx-h2 mb-0">{% translate "Produk Terlaris" %}</h2>
                 </div>
-                <div class="col-lg-6">
-                    <span class="sx-kicker"><i class="fas fa-paw"></i> Belanja Sekarang</span>
-                    <h2 class="sx-h2">
-                        Perawatan yang Datang
-                        <br>
-                        dari Hati
-                    </h2>
-                    <p class="sx-lead">
-                        Di Seelly Petshop, kami memperlakukan setiap hewan seperti keluarga. Kami memilih produk yang juga akan kami berikan untuk hewan kami sendiri, dan dengan senang hati membantu Anda menemukan yang paling cocok.
-                    </p>
-                    <a href="{% url 'customer:about' %}"
-                       class="sx-btn-solid">Selengkapnya <i class="fas fa-arrow-right"></i></a>
-                </div>
+                <a href="{% url 'customer:products' %}" class="sx-link">{% translate "Lihat semua produk" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="sx-product-grid">
+                {% for item in popular_products %}
+                    {% include "customer/_product_card.html" %}
+                {% endfor %}
             </div>
         </section>
-        <!-- CATEGORIES -->
-        <section class="container sx-section pt-0" id="kategori">
-            <div class="text-center mb-5">
-                <span class="sx-kicker"><i class="fas fa-paw"></i> Kategori Kami</span>
-                <h2 class="sx-h2">Perawatan Lengkap untuk Hewan Kesayangan</h2>
-                <p class="sx-lead mx-auto" style="max-width: 560px;">Dari makanan sehari-hari sampai waktu bermain, temukan yang dibutuhkan hewan peliharaan agar tetap bahagia dan sehat.</p>
+    {% endif %}
+    <!-- LAYANAN (data nyata) -->
+    {% if services %}
+        <section class="container sx-section pt-0" id="layanan">
+            <div class="sx-section-head">
+                <div>
+                    <span class="sx-kicker"><i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Layanan Hewan" %}</span>
+                    <h2 class="sx-h2 mb-0">{% translate "Grooming & Perawatan" %}</h2>
+                </div>
+                <a href="{% url 'service:catalog' %}" class="sx-link">{% translate "Semua layanan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
             </div>
-            <div class="row g-4">
-                <div class="col-sm-6 col-lg-3">
-                    <a class="sx-card" href="{% url 'customer:shop' %}#produk">
-                        <img src="{% static 'customer/img/svc-food.jpg' %}"
-                             width="640"
-                             height="440"
-                             loading="lazy"
-                             alt="Semangkuk makanan kering hewan">
-                        <div class="sx-card-body">
-                            <h3>Makanan Hewan</h3>
-                            <p>Makanan bergizi untuk anjing, kucing, dan hewan lainnya.</p>
-                            <span class="sx-link">Belanja Makanan <i class="fas fa-arrow-right"></i></span>
+            <div class="sx-service-grid">
+                {% for service in services %}
+                    <article class="sx-service">
+                        <h3>{{ service.name }}</h3>
+                        <p>{{ service.description|default:"Layanan perawatan oleh groomer kami."|truncatechars:110 }}</p>
+                        <ul class="sx-service__meta">
+                            <li><i class="far fa-clock" aria-hidden="true"></i> {% blocktranslate trimmed with service_duration_minutes=service.duration_minutes %}± {{ service_duration_minutes }} menit{% endblocktranslate %}</li>
+                            <li><i class="fas fa-paw" aria-hidden="true"></i> {{ service.get_pet_type_display }}</li>
+                        </ul>
+                        <div class="sx-service__foot">
+                            <strong>Rp {{ service.price|rupiah }}</strong>
+                            <a href="{% url 'service:catalog' %}?layanan={{ service.pk }}#booking" class="sx-btn-solid">{% translate "Booking" %}</a>
                         </div>
-                    </a>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <a class="sx-card" href="{% url 'customer:shop' %}#produk">
-                        <img src="{% static 'customer/img/svc-toys.jpg' %}"
-                             width="640"
-                             height="440"
-                             loading="lazy"
-                             alt="Mainan kucing dari kain flanel">
-                        <div class="sx-card-body">
-                            <h3>Mainan Seru</h3>
-                            <p>Mainan yang membuat hewan peliharaan aktif dan senang.</p>
-                            <span class="sx-link">Belanja Mainan <i class="fas fa-arrow-right"></i></span>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <a class="sx-card" href="{% url 'customer:shop' %}#produk">
-                        <img src="{% static 'customer/img/svc-health.jpg' %}"
-                             width="640"
-                             height="440"
-                             loading="lazy"
-                             alt="Aneka tablet dan kapsul obat hewan">
-                        <div class="sx-card-body">
-                            <h3>Kesehatan &amp; Perawatan</h3>
-                            <p>Produk perawatan agar hewan peliharaan tetap prima.</p>
-                            <span class="sx-link">Belanja Kesehatan <i class="fas fa-arrow-right"></i></span>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <a class="sx-card" href="{% url 'customer:shop' %}#produk">
-                        <img src="{% static 'customer/img/svc-accessories.jpg' %}"
-                             width="640"
-                             height="440"
-                             loading="lazy"
-                             alt="Kalung anjing kulit hitam dengan lapisan ungu">
-                        <div class="sx-card-body">
-                            <h3>Aksesori</h3>
-                            <p>Kalung dan perlengkapan sehari-hari, dengan gaya.</p>
-                            <span class="sx-link">Belanja Aksesori <i class="fas fa-arrow-right"></i></span>
-                        </div>
-                    </a>
-                </div>
+                    </article>
+                {% endfor %}
             </div>
         </section>
-        <!-- WHY US -->
-        <section class="container sx-section pt-0" id="location-maps">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6">
-                    <div class="sx-photo w-100 h-100">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127641.87522501066!2d116.7511488!3d-1.2407519!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2df14710964d9c91%3A0xcaec01bf9e658744!2sBalikpapan%2C%20Kota%20Balikpapan%2C%20Kalimantan%20Timur!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid"
-                                width="100%"
-                                height="100%"
-                                style="border: 0;
-                                       border-radius: 24px;
-                                       min-height: 450px;
-                                       box-shadow: 0 10px 30px rgba(0,0,0,0.08)"
-                                allowfullscreen=""
-                                loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade">
-                        </iframe>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <span class="sx-kicker"><i class="fas fa-paw"></i> Mengapa Memilih Kami</span>
-                    <h2 class="sx-h2 mb-4">Mengapa Pemilik Hewan Memilih Kami</h2>
-                    <div class="sx-feat">
-                        <span class="sx-feat-icon"><i class="fas fa-shield-halved"></i></span>
-                        <div>
-                            <h3>Kualitas Terpercaya</h3>
-                            <p>Kami hanya menyediakan produk yang juga akan kami berikan untuk hewan kami sendiri.</p>
-                        </div>
-                    </div>
-                    <div class="sx-feat">
-                        <span class="sx-feat-icon"><i class="fas fa-headset"></i></span>
-                        <div>
-                            <h3>Layanan Ramah</h3>
-                            <p>Ada pertanyaan tentang produk? Chat admin kami lewat WhatsApp.</p>
-                        </div>
-                    </div>
-                    <div class="sx-feat">
-                        <span class="sx-feat-icon"><i class="fas fa-mobile-screen-button"></i></span>
-                        <div>
-                            <h3>Pemesanan Mudah</h3>
-                            <p>Pilih produk secara online dan kirim pesanan dalam hitungan menit.</p>
-                        </div>
-                    </div>
-                    <div class="sx-feat">
-                        <span class="sx-feat-icon"><i class="fas fa-heart"></i></span>
-                        <div>
-                            <h3>Hewan Bahagia</h3>
-                            <p>Hewan sehat, keluarga bahagia. Itu janji kami.</p>
-                        </div>
-                    </div>
+    {% endif %}
+    <!-- KENAPA KAMI + LOKASI -->
+    <section class="container sx-section pt-0" id="location-maps">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="sx-photo sx-map">
+                    <iframe src="https://maps.google.com/maps?q={{ store.latitude|stringformat:'.6f' }},{{ store.longitude|stringformat:'.6f' }}&amp;z=15&amp;output=embed"
+                            title="{% translate 'Peta area layanan Seelly Petshop' %}"
+                            allowfullscreen
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
-        </section>
-        <!-- SPECIAL OFFER / CTA -->
-        <section class="container pb-5">
-            {% if offer %}
-                <div class="sx-cta">
-                    <div>
-                        <span class="sx-kicker light"><i class="fas fa-paw"></i> Penawaran Spesial</span>
-                        <h2>{{ offer.title }}</h2>
-                        <p>{{ offer.text }}</p>
-                    </div>
-                    <a href="{% url 'customer:shop' %}"
-                       class="sx-btn-light">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
+            <div class="col-lg-6">
+                <span class="sx-kicker"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Lokasi" %}</span>
+                <h2 class="sx-h2 mb-3">{% translate "Kunjungi toko" %}</h2>
+                <ul class="sx-visit">
+                    <li><i class="fas fa-map-pin" aria-hidden="true"></i><span><strong>{% translate "Alamat" %}</strong>{{ store.address }}</span></li>
+                    <li><i class="far fa-clock" aria-hidden="true"></i><span><strong>{% translate "Jam buka" %}</strong>{{ store.hours_display }}</span></li>
+                    <li><i class="fas fa-truck-fast" aria-hidden="true"></i><span><strong>{% translate "Antar ke rumah" %}</strong>{% translate "Kurir toko mengantar pesanan dan menjemput hewan untuk grooming." %}</span></li>
+                </ul>
+                <div class="sx-visit__actions">
+                    <a class="sx-btn-solid" href="{{ wa_link }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Chat WhatsApp" %}</a>
+                    <a class="sx-link" href="{% url 'customer:about' %}">{% translate "Tentang toko" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
-            {% else %}
-                <div class="sx-cta">
-                    <div>
-                        <span class="sx-kicker light"><i class="fas fa-paw"></i> Kami siap melayani</span>
-                        <h2>Siap Memesan untuk Hewan Kesayangan?</h2>
-                        <p>Pilih produk dan kirim pesanan lewat WhatsApp. Kami akan mengonfirmasi total dan pengirimannya.</p>
-                    </div>
-                    <a href="{% url 'customer:shop' %}"
-                       class="sx-btn-light">Belanja Sekarang <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
+    <!-- PROMO / CTA -->
+    <section class="container pb-5">
+        {% if offer %}
+            <div class="sx-cta">
+                <div>
+                    <span class="sx-kicker light"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Penawaran Spesial" %}</span>
+                    <h2>{{ offer.title }}</h2>
+                    <p>{{ offer.text }}</p>
                 </div>
-            {% endif %}
-        </section>
-        {% include "customer/_site_footer.html" %}
-        <script src="{% static 'customer/js/nav.js' %}"></script>
-        <script src="{% static 'customer/js/catalog.js' %}?v=5"></script>
-        {% include "chatbot/_widget.html" %}
-    </body>
-</html>
+                <a href="{% url 'customer:products' %}"
+                   class="sx-btn-light">{% translate "Belanja Sekarang" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        {% else %}
+            <div class="sx-cta">
+                <div>
+                    <span class="sx-kicker light"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Kami siap melayani" %}</span>
+                    <h2>{% translate "Siap Memesan untuk Hewan Kesayangan?" %}</h2>
+                    <p>{% translate "Daftar akun untuk memesan langsung di situs dan memantau statusnya, atau pesan lewat WhatsApp tanpa akun." %}</p>
+                </div>
+                <a href="{% url 'customer:products' %}"
+                   class="sx-btn-light">{% translate "Belanja Sekarang" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

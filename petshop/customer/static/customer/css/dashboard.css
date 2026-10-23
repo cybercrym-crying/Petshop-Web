@@ -1,0 +1,137 @@
+/* Dasbor pelanggan */
+.dash-page { padding-top: 28px; padding-bottom: 48px; }
+.dash-hello {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.dash-hello__eyebrow {
+  margin: 0 0 4px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--purple-600);
+}
+.dash-quick { display: flex; gap: 8px; flex-wrap: wrap; }
+.dash-quick__item {
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px;
+  border-radius: 999px; background: var(--white); border: 1px solid var(--line);
+  color: var(--purple-700); font-weight: 600; text-decoration: none; font-size: 0.92rem;
+}
+.dash-quick__item:hover { border-color: var(--purple-300); background: var(--purple-50); }
+
+.dash-stats {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px; margin-bottom: 22px;
+}
+.dash-stat {
+  display: flex; flex-direction: column; padding: 16px 18px;
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+  text-decoration: none; color: var(--ink); box-shadow: var(--shadow-sm);
+}
+a.dash-stat:hover { border-color: var(--purple-300); color: var(--ink); }
+.dash-stat strong { font-size: 1.45rem; color: var(--purple-700); line-height: 1.15; }
+.dash-stat span { color: var(--muted); font-size: 0.88rem; }
+.dash-stat.is-warn { border-color: #fcd34d; background: #fffbeb; }
+.dash-stat.is-warn strong { color: #b45309; }
+
+.dash-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.dash-main, .dash-side { display: flex; flex-direction: column; gap: 22px; }
+.dash-card {
+  padding: 22px; background: var(--white); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+}
+.dash-card h2 { font-size: 1.08rem; font-weight: 700; color: var(--purple-900); margin: 0 0 14px; }
+.dash-card h2 i { color: var(--purple-600); margin-right: 6px; }
+.dash-card__head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.dash-card__head a { font-size: 0.88rem; font-weight: 600; }
+
+.dash-live { margin-bottom: 22px; }
+.dash-live h2 { display: flex; align-items: center; gap: 10px; }
+.dash-live .track-live { margin: 0; padding: 0; border: 0; background: none; }
+.dash-live__links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+.dash-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dash-order { padding: 16px 0; border-top: 1px solid var(--line); }
+.dash-order:first-of-type { border-top: 0; padding-top: 0; }
+.dash-steps { margin: 16px 0; }
+.dash-unpaid + .dash-unpaid { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+
+.dash-list { list-style: none; margin: 0; padding: 0; }
+.dash-list li {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 10px 0; border-top: 1px solid var(--line); font-size: 0.93rem;
+}
+.dash-list li:first-child { border-top: 0; }
+.dash-list--stack li { flex-direction: column; align-items: flex-start; gap: 2px; }
+.dash-list li.is-unread strong::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px;
+  border-radius: 50%; background: var(--purple-600); vertical-align: middle;
+}
+.dash-pill {
+  margin-top: 4px; padding: 2px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+  background: var(--purple-100); color: var(--purple-700);
+}
+.dash-empty { color: var(--muted); margin: 0; }
+.dash-help .btn-whatsapp { width: 100%; justify-content: center; }
+
+@media (max-width: 900px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+  .dash-stat strong { font-size: 1.2rem; }
+}
+.dash-pack { margin: 0 0 10px; font-size: 0.9rem; color: var(--purple-700); }
+.dash-pill--warn { background: #fef3c7; color: #92400e; text-decoration: none; }
+
+/* Tampilan ringkas: kartu datar, judul gelap, warna status konsisten */
+.dash-page { --dash-line: #e4e7ef; --dash-ink: #1a1f36; --dash-muted: #5b6478; }
+.dash-page .dash-card, .dash-page .dash-stat { border-color: var(--dash-line); border-radius: 16px; box-shadow: none; }
+.dash-page .dash-card { padding: 18px 20px; }
+.dash-page .dash-card h2 { color: var(--dash-ink); font-size: 1rem; }
+.dash-page .dash-card h2 i { color: var(--dash-muted); }
+.dash-page .dash-stat strong { color: var(--dash-ink); }
+.dash-page .dash-stat.is-warn { border-color: #f5e2b3; background: #fff4db; }
+.dash-page .dash-stat.is-warn strong { color: #8a5a00; }
+.dash-page .dash-hello__eyebrow { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--dash-muted); }
+.dash-attn { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.dash-attn li { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--white); border: 1px solid var(--dash-line); border-radius: 16px; }
+.dash-attn__icon { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: #fff4db; color: #8a5a00; font-weight: 800; }
+.dash-attn__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dash-attn__body .muted { font-size: 0.85rem; }
+.dash-attn a { font-weight: 700; text-decoration: none; }
+.dash-list--stack li.dash-pet { flex-direction: row; align-items: center; gap: 12px; }
+.dash-pet__avatar { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: #f2e8f9; color: #6b21a8; font-weight: 800; }
+.dash-pet__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dash-pet .dash-pill { margin-top: 0; white-space: nowrap; }
+.dash-page .dash-pill--warn { background: #fff4db; color: #8a5a00; }
+
+/* Kotak aksi cepat 2x2 di HP, satu baris di layar lebar */
+.dash-hello { margin-bottom: 14px; }
+.dash-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+.dash-tile {
+  display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 12px 14px;
+  background: var(--white); border: 1px solid var(--dash-line); border-radius: 14px;
+  color: var(--dash-ink); font-weight: 700; font-size: 0.92rem; text-decoration: none;
+}
+.dash-tile i {
+  flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  background: #f2e8f9; color: #6b21a8;
+}
+.dash-tile:hover { border-color: #d2aee9; color: #4c1577; }
+@media (max-width: 700px) { .dash-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Langkah pesanan mendatar di dasbor */
+.dash-page .dash-steps { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; margin: 14px 0; }
+.dash-steps .track-step { flex-direction: column; align-items: center; gap: 6px; padding: 0; text-align: center; }
+.dash-steps .track-step::before { left: calc(50% + 20px); right: calc(-50% + 20px); top: 17px; bottom: auto; width: auto; height: 2px; }
+.dash-steps .track-step:last-child::before { display: none; }
+.dash-steps .track-step__title { font-size: 0.78rem; line-height: 1.25; }
+.dash-steps .track-step__time { font-size: 0.72rem; }
+
+/* Rincian rekening dilipat agar dasbor tetap ringkas */
+.dash-unpaid > summary { list-style: none; cursor: pointer; padding: 4px 0; }
+.dash-unpaid > summary::-webkit-details-marker { display: none; }
+.dash-unpaid__what { display: flex; flex-direction: column; min-width: 0; }
+.dash-unpaid__what .muted { font-size: 0.85rem; }
+.dash-unpaid__amt { font-weight: 800; display: inline-flex; align-items: center; gap: 8px; }
+.dash-unpaid__amt::after { content: ""; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .15s; }
+.dash-unpaid[open] .dash-unpaid__amt::after { transform: rotate(-135deg); }
+.dash-unpaid[open] > summary { margin-bottom: 10px; }

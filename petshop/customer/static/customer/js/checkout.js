@@ -1,3 +1,6 @@
+/* Terjemahan teks JS (lihat static/js/i18n.js). */
+function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
+
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
@@ -12,20 +15,25 @@ function formatRupiah(angka) {
 }
 
 function renderOrderSummary() {
-  let cart = JSON.parse(localStorage.getItem("petshop_cart")) || [];
+  let cart = getCart();
   let orderItemsContainer = document.getElementById("order-items");
   let emptyCart = document.getElementById("empty-cart");
 
   orderItemsContainer.innerHTML = "";
 
+  // Keranjang kosong: form pengiriman & pembayaran tidak perlu diisi, sembunyikan.
+  document.querySelectorAll(".delivery-section, .payment-section").forEach(function (el) {
+    el.hidden = cart.length === 0;
+  });
+
   if (cart.length === 0) {
-    emptyCart.style.display = "block";
-    document.querySelector(".total-section").style.display = "none";
-    document.querySelector(".btn-place-order").style.display = "none";
+    emptyCart.hidden = false;
+    document.querySelector(".total-section").hidden = true;
+    document.querySelector(".btn-place-order").hidden = true;
   } else {
-    emptyCart.style.display = "none";
-    document.querySelector(".total-section").style.display = "block";
-    document.querySelector(".btn-place-order").style.display = "flex";
+    emptyCart.hidden = true;
+    document.querySelector(".total-section").hidden = false;
+    document.querySelector(".btn-place-order").hidden = false;
 
     let total = 0;
 
@@ -48,10 +56,15 @@ function renderOrderSummary() {
   }
 }
 
-var WHATSAPP_ADMIN = "6281356703075";
+/* Nomor admin diambil dari halaman (satu sumber: Pengaturan Toko). */
+var WHATSAPP_ADMIN = (document.querySelector("[data-wa-number]") || { dataset: {} }).dataset.waNumber || "";
 
 function getCart() {
-  return JSON.parse(localStorage.getItem("petshop_cart")) || [];
+  return window.Store ? window.Store.getCart() : [];
+}
+
+function clearCart() {
+  if (window.Store) window.Store.clearCart();
 }
 
 function cartTotal(cart) {
@@ -74,16 +87,16 @@ function readCheckoutData() {
 
 function phoneError(value) {
   var digits = value.replace(/[\s\-().]/g, "");
-  if (!digits) return "Nomor telepon wajib diisi.";
+  if (!digits) return tr("Nomor telepon wajib diisi.");
   if (!/^(\+?62|0)\d{8,13}$/.test(digits)) {
-    return "Nomor telepon tidak valid. Contoh: 081234567890";
+    return tr("Nomor telepon tidak valid. Contoh: 081234567890");
   }
   return "";
 }
 
 function requiredError(label) {
   return function (value) {
-    return value.trim() ? "" : label + " wajib diisi.";
+    return value.trim() ? "" : tr("{label} wajib diisi.", { label: tr(label) });
   };
 }
 
@@ -123,12 +136,12 @@ function buildWhatsappUrl(data, cart) {
 }
 
 function buildPlainSummary(data, cart) {
-  var lines = ["Periksa pesanan Anda:", ""];
-  lines.push("Nama: " + data.name, "Telepon: " + data.phone, "Alamat: " + data.address, "Pembayaran: " + data.payment, "");
+  var lines = [tr("Periksa pesanan Anda:"), ""];
+  lines.push(tr("Nama") + ": " + data.name, tr("Telepon") + ": " + data.phone, tr("Alamat") + ": " + data.address, tr("Pembayaran") + ": " + data.payment, "");
   cart.forEach(function (item) {
     lines.push(item.quantity + " x " + item.name + " = " + formatRupiah(item.price * item.quantity));
   });
-  lines.push("", "Total: " + formatRupiah(cartTotal(cart)), "", "Kirim pesanan sekarang?");
+  lines.push("", "Total: " + formatRupiah(cartTotal(cart)), "", tr("Kirim pesanan sekarang?"));
   return lines.join("\n");
 }
 
@@ -175,7 +188,7 @@ function sendOrder() {
 
   if (cart.length === 0) {
     dialog.close();
-    alert("Keranjang belanja Anda kosong!");
+    alert(tr("Keranjang belanja Anda kosong!"));
     renderOrderSummary();
     return;
   }
@@ -185,7 +198,7 @@ function sendOrder() {
 
   window.open(buildWhatsappUrl(readCheckoutData(), cart), "_blank");
 
-  localStorage.removeItem("petshop_cart");
+  clearCart();
   dialog.close();
   renderOrderSummary();
 }
@@ -195,7 +208,7 @@ function placeOrder(event) {
 
   var cart = getCart();
   if (cart.length === 0) {
-    alert("Keranjang belanja Anda kosong!");
+    alert(tr("Keranjang belanja Anda kosong!"));
     return;
   }
 
@@ -207,7 +220,7 @@ function placeOrder(event) {
   if (typeof dialog.showModal !== "function") {
     if (window.confirm(buildPlainSummary(data, cart))) {
       window.open(buildWhatsappUrl(data, cart), "_blank");
-      localStorage.removeItem("petshop_cart");
+      clearCart();
       renderOrderSummary();
     }
     return;
@@ -217,7 +230,10 @@ function placeOrder(event) {
   dialog.showModal();
 }
 
-document.addEventListener("DOMContentLoaded", renderOrderSummary);
+document.addEventListener("DOMContentLoaded", function () {
+  renderOrderSummary();
+  if (window.Store) window.Store.refreshCart(renderOrderSummary);
+});
 
 document.addEventListener("input", function (event) {
   if (event.target.closest("#checkout-form") && event.target.setCustomValidity) {

@@ -1,21 +1,19 @@
+{% load i18n %}
 {% load static %}
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>PetAdmin - Login Pegawai</title>
+        <title>{% translate "Masuk - Seelly Petshop" %}</title>
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-              rel="stylesheet">
-        <!-- Font Outfit -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
-              rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=2">
+        <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+        <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux2">
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body>
+        {% include "partials/_lang_toggle.html" with extra="lang-toggle--corner" %}
         <div class="bg-blob blob-purple"></div>
         <div class="bg-blob blob-orange"></div>
         <div class="login-glass-card">
@@ -23,17 +21,17 @@
             <div class="panel-left">
                 <div class="brand-badge">
                     <i class="bi bi-box-fill fs-5"></i>
-                    <span>PETADMIN</span>
+                    <span>{% translate "SEELLY PETSHOP" %}</span>
                 </div>
                 <div>
-                    <h1 class="left-title">Kelola Tokomu dengan Mudah.</h1>
-                    <p class="left-desc">Kelola kebutuhan hewan peliharaan, stok produk, dan transaksi dengan cepat dalam satu platform.</p>
+                    <h1 class="left-title">{% translate "Satu akun untuk semua kebutuhan hewanmu." %}</h1>
+                    <p class="left-desc">{% translate "Pelanggan: pesan produk, booking grooming, dan pantau pesanan. Pegawai: kelola toko dari dasbor masing-masing." %}</p>
                 </div>
             </div>
             <!-- PANEL KANAN (Form Login) -->
             <div class="panel-right">
-                <h2 class="form-title">Selamat Datang Kembali</h2>
-                <p class="form-sub">Masukkan kredensial Anda untuk melanjutkan</p>
+                <h2 class="form-title">{% translate "Masuk ke Akun Anda" %}</h2>
+                <p class="form-sub">{% translate "Gunakan nama pengguna dan kata sandi yang sudah terdaftar." %}</p>
                 {% if error %}
                     <div class="error-box" role="alert">
                         <i class="bi bi-shield-exclamation fs-5"></i> {{ error }}
@@ -42,28 +40,29 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="input-group-custom">
-                        <label for="username" class="form-label-custom">Nama Pengguna</label>
+                        <label for="username" class="form-label-custom">{% translate "Nama Pengguna" %}</label>
                         <input type="text"
                                name="username"
                                class="modern-input"
                                id="username"
-                               placeholder="@namapengguna"
+                               placeholder="{% translate 'namapengguna' %}"
+                               value="{{ username|default:'' }}"
                                autocomplete="username"
+                               autocapitalize="none"
                                required />
                     </div>
                     <div class="input-group-custom">
-                        <label for="password" class="form-label-custom">Kata Sandi</label>
+                        <label for="password" class="form-label-custom">{% translate "Kata Sandi" %}</label>
                         <input type="password"
                                name="password"
                                class="modern-input"
                                id="password"
                                placeholder="••••••••"
                                autocomplete="current-password"
-                               style="padding-right: 50px"
                                required />
                         <button class="toggle-password"
                                 type="button"
-                                aria-label="Tampilkan kata sandi"
+                                aria-label="{% translate 'Tampilkan kata sandi' %}"
                                 data-toggle-password>
                             <svg id="icon-show" data-icon-show
                                  width="22"
@@ -92,16 +91,23 @@
                             </svg>
                         </button>
                     </div>
-                    <button type="submit" class="btn-login">Masuk ke Dasbor</button>
+                    <button type="submit" class="btn-login">{% translate "Masuk" %}</button>
                     <p class="foot-text">
-                        Kehilangan akses akun? <a href="#" class="link-purple">Hubungi Admin</a>
+                        {% translate "Lupa kata sandi?" %} <a href="{{ wa_link }}" target="_blank" rel="noopener" class="link-purple">{% translate "Hubungi admin via WhatsApp" %}</a> {% translate "untuk mengatur ulang." %}
                     </p>
                     <p class="foot-text">
-                        Pelanggan baru? <a href="{% url 'register' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}" class="link-purple">Daftar akun customer</a>
+                        <a href="{% url 'customer:home' %}" class="link-purple">{% translate "Kembali ke toko" %}</a>
+                    </p>
+                    <p class="foot-text">
+                        {% translate "Pelanggan baru?" %} <a href="{% url 'register' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}" class="link-purple">{% translate "Daftar akun customer" %}</a>
+                    </p>
+                    <p class="foot-text">
+                        {% translate "Ingin bergabung sebagai kurir?" %} <a href="{% url 'register_staff' %}" class="link-purple">{% translate "Daftar sebagai staf" %}</a>
                     </p>
                 </form>
             </div>
         </div>
         <script src="{% static 'account/js/login.js' %}?v=2"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>
 </html>

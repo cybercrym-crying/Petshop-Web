@@ -8,7 +8,10 @@ def roleRequired(*allowedRoles):
         @login_required
         @wraps(viewFunc)
         def wrapper(request, *args, **kwargs):
-            if request.user.role not in allowedRoles:
+            allowed = set(allowedRoles)
+            if "ADMIN" in allowed:
+                allowed.add("SUPERADMIN")  # Super Admin punya semua hak Admin
+            if request.user.role not in allowed:
                 raise PermissionDenied("Kamu tidak punya akses ke halaman ini.")
             return viewFunc(request, *args, **kwargs)
 

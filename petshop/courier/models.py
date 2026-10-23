@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -10,9 +11,9 @@ TRAIL_FALLBACK_WINDOW = timedelta(hours=12)
 
 
 class CourierStatus(models.TextChoices):
-    ACTIVE = "AKTIF", "Aktif"
-    OFFLINE = "OFFLINE", "Offline"
-    BREAK = "ISTIRAHAT", "Istirahat"
+    ACTIVE = "AKTIF", _("Aktif")
+    OFFLINE = "OFFLINE", _("Offline")
+    BREAK = "ISTIRAHAT", _("Istirahat")
 
 
 class CourierProfile(TimeStampedModel):
@@ -29,10 +30,16 @@ class CourierProfile(TimeStampedModel):
         choices=CourierStatus.choices,
         default=CourierStatus.ACTIVE,
     )
+    # Kurir yang membawa kandang/boks hewan bisa ditugasi antar-jemput hewan grooming.
+    can_carry_pets = models.BooleanField("Bisa antar-jemput hewan", default=False)
 
     def __str__(self):
         name = self.user.get_full_name() or self.user.username
         return f"{name} ({self.status})"
+
+    class Meta:
+        verbose_name = "profil kurir"
+        verbose_name_plural = "profil kurir"
 
 
 # Lokasi GPS kurir dari Geolocation API (HTML5) di HP kurir. Satu baris per
@@ -70,6 +77,19 @@ class CourierLocation(models.Model):
         }
 
     @classmethod
+    def latest_for(cls, courier):
+        return cls.objects.filter(courier=courier).order_by("-recorded_at").first()
+
+    @classmethod
+    def is_fresh(cls, courier):
+        """GPS kurir dianggap hidup bila lokasi terakhir masuk dalam batas Pengaturan Toko."""
+        from store.models import StoreSettings
+
+        last = cls.latest_for(courier)
+        limit = timedelta(seconds=StoreSettings.current().gps_stale_seconds)
+        return bool(last and timezone.now() - last.recorded_at <= limit)
+
+    @classmethod
     def trail_for(cls, order, limit=300):
         """Jejak kurir selama order ini diantar (paling baru di akhir)."""
         if not order.courier_id:
@@ -84,3 +104,75 @@ class CourierLocation(models.Model):
         points = list(qs.order_by("-recorded_at")[:limit])
         points.reverse()
         return points
+
+
+class RemittanceStatus(models.TextChoices):
+    SUBMITTED = "MENUNGGU", _("Menunggu diterima kasir")
+    RECEIVED = "DITERIMA", _("Diterima")
+
+
+# Setoran uang COD dari kurir ke toko. Satu setoran mencakup beberapa order
+# tunai yang sudah diserahkan (Order.remittance menunjuk ke sini).
+class CashRemittance(models.Model):
+    courier = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="remittances"
+    )
+    amount = models.PositiveBigIntegerField("Jumlah yang disetor")
+    status = models.CharField(
+        max_length=10, choices=RemittanceStatus.choices, default=RemittanceStatus.SUBMITTED, db_index=True
+    )
+    submitted_at = models.DateTimeField(default=timezone.now)
+    received_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    received_at = models.DateTimeField(null=True, blank=True)
+    received_amount = models.PositiveBigIntegerField("Uang yang diterima kasir", null=True, blank=True)
+    note = models.CharField("Catatan", max_length=255, blank=True, default="")
+
+    class Meta:
+        ordering = ["-submitted_at"]
+        verbose_name = "setoran COD"
+        verbose_name_plural = "setoran COD"
+
+    def __str__(self):
+        return f"Setoran #{self.pk} {self.courier} Rp {self.amount}"
+
+    @property
+    def difference(self):
+        if self.received_amount is None:
+            return 0
+        return self.received_amount - self.amount
+
+    @classmethod
+    def submit(cls, courier):
+        """Kurir menyetor semua uang COD yang belum disetor dalam satu setoran."""
+        from django.db import transaction
+
+        from common.exceptions import PetshopError
+        from transaction.models import Order
+
+        with transaction.atomic():
+            orders = list(Order.cash_on_hand(courier).select_for_update())
+            if not orders:
+                raise PetshopError("Tidak ada uang COD yang perlu disetor.")
+            remittance = cls.objects.create(
+                courier=courier, amount=sum(o.cash_collected for o in orders)
+            )
+            Order.objects.filter(pk__in=[o.pk for o in orders]).update(remittance=remittance)
+        return remittance
+
+    def receive(self, cashier, received_amount, note=""):
+        from common.exceptions import PetshopError
+
+        if self.status != RemittanceStatus.SUBMITTED:
+            raise PetshopError(f"Setoran #{self.pk} sudah diterima.")
+        if received_amount is None or received_amount < 0:
+            raise PetshopError("Isi jumlah uang yang benar-benar diterima.")
+        if received_amount != self.amount and not note.strip():
+            raise PetshopError("Jumlah berbeda dari tagihan: tulis catatan selisihnya.")
+        self.status = RemittanceStatus.RECEIVED
+        self.received_by = cashier
+        self.received_at = timezone.now()
+        self.received_amount = received_amount
+        self.note = note.strip()[:255]
+        self.save()

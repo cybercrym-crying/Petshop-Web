@@ -1,0 +1,8 @@
+{% load i18n %}
+<details class="co-qr">
+    <summary><i class="fas fa-qrcode" aria-hidden="true"></i> {% translate "QR serah-terima (tunjukkan ke kurir)" %}</summary>
+    <div class="co-qr__body">
+        <img src="{% url 'customer:handover_qr' order.pk %}" alt="{% blocktranslate trimmed with order_pk=order.pk %}QR serah-terima pesanan #{{ order_pk }}{% endblocktranslate %}" width="180" height="180" loading="lazy">
+        <p class="muted">{% translate "Saat paket tiba, kurir memindai QR ini lalu memotret paket di tangan Anda. Jangan bagikan QR ini sebelum paket benar-benar diterima. Kode cadangan:" %} <b class="co-resi">{{ order.handover_code }}</b></p>
+    </div>
+</details>

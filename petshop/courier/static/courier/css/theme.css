@@ -1,57 +1,62 @@
 :root,
 [data-bs-theme="light"] {
-  --c-bg: #fafafc;
+  /* Palet Seelly (sama dengan css/ui.css). */
+  --c-bg: #f7f5fa;
   --c-surface: #ffffff;
-  --c-surface-2: #f8fafc;
-  --c-border: #e2e8f0;
-  --c-text: #2b3674;
-  --c-text-2: #4a5568;
-  --c-text-3: #2d3748;
-  --c-muted: #718096;
-  --c-muted-2: #a0aec0;
-  --c-brand: #8c73c2;
-  --c-brand-dark: #5c418c;
-  --c-brand-soft: #f3eefc;
-  --c-brand-soft-border: #e4dcf5;
-  --c-brand-soft-text: #4a3473;
-  --c-warn-bg: #fff8e5;
-  --c-warn-text: #e5a500;
-  --c-warn-border: #fef3c7;
-  --c-ok-bg: #e8fcf1;
-  --c-ok-text: #05a660;
-  --c-ok-border: #d1fae5;
-  --c-danger-bg: #fff0f0;
-  --c-danger-text: #e31a1a;
+  --c-surface-2: #faf8fc;
+  --c-border: #eadcf4;
+  --c-text: #261a33;
+  --c-text-2: #4a3d58;
+  --c-text-3: #33264a;
+  --c-muted: #6f6479;
+  --c-muted-2: #7f748a;
+  --c-brand: #6b21a8;
+  --c-brand-dark: #4c1577;
+  --c-brand-soft: #f2e8f9;
+  --c-brand-soft-border: #e2d3ee;
+  --c-brand-soft-text: #6b21a8;
+  --c-warn-bg: #fef3c7;
+  --c-warn-text: #92400e;
+  --c-warn-border: #f3d9a6;
+  --c-ok-bg: #dcfce7;
+  --c-ok-text: #166534;
+  --c-ok-border: #bbe7c9;
+  --c-danger-bg: #fee2e2;
+  --c-danger-text: #991b1b;
   --c-danger-text-2: #b91c1c;
-  --c-danger-border: #fee2e2;
+  --c-danger-border: #f8cfca;
+  --c-run-bg: #dbeafe;
+  --c-run-text: #1e40af;
   color-scheme: light;
 }
 
 [data-bs-theme="dark"] {
-  --c-bg: #0f1220;
-  --c-surface: #181c2f;
-  --c-surface-2: #1f2438;
-  --c-border: #2d3350;
-  --c-text: #e6e9f7;
-  --c-text-2: #b8bfd6;
-  --c-text-3: #d5d9ea;
-  --c-muted: #8d96b2;
-  --c-muted-2: #7a84a3;
-  --c-brand: #a78bdc;
-  --c-brand-dark: #c4aef0;
-  --c-brand-soft: #2a2347;
-  --c-brand-soft-border: #3d3363;
-  --c-brand-soft-text: #d8c9f7;
-  --c-warn-bg: #3a2f12;
-  --c-warn-text: #ffc247;
+  --c-bg: #16111d;
+  --c-surface: #211a2b;
+  --c-surface-2: #2a2136;
+  --c-border: #3a2f48;
+  --c-text: #f1ebf7;
+  --c-text-2: #d4c9e0;
+  --c-text-3: #e6dcef;
+  --c-muted: #b9adc7;
+  --c-muted-2: #a497b3;
+  --c-brand: #c084fc;
+  --c-brand-dark: #d8b4fe;
+  --c-brand-soft: #3b2a52;
+  --c-brand-soft-border: #4a3a63;
+  --c-brand-soft-text: #e9d5ff;
+  --c-warn-bg: #3b2a12;
+  --c-warn-text: #fcd34d;
   --c-warn-border: #5a4617;
-  --c-ok-bg: #12301f;
-  --c-ok-text: #3dd68c;
+  --c-ok-bg: #173a2c;
+  --c-ok-text: #86efac;
   --c-ok-border: #1e4a33;
-  --c-danger-bg: #3a1618;
-  --c-danger-text: #ff6b6b;
-  --c-danger-text-2: #ff8a8a;
+  --c-danger-bg: #44201f;
+  --c-danger-text: #fca5a5;
+  --c-danger-text-2: #fca5a5;
   --c-danger-border: #5a2528;
+  --c-run-bg: #1d2b52;
+  --c-run-text: #93c5fd;
   color-scheme: dark;
 }
 
@@ -110,3 +115,7 @@ body {
   outline: 2px solid var(--c-brand);
   outline-offset: 2px;
 }
+
+/* Lonceng notifikasi di navbar kurir/groomer */
+.nav-bell { position: relative; text-decoration: none; }
+.nav-bell__count { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px; background: #dc2626; color: #fff; font-size: 0.75rem; font-weight: 800; line-height: 18px; text-align: center; }

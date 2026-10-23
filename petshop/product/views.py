@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as _
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
@@ -132,7 +133,7 @@ def add_stock_mutation(request):
             except InsufficientStock as e:
                 form.add_error(None, str(e))
             else:
-                messages.success(request, "Mutasi stok berhasil dicatat.")
+                messages.success(request, _("Mutasi stok berhasil dicatat."))
                 return redirect("product:product_list")
     else:
         form = StockMutationForm(initial={"product": request.GET.get("product")})

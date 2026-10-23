@@ -1,0 +1,60 @@
+{% load i18n %}
+{% load static rupiah %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% blocktranslate trimmed with order_tracking_number=order.tracking_number %}Label {{ order_tracking_number }}{% endblocktranslate %}</title>
+        <link rel="stylesheet" href="{% static 'transaction/css/label.css' %}?v=ux2">
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        <h1 class="visually-hidden">{% blocktranslate trimmed with no=order.pk %}Label paket pesanan #{{ no }}{% endblocktranslate %}</h1>
+        <div class="label-tools">
+            <button type="button" data-print>{% translate "Cetak label" %}</button>
+            <span>{% translate "Ukuran 100 × 150 mm (printer thermal) atau setengah A4." %}</span>
+        </div>
+        <article class="label">
+            <header class="label__head">
+                <div>
+                    <strong>{{ store.name }}</strong>
+                    <small>{{ store.whatsapp_display }}</small>
+                </div>
+                {% if order.packing_seq %}
+                    <div class="label__seq"><small>{% translate "No. packing" %}</small><b>{{ order.packing_label }}</b><small>{{ order.packing_date|date:"d/m" }}</small></div>
+                {% endif %}
+            </header>
+            <section class="label__qr">
+                <img src="{% url 'transaction:label_qr' order.pk %}" alt="{% blocktranslate trimmed with order_tracking_number=order.tracking_number %}QR resi {{ order_tracking_number }}{% endblocktranslate %}">
+                <div>
+                    <small>{% translate "Nomor resi" %}</small>
+                    <div class="label__resi">{{ order.tracking_number }}</div>
+                    <small>{% blocktranslate trimmed with order_pk=order.pk order_date=order.date|date:"d M Y" %}Order #{{ order_pk }} · {{ order_date }}{% endblocktranslate %}</small>
+                    {% if order.payment_method == "TUNAI" and order.payment_status != "LUNAS" %}
+                        <div class="label__cod">{% blocktranslate trimmed with order_total_payment=order.total_payment|rupiah %}COD Rp {{ order_total_payment }}{% endblocktranslate %}</div>
+                    {% else %}
+                        <div class="label__paid">{% translate "LUNAS" %}</div>
+                    {% endif %}
+                </div>
+            </section>
+            <section class="label__to">
+                <small>{% translate "Penerima" %}</small>
+                <strong>{{ order.customer.name }}</strong>
+                <span>{{ order.customer.phone_number }}</span>
+                <p>{{ order.delivery_address }}</p>
+                {% if order.delivery_distance_km %}<small>{% blocktranslate trimmed with order_delivery_distance_km=order.delivery_distance_km %}±{{ order_delivery_distance_km }} km dari toko · titik peta tersimpan{% endblocktranslate %}</small>{% endif %}
+                {% if order.customer_note %}<p class="label__note">{% blocktranslate trimmed with order_customer_note=order.customer_note %}Catatan: {{ order_customer_note }}{% endblocktranslate %}</p>{% endif %}
+            </section>
+            <section class="label__items">
+                <small>{% translate "Isi paket" %}</small>
+                <ul>
+                    {% for d in order.details.all %}<li>{{ d.quantity }}× {{ d.product.name }}</li>{% endfor %}
+                </ul>
+            </section>
+            <footer class="label__foot">{% translate "Kurir: scan QR ini saat mengambil paket. Serah terima: scan QR di HP penerima." %}</footer>
+        </article>
+        <script src="{% static 'js/common.js' %}"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

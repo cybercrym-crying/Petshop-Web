@@ -1,0 +1,14 @@
+{% load i18n %}
+<ul class="notif-list">
+    {% for n in items %}
+        <li class="notif-item{% if not n.read_at %} is-unread{% endif %}">
+            <a href="{% url 'store:open_notification' n.pk %}">
+                <strong>{{ n.title }}</strong>
+                {% if n.body %}<span>{{ n.body }}</span>{% endif %}
+                <small>{{ n.created_at|date:"d M Y, H:i" }}</small>
+            </a>
+        </li>
+    {% empty %}
+        <li class="notif-empty">{% translate "Belum ada notifikasi." %}</li>
+    {% endfor %}
+</ul>

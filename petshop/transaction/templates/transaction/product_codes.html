@@ -1,0 +1,54 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% translate "Seelly - Kode Barang" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
+    <link href="{% static 'transaction/css/pos_pages.css' %}?v=2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="d-flex justify-content-between flex-wrap gap-3 mb-4 no-print">
+            <div>
+                <p class="eyebrow">{% translate "Toko" %}</p>
+                <h1 class="page-title mb-1">{% translate "Kode Barang & Label" %}</h1>
+                <p class="text-muted mb-0">{% translate "Produk yang sudah punya barcode pabrik: isi kodenya di Kelola Produk. Sisanya bisa diberi kode otomatis lalu label QR-nya dicetak dan ditempel di rak." %}</p>
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+                {% if missing %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill">
+                            {% blocktranslate trimmed with n=missing %}
+                                Beri kode otomatis ({{ n }} produk)
+                            {% endblocktranslate %}
+                        </button>
+                    </form>
+                {% endif %}
+                <button type="button" class="btn btn-primary btn-sm rounded-pill" data-print><i class="bi bi-printer"></i> {% translate "Cetak label" %}</button>
+            </div>
+        </div>
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm no-print">{{ message }}</div>
+        {% endfor %}
+        <div class="pos-labels">
+            {% for p in products %}
+                <div class="pos-label{% if not p.sku %} pos-label-missing no-print{% endif %}">
+                    {% if p.sku %}
+                        <img src="{% url 'transaction:product_code_qr' p.pk %}" alt="QR {{ p.sku }}" width="84" height="84" loading="lazy">
+                    {% endif %}
+                    <div>
+                        <strong>{{ p.name }}</strong>
+                        <span>{{ p.sku|default:_("Belum ada kode") }}</span>
+                        <span>Rp {{ p.selling_price|rupiah }}</span>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">{% translate "Belum ada produk aktif." %}</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'transaction/js/receipt.js' %}?v=1"></script>
+{% endblock %}

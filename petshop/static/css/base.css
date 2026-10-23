@@ -1,4 +1,4 @@
-body { font-family: "Inter", sans-serif; background-color: #f7f1ea; }
+body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; background-color: #f7f1ea; }
 .navbar-custom { background: #f7f1ea; padding: 14px 40px; border-bottom: 1px solid #e5ddd0; }
 .nav-link-custom { color: #333; font-size: 0.95rem; margin: 0 12px; text-decoration: none; }
 .nav-link-custom:hover { color: #9850c5; }

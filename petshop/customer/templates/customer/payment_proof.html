@@ -1,0 +1,43 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% blocktranslate trimmed with order_pk=order.pk %}Bukti Transfer #{{ order_pk }} - Seelly Petshop{% endblocktranslate %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'css/camera.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <section class="container section co-page co-proof">
+        <nav class="crumbs" aria-label="{% translate 'Breadcrumb' %}">
+            <a href="{% url 'customer:dashboard' %}">{% translate "Dasbor" %}</a> {% translate "/ Bukti transfer" %}
+        </nav>
+        <h1 class="co-title"><i class="fas fa-money-bill-transfer" aria-hidden="true"></i> {% blocktranslate trimmed with order_pk=order.pk %}Bukti Transfer Pesanan #{{ order_pk }}{% endblocktranslate %}</h1>
+        {% include "service/_site_messages.html" %}
+        <div class="co-layout">
+            <div class="co-main">
+                <form method="post" enctype="multipart/form-data" class="co-card" novalidate>
+                    {% csrf_token %}
+                    <h2 class="co-card__title"><i class="fas fa-camera" aria-hidden="true"></i> {% translate "Foto bukti" %}</h2>
+                    <p class="muted">{% translate "Potret struk ATM / layar konfirmasi transfer langsung dari kamera. Kalau transfer lewat m-banking di HP yang sama, pilih tangkapan layarnya." %}</p>
+                    {% for e in form.photo.errors %}<p class="co-alert co-alert--error">{{ e }}</p>{% endfor %}
+                    {% include "partials/_camera.html" with allow_file=True %}
+                    <div class="co-field mt-3">
+                        <label for="id_note">{% translate "Catatan" %} <span class="muted">{% translate "(opsional)" %}</span></label>
+                        <input id="id_note" name="note" maxlength="255" class="form-control" placeholder="{% translate 'mis. transfer dari rekening a.n. ibu' %}">
+                    </div>
+                    <button type="submit" class="btn-primary-seelly co-submit"><i class="fas fa-paper-plane" aria-hidden="true"></i> {% translate "Kirim Bukti" %}</button>
+                </form>
+            </div>
+            <aside class="co-card co-summary">
+                <h2 class="co-card__title"><i class="fas fa-receipt" aria-hidden="true"></i> {% translate "Yang harus ditransfer" %}</h2>
+                <p class="co-proof__total">Rp {{ order.total_payment|rupiah }}</p>
+                {% if order.shipping_fee %}<p class="muted mb-2">{% blocktranslate trimmed with order_shipping_fee=order.shipping_fee|rupiah %}Termasuk ongkir Rp {{ order_shipping_fee }}{% endblocktranslate %}</p>{% endif %}
+                {% include "customer/_transfer_info.html" with order=None %}
+                {% if order.payment_due_at %}<p class="co-hint">{% blocktranslate trimmed with order_payment_due_at=order.payment_due_at|date:"d M Y, H:i" %}Batas bayar {{ order_payment_due_at }}.{% endblocktranslate %}</p>{% endif %}
+            </aside>
+        </div>
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/camera.js' %}?v=1"></script>
+{% endblock %}

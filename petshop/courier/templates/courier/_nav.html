@@ -1,0 +1,32 @@
+{% load i18n %}
+{% with rm=request.resolver_match %}
+    <nav class="navbar-custom">
+        <a class="brand-group" href="{% url 'courier:dashboard' %}" aria-label="{% translate 'Rute hari ini' %}">
+            <span class="brand-logo"><svg class="brand-paw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
+            <span class="brand-name">Seelly <small class="brand-role">{% translate "Kurir" %}</small></span>
+        </a>
+        <div class="nav-right">
+            <span class="gps-badge is-off" data-gps-badge>{% translate "GPS mati" %}</span>
+            {% include "store/_staff_bell.html" %}
+            {% include "partials/_lang_toggle.html" %}
+            <button type="button" class="theme-toggle" data-theme-toggle aria-label="{% translate 'Beralih ke mode gelap' %}" aria-pressed="false">
+                <i class="bi bi-moon-stars-fill"></i>
+            </button>
+            <form method="post" action="{% url 'logout' %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn-logout" aria-label="{% translate 'Keluar' %}"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="d-none d-sm-inline ms-1">{% translate "Keluar" %}</span></button>
+            </form>
+        </div>
+    </nav>
+    <nav class="courier-tabs" aria-label="{% translate 'Menu kurir' %}">
+        <a href="{% url 'courier:dashboard' %}" class="{% if rm.url_name == 'dashboard' %}is-active{% endif %}"><i class="bi bi-signpost-split"></i><span>{% translate "Rute" %}</span></a>
+        <a href="{% url 'courier:pickup' %}" class="{% if rm.url_name == 'pickup' %}is-active{% endif %}"><i class="bi bi-qr-code-scan"></i><span>{% translate "Ambil Paket" %}</span></a>
+        <a href="{% url 'courier:packages' %}" class="{% if rm.url_name == 'packages' or rm.url_name == 'order_detail' %}is-active{% endif %}"><i class="bi bi-box-seam"></i><span>{% translate "Paket" %}</span></a>
+        {% if request.user.courier_profile.can_carry_pets %}
+            <a href="{% url 'service:courier_pets' %}" class="{% if rm.url_name == 'courier_pets' or rm.url_name == 'courier_pet_trip' %}is-active{% endif %}"><i class="bi bi-heart"></i><span>{% translate "Hewan" %}</span></a>
+        {% endif %}
+        <a href="{% url 'courier:cash' %}" class="{% if rm.url_name == 'cash' %}is-active{% endif %}"><i class="bi bi-cash-stack"></i><span>{% translate "Setoran" %}</span></a>
+        <a href="{% url 'courier:history' %}" class="{% if rm.url_name == 'history' %}is-active{% endif %}"><i class="bi bi-clock-history"></i><span>{% translate "Riwayat" %}</span></a>
+    </nav>
+{% endwith %}
+{% include "courier/_gps_guard.html" %}

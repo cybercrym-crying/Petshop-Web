@@ -1,0 +1,65 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "Akun Saya - Seelly Petshop" %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/account.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <section class="container acc-page">
+        <nav class="crumbs" aria-label="{% translate 'Breadcrumb' %}">
+            <a href="{% url 'customer:home' %}">{% translate "Beranda" %}</a> {% translate "/ Akun Saya" %}
+        </nav>
+        <h1 class="page-title">{% blocktranslate trimmed with user_name=user.name %}Halo, {{ user_name }}{% endblocktranslate %}</h1>
+        <p class="page-sub">{% translate "Kelola data diri, alamat pengiriman, dan kata sandi akun Anda." %}</p>
+        {% include "service/_site_messages.html" %}
+        <div class="acc-stats">
+            <a class="acc-stat" href="{% url 'customer:my_orders' %}">
+                <strong>{{ stats.orders }}</strong>
+                <span>{% translate "Total pesanan" %}</span>
+            </a>
+            <a class="acc-stat" href="{% url 'customer:my_orders' %}">
+                <strong>{{ stats.active }}</strong>
+                <span>{% translate "Pesanan berjalan" %}</span>
+            </a>
+            <a class="acc-stat" href="{% url 'service:my_bookings' %}">
+                <strong>{{ stats.bookings }}</strong>
+                <span>{% translate "Booking layanan" %}</span>
+            </a>
+        </div>
+        <div class="acc-grid">
+            <form method="post" class="acc-card" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="form" value="profile">
+                <h2><i class="far fa-id-card" aria-hidden="true"></i> {% translate "Data Diri" %}</h2>
+                <div class="acc-field">
+                    <span class="acc-label">{% translate "Nama pengguna" %}</span>
+                    <span class="acc-static">{{ user.username }}</span>
+                </div>
+                {% for field in profile_form %}
+                    <div class="acc-field{% if field.errors %} has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="acc-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<small class="acc-help">{{ field.help_text }}</small>{% endif %}
+                        {% for error in field.errors %}<small class="acc-error">{{ error }}</small>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn-primary-seelly">{% translate "Simpan Profil" %}</button>
+            </form>
+            <form method="post" class="acc-card" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="form" value="password">
+                <h2><i class="fas fa-key" aria-hidden="true"></i> {% translate "Ganti Kata Sandi" %}</h2>
+                {% for field in password_form %}
+                    <div class="acc-field{% if field.errors %} has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="acc-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<small class="acc-error">{{ error }}</small>{% endfor %}
+                    </div>
+                {% endfor %}
+                <p class="acc-help">{% translate "Minimal 8 karakter, tidak boleh hanya angka atau terlalu umum." %}</p>
+                <button type="submit" class="btn-soft">{% translate "Ganti Kata Sandi" %}</button>
+            </form>
+        </div>
+    </section>
+{% endblock %}

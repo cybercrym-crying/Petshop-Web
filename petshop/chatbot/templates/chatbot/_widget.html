@@ -1,6 +1,7 @@
+{% load i18n %}
 {% load static %}
 {# Widget chatbot FAQ. Disertakan di halaman situs pelanggan sebelum </body>. #}
-<link rel="stylesheet" href="{% static 'chatbot/css/widget.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'chatbot/css/widget.css' %}?v=ux2">
 <div class="cb"
      data-chatbot
      data-start-url="{% url 'chatbot:start' %}"
@@ -13,27 +14,27 @@
             aria-controls="cb-panel">
         <i class="fas fa-comment-dots cb-launcher__open" aria-hidden="true"></i>
         <i class="fas fa-xmark cb-launcher__close" aria-hidden="true"></i>
-        <span class="cb-launcher__label">Tanya Kami</span>
+        <span class="cb-launcher__label">{% translate "Tanya Kami" %}</span>
     </button>
     <section class="cb-panel" id="cb-panel" role="dialog" aria-modal="false" aria-labelledby="cb-title" hidden>
         <header class="cb-head">
             <span class="cb-avatar" aria-hidden="true"><i class="fas fa-paw"></i></span>
             <div class="cb-head__text">
-                <h2 id="cb-title">Asisten Seelly</h2>
-                <p><span class="cb-online" aria-hidden="true"></span> Jawaban otomatis, 24 jam</p>
+                <h2 id="cb-title">{% translate "Asisten Seelly" %}</h2>
+                <p><span class="cb-online" aria-hidden="true"></span> {% translate "Jawaban otomatis, 24 jam" %}</p>
             </div>
-            <button type="button" class="cb-icon-btn" data-cb-reset title="Mulai ulang percakapan" aria-label="Mulai ulang percakapan">
+            <button type="button" class="cb-icon-btn" data-cb-reset title="{% translate 'Mulai ulang percakapan' %}" aria-label="{% translate 'Mulai ulang percakapan' %}">
                 <i class="fas fa-rotate-right" aria-hidden="true"></i>
             </button>
-            <button type="button" class="cb-icon-btn" data-cb-toggle aria-label="Tutup chat">
+            <button type="button" class="cb-icon-btn" data-cb-toggle aria-label="{% translate 'Tutup chat' %}">
                 <i class="fas fa-xmark" aria-hidden="true"></i>
             </button>
         </header>
         <div class="cb-log" data-cb-log role="log" aria-live="polite" aria-relevant="additions"></div>
         <form class="cb-form" data-cb-form autocomplete="off">
-            <label class="cb-sr" for="cb-input">Pertanyaan Anda</label>
-            <input id="cb-input" type="text" maxlength="300" placeholder="Ketik pertanyaan atau nomor resi…" required>
-            <button type="submit" aria-label="Kirim"><i class="fas fa-paper-plane" aria-hidden="true"></i></button>
+            <label class="cb-sr" for="cb-input">{% translate "Pertanyaan Anda" %}</label>
+            <input id="cb-input" type="text" maxlength="300" placeholder="{% translate 'Ketik pertanyaan atau nomor resi…' %}" required>
+            <button type="submit" aria-label="{% translate 'Kirim' %}"><i class="fas fa-paper-plane" aria-hidden="true"></i></button>
         </form>
     </section>
 </div>

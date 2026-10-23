@@ -1,0 +1,154 @@
+/*
+ * Satu warna untuk tombol aksi di semua peran (pelanggan, kasir, kurir, groomer, admin).
+ * Ungu = lanjut / simpan / konfirmasi; hijau hanya untuk status selesai dan tombol WhatsApp;
+ * merah hanya untuk aksi berbahaya. Dimuat terakhir di setiap layout, jadi menimpa warna lama
+ * (oranye, hijau, biru) tanpa mengubah tata letak tombol.
+ */
+:root {
+  --action: #6b21a8;
+  --action-hover: #4c1577;
+  --action-ink: #ffffff;
+  --action-ring: rgba(107, 33, 168, 0.35);
+}
+html[data-theme="dark"], [data-bs-theme="dark"] {
+  --action: #7e2fb8;
+  --action-hover: #6b21a8;
+}
+
+html body :is(.btn-orange, .btn-green, .btn-primary-seelly, .btn-login, .btn-submit, .btn-place-order,
+  .btn-hero-primary, .btn-add-trx, .btn-add-cart, .btn-confirm-send, .btn--confirm, .btn-brand,
+  .btn-card-action.is-primary, .btn-route.is-primary, .btn-route.is-ok) {
+  background: var(--action);
+  border-color: var(--action);
+  color: var(--action-ink);
+  box-shadow: none;
+}
+html body :is(.btn-orange, .btn-green, .btn-primary-seelly, .btn-login, .btn-submit, .btn-place-order,
+  .btn-hero-primary, .btn-add-trx, .btn-add-cart, .btn-confirm-send, .btn--confirm, .btn-brand,
+  .btn-card-action.is-primary, .btn-route.is-primary, .btn-route.is-ok):is(:hover, :focus-visible):not(:disabled) {
+  background: var(--action-hover);
+  border-color: var(--action-hover);
+  color: var(--action-ink);
+  transform: none;
+  box-shadow: none;
+}
+html body :is(.btn-orange, .btn-green, .btn-primary-seelly, .btn-login, .btn-submit, .btn-place-order,
+  .btn-hero-primary, .btn-add-trx, .btn-add-cart, .btn-confirm-send, .btn--confirm, .btn-brand):focus-visible {
+  outline: 3px solid var(--action-ring);
+  outline-offset: 2px;
+}
+
+/* Tombol Bootstrap */
+html body .btn-primary {
+  --bs-btn-bg: var(--action);
+  --bs-btn-border-color: var(--action);
+  --bs-btn-hover-bg: var(--action-hover);
+  --bs-btn-hover-border-color: var(--action-hover);
+  --bs-btn-active-bg: var(--action-hover);
+  --bs-btn-active-border-color: var(--action-hover);
+  --bs-btn-disabled-bg: var(--action);
+  --bs-btn-disabled-border-color: var(--action);
+  --bs-btn-focus-shadow-rgb: 107, 33, 168;
+  --bs-btn-color: var(--action-ink);
+  --bs-btn-hover-color: var(--action-ink);
+}
+html body .btn-outline-primary {
+  --bs-btn-color: var(--action);
+  --bs-btn-border-color: var(--action);
+  --bs-btn-hover-bg: var(--action);
+  --bs-btn-hover-border-color: var(--action);
+  --bs-btn-active-bg: var(--action-hover);
+  --bs-btn-active-border-color: var(--action-hover);
+}
+html body .btn-wa {
+  --bs-btn-bg: #1f8f4e;
+  --bs-btn-border-color: #1f8f4e;
+  --bs-btn-hover-bg: #187540;
+  --bs-btn-hover-border-color: #187540;
+}
+
+/* ------------------------------------------------------------------
+ * Tabel yang berubah jadi kartu di layar sempit (atribut data-stack,
+ * label kolom diisi oleh static/js/layout.js).
+ * ------------------------------------------------------------------ */
+@media (max-width: 720px) {
+  html body table[data-stack],
+  html body table[data-stack] tbody { display: block; width: 100%; min-width: 0; }
+  html body table[data-stack] thead { display: none; }
+  html body table[data-stack] tr {
+    display: block; margin: 0 0 12px; padding: 10px 14px; border: 1px solid #e4e7ef; border-radius: 14px;
+    background: #ffffff; box-shadow: none;
+  }
+  html body table[data-stack] td {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 6px 0;
+    border: 0; border-top: 1px solid #eef0f5; background: transparent; text-align: right; white-space: normal;
+    width: auto; max-width: none; min-width: 0;
+  }
+  html body table[data-stack] td:first-child { border-top: 0; }
+  html body table[data-stack] td::before {
+    content: attr(data-label); flex: none; max-width: 45%; text-align: left; font-size: 0.78rem; font-weight: 600; color: #5b6478;
+  }
+  html body table[data-stack] td:not([data-label])::before,
+  html body table[data-stack] td[data-label=""]::before { content: none; }
+  html body table[data-stack] td:not([data-label]),
+  html body table[data-stack] td[data-label=""] { justify-content: flex-start; text-align: left; }
+  html body table[data-stack] td > * { min-width: 0; }
+  html body table[data-stack] td[colspan] { display: block; text-align: center; }
+  html body table[data-stack] td[colspan]::before { content: none; }
+  html[data-theme="dark"] body table[data-stack] tr,
+  [data-bs-theme="dark"] table[data-stack] tr { background: #181c2f; border-color: #2d3350; }
+  html[data-theme="dark"] body table[data-stack] td { border-top-color: #2d3350; }
+  html[data-theme="dark"] body table[data-stack] td::before { color: #8d96b2; }
+  /* Pembungkus geser-samping tidak dibutuhkan lagi */
+  .table-responsive:has(> table[data-stack]),
+  .ui-table-box:has(> table[data-stack]) { overflow: visible; }
+}
+
+/* Tombol melayang (chatbot) tidak menutupi kolom saat mengetik di HP */
+@media (max-width: 720px) {
+  body.is-typing .cb:not(.is-open) { display: none !important; }
+  .cb:not(.is-open) { right: 12px !important; bottom: 12px !important; }
+  .cb:not(.is-open) .cb-launcher { width: 48px; height: 48px; padding: 0 !important; justify-content: center; box-shadow: 0 6px 16px rgba(26, 31, 54, 0.22); }
+  .cb:not(.is-open) .cb-launcher__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  body:has(.cb) { padding-bottom: 64px; }
+}
+
+/* ------------------------------------------------------------------
+ * HP: deret tab satu baris yang bisa digeser, tombol cukup besar untuk
+ * jari (≥ 40 px), dan teks kecil tidak di bawah 12 px.
+ * ------------------------------------------------------------------ */
+@media (max-width: 720px) {
+  html body .custom-tabs { flex-wrap: nowrap !important; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; gap: 6px; padding-bottom: 4px; }
+  html body .custom-tabs::-webkit-scrollbar { display: none; }
+  html body .custom-tabs .nav-link { flex: none; white-space: nowrap; }
+  html body :is(.btn:not(.btn-close), .btn-cancel, .btn-ghost, .btn-soft, .btn-sm-action, .btn-sm-soft, .btn-primary-seelly,
+    .btn-orange, .btn-green, .btn-route, .custom-tabs .nav-link, .btn-card-action) {
+    min-height: 40px; display: inline-flex; align-items: center; justify-content: center;
+  }
+  html body .w-100:is(.btn, .btn-orange, .btn-green, .btn-primary-seelly, .btn-cancel) { display: flex; }
+  html body :is(small, .small, .badge) { font-size: max(12px, 0.8em); }
+}
+html body :is(.btn-danger-custom, .btn-link-danger, .btn-delete, .btn-outline-danger) { margin-left: 4px; }
+
+/* Pengganti atribut style di template */
+.anim-d0 { animation-delay: 0s; }
+.anim-d1 { animation-delay: 0.1s; }
+.anim-d2 { animation-delay: 0.2s; }
+.anim-d3 { animation-delay: 0.3s; }
+.anim-d4 { animation-delay: 0.4s; }
+.anim-d5 { animation-delay: 0.5s; }
+.anim-d6 { animation-delay: 0.6s; }
+.anim-d7 { animation-delay: 0.7s; }
+.anim-d8 { animation-delay: 0.8s; }
+.anim-d9 { animation-delay: 0.9s; }
+.icon-xl { font-size: 3rem; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up, [class*="anim-d"] { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+/* HP: tombol bahasa dan tautan kecil cukup besar untuk jari */
+@media (max-width: 720px) {
+  html body .lang-toggle__btn { min-height: 36px; min-width: 40px; }
+  html body .ui-link { display: inline-flex; align-items: center; min-height: 36px; }
+  html body .form-check-input { width: 1.25em; height: 1.25em; }
+}

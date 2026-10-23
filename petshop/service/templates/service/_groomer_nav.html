@@ -1,13 +1,16 @@
+{% load i18n %}
 <nav class="navbar-custom">
-    <a class="brand-group" href="{% url 'service:groomer_dashboard' %}">
-        <span class="brand-logo"><i class="bi bi-scissors"></i></span>
-        <span class="brand-name">Groomer</span>
+    <a class="brand-group" href="{% url 'service:groomer_dashboard' %}" aria-label="{% translate 'Antrean hari ini' %}">
+        <span class="brand-logo"><svg class="brand-paw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
+        <span class="brand-name">Seelly <small class="brand-role">{% translate "Groomer" %}</small></span>
     </a>
     <div class="nav-right">
+                {% include "store/_staff_bell.html" %}
+        {% include "partials/_lang_toggle.html" %}
         <button type="button"
                 class="theme-toggle"
                 data-theme-toggle
-                aria-label="Beralih ke mode gelap"
+                aria-label="{% translate 'Beralih ke mode gelap' %}"
                 aria-pressed="false">
             <i class="bi bi-moon-stars-fill"></i>
         </button>
@@ -17,7 +20,7 @@
         </div>
         <form method="post" action="{% url 'logout' %}" class="m-0">
             {% csrf_token %}
-            <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right me-1 d-none d-sm-inline"></i> Keluar</button>
+            <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right me-1 d-none d-sm-inline"></i> {% translate "Keluar" %}</button>
         </form>
     </div>
 </nav>

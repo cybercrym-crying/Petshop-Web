@@ -1,15 +1,16 @@
 {% extends "customer/base.html" %}
+{% load i18n %}
 {% load static rupiah customer_extras %}
 {% block title %}{{ product.name }} - Seelly Petshop{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=ux3">
 {% endblock %}
 {% block content %}
     <div class="container section">
-        <nav class="breadcrumb-seelly" aria-label="Navigasi halaman">
-            <a href="{% url 'customer:home' %}">Beranda</a>
+        <nav class="breadcrumb-seelly" aria-label="{% translate 'Navigasi halaman' %}">
+            <a href="{% url 'customer:home' %}">{% translate "Beranda" %}</a>
             <i class="fas fa-chevron-right" aria-hidden="true"></i>
-            <a href="{% url 'customer:shop' %}">Belanja</a>
+            <a href="{% url 'customer:shop' %}">{% translate "Belanja" %}</a>
             <i class="fas fa-chevron-right" aria-hidden="true"></i>
             <a href="{% url 'customer:shop' %}?category={{ product.category.name }}">{{ product.category.name|category_label }}</a>
         </nav>
@@ -27,22 +28,22 @@
                 <div class="detail-price">Rp {{ product.selling_price|default:"0"|rupiah }}</div>
                 {% if product.stock == 0 %}
                     <p class="stock-note out">
-                        <i class="fas fa-circle-xmark" aria-hidden="true"></i> Stok habis
+                        <i class="fas fa-circle-xmark" aria-hidden="true"></i> {% translate "Stok habis" %}
                     </p>
                 {% elif product.stock <= 5 %}
                     <p class="stock-note low">
-                        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Sisa {{ product.stock }}
+                        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> {% blocktranslate trimmed with product_stock=product.stock %}Sisa {{ product_stock }}{% endblocktranslate %}
                     </p>
                 {% else %}
                     <p class="stock-note">
-                        <i class="fas fa-circle-check" aria-hidden="true"></i> Stok tersedia
+                        <i class="fas fa-circle-check" aria-hidden="true"></i> {% translate "Stok tersedia" %}
                     </p>
                 {% endif %}
                 <div class="detail-actions">
-                    <div class="qty-control" aria-label="Jumlah">
-                        <button type="button" id="detail-minus" aria-label="Kurangi jumlah">−</button>
+                    <div class="qty-control" aria-label="{% translate 'Jumlah' %}">
+                        <button type="button" id="detail-minus" aria-label="{% translate 'Kurangi jumlah' %}">−</button>
                         <span id="detail-qty">1</span>
-                        <button type="button" id="detail-plus" aria-label="Tambah jumlah">+</button>
+                        <button type="button" id="detail-plus" aria-label="{% translate 'Tambah jumlah' %}">+</button>
                     </div>
                     <button type="button"
                             class="btn-primary-seelly btn-lg flex-fill"
@@ -58,9 +59,9 @@
                             {% if product.stock == 0 %}disabled{% endif %}>
                         <i class="fas fa-cart-plus" aria-hidden="true"></i>
                         {% if product.stock == 0 %}
-                            Stok habis
+                            {% translate "Stok habis" %}
                         {% else %}
-                            Tambah ke Keranjang
+                            {% translate "Tambah ke Keranjang" %}
                         {% endif %}
                     </button>
                     <button type="button"
@@ -69,57 +70,66 @@
                             data-id="{{ product.id }}"
                             data-name="{{ product.name }}"
                             aria-pressed="false"
-                            aria-label="Tambah {{ product.name }} ke favorit">
+                            aria-label="{% blocktranslate trimmed with product_name=product.name %}Tambah {{ product_name }} ke favorit{% endblocktranslate %}">
                         <i class="far fa-heart" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="info-strip">
                     <div>
                         <i class="fas fa-box" aria-hidden="true"></i>
-                        <span>Ketersediaan</span>
-                        <strong>{% if product.stock %}{{ product.stock }} tersedia{% else %}Habis{% endif %}</strong>
+                        <span>{% translate "Ketersediaan" %}</span>
+                        <strong>{% if product.stock %}{% blocktranslate trimmed with product_stock=product.stock %}{{ product_stock }} tersedia{% endblocktranslate %}{% else %}{% translate "Habis" %}{% endif %}</strong>
                     </div>
                     <div>
                         <i class="fas fa-tag" aria-hidden="true"></i>
-                        <span>Kategori</span>
+                        <span>{% translate "Kategori" %}</span>
                         <strong>{{ product.category.name|category_label }}</strong>
                     </div>
                     <div>
                         <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        <span>Pesan lewat</span>
-                        <strong>WhatsApp</strong>
+                        <span>{% translate "Pesan lewat" %}</span>
+                        <strong>{% translate "WhatsApp" %}</strong>
                     </div>
                 </div>
             </div>
         </div>
         <div class="detail-lower">
             <section class="panel">
-                <h2 class="panel-title">Detail Produk</h2>
+                <h2 class="panel-title">{% translate "Detail Produk" %}</h2>
+                {% if product.description %}<p class="detail-desc">{{ product.description|linebreaksbr }}</p>{% endif %}
                 <dl class="detail-list">
                     <div>
-                        <dt>Nama</dt>
+                        <dt>{% translate "Nama" %}</dt>
                         <dd>{{ product.name }}</dd>
                     </div>
                     <div>
-                        <dt>Kategori</dt>
+                        <dt>{% translate "Kategori" %}</dt>
                         <dd>{{ product.category.name|category_label }}</dd>
                     </div>
                     <div>
-                        <dt>Harga</dt>
+                        <dt>{% translate "Harga" %}</dt>
                         <dd>Rp {{ product.selling_price|default:"0"|rupiah }}</dd>
                     </div>
                     <div>
-                        <dt>Stok</dt>
+                        <dt>{% translate "Stok" %}</dt>
                         <dd>{{ product.stock }}</dd>
                     </div>
                     <div>
-                        <dt>Tersedia di</dt>
+                        <dt>{% translate "Untuk" %}</dt>
+                        <dd>{{ product.get_pet_type_display }}</dd>
+                    </div>
+                    <div>
+                        <dt>{% translate "Kondisi" %}</dt>
+                        <dd>{{ product.get_condition_display }}</dd>
+                    </div>
+                    <div>
+                        <dt>{% translate "Tersedia di" %}</dt>
                         <dd>Seelly Petshop</dd>
                     </div>
                 </dl>
             </section>
             <section class="panel">
-                <h2 class="panel-title">Produk Terkait</h2>
+                <h2 class="panel-title">{% translate "Produk Terkait" %}</h2>
                 {% for item in related_products %}
                     <a class="related-item"
                        href="{% url 'customer:product_detail' item.id %}">
@@ -139,7 +149,7 @@
                         <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </a>
                 {% empty %}
-                    <p class="muted">Belum ada produk terkait.</p>
+                    <p class="muted">{% translate "Belum ada produk terkait." %}</p>
                 {% endfor %}
             </section>
         </div>

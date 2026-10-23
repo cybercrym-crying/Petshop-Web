@@ -1,52 +1,54 @@
+{% load i18n %}
 {% load static %}
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
     <head>
         {% include "service/_groomer_head.html" %}
-        <title>Dasbor Groomer - PetAdmin</title>
+        <title>{% translate "Dasbor Groomer - Seelly" %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body>
         {% include "service/_groomer_nav.html" %}
-        <main class="container-fluid px-xl-5 px-4 py-5">
-            <div class="animate-fade-up">
-                <p class="eyebrow"><i class="bi bi-speedometer2 me-1"></i> Dasbor Groomer</p>
-                <h1 class="page-title">Halo, <span class="text-brand">{{ request.user.get_full_name|default:request.user.username }}</span>!</h1>
-            </div>
-            <section class="row g-4 mb-4 animate-fade-up" style="animation-delay: .1s" aria-label="Ringkasan booking">
-                <div class="col-12 col-md-4">
-                    <a class="stat-box{% if tab == 'pending' %} is-active{% endif %}"
-                       href="?status=pending"
-                       {% if tab == 'pending' %}aria-current="page"{% endif %}>
-                        <div class="stat-icon pending"><i class="bi bi-hourglass-split"></i></div>
-                        <div>
-                            <div class="num">{{ counts.pending }}</div>
-                            <div class="lbl">Pending</div>
-                        </div>
+        <main class="container-fluid px-xl-5 px-3 py-4 g-main">
+            <header class="g-head">
+                <p class="g-head__who">{% blocktranslate trimmed with name=request.user.get_full_name|default:request.user.username %}Groomer · {{ name }}{% endblocktranslate %}</p>
+                <h1 class="g-head__title">{% translate "Antrean hari ini" %}</h1>
+            </header>
+            <nav class="g-tiles" aria-label="{% translate 'Ringkasan booking' %}">
+                <a class="g-tile{% if tab == 'antrean' %} is-active{% endif %}" href="?status=antrean" {% if tab == 'antrean' %}aria-current="page"{% endif %}>
+                    <b>{{ counts.antrean }}</b><span>{% translate "Antrean" %}</span>
+                </a>
+                <a class="g-tile is-run{% if tab == 'proses' %} is-active{% endif %}" href="?status=proses" {% if tab == 'proses' %}aria-current="page"{% endif %}>
+                    <b>{{ counts.proses }}</b><span>{% translate "Dikerjakan" %}</span>
+                </a>
+                <a class="g-tile is-ok{% if tab == 'selesai' %} is-active{% endif %}" href="?status=selesai" {% if tab == 'selesai' %}aria-current="page"{% endif %}>
+                    <b>{{ counts.selesai }}</b><span>{% translate "Selesai" %}</span>
+                </a>
+            </nav>
+            {% if working %}
+                <section class="g-now" aria-labelledby="now-title">
+                    <div class="g-now__top">
+                        <span class="g-pill">{% if working.queue_label %}{% blocktranslate trimmed with no=working.queue_label %}Sedang dikerjakan · {{ no }}{% endblocktranslate %}{% else %}{% translate "Sedang dikerjakan" %}{% endif %}</span>
+                        {% if working.started_at %}<span class="g-now__since">{% blocktranslate trimmed with t=working.started_at|time:"H.i" %}mulai {{ t }}{% endblocktranslate %}</span>{% endif %}
+                    </div>
+                    <h2 id="now-title" class="g-now__pet">{{ working.pet_name }} · {{ working.get_pet_type_display }}</h2>
+                    <p class="g-now__sub">{{ working.service.name }}{% if working.checkin_weight_kg %} · {{ working.checkin_weight_kg }} kg{% endif %} · {{ working.customer.name }}</p>
+                    {% if working_steps %}
+                        <ol class="g-steps">
+                            {% for row in working_steps %}
+                                <li class="is-{{ row.state }}">
+                                    <span class="g-steps__dot" aria-hidden="true">{% if row.state == "done" %}<i class="bi bi-check-lg"></i>{% else %}{{ forloop.counter }}{% endif %}</span>
+                                    <span class="g-steps__name">{{ row.step.name }}</span>
+                                    <span class="g-steps__note">{% if row.state == "done" %}{% if row.step.photo %}{% translate "foto ada" %}{% else %}{% translate "selesai" %}{% endif %}{% elif row.step.needs_photo %}{% translate "wajib foto" %}{% endif %}</span>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    {% endif %}
+                    <a class="g-btn" href="{% url 'service:groomer_booking_detail' working.pk %}">
+                        {% if working.next_step_obj %}{% blocktranslate trimmed with step=working.next_step_obj.name %}Kerjakan tahap “{{ step }}”{% endblocktranslate %}{% else %}{% translate "Selesaikan pengerjaan" %}{% endif %}
                     </a>
-                </div>
-                <div class="col-12 col-md-4">
-                    <a class="stat-box{% if tab == 'proses' %} is-active{% endif %}"
-                       href="?status=proses"
-                       {% if tab == 'proses' %}aria-current="page"{% endif %}>
-                        <div class="stat-icon active"><i class="bi bi-scissors"></i></div>
-                        <div>
-                            <div class="num">{{ counts.proses }}</div>
-                            <div class="lbl">Proses</div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-12 col-md-4">
-                    <a class="stat-box{% if tab == 'selesai' %} is-active{% endif %}"
-                       href="?status=selesai"
-                       {% if tab == 'selesai' %}aria-current="page"{% endif %}>
-                        <div class="stat-icon history"><i class="bi bi-check2-circle"></i></div>
-                        <div>
-                            <div class="num">{{ counts.selesai }}</div>
-                            <div class="lbl">Selesai</div>
-                        </div>
-                    </a>
-                </div>
-            </section>
+                </section>
+            {% endif %}
             {% if messages %}
                 <div class="mb-4" aria-live="polite">
                     {% for message in messages %}
@@ -61,23 +63,34 @@
                 </h4>
                 <form method="get" class="groomer-search" role="search">
                     <input type="hidden" name="status" value="{{ tab }}">
-                    <input type="search" name="q" value="{{ q }}" placeholder="Cari hewan, pemilik, layanan, #id" aria-label="Cari booking">
-                    <button type="submit" aria-label="Cari"><i class="bi bi-search"></i></button>
+                    <input type="search" name="q" value="{{ q }}" placeholder="{% translate 'Cari hewan, pemilik, layanan, #id' %}" aria-label="{% translate 'Cari booking' %}">
+                    <button type="submit" aria-label="{% translate 'Cari' %}"><i class="bi bi-search"></i></button>
                 </form>
             </div>
-            {% if tab == "pending" %}
-                <p class="groomer-hint"><i class="bi bi-info-circle me-1"></i>Booking yang belum punya groomer bisa langsung Anda ambil. Urutan sesuai jadwal paling awal.</p>
+            {% if tab == "antrean" %}
+                <p class="groomer-hint"><i class="bi bi-info-circle me-1"></i>{% translate "Hanya hewan yang sudah check-in di kasir yang masuk antrean. Ambil sesuai nomor antrean; yang belum punya groomer bisa diambil siapa saja." %}</p>
             {% elif tab == "selesai" and bookings|length >= done_limit %}
-                <p class="groomer-hint">Menampilkan {{ done_limit }} booking terakhir.</p>
+                <p class="groomer-hint">{% blocktranslate trimmed with done_limit=done_limit %}Menampilkan {{ done_limit }} booking terakhir.{% endblocktranslate %}</p>
             {% endif %}
             <ul class="orders-grid">
                 {% for booking in bookings %}
-                    <li>{% include "service/_booking_card.html" %}</li>
+                    <li>{% include "service/_booking_card.html" with first=forloop.first %}</li>
                 {% empty %}
-                    <li class="orders-empty">{% if q %}Tidak ada booking yang cocok dengan “{{ q }}”.{% else %}{{ meta.empty }}{% endif %}</li>
+                    <li class="orders-empty">{% if q %}{% blocktranslate trimmed with q=q %}Tidak ada booking yang cocok dengan “{{ q }}”.{% endblocktranslate %}{% else %}{{ meta.empty }}{% endif %}</li>
                 {% endfor %}
             </ul>
+            {% if tab == "antrean" and upcoming %}
+                <section class="groomer-upcoming">
+                    <h2 class="h6 fw-bold text-uppercase text-muted mt-4 mb-2">{% translate "Jadwal hari ini yang belum check-in" %}</h2>
+                    <ul class="list-unstyled mb-0">
+                        {% for b in upcoming %}
+                            <li><b>{{ b.schedule|date:"H:i" }}</b> · {{ b.pet_name }} ({{ b.service.name }}) · {{ b.get_status_display }}{% if b.groomer_id %} {% translate "· untuk Anda" %}{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
         </main>
         <script src="{% static 'service/js/groomer.js' %}?v=1"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>
 </html>

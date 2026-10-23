@@ -1,17 +1,20 @@
-{% load rupiah %}
+{% load i18n %}
+{% load static rupiah %}
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
     <head>
         {% include "service/_groomer_head.html" %}
-        <title>Booking #{{ booking.pk }} - Groomer</title>
+        <link rel="stylesheet" href="{% static 'css/camera.css' %}?v=1">
+        <title>{% blocktranslate trimmed with booking_pk=booking.pk %}Booking #{{ booking_pk }} - Groomer{% endblocktranslate %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body>
         {% include "service/_groomer_nav.html" %}
         <main class="container-fluid px-xl-5 px-4 py-5 groomer-detail">
             <div class="pf-crumb">
-                <a href="{% url 'service:groomer_dashboard' %}?status={{ booking.status|lower }}"><i class="bi bi-arrow-left me-1"></i> Dasbor</a>
+                <a href="{% url 'service:groomer_dashboard' %}"><i class="bi bi-arrow-left me-1"></i> {% translate "Dasbor" %}</a>
                 <span>/</span>
-                <strong>Booking #{{ booking.pk }}</strong>
+                <strong>{% blocktranslate trimmed with booking_pk=booking.pk %}Booking #{{ booking_pk }}{% endblocktranslate %}</strong>
             </div>
             {% if messages %}
                 <div class="mb-4" aria-live="polite">
@@ -23,33 +26,19 @@
             <section class="detail-card">
                 <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
                     <div>
-                        <p class="eyebrow mb-1">{{ booking.service.name }}</p>
+                        <p class="eyebrow mb-1">{{ booking.service.name }}{% if booking.queue_label %} {% blocktranslate trimmed with booking_queue_label=booking.queue_label %}· Antrean {{ booking_queue_label }}{% endblocktranslate %}{% endif %}</p>
                         <h1 class="detail-title">{{ booking.pet_name }} <small>· {{ booking.get_pet_type_display }}</small></h1>
                     </div>
                     <span class="bk-status bk-{{ booking.status|lower }} bk-lg">{{ booking.get_status_display }}</span>
                 </div>
-                <ol class="bk-steps" aria-label="Alur status">
-                    <li class="is-done">
-                        <span class="dot"><i class="bi bi-calendar-check"></i></span>
-                        <div><strong>Pending</strong><small>Dibooking {{ booking.created_at|date:"d M Y, H:i" }}</small></div>
-                    </li>
-                    <li class="{% if booking.status != 'PENDING' %}is-done{% endif %}">
-                        <span class="dot"><i class="bi bi-scissors"></i></span>
-                        <div><strong>Proses</strong><small>{% if booking.started_at %}Mulai {{ booking.started_at|date:"d M Y, H:i" }}{% else %}Belum dimulai{% endif %}</small></div>
-                    </li>
-                    <li class="{% if booking.status == 'SELESAI' %}is-done{% endif %}">
-                        <span class="dot"><i class="bi bi-check2"></i></span>
-                        <div><strong>Selesai</strong><small>{% if booking.finished_at %}{{ booking.finished_at|date:"d M Y, H:i" }}{% else %}-{% endif %}</small></div>
-                    </li>
-                </ol>
                 <dl class="detail-grid">
-                    <div><dt>Jadwal</dt><dd>{{ booking.schedule|date:"l, d M Y · H:i" }}{% if booking.is_late %} <span class="booking-late d-inline">(lewat)</span>{% endif %}</dd></div>
-                    <div><dt>Durasi perkiraan</dt><dd>{{ booking.service.duration_minutes }} menit</dd></div>
-                    <div><dt>Harga</dt><dd class="text-brand">Rp {{ booking.price|rupiah }}</dd></div>
-                    <div><dt>Groomer</dt><dd>{{ booking.groomer.display_name|default:"Belum ditentukan" }}</dd></div>
-                    <div><dt>Pemilik</dt><dd>{{ booking.customer.name }}</dd></div>
+                    <div><dt>{% translate "Jadwal" %}</dt><dd>{{ booking.schedule|date:"l, d M Y · H:i" }}</dd></div>
+                    <div><dt>{% translate "Check-in" %}</dt><dd>{% if booking.checked_in_at %}{% blocktranslate trimmed with booking_checked_in_at=booking.checked_in_at|date:"H:i" booking_checked_in_by_display_name=booking.checked_in_by.display_name|default:"-" %}{{ booking_checked_in_at }} oleh {{ booking_checked_in_by_display_name }}{% endblocktranslate %}{% else %}{% translate "Belum" %}{% endif %}</dd></div>
+                    <div><dt>{% translate "Berat / kondisi" %}</dt><dd>{% if booking.checkin_weight_kg %}{{ booking.checkin_weight_kg }} kg · {% endif %}{{ booking.checkin_condition|default:"-" }}</dd></div>
+                    <div><dt>{% translate "Durasi perkiraan" %}</dt><dd>{% blocktranslate trimmed with booking_service_duration_minutes=booking.service.duration_minutes %}{{ booking_service_duration_minutes }} menit{% endblocktranslate %}</dd></div>
+                    <div><dt>{% translate "Pemilik" %}</dt><dd>{{ booking.customer.name }}</dd></div>
                     <div>
-                        <dt>Kontak</dt>
+                        <dt>{% translate "Kontak" %}</dt>
                         <dd>
                             {{ booking.customer.phone_number|default:"-" }}
                             {% if booking.customer.whatsapp_url %}
@@ -57,34 +46,67 @@
                             {% endif %}
                         </dd>
                     </div>
+                    {% if booking.pet %}
+                        <div><dt>{% translate "Profil hewan" %}</dt><dd>{% if booking.pet.breed %}{{ booking.pet.breed }} · {% endif %}{% if booking.pet.age_display %}{{ booking.pet.age_display }} · {% endif %}{{ booking.pet.get_sex_display }}</dd></div>
+                    {% endif %}
                 </dl>
-                {% if booking.customer_note %}
-                    <div class="note-box"><span>Catatan pelanggan</span>{{ booking.customer_note }}</div>
-                {% endif %}
-                {% if booking.groomer_note %}
-                    <div class="note-box is-ok"><span>Catatan groomer</span>{{ booking.groomer_note }}</div>
-                {% endif %}
-                {% if booking.status == "PENDING" %}
+                {% if booking.pet.notes %}<div class="note-box"><span>{% translate "Catatan kesehatan" %}</span>{{ booking.pet.notes }}</div>{% endif %}
+                {% if booking.customer_note %}<div class="note-box"><span>{% translate "Catatan pelanggan" %}</span>{{ booking.customer_note }}</div>{% endif %}
+                {% if booking.checkin_photo %}<p class="mt-2 mb-0"><a href="{{ booking.checkin_photo.url }}" target="_blank" rel="noopener"><i class="bi bi-image"></i> {% translate "Foto kondisi saat check-in" %}</a></p>{% endif %}
+
+                {% if booking.status == "ANTRE" %}
                     <form method="post" action="{% url 'service:groomer_update_status' booking.pk %}" class="detail-action">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="start">
                         <input type="hidden" name="from" value="detail">
-                        <button type="submit" class="btn-orange w-100"><i class="bi bi-play-fill me-2"></i>{% if booking.groomer_id %}Mulai Proses{% else %}Ambil &amp; Proses{% endif %}</button>
-                    </form>
-                {% elif booking.status == "PROSES" %}
-                    <form method="post" action="{% url 'service:groomer_update_status' booking.pk %}" class="detail-action">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="finish">
-                        <input type="hidden" name="from" value="detail">
-                        <label class="form-label fw-bold" for="note">Catatan hasil (opsional)</label>
-                        <input type="text" id="note" name="note" maxlength="255" class="form-control mb-3" placeholder="mis. kutu sudah bersih, kuku dipotong pendek">
-                        <button type="submit" class="btn-green w-100"><i class="bi bi-check2-circle me-2"></i>Tandai Selesai</button>
+                        <button type="submit" class="btn-orange w-100"><i class="bi bi-play-fill me-2"></i>{% if booking.groomer_id %}{% translate "Mulai Kerjakan" %}{% else %}{% translate "Ambil &amp; Kerjakan" %}{% endif %}</button>
                     </form>
                 {% endif %}
             </section>
+
+            {% if steps %}
+                <section class="detail-card mt-4">
+                    <h2 class="h5 fw-bold mb-3"><i class="bi bi-list-check me-2"></i>{% translate "Tahapan pengerjaan" %}</h2>
+                    <ol class="gr-steps">
+                        {% for s in steps %}
+                            <li class="{% if s.done_at %}is-done{% elif s == next_step %}is-now{% endif %}">
+                                <span class="gr-steps__no">{% if s.done_at %}<i class="bi bi-check2"></i>{% else %}{{ forloop.counter }}{% endif %}</span>
+                                <div class="gr-steps__body">
+                                    <strong>{{ s.name }}</strong>
+                                    <small>{% if s.done_at %}{{ s.done_at|date:"H:i" }} · {{ s.done_by.display_name|default:"-" }}{% if s.note %} · {{ s.note }}{% endif %}{% elif s.needs_photo %}{% translate "Wajib foto" %}{% else %}{% translate "Foto opsional" %}{% endif %}</small>
+                                    {% if s.photo %}<a href="{{ s.photo.url }}" target="_blank" rel="noopener"><img src="{{ s.photo.url }}" alt="{% blocktranslate trimmed with s_name=s.name %}Foto {{ s_name }}{% endblocktranslate %}" width="96" height="96" loading="lazy"></a>{% endif %}
+                                    {% if s == next_step and booking.status == "PROSES" %}
+                                        <form method="post" action="{% url 'service:groomer_update_status' booking.pk %}" enctype="multipart/form-data" class="gr-step-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="step">
+                                            <input type="hidden" name="from" value="detail">
+                                            {% if s.needs_photo %}
+                                                {% include "partials/_camera.html" with btn="btn-orange" btn2="btn-cancel" geo=True hint="Foto hewan setelah tahap ini selesai." %}
+                                            {% else %}
+                                                {% include "partials/_camera.html" with btn="btn-orange" btn2="btn-cancel" geo=True optional=True hint="Foto boleh dilewati untuk tahap ini." %}
+                                            {% endif %}
+                                            <label class="form-label small fw-bold mt-2" for="step-note">{% if is_last_step %}{% translate "Catatan hasil untuk pemilik" %}{% else %}{% translate "Catatan (opsional)" %}{% endif %}</label>
+                                            <input type="text" id="step-note" name="note" maxlength="255" class="form-control mb-3" placeholder="{% if is_last_step %}mis. kutu sudah bersih, kuku dipotong pendek{% else %}mis. ada kusut di bagian perut{% endif %}">
+                                            <button type="submit" class="btn-green w-100"><i class="bi bi-check2-circle me-2"></i>{% if is_last_step %}{% translate "Selesaikan tahap terakhir (hewan siap)" %}{% else %}{% blocktranslate trimmed with s_name=s.name %}Tahap "{{ s_name }}" selesai{% endblocktranslate %}{% endif %}</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </section>
+            {% endif %}
+
+            {% if booking.groomer_note or booking.rating %}
+                <section class="detail-card mt-4">
+                    {% if booking.groomer_note %}<div class="note-box is-ok"><span>{% translate "Catatan hasil" %}</span>{{ booking.groomer_note }}</div>{% endif %}
+                    {% if booking.rating %}<div class="note-box"><span>{% translate "Ulasan pelanggan" %}</span>★ {{ booking.rating }}/5 {{ booking.review }}</div>{% endif %}
+                </section>
+            {% endif %}
+
             {% if history %}
                 <section class="detail-card mt-4">
-                    <h2 class="h5 fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Riwayat {{ booking.pet_name }}</h2>
+                    <h2 class="h5 fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>{% blocktranslate trimmed with booking_pet_name=booking.pet_name %}Riwayat {{ booking_pet_name }}{% endblocktranslate %}</h2>
                     <ul class="history-list">
                         {% for h in history %}
                             <li>
@@ -97,5 +119,8 @@
                 </section>
             {% endif %}
         </main>
+        <script src="{% static 'js/camera.js' %}?v=1"></script>
+        <script src="{% static 'js/common.js' %}"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>
 </html>

@@ -1,0 +1,7 @@
+{% load i18n %}
+<div class="svc-field{% if field.errors %} has-error{% endif %}">
+    <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required and not hide_optional %} <span class="muted">{% translate "(opsional)" %}</span>{% endif %}</label>
+    {{ field }}
+    {% if field.help_text %}<p class="muted svc-hint">{{ field.help_text }}</p>{% endif %}
+    {% for error in field.errors %}<p class="svc-error">{{ error }}</p>{% endfor %}
+</div>

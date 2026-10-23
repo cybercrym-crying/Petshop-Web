@@ -1,19 +1,20 @@
 {% extends "customer/base.html" %}
+{% load i18n %}
 {% load static %}
 {% block title %}{{ title }} - Seelly Petshop{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=ux3">
 {% endblock %}
 {% block content %}
     <div class="container section shop-layout">
         <!-- FILTER -->
-        <aside class="filter-panel" id="filter-panel" aria-label="Filter produk">
+        <aside class="filter-panel" id="filter-panel" aria-label="{% translate 'Filter produk' %}">
             <form method="get" id="filter-form" action="{% url 'customer:products' %}">
                 {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
-                <h2 class="filter-title">Filter</h2>
+                <h2 class="filter-title">{% translate "Filter" %}</h2>
                 <details class="filter-group" open>
                     <summary>
-                        <span>Jenis Hewan</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
+                        <span>{% translate "Jenis Hewan" %}</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
                     </summary>
                     <div class="filter-options">
                         {% for option in pet_options %}
@@ -27,7 +28,7 @@
                 </details>
                 <details class="filter-group" open>
                     <summary>
-                        <span>Kategori</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
+                        <span>{% translate "Kategori" %}</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
                     </summary>
                     <div class="filter-options">
                         {% for option in category_options %}
@@ -38,28 +39,28 @@
                                 <span class="check-count">{{ option.count }}</span>
                             </label>
                         {% empty %}
-                            <p class="muted mb-0">Belum ada kategori.</p>
+                            <p class="muted mb-0">{% translate "Belum ada kategori." %}</p>
                         {% endfor %}
                     </div>
                 </details>
                 <fieldset class="filter-group price-group">
-                    <legend>Harga</legend>
+                    <legend>{% translate "Harga" %}</legend>
                     <label class="price-input">
                         <span>Rp</span>
                         <input type="number" name="min_price" min="0" step="1000" inputmode="numeric"
-                               placeholder="Harga minimum" aria-label="Harga minimum"
+                               placeholder="{% translate 'Harga minimum' %}" aria-label="{% translate 'Harga minimum' %}"
                                value="{{ min_price|default_if_none:'' }}">
                     </label>
                     <label class="price-input">
                         <span>Rp</span>
                         <input type="number" name="max_price" min="0" step="1000" inputmode="numeric"
-                               placeholder="Harga maksimum" aria-label="Harga maksimum"
+                               placeholder="{% translate 'Harga maksimum' %}" aria-label="{% translate 'Harga maksimum' %}"
                                value="{{ max_price|default_if_none:'' }}">
                     </label>
                 </fieldset>
                 <details class="filter-group" open>
                     <summary>
-                        <span>Kondisi</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
+                        <span>{% translate "Kondisi" %}</span><i class="fas fa-chevron-up" aria-hidden="true"></i>
                     </summary>
                     <div class="filter-options">
                         {% for option in condition_options %}
@@ -71,9 +72,9 @@
                         {% endfor %}
                     </div>
                 </details>
-                <button type="submit" class="btn-primary-seelly w-100">Terapkan Filter</button>
+                <button type="submit" class="btn-primary-seelly w-100">{% translate "Terapkan Filter" %}</button>
                 {% if has_filters %}
-                    <a href="{% url 'customer:products' %}" class="filter-reset">Atur ulang semua</a>
+                    <a href="{% url 'customer:products' %}" class="filter-reset">{% translate "Atur ulang semua" %}</a>
                 {% endif %}
             </form>
         </aside>
@@ -83,7 +84,7 @@
                 <div>
                     <h1 class="shop-title" id="shop-title">{{ title }}</h1>
                     <p class="shop-sub">{{ blurb }}</p>
-                    <p class="shop-count">{{ total }} produk</p>
+                    <p class="shop-count">{% blocktranslate trimmed with total=total %}{{ total }} produk{% endblocktranslate %}</p>
                 </div>
                 <div class="shop-tools">
                     <button type="button"
@@ -91,10 +92,10 @@
                             id="filter-toggle"
                             aria-expanded="false"
                             aria-controls="filter-panel">
-                        <i class="fas fa-sliders" aria-hidden="true"></i> Filter
+                        <i class="fas fa-sliders" aria-hidden="true"></i> {% translate "Filter" %}
                     </button>
                     <label class="sort-box">
-                        <span>Urutkan</span>
+                        <span>{% translate "Urutkan" %}</span>
                         <select name="sort" form="filter-form" id="sort-select">
                             {% for value, label in sort_options %}
                                 <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
@@ -104,7 +105,7 @@
                 </div>
             </div>
             {% if filter_chips %}
-                <div class="active-filters" aria-label="Filter aktif">
+                <div class="active-filters" aria-label="{% translate 'Filter aktif' %}">
                     {% for chip in filter_chips %}<span class="filter-chip">{{ chip }}</span>{% endfor %}
                 </div>
             {% endif %}
@@ -114,16 +115,16 @@
                 {% empty %}
                     <div class="empty-state">
                         <img src="{% static 'customer/img/product-placeholder.svg' %}" alt="">
-                        <p>Tidak ada produk yang cocok dengan filter Anda.</p>
-                        <a href="{% url 'customer:products' %}" class="btn-primary-seelly">Hapus Filter</a>
+                        <p>{% translate "Tidak ada produk yang cocok dengan filter Anda." %}</p>
+                        <a href="{% url 'customer:products' %}" class="btn-primary-seelly">{% translate "Hapus Filter" %}</a>
                     </div>
                 {% endfor %}
             </div>
             {% if page_obj.paginator.num_pages > 1 %}
-                <nav class="pagination-seelly" aria-label="Halaman produk">
+                <nav class="pagination-seelly" aria-label="{% translate 'Halaman produk' %}">
                     {% if page_obj.has_previous %}
                         <a href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
-                           aria-label="Halaman sebelumnya"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
+                           aria-label="{% translate 'Halaman sebelumnya' %}"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
                     {% endif %}
                     {% for number in page_obj.paginator.page_range %}
                         {% if number == page_obj.number %}
@@ -134,7 +135,7 @@
                     {% endfor %}
                     {% if page_obj.has_next %}
                         <a href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
-                           aria-label="Halaman berikutnya"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+                           aria-label="{% translate 'Halaman berikutnya' %}"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
                     {% endif %}
                 </nav>
             {% endif %}

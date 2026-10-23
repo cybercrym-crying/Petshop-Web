@@ -1,0 +1,48 @@
+/* Halaman Akun Saya (pelanggan) */
+.acc-page { padding-top: 28px; }
+
+.acc-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.acc-stat {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+.acc-stat:hover { border-color: var(--purple-300); color: var(--ink); }
+.acc-stat strong { font-size: 1.6rem; color: var(--purple-700); line-height: 1.1; }
+.acc-stat span { color: var(--muted); font-size: 0.9rem; }
+
+.acc-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px; align-items: start; }
+.acc-card {
+  padding: 24px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.acc-card h2 { font-size: 1.15rem; font-weight: 700; color: var(--purple-900); margin-bottom: 18px; }
+.acc-card h2 i { color: var(--purple-600); margin-right: 6px; }
+.acc-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.acc-label { font-weight: 600; font-size: 0.92rem; }
+.acc-static { color: var(--muted); }
+.acc-help { color: var(--muted); font-size: 0.83rem; }
+.acc-error { color: var(--danger); font-size: 0.85rem; font-weight: 600; }
+.acc-field.has-error .form-control { border-color: var(--danger); }
+.acc-card ul { padding-left: 18px; margin: 0; color: var(--muted); font-size: 0.83rem; }
+
+@media (max-width: 860px) {
+  .acc-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .acc-stats { grid-template-columns: 1fr; }
+}

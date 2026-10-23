@@ -2,6 +2,9 @@
  * Shared storefront logic: cart, wishlist, header badges, toast and the
  * "Added to Cart" modal. Cart and wishlist live in the browser (localStorage).
  */
+/* Terjemahan teks JS (lihat static/js/i18n.js). */
+function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
+
 (function () {
   "use strict";
 
@@ -125,6 +128,57 @@
     saveCart([]);
   }
 
+  /*
+   * Samakan keranjang di browser dengan database: harga, stok, dan barang yang
+   * sudah tidak dijual. callback(result) menerima {changes: [...], ok: bool}.
+   * Gagal jaringan -> ok:false dan keranjang dibiarkan apa adanya.
+   */
+  function refreshCart(callback) {
+    var cart = getCart();
+    var url = document.body.getAttribute("data-cart-check-url");
+    if (!cart.length || !url || !window.fetch) {
+      if (callback) callback({ ok: true, changes: [] });
+      return;
+    }
+    var ids = cart.map(function (item) { return item.id; }).join(",");
+    fetch(url + "?ids=" + encodeURIComponent(ids), { credentials: "same-origin" })
+      .then(function (response) {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      })
+      .then(function (data) {
+        var fresh = {};
+        (data.items || []).forEach(function (row) { fresh[String(row.id)] = row; });
+        var changes = [];
+        var next = [];
+        getCart().forEach(function (item) {
+          var row = fresh[String(item.id)];
+          if (!row || !row.available) {
+            changes.push(item.name + " sudah tidak tersedia dan dihapus dari keranjang.");
+            return;
+          }
+          if (row.price !== item.price) {
+            changes.push("Harga " + row.name + " berubah menjadi " + formatRupiah(row.price) + ".");
+          }
+          if (item.quantity > row.stock) {
+            changes.push("Stok " + row.name + " tinggal " + row.stock + ", jumlah disesuaikan.");
+          }
+          item.name = row.name;
+          item.price = row.price;
+          item.stock = row.stock;
+          item.photo = row.photo;
+          item.url = row.url;
+          item.quantity = Math.min(item.quantity, row.stock);
+          next.push(item);
+        });
+        saveCart(next);
+        if (callback) callback({ ok: true, changes: changes });
+      })
+      .catch(function () {
+        if (callback) callback({ ok: false, changes: [] });
+      });
+  }
+
   /* ---------- wishlist ---------- */
 
   function getWishlist() {
@@ -200,7 +254,7 @@
     var photo = safeUrl(item.photo);
 
     document.getElementById("modal-name").textContent = item.name;
-    document.getElementById("modal-price").textContent = formatRupiah(item.price) + " each";
+    document.getElementById("modal-price").textContent = formatRupiah(item.price) + " / barang";
     document.getElementById("modal-qty").textContent = item.quantity;
     document.getElementById("modal-items").textContent = cartCount();
     document.getElementById("modal-total").textContent = formatRupiah(cartTotal());
@@ -296,7 +350,7 @@
     if (heart) {
       var added = toggleWishlist(heart.dataset.id);
       syncWishlistButtons();
-      showToast(added ? "Ditambahkan ke favorit" : "Dihapus dari favorit");
+      showToast(added ? tr("Ditambahkan ke favorit") : tr("Dihapus dari favorit"));
     }
   });
 
@@ -322,6 +376,7 @@
     setQuantity: setQuantity,
     removeItem: removeItem,
     clearCart: clearCart,
+    refreshCart: refreshCart,
     getWishlist: getWishlist,
     setWishlist: setWishlist,
     syncWishlistButtons: syncWishlistButtons,

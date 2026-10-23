@@ -1,33 +1,37 @@
 {% extends "account/staff_base.html" %}
+{% load i18n %}
 {% load static rupiah %}
-{% block title %}PetAdmin - Booking Layanan{% endblock %}
+{% block title %}{% translate "Seelly - Booking Layanan" %}{% endblock %}
 {% block extra_head %}
     <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
-    <link href="{% static 'service/css/staff.css' %}?v=1" rel="stylesheet" />
+    <link href="{% static 'service/css/staff.css' %}?v=ux2" rel="stylesheet" />
 {% endblock %}
 {% block content %}
     <div class="container-fluid px-xl-4 px-3 py-4">
         <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4 animate-fade-up">
             <div>
-                <p class="eyebrow">Layanan</p>
-                <h1 class="page-title mb-1">Booking Layanan</h1>
-                <p class="text-muted fw-medium mb-0">Pantau booking jasa hewan dan tugaskan groomer. Status diubah groomer: Pending → Proses → Selesai.</p>
+                <p class="eyebrow">{% translate "Layanan" %}</p>
+                <h1 class="page-title mb-1">{% translate "Booking Layanan" %}</h1>
+                <p class="text-muted fw-medium mb-0">{% translate "Konfirmasi booking online, tugaskan groomer &amp; kurir hewan. Alur: Menunggu konfirmasi → Terjadwal → (Dijemput) → Check-in &amp; antrean → Dikerjakan per tahap → Siap → (Diantar) → Selesai." %}</p>
             </div>
-            <button class="btn-orange" data-bs-toggle="modal" data-bs-target="#addBookingModal">
-                <i class="bi bi-plus-lg me-2"></i> Buat Booking
-            </button>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn-cancel" href="{% url 'service:check_in' %}"><i class="bi bi-qr-code-scan me-2"></i> {% translate "Check-in &amp; Antrean" %}</a>
+                <button class="btn-orange" data-bs-toggle="modal" data-bs-target="#addBookingModal">
+                    <i class="bi bi-plus-lg me-2"></i> {% translate "Buat Booking" %}
+                </button>
+            </div>
         </div>
         {% if messages %}
             <div class="mb-4">
                 {% for message in messages %}
                     <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0" role="alert">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{% translate 'Tutup' %}"></button>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
-        <div class="svc-filters animate-fade-up" style="animation-delay: .1s">
+        <div class="svc-filters animate-fade-up anim-d1">
             <div class="custom-tabs d-flex flex-wrap">
                 {% for f in status_filters %}
                     <a href="?status={{ f.code }}{% if q %}&q={{ q|urlencode }}{% endif %}"
@@ -38,22 +42,22 @@
             </div>
             <form method="get" class="svc-search" role="search">
                 <input type="hidden" name="status" value="{{ status }}">
-                <input type="search" name="q" value="{{ q }}" class="dark-input" placeholder="Cari hewan, pelanggan, layanan, #id" aria-label="Cari booking">
-                <button type="submit" class="btn-cancel px-3" aria-label="Cari"><i class="bi bi-search"></i></button>
+                <input type="search" name="q" value="{{ q }}" class="dark-input" placeholder="{% translate 'Cari hewan, pelanggan, layanan, #id' %}" aria-label="{% translate 'Cari booking' %}">
+                <button type="submit" class="btn-cancel px-3" aria-label="{% translate 'Cari' %}"><i class="bi bi-search"></i></button>
             </form>
         </div>
-        <div class="card-custom animate-fade-up" style="animation-delay: .2s">
+        <div class="card-custom animate-fade-up anim-d2">
             <div class="table-responsive">
-                <table class="table table-custom align-middle">
+                <table data-stack class="table table-custom align-middle">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Hewan &amp; Layanan</th>
-                            <th>Pelanggan</th>
-                            <th>Jadwal</th>
-                            <th>Groomer</th>
-                            <th>Status</th>
-                            <th class="text-end">Harga</th>
+                            <th>{% translate "Hewan &amp; Layanan" %}</th>
+                            <th>{% translate "Pelanggan" %}</th>
+                            <th>{% translate "Jadwal" %}</th>
+                            <th>{% translate "Groomer" %}</th>
+                            <th>{% translate "Status" %}</th>
+                            <th class="text-end">{% translate "Harga" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,6 +68,23 @@
                                     <div class="fw-bold text-dark">{{ b.pet_name }} <span class="svc-muted">· {{ b.get_pet_type_display }}</span></div>
                                     <div class="svc-muted">{{ b.service.name }}</div>
                                     {% if b.customer_note %}<div class="svc-muted"><i class="bi bi-chat-left-text me-1"></i>{{ b.customer_note }}</div>{% endif %}
+                                    {% if b.needs_transport %}
+                                        <div class="svc-transport-chip"><i class="bi bi-truck me-1"></i>{% if b.pickup_requested and b.return_requested %}{% translate "Jemput + antar" %}{% elif b.pickup_requested %}{% translate "Jemput" %}{% else %}{% translate "Antar pulang" %}{% endif %} · {{ b.transport_distance_km }} km · Rp {{ b.transport_fee|rupiah }}</div>
+                                        {% if b.is_open and b.status != "DIJEMPUT" and b.status != "DIANTAR" %}
+                                            <form method="post" action="{% url 'service:booking_action' b.pk %}" class="svc-assign mt-1">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="courier">
+                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                                                <select name="courier" class="dark-input" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Kurir hewan booking #{{ b_pk }}{% endblocktranslate %}" required>
+                                                    <option value="">{% if b.pet_courier %}{{ b.pet_courier.display_name }}{% else %}{% translate "Pilih kurir hewan" %}{% endif %}</option>
+                                                    {% for c in pet_couriers %}<option value="{{ c.pk }}" {% if c.pk == b.pet_courier_id %}selected{% endif %}>{{ c.display_name }}</option>{% endfor %}
+                                                </select>
+                                                <button type="submit" class="btn-sm-action" title="{% translate 'Simpan kurir' %}" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Simpan kurir booking #{{ b_pk }}{% endblocktranslate %}"><i class="bi bi-check2" aria-hidden="true"></i></button>
+                                            </form>
+                                        {% elif b.pet_courier %}
+                                            <div class="svc-muted">{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name %}Kurir: {{ b_pet_courier_display_name }}{% endblocktranslate %}</div>
+                                        {% endif %}
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <div class="fw-semibold">{{ b.customer.name }}</div>
@@ -71,20 +92,20 @@
                                 </td>
                                 <td>
                                     <div class="fw-semibold">{{ b.schedule|date:"d M Y" }}</div>
-                                    <div class="svc-muted">{{ b.schedule|date:"H:i" }}{% if b.is_late %} <span class="svc-late">· lewat</span>{% endif %}</div>
+                                    <div class="svc-muted">{{ b.schedule|date:"H:i" }}{% if b.is_late %} <span class="svc-late">{% translate "· lewat" %}</span>{% endif %}</div>
                                 </td>
                                 <td>
-                                    {% if b.status == "PENDING" %}
+                                    {% if b.status == "PENDING" or b.status == "TERJADWAL" or b.status == "DIJEMPUT" or b.status == "ANTRE" %}
                                         <form method="post" action="{% url 'service:assign_groomer' b.pk %}" class="svc-assign">
                                             {% csrf_token %}
                                             <input type="hidden" name="back" value="{{ request.get_full_path }}">
-                                            <select name="groomer" class="dark-input" aria-label="Groomer booking #{{ b.pk }}" required>
-                                                <option value="">{% if b.groomer %}Ganti groomer{% else %}Pilih groomer{% endif %}</option>
+                                            <select name="groomer" class="dark-input" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Groomer booking #{{ b_pk }}{% endblocktranslate %}" required>
+                                                <option value="">{% if b.groomer %}{% translate "Ganti groomer" %}{% else %}{% translate "Pilih groomer" %}{% endif %}</option>
                                                 {% for g in groomers %}
                                                     <option value="{{ g.pk }}" {% if g.pk == b.groomer_id %}selected{% endif %}>{{ g.display_name }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <button type="submit" class="btn-sm-action" title="Simpan groomer"><i class="bi bi-check2"></i></button>
+                                            <button type="submit" class="btn-sm-action" title="{% translate 'Simpan groomer' %}" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Simpan groomer booking #{{ b_pk }}{% endblocktranslate %}"><i class="bi bi-check2" aria-hidden="true"></i></button>
                                         </form>
                                     {% else %}
                                         <span class="fw-semibold">{{ b.groomer.display_name|default:"-" }}</span>
@@ -92,23 +113,62 @@
                                 </td>
                                 <td>
                                     <span class="bk-status bk-{{ b.status|lower }}">{{ b.get_status_display }}</span>
-                                    {% if b.finished_at %}<div class="svc-muted mt-1">{{ b.finished_at|date:"d M, H:i" }}</div>{% endif %}
+                                    {% if b.queue_label %}<span class="svc-queue-chip">{{ b.queue_label }}</span>{% endif %}
+                                    {% if b.finished_at %}<div class="svc-muted mt-1">{% blocktranslate trimmed with b_finished_at=b.finished_at|date:"d M, H:i" %}Selesai dikerjakan {{ b_finished_at }}{% endblocktranslate %}</div>{% endif %}
                                     {% if b.groomer_note %}<div class="svc-muted">{{ b.groomer_note }}</div>{% endif %}
+                                    {% if b.rating %}<div class="svc-muted"><i class="bi bi-star-fill text-warning"></i> {{ b.rating }}/5{% if b.review %} · {{ b.review|truncatechars:60 }}{% endif %}</div>{% endif %}
+                                    <div class="svc-actions">
+                                        {% if b.status == "PENDING" %}
+                                            <form method="post" action="{% url 'service:booking_action' b.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="confirm">
+                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                                                <button type="submit" class="btn-sm-action"><i class="bi bi-check2-circle"></i> {% translate "Konfirmasi" %}</button>
+                                            </form>
+                                        {% endif %}
+                                        {% if b.can_check_in %}
+                                            <a class="btn-sm-action" href="{% url 'service:check_in' %}?booking={{ b.pk }}"><i class="bi bi-box-arrow-in-right"></i> {% translate "Check-in" %}</a>
+                                        {% endif %}
+                                        {% if b.status == "SIAP" %}
+                                            <form method="post" action="{% url 'service:booking_action' b.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="handover">
+                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                                                <button type="submit" class="btn-sm-action" data-confirm="{% blocktranslate trimmed with b_pet_name=b.pet_name %}{{ b_pet_name }} sudah diambil pemiliknya?{% endblocktranslate %}"><i class="bi bi-person-check"></i> {% translate "Diambil pemilik" %}</button>
+                                            </form>
+                                        {% endif %}
+                                        {% if b.is_late %}
+                                            <form method="post" action="{% url 'service:booking_action' b.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="no_show">
+                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                                                <button type="submit" class="btn-link-danger" data-confirm="{% blocktranslate trimmed with b_pk=b.pk %}Tandai booking #{{ b_pk }} tidak datang?{% endblocktranslate %}">{% translate "Tidak datang" %}</button>
+                                            </form>
+                                        {% endif %}
+                                        {% if b.can_cancel or b.status == "ANTRE" %}
+                                            <form method="post" action="{% url 'service:cancel_booking' b.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                                                <button type="submit" class="btn-link-danger"
+                                                        data-confirm="{% blocktranslate trimmed with b_pk=b.pk b_pet_name=b.pet_name %}Batalkan booking #{{ b_pk }} ({{ b_pet_name }})?{% endblocktranslate %}">{% translate "Batalkan" %}</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
                                 </td>
-                                <td class="text-end svc-price">Rp {{ b.price|rupiah }}</td>
+                                <td class="text-end svc-price">Rp {{ b.total_price|rupiah }}</td>
                             </tr>
                         {% empty %}
                             <tr>
                                 <td colspan="7" class="text-center py-5">
-                                    <i class="bi bi-calendar2-heart text-muted opacity-50" style="font-size: 3rem"></i>
-                                    <h5 class="fw-bold mt-3 text-dark">Belum ada booking{% if q %} yang cocok{% endif %}</h5>
+                                    <i class="bi bi-calendar2-heart text-muted opacity-50 icon-xl"></i>
+                                    <h5 class="fw-bold mt-3 text-dark">{% translate "Belum ada booking" %}{% if q %} {% translate "yang cocok" %}{% endif %}</h5>
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            {% if bookings|length >= limit %}<p class="svc-muted px-3 pb-3 mb-0">Menampilkan {{ limit }} booking terbaru. Gunakan filter atau pencarian untuk yang lain.</p>{% endif %}
+            {% if bookings|length >= limit %}<p class="svc-muted px-3 pb-3 mb-0">{% blocktranslate trimmed with limit=limit %}Menampilkan {{ limit }} booking terbaru. Gunakan filter atau pencarian untuk yang lain.{% endblocktranslate %}</p>{% endif %}
         </div>
     </div>
     <!-- MODAL: BUAT BOOKING -->
@@ -118,41 +178,41 @@
                 <div class="modal-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <h2 class="modal-title-custom" id="addBookingTitle">Buat Booking Layanan</h2>
-                            <p class="modal-sub">Untuk pelanggan yang datang langsung atau menelepon</p>
+                            <h2 class="modal-title-custom" id="addBookingTitle">{% translate "Buat Booking Layanan" %}</h2>
+                            <p class="modal-sub">{% translate "Untuk pelanggan yang datang langsung atau menelepon" %}</p>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Tutup' %}"></button>
                     </div>
                     <form method="post" action="{% url 'service:create_booking' %}">
                         {% csrf_token %}
                         <div class="row g-4 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-customer">Pelanggan</label>
+                                <label class="form-label-custom" for="bk-customer">{% translate "Pelanggan" %}</label>
                                 <select id="bk-customer" name="customer" class="dark-input" required>
-                                    <option value="">Pilih pelanggan</option>
+                                    <option value="">{% translate "Pilih pelanggan" %}</option>
                                     {% for c in form.fields.customer.queryset %}
                                         <option value="{{ c.pk }}">{{ c.name }} ({{ c.phone_number }})</option>
                                     {% endfor %}
                                 </select>
-                                {% if request.user.role == "ADMIN" %}
-                                    <small class="svc-muted">Belum terdaftar? <a href="{% url 'manage_account' %}?tab=customer">Tambah di Kelola Akun</a></small>
+                                {% if request.user.is_admin_level %}
+                                    <small class="svc-muted">{% translate "Belum terdaftar?" %} <a href="{% url 'manage_account' %}?tab=customer">{% translate "Tambah di Kelola Akun" %}</a></small>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-service">Layanan</label>
+                                <label class="form-label-custom" for="bk-service">{% translate "Layanan" %}</label>
                                 <select id="bk-service" name="service" class="dark-input" required>
-                                    <option value="">Pilih layanan</option>
+                                    <option value="">{% translate "Pilih layanan" %}</option>
                                     {% for s in form.fields.service.queryset %}
                                         <option value="{{ s.pk }}">{{ s.name }} · Rp {{ s.price|rupiah }}{% if s.pet_type != "SEMUA" %} ({{ s.get_pet_type_display }}){% endif %}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-pet">Nama Hewan</label>
+                                <label class="form-label-custom" for="bk-pet">{% translate "Nama Hewan" %}</label>
                                 <input id="bk-pet" type="text" name="pet_name" maxlength="60" class="dark-input" required />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-type">Jenis Hewan</label>
+                                <label class="form-label-custom" for="bk-type">{% translate "Jenis Hewan" %}</label>
                                 <select id="bk-type" name="pet_type" class="dark-input" required>
                                     {% for code, label in form.fields.pet_type.choices %}
                                         <option value="{{ code }}">{{ label }}</option>
@@ -160,26 +220,26 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-schedule">Jadwal</label>
+                                <label class="form-label-custom" for="bk-schedule">{% translate "Jadwal" %}</label>
                                 <input id="bk-schedule" type="datetime-local" name="schedule" step="900" class="dark-input" required />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-groomer">Groomer (opsional)</label>
+                                <label class="form-label-custom" for="bk-groomer">{% translate "Groomer (opsional)" %}</label>
                                 <select id="bk-groomer" name="groomer" class="dark-input">
-                                    <option value="">Belum ditentukan</option>
+                                    <option value="">{% translate "Belum ditentukan" %}</option>
                                     {% for g in groomers %}
                                         <option value="{{ g.pk }}">{{ g.display_name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="col-12">
-                                <label class="form-label-custom" for="bk-note">Catatan</label>
+                                <label class="form-label-custom" for="bk-note">{% translate "Catatan" %}</label>
                                 <textarea id="bk-note" name="note" rows="2" maxlength="255" class="dark-input" placeholder="Opsional"></textarea>
                             </div>
                         </div>
                         <div class="d-flex gap-2 justify-content-end border-top pt-4">
-                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn-orange px-5">Simpan Booking</button>
+                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                            <button type="submit" class="btn-orange px-5">{% translate "Simpan Booking" %}</button>
                         </div>
                     </form>
                 </div>

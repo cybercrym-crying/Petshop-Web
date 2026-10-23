@@ -277,3 +277,17 @@ body {
     max-height: 100%;
     object-fit: contain;
 }
+
+textarea.dark-input { resize: vertical; min-height: 84px; }
+
+.product-photo__empty { font-size: 3rem; }
+/* HP: kartu produk jadi baris ringkas (foto kecil di kiri) agar daftar tidak sepanjang belasan layar */
+@media (max-width: 575.98px) {
+    .product-card { display: flex; align-items: center; border-radius: 14px; }
+    .product-card .product-photo { flex: none; width: 76px; height: 76px; border-bottom: 0; border-right: 1px solid var(--t-bd-e2e8f0,#E2E8F0); }
+    .product-card .product-photo__empty { font-size: 1.6rem; }
+    .product-card .product-body { flex: 1; min-width: 0; padding: 10px 14px; }
+    .product-card .product-name { font-size: 0.95rem; margin-bottom: 2px; }
+    .product-card .product-selling-price { font-size: 1rem; margin-bottom: 6px; }
+}
+.product-card:focus-visible { outline: 3px solid rgba(91, 63, 214, 0.45); outline-offset: 2px; }

@@ -26,9 +26,31 @@ class EmployeeViewTests(TestCase):
 
     def test_can_change_other_role(self):
         other = User.objects.create_user("o", password="x", role=Role.COURIER, phone_number="08")
+        self.edit(other, Role.CASHIER)
+        other.refresh_from_db()
+        self.assertEqual(other.role, Role.CASHIER)
+
+    def test_admin_cannot_make_admin_accounts(self):
+        """Admin punya semua hak kecuali membuat/menaikkan akun menjadi Admin."""
+        other = User.objects.create_user("o", password="x", role=Role.COURIER, phone_number="08")
+        self.edit(other, Role.ADMIN)
+        other.refresh_from_db()
+        self.assertEqual(other.role, Role.COURIER)
+
+    def test_superadmin_can_make_admin_accounts(self):
+        User.objects.create_user("sup", password="x", role=Role.SUPERADMIN, phone_number="08")
+        self.client.login(username="sup", password="x")
+        other = User.objects.create_user("o", password="x", role=Role.COURIER, phone_number="08")
         self.edit(other, Role.ADMIN)
         other.refresh_from_db()
         self.assertEqual(other.role, Role.ADMIN)
+
+    def test_admin_cannot_edit_other_admin(self):
+        boss = User.objects.create_user("boss2", password="x", role=Role.ADMIN, phone_number="08")
+        r = self.edit(boss, Role.COURIER)
+        boss.refresh_from_db()
+        self.assertEqual(boss.role, Role.ADMIN)
+        self.assertIn(r.status_code, (302, 403))
 
     def test_add_employee_error_has_no_html(self):
         r = self.client.post(
@@ -252,9 +274,9 @@ class MobileReadinessTests(TestCase):
 
     def test_account_tables_collapse_to_cards_on_phone(self):
         r = self.client.get("/staff/admin/manage_account")
-        self.assertContains(r, 'class="emp-table"')
-        self.assertContains(r, 'class="cust-table"')
-        self.assertContains(r, 'data-label="Phone"')
+        self.assertContains(r, 'emp-table"')
+        self.assertContains(r, 'cust-table"')
+        self.assertContains(r, 'data-label="No. HP"')
         self.assertContains(r, 'class="tbl-head"')
 
     def test_all_static_references_in_live_templates_exist(self):
@@ -314,10 +336,13 @@ class LoginNextAndSelfPasswordTests(TestCase):
         self.assertEqual(self.client.get("/staff/admin/manage_account").status_code, 200)
 
 
-    def test_dashboard_redirects_to_manage_account(self):
+    def test_dashboard_shows_store_summary(self):
         self.client.login(username="boss", password="Pass12345!x")
         r = self.client.get("/staff/admin/dashboard")
-        self.assertRedirects(r, "/staff/admin/manage_account", fetch_redirect_response=False)
+        self.assertEqual(r.status_code, 200)
+        self.assertTemplateUsed(r, "account/admin_dashboard.html")
+        self.assertContains(r, "Ringkasan Toko")
+        self.assertContains(r, "Penjualan lunas")
 
     def test_admin_pages_render_sidebar(self):
         self.client.login(username="boss", password="Pass12345!x")
@@ -416,7 +441,7 @@ class RoleBehaviorTests(TestCase):
         self.assertFalse(biasa.role_behavior.can_access_admin())
         self.assertEqual(admin.dashboard_url_name, "staff_admin_dashboard")
         self.assertEqual(kurir.dashboard_url_name, "courier:dashboard")
-        self.assertEqual(biasa.dashboard_url_name, "customer:home")
+        self.assertEqual(biasa.dashboard_url_name, "customer:dashboard")
 
     def test_abstract_role_cannot_be_instantiated(self):
         from account.models import RoleBehavior

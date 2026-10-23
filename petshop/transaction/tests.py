@@ -177,11 +177,12 @@ class ViewSmokeTests(TestCase):
         )
 
     def test_add_then_submit(self):
+        self.client.post("/staff/kasir/shift/", {"action": "open", "amount": "0"})
         self.client.post(f"/staff/admin/cart/add/{self.p.pk}/")
         self.client.post(f"/staff/admin/cart/add/{self.p.pk}/")
         self.client.post(
             "/staff/admin/cart/submit/",
-            {"customer": self.customer.pk, "payment_method": "TUNAI", "courier": ""},
+            {"customer": self.customer.pk, "cash_received": "30000", "courier": ""},
         )
         order = Order.objects.get()
         self.assertEqual(order.total_payment, 30000)
@@ -305,12 +306,13 @@ class CustomerSelectionTests(TestCase):
         self.admin = User.objects.create_user("adm", password="x", role=Role.ADMIN)
         self.p = make_product("A", stock=5)
         self.client.login(username="adm", password="x")
+        self.client.post("/staff/kasir/shift/", {"action": "open", "amount": "0"})
         cart = Cart.objects.create(user=self.admin)
         CartItem.objects.create(cart=cart, product=self.p, quantity=1)
 
     def submit(self, **data):
         return self.client.post(
-            "/staff/admin/cart/submit/", {"payment_method": "TUNAI", **data}
+            "/staff/admin/cart/submit/", {"cash_received": "15000", **data}
         )
 
     def test_selected_customer_used(self):
@@ -320,9 +322,11 @@ class CustomerSelectionTests(TestCase):
         self.submit(customer=c.pk)
         self.assertEqual(Order.objects.get().customer, c)
 
-    def test_no_customer_rejected(self):
-        self.submit()
-        self.assertEqual(Order.objects.count(), 0)
+    def test_no_customer_becomes_walk_in_buyer(self):
+        self.submit(buyer_name="Ibu berbaju merah")
+        order = Order.objects.get()
+        self.assertTrue(order.customer.is_walk_in)
+        self.assertEqual(order.buyer_display, "Ibu berbaju merah")
 
     def test_unknown_customer_rejected(self):
         self.submit(customer=9999)
@@ -427,6 +431,10 @@ class BoardViewTests(TestCase):
         self.assertEqual(self.client.get(self.URL).status_code, 403)
 
 
+# Akun pelanggan per fitur selalu mendapat pesanan tetap, di luar angka --orders.
+FEATURE_USERNAMES = ["demo_belanja", "demo_grooming", "demo_komplain"]
+
+
 class SeedDemoTests(TestCase):
     def setUp(self):
         # Foto contoh ditulis ke folder sementara, bukan ke media/ milik project.
@@ -463,7 +471,7 @@ class SeedDemoTests(TestCase):
     def test_seed_creates_realistic_data_through_real_rules(self):
         from django.test import override_settings
         from product.models import MutationType
-        from transaction.management.commands.seed_demo import CUSTOMERS, PRODUCTS
+        from transaction.management.commands.seed_demo import CUSTOMERS, FEATURE_CUSTOMERS, PRODUCTS
 
         with override_settings(DEBUG=True):
             self.run_seed(orders=24)
@@ -472,12 +480,40 @@ class SeedDemoTests(TestCase):
             2,
         )
         self.assertEqual(
-            User.objects.filter(username__startswith="demo_", role=Role.COURIER).count(),
+            User.objects.filter(username__startswith="demo_", role=Role.COURIER, is_active=True).count(),
             3,
         )
-        self.assertEqual(Customer.objects.count(), len(CUSTOMERS) + 1)  # + demo_customer
+        # + dua calon kurir yang menunggu persetujuan admin (hanya kurir yang bisa daftar sendiri)
+        self.assertEqual(
+            User.objects.filter(username__startswith="demo_", role=Role.COURIER, approval="MENUNGGU").count(),
+            2,
+        )
+        self.assertFalse(
+            User.objects.filter(username__startswith="demo_", approval="MENUNGGU").exclude(role=Role.COURIER).exists()
+        )
+        self.assertEqual(Customer.objects.count(), len(CUSTOMERS) + 1 + len(FEATURE_CUSTOMERS))  # + akun login
         self.assertEqual(Product.objects.count(), len(PRODUCTS))
-        self.assertEqual(Order.objects.count(), 24)
+        online_and_board = Order.objects.filter(receipt_no__isnull=True).exclude(
+            customer__username__in=[row[0] for row in FEATURE_CUSTOMERS]
+        )
+        self.assertEqual(online_and_board.count(), 24)
+        # Transaksi kasir (ber-struk) dibuat terpisah dengan shift, void, retur, dan parkir.
+        counter = Order.objects.filter(receipt_no__isnull=False)
+        self.assertGreater(counter.count(), 10)
+        self.assertTrue(counter.filter(voided_at__isnull=False).exists())
+        self.assertTrue(counter.filter(payment_method="CAMPURAN").exists())
+        for o in counter:
+            self.assertEqual(
+                o.total_payment, o.subtotal_before_discount - o.discount + o.tax_amount + o.shipping_fee, o.receipt_no
+            )
+            self.assertEqual(sum(p.amount for p in o.payments.all()), o.total_payment, o.receipt_no)
+        from transaction.models import CashierShift, HeldSale, ReturnRequest
+
+        self.assertEqual(CashierShift.objects.filter(status="BUKA").count(), 1)
+        self.assertTrue(CashierShift.objects.filter(difference__lt=0).exclude(close_note="").exists())
+        self.assertEqual(set(ReturnRequest.objects.values_list("status", flat=True)), {"MENUNGGU", "DISETUJUI"})
+        self.assertEqual(HeldSale.objects.count(), 1)
+        self.assertFalse(Product.objects.filter(sku__isnull=True).exists())
         statuses = set(Order.objects.values_list("order_status", flat=True))
         self.assertGreaterEqual(len(statuses), 3)  # campuran status
         # variasi produk untuk menguji halaman stok
@@ -495,8 +531,8 @@ class SeedDemoTests(TestCase):
             )
             self.assertEqual(p.stock, masuk - keluar, p.name)
         # total tiap order = jumlah detailnya; kurir wajib ada untuk order yang sedang diantar
-        for o in Order.objects.all():
-            self.assertEqual(o.total_payment, sum(d.subtotal for d in o.details.all()))
+        for o in online_and_board:
+            self.assertEqual(o.total_payment, sum(d.subtotal for d in o.details.all()) + o.shipping_fee)
             if o.order_status in ("DALAM_PENGIRIMAN", "TERKIRIM"):
                 self.assertIsNotNone(o.courier)
 
@@ -537,7 +573,7 @@ class SeedDemoTests(TestCase):
                 ),
             )
             self.run_seed(orders=5, more_orders=True)
-            self.assertEqual(Order.objects.count(), 13)
+            self.assertEqual(Order.objects.filter(receipt_no__isnull=True).exclude(customer__username__in=FEATURE_USERNAMES).count(), 13)
 
     def test_reset_removes_only_demo_data(self):
         from django.test import override_settings
@@ -549,7 +585,8 @@ class SeedDemoTests(TestCase):
         with override_settings(DEBUG=True):
             self.run_seed(orders=10)
             self.run_seed(orders=6, reset=True)
-        self.assertEqual(Order.objects.count(), 6)  # order lama dihapus, 6 baru dibuat
+        # order lama dihapus, 6 baru dibuat (+ transaksi kasir demo yang dibuat ulang)
+        self.assertEqual(Order.objects.filter(receipt_no__isnull=True).exclude(customer__username__in=FEATURE_USERNAMES).count(), 6)
         self.assertTrue(Product.objects.filter(pk=mine.pk).exists())
         self.assertTrue(User.objects.filter(pk=owner.pk).exists())
         self.assertEqual(Product.objects.count(), len(PRODUCTS) + 1)
@@ -683,7 +720,11 @@ class OnlineOrderTests(TestCase):
     def place(self, items, **extra):
         import json
 
-        body = {"items": items, "payment_method": "TUNAI", "address": "Jl. Melati 7", **extra}
+        # Titik peta = lokasi toko bawaan (jarak 0 km -> ongkir dasar Rp 5.000).
+        body = {
+            "items": items, "payment_method": "TUNAI", "address": "Jl. Melati 7",
+            "latitude": "-1.265400", "longitude": "116.831200", **extra,
+        }
         return self.client.post(
             "/checkout/pesan/", data=json.dumps(body), content_type="application/json"
         )
@@ -697,6 +738,31 @@ class OnlineOrderTests(TestCase):
         r = self.client.get("/checkout")
         self.assertTemplateUsed(r, "customer/checkout_member.html")
         self.assertNotContains(r, "Pesan via WhatsApp")
+        # Koordinat ditulis dengan titik desimal (bukan format lokal "-1,265400") agar terbaca JS.
+        self.assertContains(r, 'data-default-lat="-1.265400"')
+
+    def test_place_order_requires_map_pin(self):
+        self.login()
+        r = self.place([{"id": self.p1.pk, "quantity": 1}], latitude="", longitude="")
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json()["field"], "location")
+        self.assertFalse(Order.objects.exists())
+
+    def test_place_order_rejects_pin_outside_delivery_area(self):
+        self.login()
+        # Samarinda, ±90 km dari toko (maks. 25 km)
+        r = self.place([{"id": self.p1.pk, "quantity": 1}], latitude="-0.502200", longitude="117.153600")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("di luar jangkauan", r.json()["message"])
+        self.p1.refresh_from_db()
+        self.assertEqual(self.p1.stock, 10)
+
+    def test_shipping_quote(self):
+        r = self.client.get("/checkout/ongkir/?latitude=-1.265400&longitude=116.871200")  # ±4,4 km
+        data = r.json()
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["fee"], 5000 + 2 * 2000)
+        self.assertEqual(self.client.get("/checkout/ongkir/").status_code, 400)
 
     def test_staff_gets_guest_checkout(self):
         self.client.login(username="adm_online", password="x")
@@ -712,7 +778,10 @@ class OnlineOrderTests(TestCase):
         self.assertEqual(order.channel, "ONLINE")
         self.assertIsNone(order.admin)
         self.assertEqual(order.customer, self.customer)
-        self.assertEqual(order.total_payment, 3 * self.p1.selling_price + self.p2.selling_price)
+        self.assertEqual(order.shipping_fee, 5000)
+        self.assertEqual(order.items_total, 3 * self.p1.selling_price + self.p2.selling_price)
+        self.assertEqual(order.total_payment, order.items_total + 5000)
+        self.assertTrue(order.has_pin)
         self.p1.refresh_from_db()
         self.assertEqual(self.p1.stock, 7)
         self.customer.refresh_from_db()

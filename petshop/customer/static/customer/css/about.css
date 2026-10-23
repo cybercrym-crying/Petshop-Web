@@ -296,3 +296,6 @@
     text-align: center;
   }
 }
+
+.about-hero-img-wrap--muted { background-color: #d1d5db; }
+.about-cta-text .sx-kicker { color: var(--sx-deep); }

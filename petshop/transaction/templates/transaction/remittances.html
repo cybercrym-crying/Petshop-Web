@@ -1,0 +1,81 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% translate "Seelly - Setoran COD" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
+    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="mb-4">
+            <p class="eyebrow">{% translate "Penjualan" %}</p>
+            <h1 class="page-title mb-1">{% translate "Setoran COD Kurir" %}</h1>
+            <p class="text-muted mb-0">{% translate "Uang tunai yang ditagih kurir saat serah terima. Hitung uangnya, isi jumlah yang benar-benar diterima, lalu simpan. Selisih wajib diberi catatan." %}</p>
+        </div>
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
+        {% endfor %}
+        <div class="row g-4">
+            <div class="col-xl-8">
+                <h2 class="h6 fw-bold text-uppercase text-muted mb-3">{% blocktranslate trimmed with pending=pending|length %}Menunggu diterima ({{ pending }}){% endblocktranslate %}</h2>
+                {% for r in pending %}
+                    <article class="card-custom so-card mb-3">
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            <div>
+                                <div class="fw-bold">{% blocktranslate trimmed with r_pk=r.pk r_courier_name=r.courier.name %}Setoran #{{ r_pk }} · {{ r_courier_name }}{% endblocktranslate %}</div>
+                                <div class="small text-muted">{% blocktranslate trimmed with r_submitted_at=r.submitted_at|date:"d M Y, H:i" r_orders_count=r.orders.count %}{{ r_submitted_at }} · {{ r_orders_count }} paket{% endblocktranslate %}</div>
+                            </div>
+                            <div class="so-amount">Rp {{ r.amount|rupiah }}</div>
+                        </div>
+                        <ul class="so-items">
+                            {% for o in r.orders.all %}<li>#{{ o.pk }} {{ o.customer.name }} · Rp {{ o.cash_collected|rupiah }}</li>{% endfor %}
+                        </ul>
+                        <form method="post" class="row g-2 align-items-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="remittance" value="{{ r.pk }}">
+                            <div class="col-sm-4">
+                                <label class="form-label small fw-bold" for="amt-{{ r.pk }}">{% translate "Uang diterima (Rp)" %}</label>
+                                <input id="amt-{{ r.pk }}" name="received_amount" class="form-control" inputmode="numeric" value="{{ r.amount }}" required>
+                            </div>
+                            <div class="col-sm-5">
+                                <label class="form-label small fw-bold" for="note-{{ r.pk }}">{% translate "Catatan selisih" %}</label>
+                                <input id="note-{{ r.pk }}" name="note" class="form-control" maxlength="255" placeholder="{% translate 'Kosongkan bila pas' %}">
+                            </div>
+                            <div class="col-sm-3">
+                                <button type="submit" class="btn btn-primary fw-bold w-100" data-confirm="{% translate 'Uang sudah dihitung dan diterima?' %}">{% translate "Terima" %}</button>
+                            </div>
+                        </form>
+                    </article>
+                {% empty %}
+                    <p class="text-muted">{% translate "Tidak ada setoran yang menunggu." %}</p>
+                {% endfor %}
+            </div>
+            <div class="col-xl-4">
+                <div class="card-custom so-card mb-4">
+                    <h2 class="h6 fw-bold mb-2">{% translate "Uang COD masih di kurir" %}</h2>
+                    <ul class="list-unstyled mb-0 so-list">
+                        {% for c in on_hand %}
+                            <li><span>{{ c.courier__first_name }} {{ c.courier__last_name|default:c.courier__username }} <small class="text-muted">{% blocktranslate trimmed with c_n=c.n %}({{ c_n }} paket){% endblocktranslate %}</small></span><b>Rp {{ c.total|rupiah }}</b></li>
+                        {% empty %}
+                            <li class="text-muted">{% translate "Semua uang COD sudah disetor." %}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-custom so-card">
+                    <h2 class="h6 fw-bold mb-2">{% translate "Riwayat diterima" %}</h2>
+                    <ul class="list-unstyled mb-0 so-list">
+                        {% for r in done %}
+                            <li>
+                                <span>#{{ r.pk }} {{ r.courier.name }}<small class="d-block text-muted">{% blocktranslate trimmed with r_received_at=r.received_at|date:"d M H:i" r_received_by_name=r.received_by.name|default:"-" %}{{ r_received_at }} oleh {{ r_received_by_name }}{% endblocktranslate %}{% if r.note %} · {{ r.note }}{% endif %}</small></span>
+                                <b>Rp {{ r.received_amount|rupiah }}{% if r.difference %} <span class="so-badge">{{ r.difference|rupiah }}</span>{% endif %}</b>
+                            </li>
+                        {% empty %}
+                            <li class="text-muted">{% translate "Belum ada." %}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

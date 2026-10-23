@@ -1,5 +1,6 @@
 import json
 
+from django.utils.translation import gettext as _
 from django.contrib import messages
 from django.db.models import Count, F, Q
 from django.http import JsonResponse
@@ -9,7 +10,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from account.decorators import roleRequired
 from account.models import Role
-from customer.views import WA_DISPLAY, WA_LINK
+from store.models import StoreSettings
 
 from . import engine
 from .forms import FaqForm
@@ -33,7 +34,7 @@ def _quick_questions():
 @require_GET
 @never_cache
 def start(request):
-    return JsonResponse({"greeting": GREETING, "quick": _quick_questions(), "wa": WA_LINK})
+    return JsonResponse({"greeting": GREETING, "quick": _quick_questions(), "wa": StoreSettings.current().whatsapp_link})
 
 
 @require_POST
@@ -53,14 +54,14 @@ def ask(request):
         if entry is None:
             return JsonResponse({"answer": "Pertanyaan itu sudah tidak tersedia.", "suggestions": []})
         reply = engine.Reply(
-            answer=engine.fill_placeholders(entry.answer, WA_DISPLAY),
+            answer=engine.fill_placeholders(entry.answer, StoreSettings.current().whatsapp_display),
             link_url=entry.link_url,
             link_label=entry.link_label or "Buka",
             matched=entry,
         )
         message = entry.question
     else:
-        reply = engine.answer(message, active, WA_DISPLAY)
+        reply = engine.answer(message, active, StoreSettings.current().whatsapp_display)
 
     if reply.matched is not None:
         FaqEntry.objects.filter(pk=reply.matched.pk).update(hits=F("hits") + 1)
@@ -71,7 +72,7 @@ def ask(request):
             intent=reply.intent,
         )
     data = reply.as_json()
-    data["wa"] = WA_LINK
+    data["wa"] = StoreSettings.current().whatsapp_link
     return JsonResponse(data)
 
 
@@ -137,5 +138,5 @@ def delete_faq(request, pk):
 @require_POST
 def clear_unanswered(request):
     ChatLog.objects.filter(matched__isnull=True, intent="").delete()
-    messages.success(request, "Daftar pertanyaan belum terjawab dibersihkan.")
+    messages.success(request, _("Daftar pertanyaan belum terjawab dibersihkan."))
     return redirect("chatbot:manage_faq")

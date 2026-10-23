@@ -1,0 +1,99 @@
+{% load i18n %}
+{% load static rupiah l10n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        {% include "courier/_head.html" %}
+        <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+        <title>{% translate "Rute Kurir - Seelly" %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        {% include "courier/_nav.html" %}
+        <main class="container-fluid px-xl-5 px-3 py-4">
+            <header class="r-head">
+                <p class="r-head__who">{% blocktranslate trimmed with name=request.user.name %}Kurir · {{ name }}{% endblocktranslate %}</p>
+                <h1 class="r-head__title">{% translate "Rute hari ini" %}</h1>
+            </header>
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+            {% endfor %}
+            {% if pet_trip %}{% include "courier/_pet_duty.html" %}{% endif %}
+            <section class="route-stats" aria-label="{% translate 'Ringkasan' %}">
+                <a class="route-stat" href="{% url 'courier:packages' %}?status=on_delivery"><b>{{ carrying }} / {{ max_packages }}</b><span>{% translate "Paket dibawa" %}</span></a>
+                <a class="route-stat" href="{% url 'courier:pickup' %}"><b>{{ ready_count }}</b><span>{% translate "Siap diambil di toko" %}</span></a>
+                <a class="route-stat{% if cash_total %} is-warn{% endif %}" href="{% url 'courier:cash' %}"><b>Rp {{ cash_total|rupiah }}</b><span>{% translate "Uang COD belum disetor" %}</span></a>
+                <a class="route-stat" href="{% url 'courier:history' %}"><b>{{ delivered_today }}</b><span>{% translate "Terkirim hari ini" %}</span></a>
+            </section>
+            <div class="route-wrap">
+                <div class="route-wrap__map">
+                    <div class="route-map" id="route-map" data-route-map
+                         data-url="{% url 'courier:route_data' %}"
+                         data-start-lat="{{ start.0|unlocalize }}" data-start-lng="{{ start.1|unlocalize }}"
+                         role="application" aria-label="{% translate 'Peta rute pengantaran' %}"></div>
+                    <p class="small text-muted mt-2 mb-0">{% translate "Urutan antar dihitung dari jarak terdekat ke terjauh (nearest neighbour + 2-opt) dan diperbarui setiap paket diambil atau diserahkan." %}</p>
+                </div>
+                <div class="route-wrap__next">
+                    {% if next_stop %}
+                        <section class="next-card" aria-labelledby="next-title">
+                            <div class="next-card__label">{% blocktranslate trimmed with next_stop_route_position=next_stop.route_position carrying=carrying %}Tujuan berikutnya · {{ next_stop_route_position }} dari {{ carrying }}{% endblocktranslate %}</div>
+                            <div class="next-card__progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ trip_total }}" aria-valuenow="{{ delivered_today }}" aria-label="{% translate 'Paket terkirim hari ini' %}"><span data-w="{{ trip_pct }}"></span></div>
+                            <h2 id="next-title">{{ next_stop.customer.name }}</h2>
+                            <p>{{ next_stop.delivery_address }}</p>
+                            {% if next_stop.customer_note %}<p class="small"><i class="bi bi-chat-left-text"></i> {{ next_stop.customer_note }}</p>{% endif %}
+                            <div class="next-card__meta">
+                                {% if next_stop.leg_km is not None %}<span class="chip"><i class="bi bi-signpost"></i> ±{{ next_stop.leg_km|floatformat:1 }} km</span><span class="chip"><i class="bi bi-clock"></i> {% blocktranslate trimmed with next_stop_eta=next_stop.eta %}±{{ next_stop_eta }} menit{% endblocktranslate %}</span>{% endif %}
+                                <span class="chip">{% blocktranslate trimmed with next_stop_packing_label=next_stop.packing_label %}No. {{ next_stop_packing_label }}{% endblocktranslate %}</span>
+                                {% if not next_stop.cod_due %}<span class="chip is-paid">{% translate "Lunas" %}</span>{% endif %}
+                            </div>
+                            {% if next_stop.cod_due %}<div class="cod-due"><i class="bi bi-cash"></i> {% blocktranslate trimmed with next_stop_total_payment=next_stop.total_payment|rupiah %}Tagih tunai Rp {{ next_stop_total_payment }}{% endblocktranslate %}</div>{% endif %}
+                            <div class="next-card__actions">
+                                <a class="btn-route is-primary is-wide" href="{% url 'courier:handover' next_stop.pk %}" data-needs-gps><i class="bi bi-qr-code-scan"></i> {% translate "Sampai, serahkan paket" %}</a>
+                                {% if next_stop.has_pin %}
+                                    <a class="btn-route" href="https://www.google.com/maps/dir/?api=1&destination={{ next_stop.delivery_latitude|unlocalize }},{{ next_stop.delivery_longitude|unlocalize }}&travelmode=driving" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> {% translate "Navigasi" %}</a>
+                                {% else %}
+                                    <a class="btn-route" href="{{ next_stop.maps_url }}" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> {% translate "Cari alamat" %}</a>
+                                {% endif %}
+                                <a class="btn-route" href="{{ next_stop.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {% translate "Hubungi" %}</a>
+                                <a class="btn-route is-wide" href="{% url 'courier:problem' next_stop.pk %}"><i class="bi bi-exclamation-triangle"></i> {% translate "Ada kendala" %}</a>
+                            </div>
+                        </section>
+                    {% else %}
+                        <div class="empty-route">
+                            <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                            <p class="mb-3">{% translate "Belum ada paket yang dibawa. Ambil paket di toko dengan memindai QR pada label." %}</p>
+                            {% if not pet_trip %}<a class="btn-route is-primary" href="{% url 'courier:pickup' %}" data-needs-gps><i class="bi bi-qr-code-scan"></i> {% translate "Scan ambil paket" %}</a>{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                {% if next_stop %}
+                    <div class="route-wrap__rest">
+                        {% if stops|length > 1 %}
+                            <h2 class="h6 fw-bold mt-4 mb-0">{% translate "Urutan berikutnya" %}</h2>
+                            <ol class="stop-list">
+                                {% for o in stops %}
+                                    {% if not forloop.first %}
+                                        <li>
+                                            <a href="{% url 'courier:order_detail' o.pk %}">
+                                                <span class="stop-num">{{ o.route_position }}</span>
+                                                <span>{{ o.customer.name }}<small>{% blocktranslate trimmed with o_delivery_address=o.delivery_address|truncatechars:60 o_cum_km=o.cum_km|floatformat:1 o_eta=o.eta %}{{ o_delivery_address }} · ±{{ o_cum_km }} km · ±{{ o_eta }} mnt{% endblocktranslate %}</small></span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ol>
+                        {% endif %}
+                        <form method="post" action="{% url 'courier:reroute' %}" class="mt-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-route w-100" data-needs-gps><i class="bi bi-arrow-repeat"></i> {% translate "Hitung ulang rute dari posisi saya" %}</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+        <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+        <script src="{% static 'courier/js/route_map.js' %}?v=2"></script>
+        <script src="{% static 'js/ui.js' %}?v=1"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

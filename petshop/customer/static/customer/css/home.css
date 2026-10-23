@@ -14,7 +14,7 @@
 }
 
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
   background-color: var(--bg-cream);
   color: var(--text-dark);
   margin: 0;
@@ -24,7 +24,7 @@ body {
 }
 
 body.sx {
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
   color: var(--sx-ink);
   background: linear-gradient(180deg, #f6f0fb 0%, #fbf8f1 55%, #f4eef9 100%);
 }
@@ -130,7 +130,7 @@ a.icon-btn,
   border-radius: 50%;
   width: 18px;
   height: 18px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -790,7 +790,7 @@ a.icon-btn,
 
 .chip {
   position: absolute;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
@@ -924,60 +924,6 @@ a.icon-btn,
 .toast-msg.show {
   opacity: 1;
   transform: translate(-50%, 0);
-}
-
-.footer-seelly {
-  background: white;
-  padding: 40px 0 20px;
-  margin-top: 60px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.footer-logo {
-  font-weight: 800;
-  font-size: 1.3rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-dark);
-}
-
-.footer-contact a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.footer-contact a:hover {
-  text-decoration: underline;
-}
-
-.social-icons a {
-  color: var(--text-dark);
-  font-size: 1.2rem;
-  margin-right: 15px;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.social-icons a:hover {
-  color: var(--primary-purple);
-}
-
-.footer-contact h5 {
-  color: var(--primary-purple);
-  font-weight: 700;
-  margin-bottom: 15px;
-}
-
-.footer-contact p {
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-  color: var(--text-dark);
-}
-
-.footer-contact i {
-  margin-right: 10px;
-  color: var(--primary-purple);
 }
 
 /* =========================================
@@ -1206,4 +1152,127 @@ a.icon-btn,
   .sx-btn-light:hover {
     transform: none;
   }
+}
+
+/* =========================================
+   BERANDA: keunggulan, produk & layanan dari database, peta
+   ========================================= */
+.sx-lead--narrow { max-width: 560px; }
+
+.sx-perks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+.sx-perk {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid var(--sx-line);
+  border-radius: 18px;
+}
+.sx-perk > i {
+  flex: 0 0 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sx-soft);
+  color: var(--sx-deep);
+}
+.sx-perk strong { display: block; color: var(--sx-ink); font-size: 0.95rem; }
+.sx-perk span { display: block; color: var(--sx-muted); font-size: 0.85rem; line-height: 1.45; }
+
+.sx-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.sx-product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.sx-service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.sx-service {
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid var(--sx-line);
+  border-radius: 20px;
+  box-shadow: 0 10px 26px rgba(75, 42, 120, 0.06);
+}
+.sx-service h3 { font-size: 1.1rem; font-weight: 700; color: var(--sx-deep); margin-bottom: 8px; }
+.sx-service p { color: var(--sx-muted); font-size: 0.92rem; flex: 1; }
+.sx-service__meta {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: var(--sx-muted);
+  font-size: 0.85rem;
+}
+.sx-service__meta i { color: var(--sx-mid); margin-right: 4px; }
+.sx-service__foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sx-service__foot strong { font-size: 1.15rem; color: var(--sx-ink); }
+
+.sx-map { width: 100%; min-height: 380px; }
+.sx-map iframe { display: block; width: 100%; height: 100%; min-height: 380px; border: 0; }
+
+@media (max-width: 991px) {
+  .sx-perks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sx-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sx-service-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .sx-perks { grid-template-columns: 1fr; }
+  .sx-product-grid { gap: 12px; }
+  .sx-map, .sx-map iframe { min-height: 280px; }
+}
+
+/* Cara memesan: empat langkah bernomor */
+.sx-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.sx-steps li { display: flex; gap: 12px; padding: 18px; background: #fff; border: 1px solid #eadcf4; border-radius: 16px; }
+.sx-steps__no { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #6b21a8; color: #fff; font-weight: 800; }
+.sx-steps li > span:last-child { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sx-steps strong { color: #261a33; }
+.sx-steps span span { color: #6f6479; font-size: 0.92rem; line-height: 1.45; }
+.sx-steps a { font-weight: 700; font-size: 0.92rem; color: #6b21a8; }
+@media (max-width: 991px) { .sx-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 575px) { .sx-steps { grid-template-columns: 1fr; } .sx-steps li { padding: 14px; } }
+
+/* Kunjungi toko: alamat, jam buka, WhatsApp */
+.sx-visit { list-style: none; margin: 0 0 22px; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.sx-visit li { display: flex; gap: 14px; align-items: flex-start; }
+.sx-visit i { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: #f2e8f9; color: #6b21a8; }
+.sx-visit span { display: flex; flex-direction: column; color: #4a3d58; line-height: 1.5; }
+.sx-visit strong { color: #261a33; }
+.sx-visit__actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.sx-steps-wrap { padding-bottom: 0; }
+
+/* HP: keunggulan jadi 2x2 tanpa keterangan, langkah jadi daftar rapat */
+@media (max-width: 575px) {
+  .sx-perks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .sx-perk { flex-direction: column; gap: 8px; padding: 12px; }
+  .sx-perk > i { flex: none; width: 36px; height: 36px; }
+  .sx-perk span { display: none; }
+  .sx-steps { gap: 0; background: #fff; border: 1px solid #eadcf4; border-radius: 16px; padding: 4px 14px; }
+  .sx-steps li { border: 0; border-radius: 0; padding: 12px 0; }
+  .sx-steps li + li { border-top: 1px solid #eadcf4; }
 }

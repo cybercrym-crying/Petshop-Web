@@ -1,0 +1,50 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        {% include "courier/_head.html" %}
+        <title>{% blocktranslate trimmed with order_pk=order.pk %}Kendala #{{ order_pk }} - Kurir{% endblocktranslate %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        {% include "courier/_nav.html" %}
+        <main class="container-fluid px-xl-5 px-3 py-4" style="max-width: 760px">
+            <a href="{% url 'courier:dashboard' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {% translate "Rute" %}</a>
+            <h1 class="page-title mt-2 mb-1">{% blocktranslate trimmed with order_pk=order.pk %}Paket #{{ order_pk }} tidak bisa diantar{% endblocktranslate %}</h1>
+            <p class="text-muted">{% translate "Paket dikembalikan ke antrean toko, admin dan pelanggan diberi tahu. Bawa paket kembali ke toko." %}</p>
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
+            {% endfor %}
+            <form method="post" enctype="multipart/form-data" class="step" data-confirm="{% blocktranslate trimmed with order_pk=order.pk %}Kembalikan paket #{{ order_pk }} ke toko?{% endblocktranslate %}">
+                {% csrf_token %}
+                <label class="form-label fw-bold" for="problem-note">{% translate "Kendala" %}</label>
+                <select class="form-select mb-2" data-problem-preset aria-label="{% translate 'Pilih kendala umum' %}">
+                    <option value="">{% translate "Pilih kendala umum…" %}</option>
+                    <option>{% translate "Penerima tidak ada di lokasi" %}</option>
+                    <option>{% translate "Alamat / titik peta tidak ditemukan" %}</option>
+                    <option>{% translate "Penerima menolak paket" %}</option>
+                    <option>{% translate "Nomor penerima tidak bisa dihubungi" %}</option>
+                </select>
+                <textarea id="problem-note" name="note" rows="3" maxlength="255" class="form-control mb-3" required placeholder="Ceritakan singkat kendalanya"></textarea>
+                <p class="fw-bold mb-1">{% translate "Foto lokasi (opsional)" %}</p>
+                <div class="cam" data-camera>
+                    <video data-cam-video playsinline muted hidden></video>
+                    <img data-cam-preview alt="{% translate 'Pratinjau foto' %}" hidden>
+                    <p class="cam__status" data-cam-status>{% translate "Foto pagar / rumah sebagai bukti kunjungan." %}</p>
+                    <div class="cam__actions">
+                        <button type="button" class="btn-route" data-cam-start><i class="bi bi-camera-fill"></i> {% translate "Buka Kamera" %}</button>
+                        <button type="button" class="btn-route" data-cam-snap hidden><i class="bi bi-record-circle"></i> {% translate "Ambil Foto" %}</button>
+                        <button type="button" class="btn-route" data-cam-retake hidden><i class="bi bi-arrow-repeat"></i> {% translate "Ulangi" %}</button>
+                    </div>
+                    <input type="file" name="photo" accept="image/*" capture="environment" data-cam-input data-optional hidden>
+                </div>
+                <button type="submit" class="btn-route is-primary w-100 mt-3"><i class="bi bi-arrow-return-left"></i> {% translate "Kembalikan ke toko" %}</button>
+            </form>
+        </main>
+        <script src="{% static 'js/common.js' %}"></script>
+        <script src="{% static 'js/camera.js' %}?v=1"></script>
+        <script src="{% static 'courier/js/problem.js' %}?v=1"></script>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

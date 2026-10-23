@@ -1,0 +1,6 @@
+/* Komponen kamera (static/js/camera.js) */
+.cam { display: flex; flex-direction: column; gap: 10px; }
+.cam video, .cam img { width: 100%; max-height: 60vh; object-fit: contain; border-radius: 12px; background: #111; }
+.cam__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cam__status { margin: 0; font-size: 0.9rem; opacity: 0.8; }
+.cam__status.is-error { color: #dc2626; opacity: 1; font-weight: 600; }

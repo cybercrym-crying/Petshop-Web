@@ -1,20 +1,21 @@
 {% extends "account/staff_base.html" %}
+{% load i18n %}
 {% load static %}
-{% block title %}PetAdmin - FAQ Chatbot{% endblock %}
+{% block title %}{% translate "Seelly - FAQ Chatbot" %}{% endblock %}
 {% block extra_head %}
     <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
-    <link href="{% static 'chatbot/css/staff.css' %}?v=2" rel="stylesheet" />
+    <link href="{% static 'chatbot/css/staff.css' %}?v=ux2" rel="stylesheet" />
 {% endblock %}
 {% block content %}
     <div class="container-fluid px-xl-4 px-3 py-4">
         <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4 animate-fade-up">
             <div>
-                <p class="eyebrow">Situs Pelanggan</p>
-                <h1 class="page-title mb-1">FAQ Chatbot</h1>
-                <p class="text-muted fw-medium mb-0">Jawaban otomatis untuk pertanyaan yang sering ditanya di situs. Pelanggan juga bisa mengetik nomor resi untuk cek status pesanan.</p>
+                <p class="eyebrow">{% translate "Toko" %}</p>
+                <h1 class="page-title mb-1">{% translate "FAQ Chatbot" %}</h1>
+                <p class="text-muted fw-medium mb-0">{% translate "Jawaban otomatis untuk pertanyaan yang sering ditanya di situs. Pelanggan juga bisa mengetik nomor resi untuk cek status pesanan." %}</p>
             </div>
             <button class="btn-orange" data-bs-toggle="modal" data-bs-target="#faqModalNew">
-                <i class="bi bi-plus-lg me-2"></i> Tambah FAQ
+                <i class="bi bi-plus-lg me-2"></i> {% translate "Tambah FAQ" %}
             </button>
         </div>
         {% if messages %}
@@ -22,26 +23,26 @@
                 {% for message in messages %}
                     <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0" role="alert">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{% translate 'Tutup' %}"></button>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
         <div class="faq-stats animate-fade-up">
-            <div class="card-custom faq-stat"><span>{{ stats.total }}</span>Pertanyaan masuk</div>
-            <div class="card-custom faq-stat"><span>{{ stats.answered }}</span>Terjawab otomatis</div>
-            <div class="card-custom faq-stat is-warn"><span>{{ unanswered|length }}</span>Topik belum terjawab</div>
+            <div class="card-custom faq-stat"><span>{{ stats.total }}</span>{% translate "Pertanyaan masuk" %}</div>
+            <div class="card-custom faq-stat"><span>{{ stats.answered }}</span>{% translate "Terjawab otomatis" %}</div>
+            <div class="card-custom faq-stat is-warn"><span>{{ unanswered|length }}</span>{% translate "Topik belum terjawab" %}</div>
         </div>
         <div class="row g-4">
             <div class="col-12 col-xl-8">
                 <div class="card-custom animate-fade-up">
                     <div class="table-responsive">
-                        <table class="table table-custom align-middle">
+                        <table data-stack class="table table-custom align-middle">
                             <thead>
                                 <tr>
-                                    <th>Pertanyaan</th>
-                                    <th>Kata kunci</th>
-                                    <th class="text-center">Dipakai</th>
+                                    <th>{% translate "Pertanyaan" %}</th>
+                                    <th>{% translate "Kata kunci" %}</th>
+                                    <th class="text-center">{% translate "Dipakai" %}</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -52,8 +53,8 @@
                                             <div class="fw-bold text-dark">{{ f.question }}</div>
                                             <div class="faq-answer">{{ f.answer|truncatechars:110 }}</div>
                                             <div class="faq-tags">
-                                                {% if f.is_quick %}<span class="faq-tag is-quick">Pilihan cepat</span>{% endif %}
-                                                {% if not f.is_active %}<span class="faq-tag">Nonaktif</span>{% endif %}
+                                                {% if f.is_quick %}<span class="faq-tag is-quick">{% translate "Pilihan cepat" %}</span>{% endif %}
+                                                {% if not f.is_active %}<span class="faq-tag">{% translate "Nonaktif" %}</span>{% endif %}
                                                 {% if f.link_url %}<span class="faq-tag"><i class="bi bi-link-45deg"></i> {{ f.link_url }}</span>{% endif %}
                                             </div>
                                         </td>
@@ -61,12 +62,12 @@
                                         <td class="text-center fw-bold">{{ f.hits }}</td>
                                         <td class="text-end">
                                             <button type="button" class="btn-sm-action" data-bs-toggle="modal" data-bs-target="#faqModal{{ f.pk }}">
-                                                <i class="bi bi-pencil"></i> Ubah
+                                                <i class="bi bi-pencil"></i> {% translate "Ubah" %}
                                             </button>
                                         </td>
                                     </tr>
                                 {% empty %}
-                                    <tr><td colspan="4" class="text-center py-5 text-muted">Belum ada FAQ.</td></tr>
+                                    <tr><td colspan="4" class="text-center py-5 text-muted">{% translate "Belum ada FAQ." %}</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -76,23 +77,23 @@
             <div class="col-12 col-xl-4">
                 <div class="card-custom faq-side animate-fade-up">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h2 class="h6 fw-bold mb-0"><i class="bi bi-question-diamond me-1"></i> Pertanyaan belum terjawab</h2>
+                        <h2 class="h6 fw-bold mb-0"><i class="bi bi-question-diamond me-1"></i> {% translate "Pertanyaan belum terjawab" %}</h2>
                         {% if unanswered %}
-                            <form method="post" action="{% url 'chatbot:clear_unanswered' %}" data-confirm="Hapus semua catatan pertanyaan belum terjawab?">
+                            <form method="post" action="{% url 'chatbot:clear_unanswered' %}" data-confirm="{% translate 'Hapus semua catatan pertanyaan belum terjawab?' %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-sm-action">Bersihkan</button>
+                                <button type="submit" class="btn-sm-action">{% translate "Bersihkan" %}</button>
                             </form>
                         {% endif %}
                     </div>
-                    <p class="text-muted small">Tambahkan sebagai FAQ baru, atau masukkan katanya ke kata kunci FAQ yang sudah ada.</p>
+                    <p class="text-muted small">{% translate "Tambahkan sebagai FAQ baru, atau masukkan katanya ke kata kunci FAQ yang sudah ada." %}</p>
                     <ul class="faq-unanswered">
                         {% for u in unanswered %}
                             <li>
                                 <span class="faq-q">“{{ u.message }}”{% if u.total > 1 %} <b>×{{ u.total }}</b>{% endif %}</span>
-                                <a href="?dari={{ u.message|urlencode }}" class="btn-sm-action">Jadikan FAQ</a>
+                                <a href="?dari={{ u.message|urlencode }}" class="btn-sm-action">{% translate "Jadikan FAQ" %}</a>
                             </li>
                         {% empty %}
-                            <li class="text-muted">Semua pertanyaan sudah terjawab. 🎉</li>
+                            <li class="text-muted">{% translate "Semua pertanyaan sudah terjawab. 🎉" %}</li>
                         {% endfor %}
                     </ul>
                 </div>

@@ -28,7 +28,7 @@ class PublicPagesTests(TestCase):
         self.assertContains(r, "Semua Kebutuhan Hewan Peliharaan")
         html = r.content.decode()
         imgs = re.findall(r'<img[^>]+src="([^"]+)"', html)
-        self.assertGreaterEqual(len(imgs), 7)  # hero, 2 foto besar, 4 category_label
+        self.assertGreaterEqual(len(imgs), 5)  # hero + 4 foto kategori
         for src in imgs:
             self.assertRegex(src, r"\.(png|jpe?g|webp)$", f"gambar bukan raster: {src}")
             self.assertTrue(
@@ -85,8 +85,16 @@ class DesignUpdateTests(TestCase):
         return imgs
 
     def test_home_hero_and_offer_banner(self):
+        from unittest import mock
+
+        # Bawaan: tidak ada promo palsu, banner berisi ajakan memesan biasa.
         r = self.client.get(reverse("customer:home"))
         self.assertContains(r, "Hewan Sehat, Hidup Lebih Bahagia")
+        self.assertNotContains(r, "Penawaran Spesial")
+        self.assertContains(r, "Siap Memesan untuk Hewan Kesayangan?")
+        offer = {"title": "Diskon 20% untuk Produk Pilihan", "text": "Sampai akhir bulan."}
+        with mock.patch("customer.views.SPECIAL_OFFER", offer):
+            r = self.client.get(reverse("customer:home"))
         self.assertContains(r, "Diskon 20% untuk Produk Pilihan")
         self.assertNotContains(r, "Siap Memesan untuk Hewan Kesayangan?")
 
@@ -98,14 +106,12 @@ class DesignUpdateTests(TestCase):
         self.assertNotContains(r, "Diskon 20%")
         self.assertContains(r, "Siap Memesan untuk Hewan Kesayangan?")
 
-    def test_about_values_gallery_has_six_real_photos_and_arrows(self):
+    def test_about_values_grid_and_real_photos(self):
         r = self.client.get(reverse("customer:about"))
         html = r.content.decode()
-        self.assertEqual(html.count('class="sx-vp"'), 6)
-        self.assertContains(r, 'id="values-rail"')
-        self.assertContains(r, 'id="rail-prev"')
-        self.assertContains(r, 'id="rail-next"')
-        self.assertGreaterEqual(len(self.raster_imgs(r)), 8)  # hero, kolase, 6 nilai
+        self.assertEqual(html.count('class="value-card"'), 4)
+        self.assertContains(r, 'class="values-grid"')
+        self.assertGreaterEqual(len(self.raster_imgs(r)), 2)  # hero, kolase
 
     def test_about_store_address_only_when_set(self):
         from unittest import mock
@@ -131,6 +137,9 @@ def _nav_html(response):
 
 
 def _without_active_state(nav):
+    # Token CSRF & alamat kembali di tombol bahasa memang berbeda tiap halaman.
+    nav = re.sub(r'name="csrfmiddlewaretoken" value="[^"]*"', "", nav)
+    nav = re.sub(r'name="next" value="[^"]*"', "", nav)
     return nav.replace(" active", "").replace(" is-active", "")
 
 
@@ -272,10 +281,10 @@ class SiteAtRootTests(TestCase):
         self.assertEqual(r.status_code, 403)
         self.assertContains(r, 'href="/"', status_code=403)
 
-    def test_courier_login_goes_to_public_home(self):
+    def test_courier_login_goes_to_courier_dashboard(self):
         User.objects.create_user("kurir", password="x", role=Role.COURIER)
         r = self.client.post("/login", {"username": "kurir", "password": "x"})
-        self.assertRedirects(r, "/", fetch_redirect_response=False)
+        self.assertRedirects(r, "/staff/courier/dashboard", fetch_redirect_response=False)
 
 
 class WorkingSiteTests(TestCase):
@@ -366,7 +375,7 @@ class HomeShopTests(TestCase):
     def test_sections_and_context(self):
         make_product("Whiskas 70g")
         r = self.client.get(reverse("customer:shop"))
-        for marker in ('class="hero"', 'id="categories"', 'id="popular"', 'id="how-to-order"'):
+        for marker in ('class="hero ', 'id="categories"', 'id="popular"', 'id="how-to-order"'):
             self.assertContains(r, marker)
         self.assertEqual([c["code"] for c in r.context["categories"]], ["MAKANAN"])
         self.assertEqual(r.context["categories"][0]["count"], 1)
@@ -380,7 +389,8 @@ class HomeShopTests(TestCase):
 
     def test_belanja_sekarang_opens_filter_page(self):
         r = self.client.get("/shop/")
-        self.assertContains(r, 'href="/produk/" class="btn-primary-seelly btn-lg">Belanja Sekarang')
+        self.assertContains(r, 'class="btn-solid-light">Belanja Sekarang')
+        self.assertContains(r, 'href="/produk/"')
 
     def test_search_and_category_filter(self):
         make_product("Whiskas 70g")
@@ -638,3 +648,90 @@ class TrackOrderTests(TestCase):
     def test_nav_has_track_link(self):
         response = self.client.get(reverse("customer:home"))
         self.assertContains(response, reverse("customer:track"))
+
+
+class CustomerAreaTests(TestCase):
+    """Landing page untuk pengunjung; pelanggan yang masuk punya area & dasbor sendiri."""
+
+    def setUp(self):
+        self.customer = Customer.objects.create(username="ayu", name="Ayu", phone_number="081299990000", address="x")
+        self.client.force_login(self.customer)
+
+    def test_logged_in_customer_skips_the_landing_page(self):
+        self.assertRedirects(self.client.get(reverse("customer:home")), reverse("customer:dashboard"))
+
+    def test_customer_pages_use_the_customer_area_layout(self):
+        for name in ("customer:dashboard", "customer:shop", "customer:my_orders", "service:my_bookings",
+                     "service:my_pets", "customer:account", "store:complaints", "customer:cart"):
+            html = self.client.get(reverse(name)).content.decode()
+            self.assertIn('id="ca-side"', html, name)
+            self.assertIn("customer/css/app.css", html, name)
+            self.assertNotIn('id="nav-links"', html, name)  # menu promosi landing page tidak tampil
+            self.assertNotIn('class="site-footer"', html, name)
+
+    def test_dashboard_quick_tiles_and_folded_bank_details(self):
+        order = Order.objects.create(customer=self.customer, payment_method="TRANSFER", total_payment=50000)
+        html = self.client.get(reverse("customer:dashboard")).content.decode()
+        tiles = re.search(r'<nav class="dash-tiles".*?</nav>', html, re.S).group(0)
+        for name in ("customer:shop", "service:catalog", "service:my_pets", "customer:track"):
+            self.assertIn(f'href="{reverse(name)}', tiles, name)
+        # Rincian rekening dilipat, tombol Bayar langsung ke halaman kirim bukti.
+        self.assertIn(f'<details class="dash-unpaid" id="bayar-{order.pk}">', html)
+        self.assertIn(f'href="{reverse("customer:payment_proof", args=[order.pk])}">Bayar</a>', html)
+
+    def test_active_menu_follows_the_current_page(self):
+        html = self.client.get(reverse("customer:my_orders")).content.decode()
+        self.assertRegex(html, r'class="ca-link is-active"[^>]*><i class="fas fa-box"')
+
+    def test_visitor_still_sees_the_landing_page(self):
+        self.client.logout()
+        html = self.client.get(reverse("customer:home")).content.decode()
+        self.assertIn('id="nav-links"', html)
+        self.assertNotIn('id="ca-side"', html)
+
+    def test_landing_shows_order_steps_and_store_visit_info(self):
+        from store.models import StoreSettings
+        self.client.logout()
+        store = StoreSettings.current()
+        html = self.client.get(reverse("customer:home")).content.decode()
+        self.assertEqual(len(re.findall(r'class="sx-steps__no"', html)), 4)
+        self.assertIn(f'href="{reverse("register")}"', html)
+        self.assertIn(store.address, html)
+        self.assertIn(store.hours_display, html)
+        self.assertIn(f'href="{store.whatsapp_link}"', html)
+
+    def test_staff_browsing_the_shop_keep_the_public_layout(self):
+        self.client.force_login(User.objects.create_user("adm", password="x", role=Role.ADMIN))
+        self.assertEqual(self.client.get(reverse("customer:home")).status_code, 200)
+        self.assertNotContains(self.client.get(reverse("customer:shop")), 'id="ca-side"')
+
+
+class ProductTrackingMapTests(TestCase):
+    """Pelanggan melihat peta pengiriman sejak pesanan dibuat, posisi kurir saat diantar."""
+
+    def setUp(self):
+        from decimal import Decimal
+
+        from transaction.tests import make_product
+
+        self.customer = Customer.objects.create(username="ayu", name="Ayu", phone_number="081299990001", address="x")
+        product = make_product("Pakan Uji", stock=5)
+        self.order = Order.place_online(
+            self.customer, [(product.pk, 1)], "TUNAI", address="Jl. Melur 5",
+            location=(Decimal("-1.255400"), Decimal("116.831200")),
+        )
+
+    def test_waiting_order_already_has_a_map(self):
+        self.client.force_login(self.customer)
+        page = self.client.get(reverse("customer:track_detail", args=[self.order.tracking_number]))
+        self.assertContains(page, "data-track-live")
+        self.assertContains(page, "vendor/leaflet/leaflet.js")
+        data = self.client.get(reverse("customer:track_location", args=[self.order.tracking_number])).json()
+        self.assertFalse(data["live"])
+        self.assertIn("store", data)
+        self.assertIn("destination", data)  # pemilik melihat titik rumahnya
+
+    def test_strangers_see_the_store_but_not_the_address(self):
+        data = self.client.get(reverse("customer:track_location", args=[self.order.tracking_number])).json()
+        self.assertIn("store", data)
+        self.assertNotIn("destination", data)

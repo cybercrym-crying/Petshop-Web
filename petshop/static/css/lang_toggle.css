@@ -1,0 +1,64 @@
+/* Tombol ganti bahasa ID/EN: warna mengikuti teks di sekitarnya (terang & gelap). */
+.lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin: 0;
+    padding: 2px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    opacity: 0.85;
+    flex-shrink: 0;
+}
+
+.lang-toggle__btn {
+    min-width: 32px;
+    min-height: 28px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.lang-toggle__btn.is-active {
+    background: rgba(127, 127, 127, 0.28);
+    font-weight: 800;
+}
+
+.lang-toggle__btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 1px;
+}
+
+.lang-toggle--block {
+    align-self: flex-start;
+    margin: 8px 0;
+}
+
+.lang-toggle--corner {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 1050;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+/* Navbar kurir/groomer di HP: beri ruang untuk tombol bahasa. */
+@media (max-width: 480px) {
+    .navbar-custom .brand-name {
+        display: none;
+    }
+
+    .navbar-custom .lang-toggle__btn {
+        min-width: 28px;
+        padding: 0 6px;
+    }
+}

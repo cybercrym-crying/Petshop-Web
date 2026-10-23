@@ -1,0 +1,39 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% blocktranslate trimmed with service_name=service.name %}Seelly - Tahapan {{ service_name }}{% endblocktranslate %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
+    <link href="{% static 'service/css/staff.css' %}?v=ux2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <a href="{% url 'service:manage_services' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {% translate "Jenis Layanan" %}</a>
+        <h1 class="page-title mt-2 mb-1">{% blocktranslate trimmed with service_name=service.name %}Tahapan: {{ service_name }}{% endblocktranslate %}</h1>
+        <p class="text-muted fw-medium">{% translate 'Groomer mengerjakan tahap ini berurutan. Tahap bertanda "Wajib foto" harus difoto lewat kamera sebelum lanjut, dan pelanggan bisa melihat fotonya di Booking Saya. Bila kosong, dipakai tahapan bawaan: Pemeriksaan awal → Pengerjaan layanan → Pemeriksaan akhir. Perubahan berlaku untuk booking yang mulai dikerjakan setelah disimpan.' %}</p>
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
+        {% endfor %}
+        <form method="post" class="card-custom p-4" style="max-width: 760px">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors|join:" " }}</div>{% endif %}
+            {% for f in formset %}
+                {{ f.id }}
+                <div class="st-row">
+                    <input type="number" name="{{ f.position.html_name }}" value="{{ f.position.value|default_if_none:'' }}" min="1" class="dark-input" aria-label="{% blocktranslate trimmed with forloop_counter=forloop.counter %}Urutan tahap {{ forloop_counter }}{% endblocktranslate %}">
+                    <input type="text" name="{{ f.name.html_name }}" value="{{ f.name.value|default:'' }}" maxlength="80" class="dark-input" placeholder="{% translate 'Nama tahap, mis. Mandi' %}" aria-label="{% blocktranslate trimmed with forloop_counter=forloop.counter %}Nama tahap {{ forloop_counter }}{% endblocktranslate %}">
+                    <label><input type="checkbox" name="{{ f.needs_photo.html_name }}" {% if f.needs_photo.value or not f.instance.pk %}checked{% endif %}> {% translate "Wajib foto" %}</label>
+                    {% if f.instance.pk %}<label class="text-danger"><input type="checkbox" name="{{ f.DELETE.html_name }}"> {% translate "Hapus" %}</label>{% else %}<span></span>{% endif %}
+                </div>
+                {% for error in f.non_field_errors %}<p class="text-danger small mb-0">{{ error }}</p>{% endfor %}
+                {% for field in f %}{% for error in field.errors %}<p class="text-danger small mb-0">{{ field.label }}: {{ error }}</p>{% endfor %}{% endfor %}
+            {% endfor %}
+            <p class="svc-muted mt-3 mb-3">{% translate "Baris kosong diabaikan. Simpan untuk mendapat 2 baris kosong tambahan." %}</p>
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{% url 'service:manage_services' %}" class="btn-cancel">{% translate "Batal" %}</a>
+                <button type="submit" class="btn-orange px-5">{% translate "Simpan tahapan" %}</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

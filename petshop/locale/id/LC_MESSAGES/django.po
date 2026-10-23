@@ -1,0 +1,9 @@
+# Terjemahan Indonesia untuk teks bawaan Django yang belum diterjemahkan oleh Django sendiri.
+# Ubah msgstr lalu jalankan: python manage.py build_locale
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: id\n"
+
+msgid "- Select an option -"
+msgstr "- Pilih -"

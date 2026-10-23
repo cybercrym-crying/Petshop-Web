@@ -1,0 +1,19 @@
+.store-settings { display: flex; flex-direction: column; gap: 20px; max-width: 1100px; }
+.store-card { padding: 22px 24px !important; }
+.store-card__title { font-size: 1.05rem; font-weight: 800; color: var(--t-tx-2b3674,#2b3674); margin-bottom: 14px; }
+.store-card__title i { color: #6b21a8; margin-right: 6px; }
+.store-map-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.store-map { height: 340px; border-radius: 14px; border: 1px solid var(--t-bd-e2e8f0,#e2e8f0); overflow: hidden; z-index: 0; }
+.store-banks { display: flex; flex-direction: column; gap: 12px; }
+.store-bank {
+  display: grid; grid-template-columns: 1fr 1.3fr 1.5fr auto; gap: 12px; align-items: end;
+  padding: 12px; border: 1px dashed var(--t-bd-e2e8f0,#e2e8f0); border-radius: 12px;
+}
+.store-bank__checks { display: flex; flex-direction: column; gap: 4px; padding-bottom: 6px; }
+.store-bank__checks label { display: flex; align-items: center; gap: 6px; }
+.store-bank__checks .form-check-input { margin: 0; }
+.store-actions { position: sticky; bottom: 0; z-index: 1000; margin: 0 -12px; padding: 12px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; background: var(--t-bg-ffffff,#ffffff); border-top: 1px solid var(--t-bd-e2e8f0,#e2e8f0); border-radius: 14px 14px 0 0; box-shadow: 0 -6px 18px rgba(26, 31, 54, 0.06); }
+@media (max-width: 768px) {
+  .store-bank { grid-template-columns: 1fr; }
+  .store-map { height: 280px; }
+}

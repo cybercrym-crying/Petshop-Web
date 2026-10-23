@@ -1,0 +1,179 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% translate "Seelly - Laporan Kasir" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
+    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
+    <link href="{% static 'transaction/css/pos_pages.css' %}?v=2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <p class="eyebrow">{% translate "Toko" %}</p>
+                <h1 class="page-title mb-1">{% translate "Laporan Kasir" %}</h1>
+                <p class="text-muted mb-0">
+                    {% blocktranslate trimmed with start=period.start|date:"d M Y" end=period.end|date:"d M Y" %}
+                        Penjualan lunas {{ start }} - {{ end }}, dihitung dari transaksi yang tersimpan.
+                    {% endblocktranslate %}
+                </p>
+            </div>
+            <div class="d-flex gap-2 align-items-start flex-wrap">
+                <nav class="pos-tabs">
+                    {% for r in ranges %}
+                        <a href="?range={{ r }}" class="{% if r == range %}active{% endif %}">
+                            {% if r == 1 %}{% translate "Hari ini" %}{% else %}{% blocktranslate trimmed with n=r %}{{ n }} hari{% endblocktranslate %}{% endif %}
+                        </a>
+                    {% endfor %}
+                </nav>
+                <a href="?range={{ range }}&amp;format=csv" class="btn btn-outline-primary btn-sm rounded-pill"><i class="bi bi-download"></i> CSV</a>
+            </div>
+        </div>
+        {% if report.pending_returns %}
+            <div class="alert alert-warning rounded-4 border-0">
+                {% blocktranslate trimmed with n=report.pending_returns %}
+                    {{ n }} retur menunggu persetujuan.
+                {% endblocktranslate %}
+                <a href="{% url 'transaction:returns' %}">{% translate "Buka daftar retur" %}</a>
+            </div>
+        {% endif %}
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card-custom so-card pos-stat">
+                    <span>{% translate "Offline (kasir)" %}</span>
+                    <strong>Rp {{ report.channel.offline.total|rupiah }}</strong>
+                    <small>{% blocktranslate trimmed with n=report.channel.offline.n %}{{ n }} transaksi{% endblocktranslate %}</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card-custom so-card pos-stat">
+                    <span>{% translate "Online" %}</span>
+                    <strong>Rp {{ report.channel.online.total|rupiah }}</strong>
+                    <small>{% blocktranslate trimmed with n=report.channel.online.n %}{{ n }} pesanan{% endblocktranslate %}</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card-custom so-card pos-stat">
+                    <span>{% translate "Diskon kasir" %}</span>
+                    <strong>Rp {{ report.discount|rupiah }}</strong>
+                    <small>{% blocktranslate trimmed with total=report.services.total|rupiah %}Jasa grooming dibayar di kasir: Rp {{ total }}{% endblocktranslate %}</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card-custom so-card pos-stat">
+                    <span>{% translate "Batal & retur" %}</span>
+                    <strong>{{ report.voided.n }} / {{ report.returns.n }}</strong>
+                    <small>{% blocktranslate trimmed with v=report.voided.total|rupiah r=report.returns.total|rupiah %}Batal Rp {{ v }} · retur Rp {{ r }}{% endblocktranslate %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-lg-5">
+                <div class="card-custom so-card h-100">
+                    <h2 class="h6 fw-bold mb-3">{% translate "Per metode bayar (offline + online)" %}</h2>
+                    <ul class="list-unstyled so-list mb-0">
+                        {% for m in report.by_method %}<li><span>{{ m.label }}</span><b>Rp {{ m.total|rupiah }}</b></li>{% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="card-custom so-card h-100">
+                    <h2 class="h6 fw-bold mb-3">{% translate "Per kasir" %}</h2>
+                    <div class="table-responsive">
+                        <table data-stack class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% translate "Kasir" %}</th>
+                                    <th class="text-end">{% translate "Transaksi" %}</th>
+                                    <th class="text-end">{% translate "Diskon" %}</th>
+                                    <th class="text-end">{% translate "Total" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in report.by_cashier %}
+                                    <tr>
+                                        <td>{{ c.name }}</td>
+                                        <td class="text-end">{{ c.n }}</td>
+                                        <td class="text-end">Rp {{ c.discount|rupiah }}</td>
+                                        <td class="text-end fw-bold">Rp {{ c.total|rupiah }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-muted">{% translate "Belum ada transaksi kasir." %}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-custom so-card mb-4">
+            <h2 class="h6 fw-bold mb-3">{% translate "Rekap kas per shift" %}</h2>
+            <div class="table-responsive">
+                <table data-stack class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Kasir" %}</th>
+                            <th>{% translate "Dibuka" %}</th>
+                            <th>{% translate "Ditutup" %}</th>
+                            <th class="text-end">{% translate "Modal" %}</th>
+                            <th class="text-end">{% translate "Seharusnya" %}</th>
+                            <th class="text-end">{% translate "Dihitung" %}</th>
+                            <th class="text-end">{% translate "Selisih" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in report.shifts %}
+                            <tr>
+                                <td>{{ s.cashier.display_name }}</td>
+                                <td>{{ s.opened_at|date:"d M, H:i" }}</td>
+                                <td>{% if s.closed_at %}{{ s.closed_at|date:"d M, H:i" }}{% else %}<span class="pos-pill pos-pill-ok">{% translate "Masih buka" %}</span>{% endif %}</td>
+                                <td class="text-end">Rp {{ s.opening_cash|rupiah }}</td>
+                                <td class="text-end">{% if s.closed_at %}Rp {{ s.expected_cash|rupiah }}{% else %}-{% endif %}</td>
+                                <td class="text-end">{% if s.closed_at %}Rp {{ s.counted_cash|rupiah }}{% else %}-{% endif %}</td>
+                                <td class="text-end fw-bold {% if s.difference < 0 %}text-danger{% elif s.difference > 0 %}text-warning{% endif %}">
+                                    {% if s.closed_at %}{% if s.difference < 0 %}-{% elif s.difference > 0 %}+{% endif %}Rp {{ s.difference|rupiah|cut:"-" }}{% if s.close_note %}<div class="small text-muted fw-normal">{{ s.close_note }}</div>{% endif %}{% else %}-{% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="7" class="text-muted">{% translate "Belum ada shift pada rentang ini." %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-custom so-card">
+            <h2 class="h6 fw-bold mb-3">{% translate "Transaksi kasir terbaru" %}</h2>
+            <div class="table-responsive">
+                <table data-stack class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% translate "No. struk" %}</th>
+                            <th>{% translate "Waktu" %}</th>
+                            <th>{% translate "Kasir" %}</th>
+                            <th>{% translate "Pembeli" %}</th>
+                            <th>{% translate "Metode" %}</th>
+                            <th>{% translate "Status" %}</th>
+                            <th class="text-end">{% translate "Total" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in sales %}
+                            <tr>
+                                <td><a href="{% url 'transaction:receipt' o.pk %}">{{ o.receipt_no }}</a></td>
+                                <td>{{ o.date|date:"d M, H:i" }}</td>
+                                <td>{{ o.admin.display_name|default:"-" }}</td>
+                                <td>{{ o.buyer_display }}</td>
+                                <td>{{ o.get_payment_method_display }}</td>
+                                <td>{{ o.status_display }}</td>
+                                <td class="text-end {% if o.is_voided %}text-decoration-line-through text-muted{% endif %}">Rp {{ o.total_payment|rupiah }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="7" class="text-muted">{% translate "Belum ada transaksi kasir." %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

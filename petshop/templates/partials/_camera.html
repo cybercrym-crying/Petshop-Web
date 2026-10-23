@@ -1,0 +1,22 @@
+{% load i18n %}
+{% comment %}
+Komponen kamera. Pakai: {% include "partials/_camera.html" with allow_file=True geo=True %}
+optional=True: boleh dikirim tanpa foto.
+Butuh static/js/camera.js dan static/css/camera.css di halaman.
+{% endcomment %}
+<div class="cam" data-camera{% if allow_file %} data-allow-file{% endif %}>
+    <video data-cam-video playsinline muted hidden></video>
+    <img data-cam-preview alt="{% translate 'Pratinjau foto' %}" hidden>
+    <p class="cam__status" data-cam-status role="status">{% if hint %}{% translate hint %}{% else %}{% translate "Tekan Buka Kamera untuk memotret." %}{% endif %}</p>
+    <div class="cam__actions">
+        <button type="button" class="{{ btn|default:'btn-primary-seelly' }}" data-cam-start><i class="fas fa-camera bi bi-camera-fill" aria-hidden="true"></i> {% translate "Buka Kamera" %}</button>
+        <button type="button" class="{{ btn|default:'btn-primary-seelly' }}" data-cam-snap hidden><i class="fas fa-circle-dot bi bi-record-circle" aria-hidden="true"></i> {% translate "Ambil Foto" %}</button>
+        <button type="button" class="{{ btn2|default:'btn-ghost' }}" data-cam-retake hidden><i class="fas fa-rotate-right bi bi-arrow-repeat" aria-hidden="true"></i> {% translate "Ulangi" %}</button>
+        {% if allow_file %}<button type="button" class="{{ btn2|default:'btn-ghost' }}" data-cam-file hidden><i class="far fa-image bi bi-image" aria-hidden="true"></i> {% if file_label %}{% translate file_label %}{% else %}{% translate "Pilih tangkapan layar" %}{% endif %}</button>{% endif %}
+    </div>
+    <input type="file" name="photo" accept="image/*" capture="environment" data-cam-input hidden{% if optional %} data-optional{% endif %}>
+    {% if geo %}
+        <input type="hidden" name="latitude" data-cam-lat>
+        <input type="hidden" name="longitude" data-cam-lng>
+    {% endif %}
+</div>

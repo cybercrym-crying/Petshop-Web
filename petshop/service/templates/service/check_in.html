@@ -1,0 +1,165 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah l10n %}
+{% block title %}{% translate "Seelly - Check-in & Antrean" %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
+    <link href="{% static 'css/camera.css' %}?v=1" rel="stylesheet" />
+    <link href="{% static 'service/css/staff.css' %}?v=ux2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+            <div>
+                <p class="eyebrow">{% translate "Layanan" %}</p>
+                <h1 class="page-title mb-1">{% translate "Check-in &amp; Antrean" %}</h1>
+                <p class="text-muted fw-medium mb-0">{% translate "Scan QR booking di HP pelanggan (atau dari kurir yang membawa hewan), periksa kondisi singkat, lalu hewan otomatis dapat nomor antrean hari ini." %}</p>
+            </div>
+            <a class="btn-cancel" href="{% url 'service:manage_bookings' %}"><i class="bi bi-calendar2-heart me-2"></i> {% translate "Semua booking" %}</a>
+        </div>
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
+        {% endfor %}
+        <div class="ci-grid">
+            <section class="card-custom ci-card">
+                <h2 class="h5 fw-bold mb-3"><i class="bi bi-qr-code-scan me-2"></i>{% translate "Check-in hewan" %}</h2>
+                <form method="get" class="ci-scan">
+                    <div data-qr-scanner data-target="#ci-code" data-autosubmit>
+                        <video data-qr-video playsinline muted hidden></video>
+                        <p class="svc-muted mb-2" data-qr-status>{% translate "Tekan Scan QR lalu arahkan kamera ke QR booking." %}</p>
+                        <button type="button" class="btn-orange w-100" data-qr-start><i class="bi bi-camera me-2"></i>{% translate "Scan QR" %}</button>
+                    </div>
+                    <div class="ci-manual">
+                        <input id="ci-code" name="kode" class="dark-input" value="{{ code }}" placeholder="{% translate 'atau ketik kode 8 huruf' %}" autocomplete="off" aria-label="{% translate 'Kode booking' %}">
+                        <button type="submit" class="btn-cancel px-3">{% translate "Cari" %}</button>
+                    </div>
+                </form>
+
+                {% if booking %}
+                    <div class="ci-booking">
+                        <div class="d-flex justify-content-between gap-2 flex-wrap">
+                            <div>
+                                <div class="fw-bold fs-5">{{ booking.pet_name }} <span class="svc-muted">· {{ booking.get_pet_type_display }}</span></div>
+                                <div class="svc-muted">{% blocktranslate trimmed with booking_pk=booking.pk booking_service_name=booking.service.name %}Booking #{{ booking_pk }} · {{ booking_service_name }}{% endblocktranslate %}</div>
+                            </div>
+                            <span class="bk-status bk-{{ booking.status|lower }}">{{ booking.get_status_display }}</span>
+                        </div>
+                        <dl>
+                            <dt>{% translate "Pemilik" %}</dt><dd>{{ booking.customer.name }} · {{ booking.customer.phone_number }}</dd>
+                            <dt>{% translate "Jadwal" %}</dt><dd>{{ booking.schedule|date:"d M Y, H:i" }}{% if booking.is_late %} <span class="svc-late">{% translate "· lewat" %}</span>{% endif %}</dd>
+                            <dt>{% translate "Groomer" %}</dt><dd>{{ booking.groomer.display_name|default:"Siapa saja yang kosong" }}</dd>
+                            {% if booking.pet %}<dt>{% translate "Profil" %}</dt><dd>{% if booking.pet.breed %}{{ booking.pet.breed }} · {% endif %}{% if booking.pet.age_display %}{{ booking.pet.age_display }} · {% endif %}{{ booking.pet.notes|default:"tanpa catatan khusus" }}</dd>{% endif %}
+                            {% if booking.customer_note %}<dt>{% translate "Catatan" %}</dt><dd>{{ booking.customer_note }}</dd>{% endif %}
+                            {% if booking.pickup_requested %}<dt>{% translate "Dijemput" %}</dt><dd>{{ booking.pet_courier.display_name|default:"-" }}{% if booking.pet_collected_at %} {% blocktranslate trimmed with booking_pet_collected_at=booking.pet_collected_at|date:"H:i" %}· diterima kurir {{ booking_pet_collected_at }}{% endblocktranslate %}{% endif %}</dd>{% endif %}
+                        </dl>
+                        {% if booking.can_check_in %}
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="checkin">
+                                <input type="hidden" name="booking" value="{{ booking.pk }}">
+                                <div class="row g-3">
+                                    <div class="col-sm-4">
+                                        <label class="form-label-custom" for="ci-weight">{% translate "Berat (kg)" %}</label>
+                                        <input id="ci-weight" name="weight_kg" type="number" step="0.1" min="0" class="dark-input" value="{% if booking.pet.weight_kg %}{{ booking.pet.weight_kg|unlocalize }}{% endif %}">
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <label class="form-label-custom" for="ci-cond">{% translate "Kondisi saat datang" %}</label>
+                                        <input id="ci-cond" name="condition" maxlength="255" class="dark-input" placeholder="{% translate 'Mis. sehat, ada kutu, luka kecil di kaki kiri' %}">
+                                    </div>
+                                </div>
+                                <p class="form-label-custom mt-3 mb-1">{% translate "Foto kondisi (opsional)" %}</p>
+                                {% include "partials/_camera.html" with optional=True btn="btn-cancel" btn2="btn-cancel" hint="Foto kondisi awal membantu bila ada komplain." %}
+                                <button type="submit" class="btn-orange w-100 mt-3"><i class="bi bi-box-arrow-in-right me-2"></i>{% translate "Check-in &amp; beri nomor antrean" %}</button>
+                            </form>
+                        {% elif booking.status == "DIJEMPUT" %}
+                            <p class="svc-muted mb-0">{% translate "Hewan masih di perjalanan bersama kurir. Check-in setelah kurir memindai QR pemilik dan tiba di toko." %}</p>
+                        {% else %}
+                            <p class="svc-muted mb-0">{% blocktranslate trimmed with booking_get_status_display=booking.get_status_display|lower %}Booking ini tidak bisa check-in ({{ booking_get_status_display }}).{% endblocktranslate %}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if upcoming %}
+                    <h3 class="ci-section-title">{% translate "Belum check-in (hari ini &amp; terlewat)" %}</h3>
+                    <ul class="ci-board">
+                        {% for b in upcoming %}
+                            <li>
+                                <span class="ci-no">{{ b.schedule|date:"H:i" }}</span>
+                                <div class="ci-main">
+                                    <strong>{{ b.pet_name }} · {{ b.service.name }}</strong>
+                                    <span class="svc-muted">{{ b.customer.name }} · {{ b.get_status_display }}{% if b.is_late %} · <span class="svc-late">{% translate "lewat" %}</span>{% endif %}</span>
+                                </div>
+                                {% if b.can_check_in %}<a class="btn-sm-action" href="?booking={{ b.pk }}">{% translate "Check-in" %}</a>{% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </section>
+
+            <section class="card-custom ci-card" aria-live="polite">
+                <h2 class="h5 fw-bold mb-1"><i class="bi bi-list-ol me-2"></i>{% translate "Papan antrean hari ini" %}</h2>
+                <p class="svc-muted">{% translate "Perkiraan waktu = sisa pekerjaan yang berjalan + durasi layanan di depan, dibagi jumlah groomer aktif." %}</p>
+
+                <h3 class="ci-section-title">{% blocktranslate trimmed with working=working|length %}Sedang dikerjakan ({{ working }}){% endblocktranslate %}</h3>
+                <ul class="ci-board">
+                    {% for b in working %}
+                        <li>
+                            <span class="ci-no is-working">{{ b.queue_label|default:"-" }}</span>
+                            <div class="ci-main">
+                                <strong>{{ b.pet_name }} · {{ b.service.name }}</strong>
+                                <span class="svc-muted">{% blocktranslate trimmed with b_groomer_display_name=b.groomer.display_name b_steps_done=b.steps_done b_steps_total=b.steps_total %}{{ b_groomer_display_name }} · tahap {{ b_steps_done }}/{{ b_steps_total }}{% endblocktranslate %}</span>
+                                <div class="ci-progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ b.steps_total }}" aria-valuenow="{{ b.steps_done }}" aria-label="{% blocktranslate trimmed with b_pet_name=b.pet_name %}Progres {{ b_pet_name }}{% endblocktranslate %}"><span data-progress="{{ b.steps_done }}/{{ b.steps_total }}"></span></div>
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="svc-muted">{% translate "Belum ada yang dikerjakan." %}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3 class="ci-section-title">{% blocktranslate trimmed with queued=queued|length %}Menunggu ({{ queued }}){% endblocktranslate %}</h3>
+                <ul class="ci-board">
+                    {% for b in queued %}
+                        <li>
+                            <span class="ci-no">{{ b.queue_label }}</span>
+                            <div class="ci-main">
+                                <strong>{{ b.pet_name }} · {{ b.service.name }}</strong>
+                                <span class="svc-muted">{% if b.queue_ahead == 0 %}{% translate "Berikutnya" %}{% else %}{% blocktranslate trimmed with b_queue_ahead=b.queue_ahead %}{{ b_queue_ahead }} di depan{% endblocktranslate %}{% endif %} {% blocktranslate trimmed with b_queue_eta=b.queue_eta b_groomer_display_name=b.groomer.display_name|default:"groomer mana saja" %}· ±{{ b_queue_eta }} menit · {{ b_groomer_display_name }}{% endblocktranslate %}</span>
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="svc-muted">{% translate "Antrean kosong." %}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3 class="ci-section-title">{% blocktranslate trimmed with ready=ready|length %}Siap diambil / diantar ({{ ready }}){% endblocktranslate %}</h3>
+                <ul class="ci-board">
+                    {% for b in ready %}
+                        <li>
+                            <span class="ci-no is-ready">{{ b.queue_label|default:"-" }}</span>
+                            <div class="ci-main">
+                                <strong>{{ b.pet_name }}</strong>
+                                <span class="svc-muted">{{ b.customer.name }} · {% if b.status == "DIANTAR" %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name %}diantar {{ b_pet_courier_display_name }}{% endblocktranslate %}{% elif b.return_requested %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name|default:"(belum ditugaskan)" %}menunggu kurir {{ b_pet_courier_display_name }}{% endblocktranslate %}{% else %}{% translate "diambil di toko" %}{% endif %} · Rp {{ b.total_price|rupiah }}</span>
+                            </div>
+                            {% if b.status == "SIAP" %}
+                                <form method="post" action="{% url 'service:booking_action' b.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="handover">
+                                    <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="btn-sm-action" data-confirm="{% blocktranslate trimmed with b_pet_name=b.pet_name %}{{ b_pet_name }} sudah diambil pemiliknya dan dibayar?{% endblocktranslate %}">{% translate "Diambil" %}</button>
+                                </form>
+                            {% endif %}
+                        </li>
+                    {% empty %}
+                        <li class="svc-muted">{% translate "Belum ada." %}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'vendor/jsqr/jsQR.js' %}"></script>
+    <script src="{% static 'js/qr_scanner.js' %}?v=1"></script>
+    <script src="{% static 'js/camera.js' %}?v=1"></script>
+    <script src="{% static 'service/js/queue_board.js' %}?v=1"></script>
+{% endblock %}

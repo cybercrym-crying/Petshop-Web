@@ -11,7 +11,7 @@
   box-sizing: border-box;
 }
 body {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   margin: 0;
   min-height: 100vh;
   background: linear-gradient(180deg, #f3eefc 0%, #fbf3ec 100%);
@@ -212,7 +212,7 @@ a.link-purple:hover {
    Halaman login & daftar (dipindah dari <style> di login.html)
    ========================================================================== */
 body {
-    font-family: 'Outfit', sans-serif;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
     background-color: #f1f5f9;
     color: #1e293b;
     margin: 0;
@@ -227,7 +227,7 @@ body {
 /* Latar Belakang Gradient Blobs */
 .bg-blob { position: absolute; border-radius: 50%; filter: blur(100px); z-index: -1; opacity: 0.45; animation: float 10s infinite ease-in-out alternate; }
 .blob-purple { width: 500px; height: 500px; background-color: #8c73c2; top: -15%; left: -10%; }
-.blob-orange { width: 400px; height: 400px; background-color: #FF9000; bottom: -10%; right: -5%; animation-delay: -5s;}
+.blob-orange { width: 400px; height: 400px; background-color: #b9abf5; bottom: -10%; right: -5%; animation-delay: -5s;}
 
 @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 50px) scale(1.1); } }
 @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
@@ -252,7 +252,7 @@ body {
 .panel-left {
     flex: 1.1;
     background: linear-gradient(180deg, rgba(30, 27, 75, 0.35) 0%, rgba(30, 27, 75, 0.85) 100%),
-                url("../../images/login-dog.jpg") center/cover no-repeat;
+                url("../img/login-dog.jpg") center/cover no-repeat;
     color: white;
     padding: 60px 45px;
     display: flex;
@@ -315,7 +315,7 @@ body {
     border: 2px solid #e2e8f0;
     background-color: #f8fafc;
     color: #0f172a;
-    font-family: 'Outfit', sans-serif;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
     font-size: 1.05rem;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -351,7 +351,7 @@ body {
     border: none;
     border-radius: 16px;
     padding: 18px 24px;
-    font-family: 'Outfit', sans-serif;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
     font-weight: 800;
     font-size: 1.1rem;
     width: 100%;
@@ -366,8 +366,8 @@ body {
 }
 
 .foot-text { text-align: center; margin-top: 30px; font-size: 0.95rem; font-weight: 500; color: #64748b; }
-.link-purple { color: #8c73c2; text-decoration: none; font-weight: 800; transition: color 0.2s;}
-.link-purple:hover { color: #5c418c; text-decoration: underline; }
+.link-purple { color: #6b21a8; text-decoration: none; font-weight: 800; transition: color 0.2s;}
+.link-purple:hover { color: #4c1577; text-decoration: underline; }
 
 .error-box { background: #fef2f2; color: #ef4444; border: 2px solid #fecaca; padding: 15px 20px; border-radius: 16px; font-weight: 600; font-size: 0.95rem; margin-bottom: 25px; display: flex; align-items: center; gap: 12px;}
 
@@ -465,3 +465,13 @@ html { overflow-x: hidden; }
 @media (max-width: 576px) {
     .auth-register .login-glass-card { width: calc(100% - 24px); }
 }
+
+/* ruang untuk tombol tampilkan kata sandi (dulu inline style) */
+#password { padding-right: 50px; }
+
+/* Daftar staf */
+.pw-input { padding-right: 50px; }
+.check-row { display: flex; gap: 10px; align-items: flex-start; font-size: 0.9rem; cursor: pointer; }
+.check-row input { margin-top: 3px; width: 18px; height: 18px; accent-color: #7e2fb8; }
+.courier-only[hidden] { display: none !important; }
+.login-glass-card--single { max-width: 560px; }

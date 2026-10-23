@@ -1,0 +1,9 @@
+{% load i18n %}
+<footer class="ca-foot" id="kontak">
+    <span>© {% now "Y" %} Seelly Petshop · {{ store.address }}</span>
+    <span>
+        <i class="fab fa-whatsapp" aria-hidden="true"></i>
+        <a href="{{ store.whatsapp_link }}" target="_blank" rel="noopener">{% translate "Hubungi toko" %}</a>
+        · {% translate "Layanan 08.00–20.00 WITA" %}
+    </span>
+</footer>
