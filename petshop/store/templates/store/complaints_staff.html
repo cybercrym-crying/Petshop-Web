@@ -3,40 +3,45 @@
 {% load static %}
 {% block title %}{% translate "Seelly - Komplain" %}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
-    <link href="{% static 'store/css/care.css' %}?v=1" rel="stylesheet" />
+    <link href="{% static 'service/css/staff_sg.css' %}?v=3" rel="stylesheet" />
 {% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <div class="mb-4">
-            <p class="eyebrow">{% translate "Layanan" %}</p>
-            <h1 class="page-title mb-1">{% translate "Komplain" %}</h1>
-            <p class="text-muted fw-medium mb-0">{% translate "Komplain dari pelanggan beserta foto dan riwayat pesanan/booking terkait. Balasan dikirim ke notifikasi pelanggan." %}</p>
-        </div>
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
-        {% endfor %}
-        <div class="custom-tabs d-flex flex-wrap mb-3">
-            {% for f in filters %}
-                <a href="?status={{ f.code|default:'semua' }}" class="nav-link {% if status == f.code %}active{% endif %}">{{ f.label }} <span class="badge text-bg-light">{{ f.count }}</span></a>
-            {% endfor %}
-        </div>
-        <div class="card-custom p-3 p-md-4">
-            {% for c in complaints %}
-                <div class="cp-row">
-                    <div>
-                        <a href="{% url 'store:staff_complaint' c.pk %}" class="fw-bold text-decoration-none">#{{ c.pk }} · {{ c.get_category_display }}</a>
-                        <div class="cp-meta">{{ c.customer.name }} · {{ c.subject_label }} · {{ c.created_at|date:"d M Y, H:i" }}{% if c.photo %} · <i class="bi bi-image"></i> {% translate "ada foto" %}{% endif %}</div>
-                        <p>{{ c.message|truncatechars:160 }}</p>
-                    </div>
-                    <div class="text-end">
-                        <span class="cp-badge cp-badge--{{ c.status|lower }}">{{ c.get_status_display }}</span>
-                        <div class="mt-2"><a class="btn-sm-action" href="{% url 'store:staff_complaint' c.pk %}">{% translate "Tangani" %}</a></div>
-                    </div>
+    <div class="sg sg-page">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Layanan" %}</p>
+                <h1>{% translate "Komplain" %}</h1>
+                <p>{% translate "Komplain dari pelanggan beserta foto dan riwayat pesanan/booking terkait. Balasan dikirim ke notifikasi pelanggan." %}</p>
+            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        <div class="sg-grid">
+            <div class="sg-s5">
+                <nav class="sg-seg" aria-label="{% translate 'Status komplain' %}">
+                    {% for f in filters %}
+                        <a href="?status={{ f.code|default:'semua' }}" class="{% if status == f.code %}is-on{% endif %}"{% if status == f.code %} aria-current="page"{% endif %}>{{ f.label }} <span class="sg-c">{{ f.count }}</span></a>
+                    {% endfor %}
+                </nav>
+                <div class="sg-card sg-mt12" style="padding:8px">
+                    {% for c in complaints %}
+                        <a href="?status={{ status|default:'semua' }}&id={{ c.pk }}" class="cp-item{% if complaint and c.pk == complaint.pk %} is-on{% endif %}"{% if complaint and c.pk == complaint.pk %} aria-current="true"{% endif %}>
+                            <span class="sg-av" aria-hidden="true" style="width:40px;height:40px;font-size:1rem"><i class="bi {% if c.category == 'LAYANAN' %}bi-scissors{% elif c.category == 'PENGIRIMAN' %}bi-truck{% elif c.category == 'PEMBAYARAN' %}bi-bank{% else %}bi-box-seam{% endif %}"></i></span>
+                            <span style="min-width:0;flex:1">
+                                <span class="sg-row"><b class="sg-sm">#{{ c.pk }} · {{ c.get_category_display }}</b><span class="sg-sp"></span><span class="sg-pill {% if c.status == 'BARU' %}is-gold{% elif c.status == 'SELESAI' %}is-ok{% else %}is-pri{% endif %}">{{ c.get_status_display }}</span></span>
+                                <small class="sg-xs sg-muted d-block">{{ c.customer.name }} · {{ c.subject_label }} · {{ c.created_at|date:"d M, H.i" }}{% if c.photo %} · <i class="bi bi-image" aria-hidden="true"></i> {% translate "ada foto" %}{% endif %}</small>
+                                <span class="sg-sm d-block sg-mt8">{{ c.message|truncatechars:120 }}</span>
+                            </span>
+                        </a>
+                    {% empty %}
+                        <p class="sg-empty"><i class="bi bi-emoji-smile" aria-hidden="true"></i>{% translate "Tidak ada komplain di kategori ini." %}</p>
+                    {% endfor %}
                 </div>
-            {% empty %}
-                <p class="text-muted mb-0">{% translate "Tidak ada komplain di kategori ini." %}</p>
-            {% endfor %}
+            </div>
+            <div class="sg-s7">
+                {% if complaint %}
+                    {% include "store/_complaint_panel.html" %}
+                {% endif %}
+            </div>
         </div>
     </div>
 {% endblock %}

@@ -58,7 +58,9 @@ def store_settings(request):
 
 
 def _notification_template(user):
-    return "store/notifications_customer.html" if user.role == Role.CUSTOMER else "store/notifications_staff.html"
+    if user.role == Role.CUSTOMER:
+        return "store/notifications_customer.html"
+    return "store/notifications_staff.html"
 
 
 @login_required
@@ -132,11 +134,21 @@ def staff_complaints(request):
         rows = rows.filter(status=status)
     else:
         status = ""
+    complaints = list(rows[:200])
+    selected = None
+    picked = request.GET.get("id", "")
+    if picked.isdigit():
+        selected = Complaint.objects.select_related("customer", "order", "booking").filter(pk=int(picked)).first()
+    elif complaints:
+        selected = complaints[0]
     return render(
         request,
         "store/complaints_staff.html",
         {
-            "complaints": rows[:200],
+            "complaints": complaints,
+            "complaint": selected,
+            "form": _complaint_form(selected) if selected else None,
+            "related_log": _complaint_log(selected) if selected else [],
             "status": status,
             "filters": [{"code": c, "label": label, "count": counts.get(c, 0)} for c, label in ComplaintStatus.choices]
             + [{"code": "", "label": "Semua", "count": sum(counts.values())}],
@@ -147,11 +159,7 @@ def staff_complaints(request):
 @roleRequired(*POS_ROLES)
 def staff_complaint(request, pk):
     complaint = get_object_or_404(Complaint.objects.select_related("customer", "order", "booking"), pk=pk)
-    form = ComplaintResponseForm(
-        request.POST or None,
-        initial={"status": complaint.status if complaint.status != ComplaintStatus.OPEN else ComplaintStatus.IN_PROGRESS,
-                 "response": complaint.response},
-    )
+    form = _complaint_form(complaint, request.POST or None)
     if request.method == "POST" and form.is_valid():
         try:
             complaint.respond(request.user, form.cleaned_data["status"], form.cleaned_data["response"])
@@ -164,15 +172,27 @@ def staff_complaint(request, pk):
             )
             messages.success(request, f"Komplain #{complaint.pk} diperbarui dan pelanggan diberi tahu.")
             return redirect("store:staff_complaints")
-    related_log = []
-    if complaint.order_id:
-        related_log = ActivityLog.for_object(complaint.order)
-    elif complaint.booking_id:
-        related_log = ActivityLog.for_object(complaint.booking)
     return render(
         request, "store/complaint_detail.html",
-        {"complaint": complaint, "form": form, "related_log": related_log},
+        {"complaint": complaint, "form": form, "related_log": _complaint_log(complaint)},
     )
+
+
+def _complaint_form(complaint, data=None):
+    return ComplaintResponseForm(
+        data,
+        initial={"status": complaint.status if complaint.status != ComplaintStatus.OPEN else ComplaintStatus.IN_PROGRESS,
+                 "response": complaint.response},
+    )
+
+
+def _complaint_log(complaint):
+    """Riwayat pesanan/booking terkait (bukti foto & lokasi) untuk menilai komplain."""
+    if complaint.order_id:
+        return ActivityLog.for_object(complaint.order)
+    if complaint.booking_id:
+        return ActivityLog.for_object(complaint.booking)
+    return []
 
 
 @roleRequired(*POS_ROLES)
@@ -183,6 +203,14 @@ def reviews(request):
 
     orders = Order.objects.filter(rating__isnull=False).select_related("customer", "courier").order_by("-rated_at")
     bookings = ServiceBooking.objects.filter(rating__isnull=False).select_related("customer", "service", "groomer").order_by("-rated_at")
+    days = request.GET.get("days", "")
+    if days in ("7", "30"):
+        since = timezone.now() - timezone.timedelta(days=int(days))
+        orders = orders.filter(rated_at__gte=since)
+        bookings = bookings.filter(rated_at__gte=since)
+    else:
+        days = ""
+    low = request.GET.get("low") == "1"
     per_groomer = (
         bookings.values("groomer__first_name", "groomer__last_name", "groomer__username")
         .annotate(avg=Avg("rating"), n=Count("pk"))
@@ -198,8 +226,11 @@ def reviews(request):
         request,
         "store/reviews.html",
         {
-            "orders": orders[:50],
-            "bookings": bookings[:50],
+            "orders": (orders.filter(rating__lte=2) if low else orders)[:50],
+            "bookings": (bookings.filter(rating__lte=2) if low else bookings)[:50],
+            "days": days,
+            "low": low,
+            "periods": [("7", _("7 hari")), ("30", _("30 hari")), ("", _("Semua"))],
             "order_avg": orders.aggregate(a=Avg("rating"), n=Count("pk")),
             "booking_avg": bookings.aggregate(a=Avg("rating"), n=Count("pk")),
             "per_groomer": per_groomer,

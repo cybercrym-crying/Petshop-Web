@@ -1,0 +1,20 @@
+{% load i18n %}
+<ul class="list-unstyled sg-list">
+    {% for n in items %}
+        {% with look=n.look %}
+            <li>
+                <a class="sg-item{% if not n.read_at %} is-on{% endif %}" href="{% url 'store:open_notification' n.pk %}">
+                    <span class="sg-av {{ look.tone }}"><i class="bi {{ look.icon }}" aria-hidden="true"></i></span>
+                    <span class="sg-item__body">
+                        <b>{{ n.title }}</b>
+                        {% if n.body %}<small class="notif-body">{{ n.body }}</small>{% endif %}
+                        <small>{{ n.created_at|date:"d M Y, H.i" }}</small>
+                    </span>
+                    {% if not n.read_at %}<span class="notif-dot" aria-label="{% translate 'Belum dibaca' %}"></span>{% endif %}
+                </a>
+            </li>
+        {% endwith %}
+    {% empty %}
+        <li class="sg-card sg-empty"><i class="bi bi-bell" aria-hidden="true"></i>{% translate "Belum ada notifikasi." %}</li>
+    {% endfor %}
+</ul>

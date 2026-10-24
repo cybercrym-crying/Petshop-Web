@@ -3,53 +3,19 @@
 {% load static %}
 {% block title %}{% blocktranslate trimmed with complaint_pk=complaint.pk %}Seelly - Komplain #{{ complaint_pk }}{% endblocktranslate %}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
-    <link href="{% static 'store/css/care.css' %}?v=1" rel="stylesheet" />
+    <link href="{% static 'service/css/staff_sg.css' %}?v=3" rel="stylesheet" />
 {% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <a href="{% url 'store:staff_complaints' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {% translate "Komplain" %}</a>
-        <h1 class="page-title mt-2 mb-1">{% blocktranslate trimmed with complaint_pk=complaint.pk %}Komplain #{{ complaint_pk }}{% endblocktranslate %} <span class="cp-badge cp-badge--{{ complaint.status|lower }}">{{ complaint.get_status_display }}</span></h1>
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
-        {% endfor %}
-        <div class="row g-4">
-            <div class="col-xl-7">
-                <section class="card-custom p-4">
-                    <div class="cp-meta">{{ complaint.get_category_display }} · {{ complaint.created_at|date:"d M Y, H:i" }}</div>
-                    <h2 class="h5 fw-bold mt-1">{{ complaint.customer.name }} <small class="cp-meta">{{ complaint.customer.phone_number }}</small></h2>
-                    <p>{{ complaint.message|linebreaksbr }}</p>
-                    {% if complaint.photo %}<a href="{{ complaint.photo.url }}" target="_blank" rel="noopener"><img class="cp-photo" src="{{ complaint.photo.url }}" alt="{% translate 'Foto komplain' %}"></a>{% endif %}
-                    <p class="mt-3 mb-0">
-                        {% if complaint.order %}{% translate "Terkait" %} <a href="{% url 'transaction:payment_check' complaint.order.pk %}">{% blocktranslate trimmed with complaint_order_pk=complaint.order.pk %}pesanan #{{ complaint_order_pk }}{% endblocktranslate %}</a> · {{ complaint.order.get_order_status_display }}{% endif %}
-                        {% if complaint.booking %}{% blocktranslate trimmed with complaint_booking_pk=complaint.booking.pk complaint_booking_service_name=complaint.booking.service.name complaint_booking_get_status_display=complaint.booking.get_status_display %}Terkait booking #{{ complaint_booking_pk }} · {{ complaint_booking_service_name }} · {{ complaint_booking_get_status_display }}{% endblocktranslate %}{% endif %}
-                    </p>
-                </section>
-                {% if related_log %}
-                    <section class="card-custom p-4 mt-4">
-                        <h2 class="h6 fw-bold">{% translate "Riwayat status (bukti foto &amp; lokasi)" %}</h2>
-                        <ul class="rv-list">
-                            {% for e in related_log %}
-                                <li><span><b>{{ e.action }}</b>{% if e.detail %} · {{ e.detail }}{% endif %}<br><small class="cp-meta">{{ e.created_at|date:"d M Y H:i" }}{% if e.actor %} · {{ e.actor.display_name }}{% endif %}</small></span>{% if e.photo %}<a href="{{ e.photo.url }}" target="_blank" rel="noopener">{% translate "foto" %}</a>{% endif %}</li>
-                            {% endfor %}
-                        </ul>
-                    </section>
-                {% endif %}
+    <div class="sg sg-page">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <a href="{% url 'store:staff_complaints' %}" class="sg-link"><i class="bi bi-arrow-left" aria-hidden="true"></i> {% translate "Komplain" %}</a>
+                <h1 class="sg-mt8">{% blocktranslate trimmed with complaint_pk=complaint.pk %}Komplain #{{ complaint_pk }}{% endblocktranslate %}</h1>
             </div>
-            <div class="col-xl-5">
-                <form method="post" class="card-custom p-4">
-                    {% csrf_token %}
-                    <h2 class="h6 fw-bold">{% translate "Tanggapi" %}</h2>
-                    <label class="form-label-custom" for="cp-status">{% translate "Status" %}</label>
-                    <select id="cp-status" name="status" class="dark-input mb-3">
-                        {% for value, label in form.fields.status.choices %}<option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-                    </select>
-                    <label class="form-label-custom" for="cp-response">{% translate "Balasan ke pelanggan" %}</label>
-                    <textarea id="cp-response" name="response" rows="5" maxlength="1000" class="dark-input mb-3">{{ form.response.value|default:"" }}</textarea>
-                    {% if complaint.handled_by %}<p class="cp-meta">{% blocktranslate trimmed with complaint_handled_by_display_name=complaint.handled_by.display_name complaint_responded_at=complaint.responded_at|date:"d M H:i" %}Terakhir ditangani {{ complaint_handled_by_display_name }}, {{ complaint_responded_at }}{% endblocktranslate %}</p>{% endif %}
-                    <button type="submit" class="btn-orange w-100">{% translate "Simpan &amp; kirim notifikasi" %}</button>
-                </form>
-            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        <div style="max-width:880px">
+            {% include "store/_complaint_panel.html" %}
         </div>
     </div>
 {% endblock %}

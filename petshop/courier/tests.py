@@ -9,6 +9,7 @@ from PIL import Image
 
 from account.models import Customer, Role, User
 from transaction.models import Order, OrderStatus
+from store.models import Notification
 
 
 def make_photo(name="bukti.jpg", fmt="JPEG"):
@@ -66,6 +67,24 @@ class CourierPackagesTests(TestCase):
         r = self.client.get(reverse("courier:history"))
         self.assertContains(r, 'class="hist-row"', count=1)
         self.assertContains(r, reverse("courier:order_detail", args=[done.pk]))
+
+    def test_history_filters_and_weekly_summary(self):
+        done = make_order(self.courier, OrderStatus.DELIVERED)
+        make_order(self.courier, OrderStatus.ON_DELIVERY)
+        r = self.client.get(reverse("courier:history"), {"f": "terkirim"})
+        self.assertContains(r, 'class="hist-row"', count=1)
+        self.assertContains(r, reverse("courier:order_detail", args=[done.pk]))
+        self.assertEqual(self.client.get(reverse("courier:history"), {"f": "aneh"}).context["current"], "")
+        self.assertEqual(
+            [(key, n) for key, _label, n in r.context["filters"]], [("", 2), ("terkirim", 1), ("berjalan", 1)]
+        )
+
+    def test_courier_notifications_use_courier_layout(self):
+        Notification.send(self.courier, "Setoran #1 diterima kasir", url="/staff/courier/setoran/")
+        r = self.client.get(reverse("store:notifications"))
+        self.assertContains(r, 'id="ck-side"')
+        self.assertContains(r, "Setoran #1 diterima kasir")
+        self.assertContains(r, "bi-wallet2")
 
     def test_unknown_status_falls_back_to_pending(self):
         r = self.client.get(self.url, {"status": "aneh"})
@@ -157,3 +176,100 @@ class LiveLocationTests(TestCase):
             reverse("customer:track_location", args=[order.tracking_number])
         ).json()
         self.assertTrue(data["live"])
+
+
+class CourierAccountTests(TestCase):
+    """Kurir bisa mengubah akunnya sendiri dan mengunggah foto; foto tampil di halaman lacak."""
+
+    def setUp(self):
+        self.media = tempfile.mkdtemp(prefix="petshop-test-media-")
+        self.addCleanup(shutil.rmtree, self.media, ignore_errors=True)
+        self.courier = make_courier("kurir_akun")
+        self.client.force_login(self.courier)
+
+    def post_profile(self, **extra):
+        data = {"form": "profile", "name": "Budi Kurir", "phone_number": "081255550000",
+                "email": "", "vehicle": "Honda Beat", "plate_number": "kt 1234 ab"}
+        data.update(extra)
+        return self.client.post(reverse("courier:account"), data)
+
+    def test_nav_links_to_account_and_has_collapsible_sidebar(self):
+        html = self.client.get(reverse("courier:packages")).content.decode()
+        self.assertIn(f'href="{reverse("courier:account")}"', html)
+        self.assertIn('id="ck-side"', html)
+        self.assertIn("data-ck-menu", html)
+        self.assertIn("data-theme-toggle", html)
+
+    def test_courier_updates_profile_and_photo(self):
+        with override_settings(MEDIA_ROOT=self.media):
+            response = self.post_profile(photo=make_photo("wajah.jpg"))
+            self.assertRedirects(response, reverse("courier:account"))
+            self.courier.refresh_from_db()
+            profile = self.courier.courier_profile
+            self.assertEqual(self.courier.name, "Budi Kurir")
+            self.assertEqual(profile.vehicle, "Honda Beat")
+            self.assertEqual(profile.plate_number, "KT 1234 AB")
+            self.assertTrue(profile.photo.name.startswith("couriers/"))
+            html = self.client.get(reverse("courier:account")).content.decode()
+            self.assertIn(self.courier.photo_url, html)
+
+            self.post_profile(remove_photo="on")
+            profile.refresh_from_db()
+            self.assertFalse(profile.photo)
+
+    def test_rejects_non_image_upload(self):
+        with override_settings(MEDIA_ROOT=self.media):
+            fake = SimpleUploadedFile("x.jpg", b"bukan gambar", content_type="image/jpeg")
+            response = self.post_profile(photo=fake)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(self.courier.photo_url)
+
+    def test_courier_cannot_change_admin_fields(self):
+        self.post_profile(status="OFFLINE", can_carry_pets="on", service_area="Semua")
+        profile = User.objects.get(pk=self.courier.pk).courier_profile
+        self.assertFalse(profile.can_carry_pets)
+        self.assertEqual(profile.service_area, "")
+
+    def test_password_change_keeps_session(self):
+        response = self.client.post(reverse("courier:account"), {
+            "form": "password", "old_password": "x", "new_password1": "SandiBaru#2026", "new_password2": "SandiBaru#2026"})
+        self.assertRedirects(response, reverse("courier:account"))
+        self.courier.refresh_from_db()
+        self.assertTrue(self.courier.check_password("SandiBaru#2026"))
+        self.assertEqual(self.client.get(reverse("courier:account")).status_code, 200)
+
+    def test_photo_shows_on_customer_tracking_page(self):
+        with override_settings(MEDIA_ROOT=self.media):
+            self.post_profile(photo=make_photo("wajah.jpg"))
+            order = make_order(self.courier, OrderStatus.ON_DELIVERY)
+            self.client.logout()
+            html = self.client.get(reverse("customer:track_detail", args=[order.tracking_number])).content.decode()
+        self.assertIn('class="track-courier__photo"', html)
+
+    def test_customer_cannot_open_courier_account(self):
+        self.client.force_login(Customer.objects.create(username="pel", name="Pel", phone_number="0819", address="x"))
+        self.assertNotEqual(self.client.get(reverse("courier:account")).status_code, 200)
+
+
+class CustomerSeesDeliveryProofTests(TestCase):
+    """Foto bukti dari kurir juga terlihat oleh pelanggan di Pesanan Saya."""
+
+    def test_delivered_order_shows_proof_photo_and_courier(self):
+        media = tempfile.mkdtemp(prefix="petshop-test-media-")
+        self.addCleanup(shutil.rmtree, media, ignore_errors=True)
+        courier = make_courier("kurir_bukti")
+        with override_settings(MEDIA_ROOT=media):
+            order = make_order(courier, OrderStatus.ON_DELIVERY)
+            order.mark_delivered(photo=make_photo(), note="Titip di pos satpam")
+            self.client.force_login(order.customer)
+            html = self.client.get(reverse("customer:my_orders")).content.decode()
+        self.assertIn('class="mo-proof"', html)
+        self.assertIn(order.delivery_photo.url, html)
+        self.assertIn("Titip di pos satpam", html)
+        self.assertIn(courier.display_name, html)
+
+    def test_proof_block_only_for_delivered_orders(self):
+        order = make_order(make_courier("kurir_jalan"), OrderStatus.ON_DELIVERY)
+        self.client.force_login(order.customer)
+        html = self.client.get(reverse("customer:my_orders")).content.decode()
+        self.assertNotIn('class="mo-proof"', html)

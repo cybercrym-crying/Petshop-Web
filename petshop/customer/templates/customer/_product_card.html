@@ -13,7 +13,6 @@
                      loading="lazy">
             {% endif %}
         </a>
-        <span class="chip chip-category">{{ item.category.name|category_label }}</span>
         {% if item.stock == 0 %}
             <span class="chip chip-stock chip-out">{% translate "Stok habis" %}</span>
         {% elif item.stock <= 5 %}
@@ -30,26 +29,30 @@
         </button>
     </div>
     <div class="product-info">
+        <span class="chip chip-category">{{ item.category.name|category_label }}</span>
         <h3 class="product-name">
             <a href="{% url 'customer:product_detail' item.id %}">{{ item.name }}</a>
         </h3>
-        <div class="product-price">Rp {{ item.selling_price|default:"0"|rupiah }}</div>
-        <button type="button"
-                class="btn-add-cart"
-                data-add-to-cart
-                data-id="{{ item.id }}"
-                data-name="{{ item.name }}"
-                data-price="{{ item.selling_price }}"
-                data-stock="{{ item.stock }}"
-                data-url="{% url 'customer:product_detail' item.id %}"
-                data-photo="{% if item.photo %}{{ item.photo.url }}{% endif %}"
-                {% if item.stock == 0 %}disabled{% endif %}>
-            <i class="fas fa-cart-plus" aria-hidden="true"></i>
-            {% if item.stock == 0 %}
-                {% translate "Stok habis" %}
-            {% else %}
-                <span class="btn-add-cart__long">{% translate "Tambah ke Keranjang" %}</span><span class="btn-add-cart__short" aria-hidden="true">{% translate "Keranjang" %}</span>
-            {% endif %}
-        </button>
+        <div class="product-buy">
+            <div class="product-price">Rp {{ item.selling_price|default:"0"|rupiah }}</div>
+            <button type="button"
+                    class="btn-add-cart"
+                    data-add-to-cart
+                    data-id="{{ item.id }}"
+                    data-name="{{ item.name }}"
+                    data-price="{{ item.selling_price }}"
+                    data-stock="{{ item.stock }}"
+                    data-url="{% url 'customer:product_detail' item.id %}"
+                    data-photo="{% if item.photo %}{{ item.photo.url }}{% endif %}"
+                    aria-label="{% if item.stock == 0 %}{% translate "Stok habis" %}{% else %}{% blocktranslate trimmed with item_name=item.name %}Tambah {{ item_name }} ke keranjang{% endblocktranslate %}{% endif %}"
+                    {% if item.stock == 0 %}disabled{% endif %}>
+                <i class="fas fa-cart-plus" aria-hidden="true"></i>
+                {% if item.stock == 0 %}
+                    {% translate "Stok habis" %}
+                {% else %}
+                    <span class="btn-add-cart__long">{% translate "Tambah ke Keranjang" %}</span><span class="btn-add-cart__short" aria-hidden="true">{% translate "Keranjang" %}</span>
+                {% endif %}
+            </button>
+        </div>
     </div>
 </article>

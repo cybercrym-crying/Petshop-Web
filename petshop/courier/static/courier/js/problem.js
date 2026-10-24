@@ -1,10 +1,12 @@
-/* Pilihan kendala umum mengisi kolom catatan. */
+/* Pilihan kendala umum (chip) mengisi kolom catatan; kurir masih bisa menambah cerita. */
 (function () {
   "use strict";
-  var preset = document.querySelector("[data-problem-preset]");
   var note = document.getElementById("problem-note");
-  if (!preset || !note) return;
-  preset.addEventListener("change", function () {
-    if (preset.value) note.value = preset.value;
+  if (!note) return;
+  document.querySelectorAll("[data-problem-preset]").forEach(function (preset) {
+    preset.addEventListener("change", function () {
+      if (preset.value) note.value = preset.value + ". ";
+      note.focus();
+    });
   });
 })();

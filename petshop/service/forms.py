@@ -8,7 +8,7 @@ from account.models import Customer, User
 from common.photos import CameraPhotoForm, clean_photo
 from product.models import PetType
 
-from .models import Pet, Service, ServiceStep
+from .models import BookingPayChoice, Pet, Service, ServiceStep
 
 OPEN_HOUR = time(8, 0)
 CLOSE_HOUR = time(20, 0)
@@ -52,6 +52,11 @@ class BookingForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 3, "placeholder": _("Opsional, mis. kulit sensitif / galak saat potong kuku")}),
     )
 
+    payment_choice = forms.ChoiceField(
+        choices=BookingPayChoice.choices, initial=BookingPayChoice.LATER,
+        widget=forms.RadioSelect, label=_("Cara bayar"), required=False,
+    )
+
     pickup = forms.BooleanField(required=False, label=_("Jemput hewan di rumah"))
     return_trip = forms.BooleanField(required=False, label=_("Antar pulang setelah selesai"))
     address = forms.CharField(max_length=255, required=False, label=_("Alamat jemput/antar"))
@@ -73,6 +78,9 @@ class BookingForm(forms.Form):
     def location(self):
         lat, lng = self.cleaned_data.get("latitude"), self.cleaned_data.get("longitude")
         return (lat, lng) if lat is not None and lng is not None else None
+
+    def clean_payment_choice(self):
+        return self.cleaned_data.get("payment_choice") or BookingPayChoice.LATER
 
     def clean_schedule(self):
         schedule = self.cleaned_data["schedule"]
@@ -147,8 +155,8 @@ class StaffBookingForm(BookingForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Booking dari meja kasir: hewan diantar sendiri, tanpa pin peta.
-        for name in ("pet", "pickup", "return_trip", "address", "latitude", "longitude"):
+        # Booking dari meja kasir: hewan diantar sendiri, tanpa pin peta, bayar di kasir.
+        for name in ("pet", "pickup", "return_trip", "address", "latitude", "longitude", "payment_choice"):
             self.fields.pop(name)
 
 

@@ -3,172 +3,105 @@
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Booking Layanan" %}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
     <link href="{% static 'service/css/staff.css' %}?v=ux2" rel="stylesheet" />
+    <link href="{% static 'service/css/staff_sg.css' %}?v=3" rel="stylesheet" />
 {% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4 animate-fade-up">
-            <div>
-                <p class="eyebrow">{% translate "Layanan" %}</p>
-                <h1 class="page-title mb-1">{% translate "Booking Layanan" %}</h1>
-                <p class="text-muted fw-medium mb-0">{% translate "Konfirmasi booking online, tugaskan groomer &amp; kurir hewan. Alur: Menunggu konfirmasi → Terjadwal → (Dijemput) → Check-in &amp; antrean → Dikerjakan per tahap → Siap → (Diantar) → Selesai." %}</p>
+    {% url 'service:manage_bookings' as here %}
+    <div class="sg sg-page bk">
+        <header class="sg-hd bk-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Layanan" %}</p>
+                <h1>{% translate "Booking Layanan" %}</h1>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
-                <a class="btn-cancel" href="{% url 'service:check_in' %}"><i class="bi bi-qr-code-scan me-2"></i> {% translate "Check-in &amp; Antrean" %}</a>
-                <button class="btn-orange" data-bs-toggle="modal" data-bs-target="#addBookingModal">
-                    <i class="bi bi-plus-lg me-2"></i> {% translate "Buat Booking" %}
-                </button>
+            <div class="sg-hd__actions">
+                <form method="get" class="sg-search sg-form bk-search" role="search">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" name="q" value="{{ q }}" placeholder="{% translate 'Cari hewan, pelanggan, #id' %}" aria-label="{% translate 'Cari booking' %}">
+                </form>
+                <a class="ui-btn ui-btn--gold" href="{% url 'service:check_in' %}"><i class="bi bi-qr-code-scan" aria-hidden="true"></i>{% translate "Check-in" %}</a>
+                <button type="button" class="ui-btn ui-btn--primary" data-bs-toggle="modal" data-bs-target="#addBookingModal"><i class="bi bi-plus-lg" aria-hidden="true"></i>{% translate "Buat booking" %}</button>
             </div>
-        </div>
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{% translate 'Tutup' %}"></button>
-                    </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        {% if proofs_waiting or pending_all %}
+            <div class="bk-alerts">
+                {% if pending_all and status != "PENDING" %}
+                    <a class="sg-alert is-gold" href="{{ here }}?status=PENDING"><i class="bi bi-hourglass-split" aria-hidden="true"></i><span>{% blocktranslate trimmed with n=pending_all %}{{ n }} booking online menunggu konfirmasi (semua tanggal){% endblocktranslate %}</span><b>{% translate "Tinjau" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></b></a>
+                {% endif %}
+                {% for b in proofs_waiting %}
+                    <a class="sg-alert is-pri" href="{% url 'service:booking_payment_check' b.pk %}" id="{% if forloop.first %}bayar-cek{% endif %}"><i class="bi bi-receipt" aria-hidden="true"></i><span>{% blocktranslate trimmed with pk=b.pk name=b.customer.name total=b.total_price|rupiah %}Bukti transfer #{{ pk }} · {{ name }} · Rp {{ total }} menunggu dicek{% endblocktranslate %}</span><b>{% translate "Cek" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></b></a>
                 {% endfor %}
             </div>
         {% endif %}
-        <div class="svc-filters animate-fade-up anim-d1">
-            <div class="custom-tabs d-flex flex-wrap">
-                {% for f in status_filters %}
-                    <a href="?status={{ f.code }}{% if q %}&q={{ q|urlencode }}{% endif %}"
-                       class="nav-link {% if status == f.code %}active{% endif %}">
-                        {{ f.label }} <span class="svc-count">{{ f.count }}</span>
+
+        {% if all_dates %}
+            <div class="sg-alert is-pri bk-scope">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                <span>{% if q %}{% blocktranslate trimmed %}Hasil pencarian "{{ q }}" di semua tanggal{% endblocktranslate %}{% else %}{% blocktranslate trimmed with s=status_label %}Status "{{ s }}" di semua tanggal{% endblocktranslate %}{% endif %}</span>
+                <a class="ui-btn ui-btn--sm" href="{{ here }}">{% translate "Kembali ke hari ini" %}</a>
+            </div>
+        {% else %}
+            <nav class="bk-days" aria-label="{% translate 'Pilih tanggal' %}">
+                {% for d in days %}
+                    <a href="{{ here }}?day={{ d.date|date:'Y-m-d' }}{% if group %}&g={{ group }}{% endif %}" class="bk-day{% if d.date == day %} is-on{% endif %}"{% if d.date == day %} aria-current="date"{% endif %}>
+                        <small>{% if d.date == today %}{% translate "Hari ini" %}{% else %}{{ d.date|date:"D" }}{% endif %}</small>
+                        <b>{{ d.date|date:"j" }}</b>
+                        <i>{{ d.count }}</i>
                     </a>
                 {% endfor %}
-            </div>
-            <form method="get" class="svc-search" role="search">
-                <input type="hidden" name="status" value="{{ status }}">
-                <input type="search" name="q" value="{{ q }}" class="dark-input" placeholder="{% translate 'Cari hewan, pelanggan, layanan, #id' %}" aria-label="{% translate 'Cari booking' %}">
-                <button type="submit" class="btn-cancel px-3" aria-label="{% translate 'Cari' %}"><i class="bi bi-search"></i></button>
-            </form>
-        </div>
-        <div class="card-custom animate-fade-up anim-d2">
-            <div class="table-responsive">
-                <table data-stack class="table table-custom align-middle">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>{% translate "Hewan &amp; Layanan" %}</th>
-                            <th>{% translate "Pelanggan" %}</th>
-                            <th>{% translate "Jadwal" %}</th>
-                            <th>{% translate "Groomer" %}</th>
-                            <th>{% translate "Status" %}</th>
-                            <th class="text-end">{% translate "Harga" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for b in bookings %}
-                            <tr>
-                                <td class="fw-bold">#{{ b.pk }}</td>
-                                <td>
-                                    <div class="fw-bold text-dark">{{ b.pet_name }} <span class="svc-muted">· {{ b.get_pet_type_display }}</span></div>
-                                    <div class="svc-muted">{{ b.service.name }}</div>
-                                    {% if b.customer_note %}<div class="svc-muted"><i class="bi bi-chat-left-text me-1"></i>{{ b.customer_note }}</div>{% endif %}
-                                    {% if b.needs_transport %}
-                                        <div class="svc-transport-chip"><i class="bi bi-truck me-1"></i>{% if b.pickup_requested and b.return_requested %}{% translate "Jemput + antar" %}{% elif b.pickup_requested %}{% translate "Jemput" %}{% else %}{% translate "Antar pulang" %}{% endif %} · {{ b.transport_distance_km }} km · Rp {{ b.transport_fee|rupiah }}</div>
-                                        {% if b.is_open and b.status != "DIJEMPUT" and b.status != "DIANTAR" %}
-                                            <form method="post" action="{% url 'service:booking_action' b.pk %}" class="svc-assign mt-1">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="courier">
-                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
-                                                <select name="courier" class="dark-input" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Kurir hewan booking #{{ b_pk }}{% endblocktranslate %}" required>
-                                                    <option value="">{% if b.pet_courier %}{{ b.pet_courier.display_name }}{% else %}{% translate "Pilih kurir hewan" %}{% endif %}</option>
-                                                    {% for c in pet_couriers %}<option value="{{ c.pk }}" {% if c.pk == b.pet_courier_id %}selected{% endif %}>{{ c.display_name }}</option>{% endfor %}
-                                                </select>
-                                                <button type="submit" class="btn-sm-action" title="{% translate 'Simpan kurir' %}" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Simpan kurir booking #{{ b_pk }}{% endblocktranslate %}"><i class="bi bi-check2" aria-hidden="true"></i></button>
-                                            </form>
-                                        {% elif b.pet_courier %}
-                                            <div class="svc-muted">{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name %}Kurir: {{ b_pet_courier_display_name }}{% endblocktranslate %}</div>
-                                        {% endif %}
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="fw-semibold">{{ b.customer.name }}</div>
-                                    <div class="svc-muted">{{ b.customer.phone_number }}</div>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold">{{ b.schedule|date:"d M Y" }}</div>
-                                    <div class="svc-muted">{{ b.schedule|date:"H:i" }}{% if b.is_late %} <span class="svc-late">{% translate "· lewat" %}</span>{% endif %}</div>
-                                </td>
-                                <td>
-                                    {% if b.status == "PENDING" or b.status == "TERJADWAL" or b.status == "DIJEMPUT" or b.status == "ANTRE" %}
-                                        <form method="post" action="{% url 'service:assign_groomer' b.pk %}" class="svc-assign">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="back" value="{{ request.get_full_path }}">
-                                            <select name="groomer" class="dark-input" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Groomer booking #{{ b_pk }}{% endblocktranslate %}" required>
-                                                <option value="">{% if b.groomer %}{% translate "Ganti groomer" %}{% else %}{% translate "Pilih groomer" %}{% endif %}</option>
-                                                {% for g in groomers %}
-                                                    <option value="{{ g.pk }}" {% if g.pk == b.groomer_id %}selected{% endif %}>{{ g.display_name }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <button type="submit" class="btn-sm-action" title="{% translate 'Simpan groomer' %}" aria-label="{% blocktranslate trimmed with b_pk=b.pk %}Simpan groomer booking #{{ b_pk }}{% endblocktranslate %}"><i class="bi bi-check2" aria-hidden="true"></i></button>
-                                        </form>
-                                    {% else %}
-                                        <span class="fw-semibold">{{ b.groomer.display_name|default:"-" }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="bk-status bk-{{ b.status|lower }}">{{ b.get_status_display }}</span>
-                                    {% if b.queue_label %}<span class="svc-queue-chip">{{ b.queue_label }}</span>{% endif %}
-                                    {% if b.finished_at %}<div class="svc-muted mt-1">{% blocktranslate trimmed with b_finished_at=b.finished_at|date:"d M, H:i" %}Selesai dikerjakan {{ b_finished_at }}{% endblocktranslate %}</div>{% endif %}
-                                    {% if b.groomer_note %}<div class="svc-muted">{{ b.groomer_note }}</div>{% endif %}
-                                    {% if b.rating %}<div class="svc-muted"><i class="bi bi-star-fill text-warning"></i> {{ b.rating }}/5{% if b.review %} · {{ b.review|truncatechars:60 }}{% endif %}</div>{% endif %}
-                                    <div class="svc-actions">
-                                        {% if b.status == "PENDING" %}
-                                            <form method="post" action="{% url 'service:booking_action' b.pk %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="confirm">
-                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
-                                                <button type="submit" class="btn-sm-action"><i class="bi bi-check2-circle"></i> {% translate "Konfirmasi" %}</button>
-                                            </form>
-                                        {% endif %}
-                                        {% if b.can_check_in %}
-                                            <a class="btn-sm-action" href="{% url 'service:check_in' %}?booking={{ b.pk }}"><i class="bi bi-box-arrow-in-right"></i> {% translate "Check-in" %}</a>
-                                        {% endif %}
-                                        {% if b.status == "SIAP" %}
-                                            <form method="post" action="{% url 'service:booking_action' b.pk %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="handover">
-                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
-                                                <button type="submit" class="btn-sm-action" data-confirm="{% blocktranslate trimmed with b_pet_name=b.pet_name %}{{ b_pet_name }} sudah diambil pemiliknya?{% endblocktranslate %}"><i class="bi bi-person-check"></i> {% translate "Diambil pemilik" %}</button>
-                                            </form>
-                                        {% endif %}
-                                        {% if b.is_late %}
-                                            <form method="post" action="{% url 'service:booking_action' b.pk %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="no_show">
-                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
-                                                <button type="submit" class="btn-link-danger" data-confirm="{% blocktranslate trimmed with b_pk=b.pk %}Tandai booking #{{ b_pk }} tidak datang?{% endblocktranslate %}">{% translate "Tidak datang" %}</button>
-                                            </form>
-                                        {% endif %}
-                                        {% if b.can_cancel or b.status == "ANTRE" %}
-                                            <form method="post" action="{% url 'service:cancel_booking' b.pk %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
-                                                <button type="submit" class="btn-link-danger"
-                                                        data-confirm="{% blocktranslate trimmed with b_pk=b.pk b_pet_name=b.pet_name %}Batalkan booking #{{ b_pk }} ({{ b_pet_name }})?{% endblocktranslate %}">{% translate "Batalkan" %}</button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td class="text-end svc-price">Rp {{ b.total_price|rupiah }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="7" class="text-center py-5">
-                                    <i class="bi bi-calendar2-heart text-muted opacity-50 icon-xl"></i>
-                                    <h5 class="fw-bold mt-3 text-dark">{% translate "Belum ada booking" %}{% if q %} {% translate "yang cocok" %}{% endif %}</h5>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% if bookings|length >= limit %}<p class="svc-muted px-3 pb-3 mb-0">{% blocktranslate trimmed with limit=limit %}Menampilkan {{ limit }} booking terbaru. Gunakan filter atau pencarian untuk yang lain.{% endblocktranslate %}</p>{% endif %}
+                <form method="get" class="bk-day bk-day--pick" data-bk-day>
+                    <label for="bk-day-input"><i class="bi bi-calendar3" aria-hidden="true"></i><span class="visually-hidden">{% translate "Pilih tanggal lain" %}</span></label>
+                    <input id="bk-day-input" type="date" name="day" value="{{ day|date:'Y-m-d' }}">
+                    {% if group %}<input type="hidden" name="g" value="{{ group }}">{% endif %}
+                    <noscript><button type="submit" class="ui-btn ui-btn--sm">{% translate "Lihat" %}</button></noscript>
+                </form>
+            </nav>
+            <p class="sg-sm sg-muted bk-daylabel">{{ day|date:"l, j F Y" }}</p>
+        {% endif %}
+
+        <nav class="bk-groups" aria-label="{% translate 'Kelompok booking' %}">
+            {% for g in groups %}
+                <a href="{{ here }}?{% if keep_no_group %}{{ keep_no_group }}&{% endif %}g={{ g.code }}" class="bk-group{% if group == g.code %} is-on{% endif %}{% if g.code == 'aksi' and g.count %} is-hot{% endif %}"{% if group == g.code %} aria-current="page"{% endif %}>{% if g.code == "antar" %}<i class="bi bi-truck" aria-hidden="true"></i>{% endif %}{{ g.label }} <span>{{ g.count }}</span></a>
+            {% endfor %}
+        </nav>
+
+        <div class="bk-wrap{% if picked %} has-pick{% endif %}">
+            <section class="sg-card bk-list" aria-label="{% translate 'Daftar booking' %}">
+                {% for b in bookings %}
+                    {% if all_dates %}
+                        {% ifchanged %}<p class="bk-slot">{{ b.schedule|date:"l, j M Y" }}</p>{% endifchanged %}
+                    {% else %}
+                        {% with h=b.schedule|time:"H" %}{% ifchanged %}{% if h < "11" %}<p class="bk-slot">{% translate "Pagi" %}</p>{% elif h < "15" %}<p class="bk-slot">{% translate "Siang" %}</p>{% elif h < "18" %}<p class="bk-slot">{% translate "Sore" %}</p>{% else %}<p class="bk-slot">{% translate "Malam" %}</p>{% endif %}{% endifchanged %}{% endwith %}
+                    {% endif %}
+                    <a class="bk-row{% if selected and selected.pk == b.pk %} is-on{% endif %}" href="{{ here }}?{% if keep %}{{ keep }}&{% endif %}id={{ b.pk }}"{% if selected and selected.pk == b.pk %} aria-current="true"{% endif %}>
+                        <span class="bk-row__t">{{ b.schedule|time:"H.i" }}</span>
+                        <span class="sg-av bk-av" aria-hidden="true">{% include "partials/_paw.html" %}</span>
+                        <span class="bk-row__b">
+                            <b>{{ b.pet_name }} <span>· {{ b.get_pet_type_display }}</span></b>
+                            <small>{{ b.service.name }} · {{ b.customer.name }}</small>
+                        </span>
+                        <span class="bk-row__ic">
+                            {% if b.needs_transport %}<i class="bi bi-truck" title="{% translate 'Antar-jemput' %}" aria-label="{% translate 'Antar-jemput' %}"></i>{% endif %}
+                            {% if b.customer_note or b.pet.notes %}<i class="bi bi-chat-left-text" title="{% translate 'Ada catatan' %}" aria-label="{% translate 'Ada catatan' %}"></i>{% endif %}
+                            {% if not b.groomer and b.is_open and b.status != "SIAP" and b.status != "DIANTAR" %}<i class="bi bi-person-exclamation is-warn" title="{% translate 'Belum ada groomer' %}" aria-label="{% translate 'Belum ada groomer' %}"></i>{% elif b.groomer %}<span class="sg-av bk-mini" title="{{ b.groomer.display_name }}">{{ b.groomer.initials }}</span>{% endif %}
+                            {% if b.status == "SIAP" and not b.paid %}<i class="bi bi-cash is-bad" title="{% translate 'Belum bayar' %}" aria-label="{% translate 'Belum bayar' %}"></i>{% endif %}
+                            {% if b.payment_proof and not b.paid %}<i class="bi bi-receipt is-pri" title="{% translate 'Bukti transfer menunggu dicek' %}" aria-label="{% translate 'Bukti transfer menunggu dicek' %}"></i>{% endif %}
+                        </span>
+                        <span class="bk-row__st">{% include "service/_booking_status_pill.html" %}</span>
+                    </a>
+                {% empty %}
+                    <p class="sg-empty"><i class="bi bi-calendar2-heart" aria-hidden="true"></i>{% if q %}{% translate "Tidak ada booking yang cocok." %}{% elif group %}{% translate "Tidak ada booking di kelompok ini." %}{% else %}{% translate "Belum ada booking di tanggal ini." %}{% endif %}</p>
+                {% endfor %}
+                {% if bookings|length >= limit %}<p class="sg-xs sg-muted mb-0 sg-mt12">{% blocktranslate trimmed with limit=limit %}Menampilkan {{ limit }} booking. Gunakan pencarian untuk yang lain.{% endblocktranslate %}</p>{% endif %}
+                {% if bookings %}
+                    <p class="bk-legend"><span><i class="bi bi-truck" aria-hidden="true"></i> {% translate "antar-jemput" %}</span><span><i class="bi bi-chat-left-text" aria-hidden="true"></i> {% translate "ada catatan" %}</span><span class="is-warn"><i class="bi bi-person-exclamation" aria-hidden="true"></i> {% translate "belum ada groomer" %}</span><span class="is-bad"><i class="bi bi-cash" aria-hidden="true"></i> {% translate "belum bayar" %}</span></p>
+                {% endif %}
+            </section>
+            {% if selected %}
+                <a class="bk-dim" href="{{ here }}{% if keep %}?{{ keep }}{% endif %}" aria-label="{% translate 'Tutup detail' %}"></a>
+                {% include "service/_booking_panel.html" with b=selected %}
+            {% endif %}
         </div>
     </div>
     <!-- MODAL: BUAT BOOKING -->
@@ -238,12 +171,15 @@
                             </div>
                         </div>
                         <div class="d-flex gap-2 justify-content-end border-top pt-4">
-                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
-                            <button type="submit" class="btn-orange px-5">{% translate "Simpan Booking" %}</button>
+                            <button type="button" class="ui-btn" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                            <button type="submit" class="ui-btn ui-btn--primary">{% translate "Simpan Booking" %}</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'service/js/booking_list.js' %}?v=1"></script>
 {% endblock %}

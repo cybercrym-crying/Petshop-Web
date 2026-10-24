@@ -11,6 +11,7 @@ from common.exceptions import PetshopError
 from product.models import Product, InsufficientStock
 from account.models import POS_ROLES, Customer, User, Role, person_search
 from .notify import order_event
+from store.models import StoreSettings
 from .models import (
     Cart,
     CartItem,
@@ -251,7 +252,13 @@ def payment_check(request, pk):
     return render(
         request,
         "transaction/payment_check.html",
-        {"order": order, "waiting": _proof_waiting().exclude(pk=order.pk).order_by("payment_proof_at")[:10]},
+        {
+            "order": order,
+            "waiting": _proof_waiting().exclude(pk=order.pk).order_by("payment_proof_at")[:10],
+            "queue": _proof_waiting().select_related("customer").order_by("payment_proof_at")[:12],
+            "details": order.details.select_related("product"),
+            "bank_accounts": StoreSettings.current().bank_accounts(),
+        },
     )
 
 

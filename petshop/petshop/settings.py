@@ -116,6 +116,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "transaction.context_processors.pending_online_orders",
+                "courier.context_processors.courier_counts",
                 "store.context_processors.store",
             ],
         },

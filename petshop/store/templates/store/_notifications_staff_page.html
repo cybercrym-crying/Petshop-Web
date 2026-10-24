@@ -1,0 +1,25 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "Notifikasi - Seelly" %}{% endblock %}
+{% block content %}
+    <div class="sg sg-page" style="max-width:820px">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Kotak masuk" %}</p>
+                <h1>{% translate "Notifikasi" %}</h1>
+                <p>{% blocktranslate trimmed with n=unread_notifications|default:0 %}{{ n }} belum dibaca{% endblocktranslate %}</p>
+            </div>
+            {% if unread_notifications %}
+                <div class="sg-hd__actions">
+                    <form method="post" action="{% url 'store:read_all' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="ui-btn"><i class="bi bi-check2-all" aria-hidden="true"></i>{% translate "Tandai semua dibaca" %}</button>
+                    </form>
+                </div>
+            {% endif %}
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        {% include "store/_notification_list_sg.html" %}
+    </div>
+{% endblock %}

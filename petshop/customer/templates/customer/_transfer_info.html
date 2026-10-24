@@ -21,6 +21,13 @@
     {% else %}
         <p class="co-transfer__lead muted">{% translate "Nomor rekening dikirim admin lewat WhatsApp." %}</p>
     {% endif %}
+    {% if store_qris %}
+        <details class="co-transfer__qris">
+            <summary><i class="fas fa-qrcode" aria-hidden="true"></i> {% translate "Bayar pakai QRIS" %}</summary>
+            <img src="{{ store_qris.url }}" alt="{% translate 'QRIS toko' %}" loading="lazy">
+            <p class="muted">{% translate "Pindai dengan aplikasi bank/e-wallet, lalu foto layar bukti bayarnya." %}</p>
+        </details>
+    {% endif %}
     {% if order and not order.awaiting_payment_check %}
         <a href="{% url 'customer:payment_proof' order.pk %}" class="btn-primary-seelly co-transfer__btn">
             <i class="fas fa-camera" aria-hidden="true"></i> {% translate "Kirim Bukti Transfer" %}

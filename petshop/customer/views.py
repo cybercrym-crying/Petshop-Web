@@ -48,6 +48,7 @@ def _site_context(**extra):
         "wa_link": store.whatsapp_link,
         "wa_display": store.whatsapp_display,
         "bank_accounts": store.bank_accounts(),
+        "store_qris": store.qris_image or None,
         **extra,
     }
 
@@ -732,8 +733,10 @@ def account(request):
 @roleRequired(Role.CUSTOMER)
 def my_orders(request):
     Order.cancel_expired()
+    # Pembayaran layanan saja (tanpa barang) tampil di Booking Saya, bukan di sini.
     orders = (
         Order.objects.filter(customer=request.user)
+        .exclude(pk__in=Order.objects.filter(customer=request.user, details__isnull=True, service_lines__isnull=False).values("pk"))
         .select_related("courier")
         .prefetch_related("details__product")
         .order_by("-date")
@@ -742,13 +745,36 @@ def my_orders(request):
     new_order = (
         orders.filter(pk=int(new_id)).first() if new_id.isdigit() else None
     )
+    # Tab penyaring: kelompok status yang mudah dipahami pelanggan.
+    running = (OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
+    groups = {
+        "berjalan": Q(order_status__in=running),
+        "bayar": Q(payment_method="TRANSFER", payment_status="MENUNGGU") & ~Q(order_status=OrderStatus.CANCELLED),
+        "selesai": Q(order_status=OrderStatus.DELIVERED),
+        "batal": Q(order_status=OrderStatus.CANCELLED),
+    }
+    tab = request.GET.get("tab", "")
+    if tab not in groups:
+        tab = ""
+    tabs = [("", _("Semua"), orders.count())] + [
+        (key, label, orders.filter(groups[key]).count())
+        for key, label in (
+            ("berjalan", _("Berjalan")),
+            ("bayar", _("Perlu dibayar")),
+            ("selesai", _("Selesai")),
+            ("batal", _("Dibatalkan")),
+        )
+    ]
+    shown = orders.filter(groups[tab]) if tab else orders
     return render(
         request,
         "customer/my_orders.html",
         _site_context(
             active_page="orders",
-            orders=orders,
+            orders=shown,
             new_order=new_order,
+            tab=tab,
+            tabs=tabs,
         ),
     )
 
@@ -908,6 +934,7 @@ def track_order(request, resi=None):
             courier_name=(order.courier.get_full_name() or order.courier.username)
             if order.courier
             else "",
+            courier_photo=order.courier.photo_url if order.courier else "",
             items=list(order.details.all()),
         )
     response = render(

@@ -99,12 +99,39 @@
     });
   }
 
-  // Area pelanggan: laci menu di HP (tombol bilah atas & tombol "Menu" di bawah).
+  // Area pelanggan: di layar lebar tombol bilah atas menciutkan menu samping jadi
+  // deretan ikon (pilihan diingat); di HP membuka laci menu (juga tombol "Menu" di bawah).
   function setupAppMenu() {
     var side = document.getElementById("ca-side");
     var buttons = document.querySelectorAll("[data-ca-menu]");
     var scrim = document.querySelector("[data-ca-close]");
     if (!side || !buttons.length) return;
+    var root = document.documentElement;
+    var desktop = window.matchMedia("(min-width: 992px)");
+    var topButton = document.querySelector(".ca-menu-btn");
+
+    side.querySelectorAll(".ca-link").forEach(function (link) {
+      var text = link.textContent.replace(/\s+\d+\s*$/, "").trim();
+      if (text && !link.hasAttribute("title")) link.setAttribute("data-ca-tip", text);
+    });
+
+    function syncTips() {
+      var collapsed = desktop.matches && root.classList.contains("ca-collapsed");
+      side.querySelectorAll("[data-ca-tip]").forEach(function (link) {
+        if (collapsed) link.setAttribute("title", link.getAttribute("data-ca-tip"));
+        else link.removeAttribute("title");
+      });
+      if (topButton && desktop.matches) {
+        topButton.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        topButton.setAttribute("aria-label", topButton.getAttribute(collapsed ? "data-label-open" : "data-label-close"));
+      }
+    }
+
+    function setCollapsed(collapsed) {
+      root.classList.toggle("ca-collapsed", collapsed);
+      if (window.SiteTheme) window.SiteTheme.write(window.SiteTheme.sideKey, collapsed ? "1" : "0");
+      syncTips();
+    }
 
     function setOpen(open) {
       document.body.classList.toggle("ca-menu-open", open);
@@ -120,6 +147,10 @@
 
     buttons.forEach(function (b) {
       b.addEventListener("click", function () {
+        if (desktop.matches) {
+          setCollapsed(!root.classList.contains("ca-collapsed"));
+          return;
+        }
         setOpen(!document.body.classList.contains("ca-menu-open"));
       });
     });
@@ -130,6 +161,17 @@
         buttons[0].focus();
       }
     });
+    var onChange = function () {
+      if (desktop.matches) setOpen(false);
+      else if (topButton) {
+        topButton.setAttribute("aria-expanded", "false");
+        topButton.setAttribute("aria-label", topButton.getAttribute("data-label-open"));
+      }
+      syncTips();
+    };
+    if (desktop.addEventListener) desktop.addEventListener("change", onChange);
+    else if (desktop.addListener) desktop.addListener(onChange);
+    syncTips();
   }
 
   window.addEventListener("storage", refreshBadges);

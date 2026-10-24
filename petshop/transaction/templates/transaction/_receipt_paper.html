@@ -1,0 +1,102 @@
+{% load i18n rupiah %}
+        <article class="receipt">
+            {% if order.is_voided %}
+                <div class="receipt-void">{% translate "DIBATALKAN" %}</div>
+            {% endif %}
+            <header class="receipt-head">
+                <h1>{{ store.name }}</h1>
+                <p>{{ store.address }}</p>
+                {% if store.whatsapp %}<p>WA {{ store.whatsapp }}</p>{% endif %}
+            </header>
+            <div class="receipt-rule"></div>
+            <dl class="receipt-meta">
+                <dt>{% translate "No." %}</dt>
+                <dd>{{ order.receipt_no }}</dd>
+                <dt>{% translate "Tanggal" %}</dt>
+                <dd>{{ order.date|date:"d/m/Y H:i" }}</dd>
+                <dt>{% translate "Kasir" %}</dt>
+                <dd>{{ order.admin.display_name|default:"-" }}</dd>
+                <dt>{% translate "Pembeli" %}</dt>
+                <dd>{{ order.buyer_display }}</dd>
+                <dt>{% translate "Barang" %}</dt>
+                <dd>{{ order.get_fulfillment_display }}</dd>
+            </dl>
+            <div class="receipt-rule"></div>
+            <table class="receipt-lines">
+                <tbody>
+                    {% for d in details %}
+                        <tr>
+                            <td colspan="2" class="receipt-name">{{ d.product.name }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ d.quantity }} x {{ d.unit_price|rupiah }}</td>
+                            <td class="num">{{ d.subtotal|rupiah }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% for s in service_lines %}
+                        <tr>
+                            <td colspan="2" class="receipt-name">{{ s.description }}</td>
+                        </tr>
+                        <tr>
+                            <td>{% blocktranslate trimmed with pk=s.booking_id %}Booking #{{ pk }}{% endblocktranslate %}</td>
+                            <td class="num">{{ s.amount|rupiah }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="receipt-rule"></div>
+            <table class="receipt-sum">
+                <tbody>
+                    <tr><td>{% translate "Subtotal" %}</td><td class="num">{{ order.subtotal_before_discount|rupiah }}</td></tr>
+                    {% if order.discount %}
+                        <tr><td>{% translate "Diskon" %}{% if order.discount_reason %} <small>({{ order.discount_reason }})</small>{% endif %}</td><td class="num">-{{ order.discount|rupiah }}</td></tr>
+                    {% endif %}
+                    {% if order.tax_amount %}
+                        <tr><td>{% blocktranslate trimmed with pct=order.tax_percent|floatformat:"-2" %}PPN {{ pct }}%{% endblocktranslate %}</td><td class="num">{{ order.tax_amount|rupiah }}</td></tr>
+                    {% endif %}
+                    {% if order.shipping_fee %}
+                        <tr><td>{% translate "Ongkir" %}</td><td class="num">{{ order.shipping_fee|rupiah }}</td></tr>
+                    {% endif %}
+                    <tr class="receipt-total"><td>{% translate "TOTAL" %}</td><td class="num">{{ order.total_payment|rupiah }}</td></tr>
+                    {% for p in payments %}
+                        <tr><td>{{ p.get_method_display }}</td><td class="num">{% if p.method == "TUNAI" and order.cash_received %}{{ order.cash_received|rupiah }}{% else %}{{ p.amount|rupiah }}{% endif %}</td></tr>
+                    {% endfor %}
+                    {% if order.change_given %}
+                        <tr><td>{% translate "Kembalian" %}</td><td class="num">{{ order.change_given|rupiah }}</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            {% if order.is_voided %}
+                <div class="receipt-rule"></div>
+                <p class="receipt-note">
+                    {% blocktranslate trimmed with when=order.voided_at|date:"d/m/Y H:i" reason=order.void_reason %}
+                        Dibatalkan {{ when }}: {{ reason }}
+                    {% endblocktranslate %}
+                </p>
+            {% endif %}
+            {% for r in returns %}
+                <div class="receipt-rule"></div>
+                <p class="receipt-note">
+                    <strong>{% blocktranslate trimmed with pk=r.pk status=r.get_status_display %}Retur #{{ pk }} ({{ status }}){% endblocktranslate %}</strong><br>
+                    {% for line in r.lines.all %}{{ line.quantity }} x {{ line.detail.product.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    {% if r.refund_amount %}<br>{% blocktranslate trimmed with amount=r.refund_amount|rupiah method=r.get_refund_method_display %}Pengembalian Rp {{ amount }} ({{ method }}){% endblocktranslate %}{% endif %}
+                </p>
+            {% endfor %}
+            {% if order.customer_note %}
+                <p class="receipt-note">{{ order.customer_note }}</p>
+            {% endif %}
+            <div class="receipt-rule"></div>
+            <footer class="receipt-foot">
+                <img src="{% url 'transaction:receipt_qr' order.receipt_token %}" alt="{% translate 'QR struk digital' %}" width="96" height="96">
+                <p>{% translate "Scan untuk struk digital" %}</p>
+                {% if store.receipt_footer %}
+                    <p>{{ store.receipt_footer }}</p>
+                {% elif store.return_days %}
+                    <p>
+                        {% blocktranslate trimmed with days=store.return_days %}
+                            Retur maks. {{ days }} hari dengan struk ini.
+                        {% endblocktranslate %}
+                    </p>
+                {% endif %}
+            </footer>
+        </article>

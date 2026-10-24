@@ -54,7 +54,10 @@ class StoreSettings(models.Model):
     pickup_base_km = models.DecimalField("Jarak antar-jemput dasar (km)", max_digits=5, decimal_places=1, default=Decimal("3"))
     pickup_per_km = models.PositiveIntegerField("Antar-jemput per km berikutnya (Rp)", default=3000)
     max_packages_per_courier = models.PositiveSmallIntegerField("Maks. paket per kurir per rute", default=10)
-    payment_deadline_hours = models.PositiveSmallIntegerField("Batas waktu bayar transfer (jam)", default=24)
+    payment_deadline_hours = models.PositiveSmallIntegerField(
+        "Batas waktu bayar transfer/QRIS (jam)", default=1,
+        help_text="Pesanan barang & booking layanan yang belum dibayar lewat batas ini dibatalkan otomatis.",
+    )
     grooming_reminder_days = models.PositiveSmallIntegerField(
         "Ingatkan grooming lagi setelah (hari)", default=30
     )
@@ -179,6 +182,24 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.title
+
+    # Ikon dan warna kartu notifikasi, ditebak dari halaman tujuannya.
+    ICONS = (
+        (("/retur", "retur"), "bi-arrow-counterclockwise", "is-gold"),
+        (("/grooming", "/service", "/booking", "/pet", "hewan"), "bi-heart", "is-pri"),
+        (("/remittance", "/cash", "setoran"), "bi-wallet2", "is-gold"),
+        (("/review", "ulasan"), "bi-star", "is-gold"),
+        (("/complaint", "komplain"), "bi-chat-left-text", "is-bad"),
+        (("/payment", "/pickup", "/packing", "/order", "/transaction", "/courier", "paket", "pesanan"), "bi-box-seam", "is-pri"),
+    )
+
+    @property
+    def look(self):
+        haystack = f"{self.url} {self.title}".lower()
+        for keys, icon, tone in self.ICONS:
+            if any(k in haystack for k in keys):
+                return {"icon": icon, "tone": tone}
+        return {"icon": "bi-bell", "tone": ""}
 
     @classmethod
     def send(cls, users, title, body="", url=""):

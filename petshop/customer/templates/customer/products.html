@@ -4,6 +4,9 @@
 {% block title %}{{ title }} - Seelly Petshop{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/shop.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'customer/css/shop-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/product_card.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/product_card-dark.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <div class="container section shop-layout">
@@ -104,6 +107,12 @@
                     </label>
                 </div>
             </div>
+            <nav class="shop-cats" aria-label="{% translate 'Kategori cepat' %}">
+                <a href="{% url 'customer:products' %}"{% if not has_filters %} class="is-on"{% endif %}>{% translate "Semua" %}</a>
+                {% for option in category_options %}
+                    <a href="{% url 'customer:products' %}?category={{ option.code|urlencode }}"{% if option.checked %} class="is-on"{% endif %}>{{ option.label }}</a>
+                {% endfor %}
+            </nav>
             {% if filter_chips %}
                 <div class="active-filters" aria-label="{% translate 'Filter aktif' %}">
                     {% for chip in filter_chips %}<span class="filter-chip">{{ chip }}</span>{% endfor %}

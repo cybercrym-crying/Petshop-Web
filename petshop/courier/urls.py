@@ -12,6 +12,7 @@ urlpatterns = [
     path("staff/courier/ambil/", views.pickup, name="pickup"),
     path("staff/courier/setoran/", views.cash, name="cash"),
     path("staff/courier/history", views.history, name="history"),
+    path("staff/courier/akun/", views.account, name="account"),
     path("staff/courier/lokasi/", views.share_location, name="share_location"),
     path("staff/courier/order/<int:pk>/", views.order_detail, name="order_detail"),
     path("staff/courier/order/<int:pk>/serah/", views.handover, name="handover"),

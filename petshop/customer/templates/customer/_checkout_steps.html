@@ -1,0 +1,7 @@
+{% load i18n %}
+{# Penanda langkah checkout: Keranjang -> Data & pembayaran -> Pesanan dibuat #}
+<ol class="cx-steps" aria-label="{% translate 'Langkah pemesanan' %}">
+    <li class="is-done"><a href="{% url 'customer:cart' %}"><span class="cx-steps__dot" aria-hidden="true"><i class="fas fa-check"></i></span><span class="cx-steps__label">{% translate "Keranjang" %}</span></a></li>
+    <li class="is-current" aria-current="step"><span class="cx-steps__dot" aria-hidden="true">2</span><span class="cx-steps__label">{% translate "Data & pembayaran" %}</span></li>
+    <li><span class="cx-steps__dot" aria-hidden="true">3</span><span class="cx-steps__label">{% if guest %}{% translate "Kirim ke WhatsApp" %}{% else %}{% translate "Pesanan dibuat" %}{% endif %}</span></li>
+</ol>

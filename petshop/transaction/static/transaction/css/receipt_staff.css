@@ -1,0 +1,15 @@
+/* Struk di halaman staf: kertas struk di atas panggung krem, ringkasan di kanan. */
+.rcp .rcp-stage { display: flex; justify-content: center; background: var(--sg-soft); padding: 28px 16px; }
+.rcp-stage .receipt { margin: 0; color: #000; font-family: "Courier New", ui-monospace, monospace; border-radius: 6px; box-shadow: var(--sg-sh-2); }
+.rcp.receipt-58 .receipt { width: 72mm; font-size: 12px; }
+.rcp.receipt-a4 .rcp-stage { grid-column: span 12; }
+.rcp-wa { color: var(--sg-ok); }
+.rcp-wa:hover { border-color: var(--sg-ok); color: var(--sg-ok); }
+.rcp .sg-step b { font-weight: 700; }
+@media print {
+    body * { visibility: hidden !important; }
+    .rcp-stage, .rcp-stage * { visibility: visible !important; }
+    .rcp-stage { position: absolute; left: 0; top: 0; padding: 0; background: #fff; border: 0; box-shadow: none; }
+    .rcp-stage .receipt { box-shadow: none; }
+    .rcp.receipt-58 .receipt { width: 58mm; padding: 0 2mm; font-size: 11px; }
+}

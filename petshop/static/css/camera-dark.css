@@ -1,0 +1,3 @@
+/* Dibuat otomatis oleh `python manage.py build_dark_css` dari camera.css. Jangan diubah manual. */
+html[data-theme="dark"] .cam video, html[data-theme="dark"] .cam img { background: #111; }
+html[data-theme="dark"] .cam__status.is-error { color: #ed8d8d; }

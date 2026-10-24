@@ -13,6 +13,7 @@
         <link rel="stylesheet"
               href="{% static 'transaction/css/manage_transaction.css' %}?v=ux2">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+        <link href="{% static 'transaction/css/manage_transaction_sg.css' %}?v=1" rel="stylesheet">
     </head>
     <body>
         {% include "partials/staff_nav.html" %}
@@ -28,34 +29,25 @@
                     <i class="bi bi-plus-lg"></i> {% translate "Tambah Transaksi" %}
                 </a>
             </div>
-            <!-- Alerts & Messages -->
-            {% if messages %}
-                <div class="mb-4 animate-fade-up anim-d1">
-                    {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-3 shadow-sm border-0"
-                             role="alert">
-                            {{ message }}
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="alert"
-                                    aria-label="{% translate 'Tutup' %}"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            {% include "partials/_sg_messages.html" %}
             {% if overdue_unpaid %}
-                <div class="alert alert-danger border-0 rounded-3 shadow-sm mb-4 d-flex justify-content-between align-items-center animate-fade-up anim-d1">
-                    <span><i class="bi bi-exclamation-triangle me-2"></i> <b>{% blocktranslate trimmed with overdue_unpaid=overdue_unpaid %}{{ overdue_unpaid }} order transfer{% endblocktranslate %}</b> {% translate "belum dibayar lebih dari 1 jam." %}</span>
-                </div>
+                <p class="sg-alert is-bad mb-4 animate-fade-up anim-d1">
+                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span><b>{% blocktranslate trimmed with overdue_unpaid=overdue_unpaid %}{{ overdue_unpaid }} order transfer{% endblocktranslate %}</b> {% translate "belum dibayar lebih dari 1 jam." %}</span>
+                </p>
             {% endif %}
             {% if proof_orders %}
                 <div class="proof-strip animate-fade-up anim-d1">
-                    <div class="proof-strip__title"><i class="bi bi-receipt"></i> {% blocktranslate trimmed with proof_orders=proof_orders|length %}{{ proof_orders }} bukti transfer menunggu dicek{% endblocktranslate %}</div>
+                    <div class="proof-strip__head">
+                        <div class="proof-strip__title"><i class="bi bi-bank" aria-hidden="true"></i> {% blocktranslate trimmed with proof_orders=proof_orders|length %}{{ proof_orders }} bukti transfer menunggu dicek{% endblocktranslate %}</div>
+                        <a href="{% url 'transaction:payment_check' proof_orders.0.pk %}" class="sg-link">{% translate "Buka Cek Bukti Transfer" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </div>
                     <div class="proof-strip__list">
                         {% for o in proof_orders %}
                             <a href="{% url 'transaction:payment_check' o.pk %}" class="proof-strip__item">
-                                <b>#{{ o.pk }}</b> {{ o.customer.name }} · Rp {{ o.total_payment|rupiah }}
-                                <small>{% blocktranslate trimmed with o_payment_proof_at=o.payment_proof_at|timesince %}{{ o_payment_proof_at }} lalu{% endblocktranslate %}</small>
+                                <span class="proof-strip__icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+                                <span class="proof-strip__text"><b>#{{ o.pk }} {{ o.customer.name }}</b>
+                                <small>Rp {{ o.total_payment|rupiah }} · {% blocktranslate trimmed with o_payment_proof_at=o.payment_proof_at|timesince %}{{ o_payment_proof_at }} lalu{% endblocktranslate %}</small></span>
+                                <span class="proof-strip__cta">{% translate "Cek" %}</span>
                             </a>
                         {% endfor %}
                     </div>
@@ -65,6 +57,7 @@
             <form method="get"
                   class="search-container animate-fade-up anim-d2"
                   role="search">
+                <i class="bi bi-search" aria-hidden="true"></i>
                 <input type="search"
                        name="q"
                        value="{{ q }}"
@@ -154,7 +147,11 @@
                                         {% endif %}
                                         <!-- Actions -->
                                         <div class="mt-auto pt-2 border-top border-light">
-                                            {% if trx.order_status == "MENUNGGU" %}
+                                            {% if trx.awaiting_payment_check %}
+                                                <a href="{% url 'transaction:payment_check' trx.pk %}"
+                                                   class="btn-card-action is-primary text-center text-decoration-none d-block"
+                                                   data-stop-propagation>{% translate "Cek bukti dulu" %}</a>
+                                            {% elif trx.order_status == "MENUNGGU" %}
                                                 <form method="post"
                                                       action="{% url 'transaction:update_status' trx.pk %}"
                                                       data-stop-propagation>
@@ -170,10 +167,6 @@
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#detailTransaction{{ trx.pk }}"
                                                         data-stop-propagation>{% translate "Daftarkan Kurir" %}</button>
-                                            {% elif trx.awaiting_payment_check %}
-                                                <a href="{% url 'transaction:payment_check' trx.pk %}"
-                                                   class="btn-card-action is-primary text-center text-decoration-none d-block"
-                                                   data-stop-propagation>{% translate "Cek Bukti Transfer" %}</a>
                                             {% elif trx.order_status == "DIKONFIRMASI" and not trx.is_ready_to_ship %}
                                                 <button type="button"
                                                         class="btn-card-action"
@@ -410,9 +403,7 @@
                                         <button type="submit"
                                                 name="action"
                                                 value="assign_courier"
-                                                class="btn btn-primary fw-bold"
-                                                style="background-color: #5c418c;
-                                                       border: none">{% translate "Daftarkan Kurir" %}</button>
+                                                class="btn btn-primary fw-bold">{% translate "Daftarkan Kurir" %}</button>
                                     {% endif %}
                                     {% if trx.is_open and not trx.receipt_no %}
                                         <button type="submit"

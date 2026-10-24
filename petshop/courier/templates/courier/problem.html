@@ -9,37 +9,37 @@
     </head>
     <body>
         {% include "courier/_nav.html" %}
-        <main class="container-fluid px-xl-5 px-3 py-4" style="max-width: 760px">
-            <a href="{% url 'courier:dashboard' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {% translate "Rute" %}</a>
-            <h1 class="page-title mt-2 mb-1">{% blocktranslate trimmed with order_pk=order.pk %}Paket #{{ order_pk }} tidak bisa diantar{% endblocktranslate %}</h1>
-            <p class="text-muted">{% translate "Paket dikembalikan ke antrean toko, admin dan pelanggan diberi tahu. Bawa paket kembali ke toko." %}</p>
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
-            {% endfor %}
-            <form method="post" enctype="multipart/form-data" class="step" data-confirm="{% blocktranslate trimmed with order_pk=order.pk %}Kembalikan paket #{{ order_pk }} ke toko?{% endblocktranslate %}">
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-page is-narrow sg">
+            {% url 'courier:order_detail' order.pk as back_url %}{% blocktranslate trimmed asvar t_title with order_pk=order.pk %}Paket #{{ order_pk }} tidak bisa diantar{% endblocktranslate %}
+            {% include "courier/_page_head.html" with back=back_url title=t_title lead=order.customer.name %}
+            {% include "partials/_sg_messages.html" %}
+            <p class="sg-sm sg-muted">{% translate "Paket dikembalikan ke antrean toko, admin dan pelanggan diberi tahu. Bawa paket kembali ke toko." %}</p>
+            <form method="post" enctype="multipart/form-data" class="sg-form" data-confirm="{% blocktranslate trimmed with order_pk=order.pk %}Kembalikan paket #{{ order_pk }} ke toko?{% endblocktranslate %}">
                 {% csrf_token %}
-                <label class="form-label fw-bold" for="problem-note">{% translate "Kendala" %}</label>
-                <select class="form-select mb-2" data-problem-preset aria-label="{% translate 'Pilih kendala umum' %}">
-                    <option value="">{% translate "Pilih kendala umum…" %}</option>
-                    <option>{% translate "Penerima tidak ada di lokasi" %}</option>
-                    <option>{% translate "Alamat / titik peta tidak ditemukan" %}</option>
-                    <option>{% translate "Penerima menolak paket" %}</option>
-                    <option>{% translate "Nomor penerima tidak bisa dihubungi" %}</option>
-                </select>
-                <textarea id="problem-note" name="note" rows="3" maxlength="255" class="form-control mb-3" required placeholder="Ceritakan singkat kendalanya"></textarea>
-                <p class="fw-bold mb-1">{% translate "Foto lokasi (opsional)" %}</p>
+                <p class="sg-lbl">{% translate "Kendala" %}</p>
+                <div class="ck-chips-pick" role="radiogroup" aria-label="{% translate 'Pilih kendala umum' %}">
+                    {% translate "Penerima tidak ada di lokasi" as p1 %}{% translate "Alamat / titik peta tidak ditemukan" as p2 %}{% translate "Penerima menolak paket" as p3 %}{% translate "Nomor penerima tidak bisa dihubungi" as p4 %}{% translate "Barang rusak" as p5 %}
+                    <label><input type="radio" data-problem-preset value="{{ p1 }}"><span>{{ p1 }}</span></label>
+                    <label><input type="radio" data-problem-preset value="{{ p2 }}"><span>{{ p2 }}</span></label>
+                    <label><input type="radio" data-problem-preset value="{{ p3 }}"><span>{{ p3 }}</span></label>
+                    <label><input type="radio" data-problem-preset value="{{ p4 }}"><span>{{ p4 }}</span></label>
+                    <label><input type="radio" data-problem-preset value="{{ p5 }}"><span>{{ p5 }}</span></label>
+                </div>
+                <label class="sg-lbl sg-mt16" for="problem-note">{% translate "Ceritakan singkat" %}</label>
+                <textarea id="problem-note" name="note" rows="3" maxlength="255" required placeholder="{% translate 'Ceritakan singkat kendalanya' %}"></textarea>
+                <p class="sg-lbl sg-mt16">{% translate "Foto bukti kunjungan (opsional)" %}</p>
                 <div class="cam" data-camera>
                     <video data-cam-video playsinline muted hidden></video>
                     <img data-cam-preview alt="{% translate 'Pratinjau foto' %}" hidden>
                     <p class="cam__status" data-cam-status>{% translate "Foto pagar / rumah sebagai bukti kunjungan." %}</p>
                     <div class="cam__actions">
-                        <button type="button" class="btn-route" data-cam-start><i class="bi bi-camera-fill"></i> {% translate "Buka Kamera" %}</button>
-                        <button type="button" class="btn-route" data-cam-snap hidden><i class="bi bi-record-circle"></i> {% translate "Ambil Foto" %}</button>
-                        <button type="button" class="btn-route" data-cam-retake hidden><i class="bi bi-arrow-repeat"></i> {% translate "Ulangi" %}</button>
+                        <button type="button" class="ck-btn" data-cam-start><i class="bi bi-camera" aria-hidden="true"></i> {% translate "Buka Kamera" %}</button>
+                        <button type="button" class="ck-btn is-primary" data-cam-snap hidden><i class="bi bi-record-circle" aria-hidden="true"></i> {% translate "Ambil Foto" %}</button>
+                        <button type="button" class="ck-btn" data-cam-retake hidden><i class="bi bi-arrow-repeat" aria-hidden="true"></i> {% translate "Ulangi" %}</button>
                     </div>
                     <input type="file" name="photo" accept="image/*" capture="environment" data-cam-input data-optional hidden>
                 </div>
-                <button type="submit" class="btn-route is-primary w-100 mt-3"><i class="bi bi-arrow-return-left"></i> {% translate "Kembalikan ke toko" %}</button>
+                <button type="submit" class="ck-btn is-primary is-lg w-100 sg-mt16"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> {% translate "Kembalikan ke toko" %}</button>
             </form>
         </main>
         <script src="{% static 'js/common.js' %}"></script>

@@ -1,0 +1,26 @@
+/* Akun kurir: ringkasan, data diri + foto, ganti sandi */
+.ck-account { max-width: 980px; }
+.ck-profile {
+  display: flex; align-items: center; gap: 18px; margin: 12px 0 20px; padding: 18px;
+  border-radius: 18px; background: var(--c-surface); border: 1px solid var(--c-border);
+}
+.ck-profile__body { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ck-profile__body strong { font-size: 1.2rem; font-weight: 800; color: var(--c-text); }
+.ck-profile__body > span { color: var(--c-muted); font-size: 0.9rem; }
+.ck-profile__facts { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.9rem; color: var(--c-text-2); }
+.ck-profile__facts i { color: var(--c-brand); }
+.ck-profile__facts .ck-star { color: #f59e0b; }
+.ck-account__grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.ck-card { padding: 20px; border-radius: 18px; background: var(--c-surface); border: 1px solid var(--c-border); }
+.ck-card__title { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; font-size: 1.05rem; font-weight: 800; color: var(--c-text); }
+.ck-card__title i { color: var(--c-brand); }
+.ck-photo { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--c-border); }
+.ck-photo__body { min-width: 0; flex: 1; }
+.ck-photo .form-text { display: block; margin-top: 4px; color: var(--c-muted); font-size: 0.8rem; }
+.ck-hint { margin: 0 0 14px; padding: 10px 12px; border-radius: 12px; background: var(--c-surface-2); color: var(--c-muted); font-size: 0.85rem; }
+@media (max-width: 767.98px) {
+  .ck-account__grid { grid-template-columns: minmax(0, 1fr); }
+  .ck-profile { flex-direction: column; text-align: center; }
+  .ck-profile__facts { justify-content: center; }
+  .ck-photo { flex-direction: column; align-items: flex-start; }
+}

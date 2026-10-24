@@ -1,0 +1,74 @@
+/* Kelola Transaksi: lapisan ciri khas krem/ungu/emas di atas manage_transaction.css. */
+body { background: var(--sg-bg); color: var(--sg-ink); }
+.page-header { align-items: flex-end; margin-bottom: 20px; }
+.page-header .eyebrow { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sg-muted); }
+.page-title { font-size: 1.75rem; letter-spacing: -0.02em; color: var(--sg-ink); }
+.page-subtitle { color: var(--sg-muted); font-weight: 500; }
+.btn-add-trx { min-height: 48px; padding: 0 20px; border-radius: 14px; background: var(--sg-pri); font-weight: 700; box-shadow: var(--sg-sh-pri); }
+.btn-add-trx:hover { background: var(--sg-pri-hover); transform: translateY(-1px); box-shadow: var(--sg-sh-pri); }
+
+/* Strip bukti transfer */
+.proof-strip { background: var(--sg-pet-grad); border: 1px solid var(--sg-gold-line); border-radius: 22px; padding: 18px 20px; box-shadow: var(--sg-sh-1); }
+.proof-strip__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between; margin-bottom: 12px; }
+.proof-strip__title { margin: 0; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sg-gold-soft-ink); }
+.proof-strip__list { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; overflow: visible; padding: 0; }
+.proof-strip__item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; border: 1px solid var(--sg-line); background: var(--sg-card); color: var(--sg-ink); transition: border-color 0.15s var(--sg-ease), box-shadow 0.15s var(--sg-ease); }
+.proof-strip__item:hover { border-color: var(--sg-pri); box-shadow: var(--sg-sh-1); color: var(--sg-ink); }
+.proof-strip__icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: none; background: var(--sg-soft); color: var(--sg-pri-text); font-size: 1.2rem; }
+.proof-strip__text { flex: 1; min-width: 0; line-height: 1.3; }
+.proof-strip__text b { display: block; font-size: 0.85rem; }
+.proof-strip__item small, .proof-strip__text small { display: block; color: var(--sg-muted); font-size: 0.74rem; font-weight: 600; }
+.proof-strip__cta { flex: none; min-height: 34px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid var(--sg-line); border-radius: 11px; font-weight: 700; font-size: 0.85rem; }
+@media (max-width: 767.98px) { .proof-strip__list { display: grid; grid-template-columns: 1fr; } .proof-strip__item { display: flex; } }
+
+/* Cari */
+.search-container { position: relative; max-width: 480px; margin-bottom: 16px; }
+.search-container > .bi-search { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--sg-muted); pointer-events: none; }
+.search-input { min-height: 46px; border-radius: 13px; border-color: var(--sg-line); padding-left: 42px; background: var(--sg-card); color: var(--sg-ink); }
+.search-input:focus { border-color: var(--sg-pri); box-shadow: 0 0 0 4px var(--sg-soft); transform: none; }
+.btn-search { border-radius: 13px; border-color: var(--sg-line); background: var(--sg-card); color: var(--sg-ink); font-weight: 700; }
+.search-container .btn-light { border-radius: 13px !important; }
+
+/* Tab segmen */
+.category-tabs { gap: 6px; padding: 6px; background: var(--sg-soft); border: 0; border-radius: 18px; margin-bottom: 16px; flex-wrap: wrap; }
+.category-tabs .nav-link, .nav-pills .nav-link { min-height: 44px; padding: 0 16px; border-radius: 13px; border: 0; background: transparent; color: var(--sg-muted); font-weight: 700; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; box-shadow: none; }
+.category-tabs .nav-link:hover { color: var(--sg-ink); background: transparent; }
+.category-tabs .nav-link.active, .nav-pills .nav-link.active { background: var(--sg-card); color: var(--sg-ink); box-shadow: var(--sg-sh-1); }
+.tab-badge { background: var(--sg-card); color: var(--sg-muted); font-size: 0.72rem; font-weight: 800; padding: 1px 8px; border-radius: 99px; }
+.nav-link.active .tab-badge { background: var(--sg-pri); color: #ffffff; }
+@media (max-width: 767.98px) { .category-tabs { flex-wrap: nowrap; overflow-x: auto; } }
+
+/* Kartu pesanan */
+.order-card { border-radius: 22px; border: 1px solid var(--sg-line); background: var(--sg-card); box-shadow: var(--sg-sh-1); padding: 16px 18px; }
+.order-card:hover { border-color: var(--sg-pri); box-shadow: var(--sg-sh-2); transform: translateY(-2px); }
+.card-header-min { margin-bottom: 8px; align-items: baseline; gap: 8px; }
+.order-id { font-size: 1.1rem; color: var(--sg-ink); }
+.order-time { color: var(--sg-muted); font-weight: 700; font-size: 0.74rem; text-align: right; }
+.order-time.is-overdue { color: var(--sg-bad); }
+.customer-name { color: var(--sg-ink); font-weight: 800; margin-bottom: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.customer-name .bd-method { border-radius: 99px; font-weight: 700; font-size: 0.76rem; gap: 6px; }
+.card-details { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; color: var(--sg-muted); font-weight: 600; margin-bottom: 10px; flex-grow: 0; }
+.card-price { margin: 0; font-size: 1.15rem; color: var(--sg-pri-text); }
+.card-tags { gap: 6px; margin-bottom: 12px; }
+.bd-tag, .bd-method { border-radius: 99px; font-weight: 700; font-size: 0.76rem; padding: 4px 10px; }
+.bd-method { border-color: var(--sg-line); color: var(--sg-muted); background: var(--sg-card); }
+.bd-tag.t-unpaid { background: var(--sg-gold-soft); color: var(--sg-gold-soft-ink); }
+.bd-tag.t-paid { background: var(--sg-ok-soft); color: var(--sg-ok); }
+.bd-tag.t-void { background: var(--sg-bad-soft); color: var(--sg-bad); }
+.bd-tag.t-proof { background: var(--sg-soft); color: var(--sg-pri-text); }
+.courier-info { min-height: 40px; padding: 0 12px; border: 1px solid var(--sg-line); border-radius: 12px; color: var(--sg-muted); font-weight: 600; margin-bottom: 12px; }
+.courier-info.opacity-50 { opacity: 1 !important; }
+.order-card .border-top { border-top: 0 !important; }
+.btn-card-action { min-height: 42px; border-radius: 12px; border: 1px solid var(--sg-line); background: var(--sg-card); color: var(--sg-ink); font-weight: 700; font-size: 0.88rem; }
+.btn-card-action:hover { border-color: var(--sg-pri); color: var(--sg-pri-text); background: var(--sg-card); }
+/* Hanya kartu teratas (paling lama menunggu) yang tombolnya ungu penuh; sisanya garis. */
+html body .tab-pane .row > div:not(:first-child) .btn-card-action.is-primary { background: var(--sg-card); color: var(--sg-ink); border: 1px solid var(--sg-line); box-shadow: none; }
+html body .tab-pane .row > div:not(:first-child) .btn-card-action.is-primary:hover { background: var(--sg-card); color: var(--sg-pri-text); border-color: var(--sg-pri); }
+html body .tab-pane .row > div:first-child .btn-card-action.is-primary { box-shadow: var(--sg-sh-pri); }
+.btn-add-trx { box-shadow: var(--sg-sh-pri) !important; }
+
+/* Modal detail */
+.modal-content { border-radius: 24px; border: 1px solid var(--sg-line); background: var(--sg-card); color: var(--sg-ink); }
+.modal .btn-primary { background: var(--sg-pri); border-color: var(--sg-pri); border-radius: 12px; }
+.modal .btn-danger { background: var(--sg-bad); border-color: var(--sg-bad); border-radius: 12px; }
+.modal .form-select, .modal .form-control { border-radius: 12px; border-color: var(--sg-line); min-height: 44px; }

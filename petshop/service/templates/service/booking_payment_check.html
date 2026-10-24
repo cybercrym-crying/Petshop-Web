@@ -1,0 +1,74 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% blocktranslate trimmed with pk=booking.pk %}Seelly - Cek Bukti Transfer Booking #{{ pk }}{% endblocktranslate %}{% endblock %}
+{% block extra_head %}
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
+    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container-fluid px-xl-4 px-3 py-4">
+        <a href="{% url 'service:manage_bookings' %}?bayar=cek" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {% translate "Kembali ke Booking Layanan" %}</a>
+        <div class="mb-3 mt-2">
+            <p class="eyebrow">{% translate "Layanan" %}</p>
+            <h1 class="page-title mb-1">{% blocktranslate trimmed with pk=booking.pk %}Cek Bukti Transfer · Booking #{{ pk }}{% endblocktranslate %}</h1>
+            <p class="text-muted mb-0">{% translate "Cocokkan nominal, nama pengirim, dan waktu dengan mutasi rekening toko sebelum menyetujui." %}</p>
+        </div>
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
+        {% endfor %}
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card-custom so-card">
+                    {% if booking.payment_proof %}
+                        <a href="{{ booking.payment_proof.url }}" target="_blank" rel="noopener" class="so-proof">
+                            <img src="{{ booking.payment_proof.url }}" alt="{% blocktranslate trimmed with pk=booking.pk %}Bukti transfer booking #{{ pk }}{% endblocktranslate %}">
+                        </a>
+                        <p class="small text-muted mt-2 mb-0">{% blocktranslate trimmed with at=booking.payment_proof_at|date:"d M Y, H:i" %}Dikirim {{ at }} · klik foto untuk ukuran penuh{% endblocktranslate %}</p>
+                    {% elif booking.is_paid %}
+                        <p class="mb-0"><i class="bi bi-check2-circle text-success"></i> {% blocktranslate trimmed with no=booking.payment_line.order.receipt_no %}Booking ini sudah lunas (struk {{ no }}).{% endblocktranslate %}</p>
+                    {% else %}
+                        <p class="text-muted mb-0"><i class="bi bi-image"></i> {% translate "Belum ada bukti transfer untuk booking ini." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card-custom so-card">
+                    <dl class="so-dl">
+                        <dt>{% translate "Harus diterima" %}</dt><dd class="so-amount">Rp {{ booking.total_price|rupiah }}</dd>
+                        {% if booking.transport_fee %}<dt>{% translate "Rincian" %}</dt><dd>{% blocktranslate trimmed with price=booking.price|rupiah fee=booking.transport_fee|rupiah %}Layanan Rp {{ price }} + antar-jemput Rp {{ fee }}{% endblocktranslate %}</dd>{% endif %}
+                        <dt>{% translate "Pelanggan" %}</dt><dd>{{ booking.customer.name }}{% if booking.customer.phone_number %} · <a href="{{ booking.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {{ booking.customer.phone_number }}</a>{% endif %}</dd>
+                        <dt>{% translate "Layanan" %}</dt><dd>{{ booking.service.name }} · {{ booking.pet_name }}</dd>
+                        <dt>{% translate "Jadwal" %}</dt><dd>{{ booking.schedule|date:"d M Y, H:i" }} · {{ booking.get_status_display }}</dd>
+                    </dl>
+                    {% if booking.awaiting_payment_check %}
+                        <form method="post" class="mt-3">
+                            {% csrf_token %}
+                            <button type="submit" name="decision" value="approve" class="btn btn-primary fw-bold w-100 mb-3"
+                                    data-confirm="{% blocktranslate trimmed with total=booking.total_price|rupiah %}Dana Rp {{ total }} sudah masuk ke rekening toko?{% endblocktranslate %}">
+                                <i class="bi bi-check2-circle"></i> {% translate "Dana masuk, setujui" %}
+                            </button>
+                        </form>
+                        <form method="post">
+                            {% csrf_token %}
+                            <label for="reject-note" class="form-label small fw-bold">{% translate "Tolak dengan alasan" %}</label>
+                            <textarea id="reject-note" name="note" rows="2" class="form-control mb-2" maxlength="255" required
+                                      placeholder="mis. nominal kurang Rp 5.000 / foto buram"></textarea>
+                            <button type="submit" name="decision" value="reject" class="btn btn-outline-danger fw-bold w-100">{% translate "Tolak, minta kirim ulang" %}</button>
+                        </form>
+                    {% endif %}
+                </div>
+                {% if waiting %}
+                    <div class="card-custom so-card mt-4">
+                        <h2 class="h6 fw-bold mb-2">{% translate "Bukti lain yang menunggu" %}</h2>
+                        <ul class="list-unstyled mb-0 so-list">
+                            {% for b in waiting %}
+                                <li><a href="{% url 'service:booking_payment_check' b.pk %}">#{{ b.pk }} · {{ b.customer.name }}</a> <span class="text-muted">Rp {{ b.total_price|rupiah }}</span></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

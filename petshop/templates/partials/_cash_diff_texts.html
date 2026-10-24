@@ -1,0 +1,7 @@
+{% load i18n static %}
+<template data-cash-texts>
+    <span data-k="less">{% translate "Kurang Rp %(n)s dari yang seharusnya. Catatan wajib diisi." %}</span>
+    <span data-k="more">{% translate "Lebih Rp %(n)s dari yang seharusnya. Catatan wajib diisi." %}</span>
+    <span data-k="ok">{% translate "Pas, tidak ada selisih." %}</span>
+</template>
+<script src="{% static 'js/cash_diff.js' %}?v=1" defer></script>

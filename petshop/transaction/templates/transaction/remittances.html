@@ -2,80 +2,105 @@
 {% load i18n %}
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Setoran COD" %}{% endblock %}
-{% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
-    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
-{% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <div class="mb-4">
-            <p class="eyebrow">{% translate "Penjualan" %}</p>
-            <h1 class="page-title mb-1">{% translate "Setoran COD Kurir" %}</h1>
-            <p class="text-muted mb-0">{% translate "Uang tunai yang ditagih kurir saat serah terima. Hitung uangnya, isi jumlah yang benar-benar diterima, lalu simpan. Selisih wajib diberi catatan." %}</p>
-        </div>
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
-        {% endfor %}
-        <div class="row g-4">
-            <div class="col-xl-8">
-                <h2 class="h6 fw-bold text-uppercase text-muted mb-3">{% blocktranslate trimmed with pending=pending|length %}Menunggu diterima ({{ pending }}){% endblocktranslate %}</h2>
+    <div class="sg sg-page">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Penjualan" %}</p>
+                <h1>{% translate "Setoran COD Kurir" %}</h1>
+                <p>{% translate "Uang tunai yang ditagih kurir saat serah terima. Hitung uangnya, isi jumlah yang benar-benar diterima, lalu simpan. Selisih wajib diberi catatan." %}</p>
+            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        <div class="sg-grid">
+            <div class="sg-s7">
                 {% for r in pending %}
-                    <article class="card-custom so-card mb-3">
-                        <div class="d-flex justify-content-between flex-wrap gap-2">
-                            <div>
-                                <div class="fw-bold">{% blocktranslate trimmed with r_pk=r.pk r_courier_name=r.courier.name %}Setoran #{{ r_pk }} · {{ r_courier_name }}{% endblocktranslate %}</div>
-                                <div class="small text-muted">{% blocktranslate trimmed with r_submitted_at=r.submitted_at|date:"d M Y, H:i" r_orders_count=r.orders.count %}{{ r_submitted_at }} · {{ r_orders_count }} paket{% endblocktranslate %}</div>
+                    <section class="sg-card is-focus{% if not forloop.first %} sg-mt16{% endif %}" aria-label="{% blocktranslate trimmed with r_pk=r.pk %}Setoran #{{ r_pk }}{% endblocktranslate %}">
+                        {% if forloop.first %}<p class="sg-live mb-0"><i aria-hidden="true"></i>{% blocktranslate trimmed with pending=pending|length %}Menunggu diterima ({{ pending }}){% endblocktranslate %}</p>{% endif %}
+                        <div class="sg-row is-wrap sg-mt12">
+                            <span class="sg-av" aria-hidden="true">{{ r.courier.first_name|first|upper }}{{ r.courier.last_name|first|upper }}</span>
+                            <div style="min-width:0">
+                                <b style="font-size:1.1rem">{% blocktranslate trimmed with r_pk=r.pk r_courier_name=r.courier.name %}Setoran #{{ r_pk }} · {{ r_courier_name }}{% endblocktranslate %}</b>
+                                <div class="sg-sm sg-muted">{% blocktranslate trimmed with r_submitted_at=r.submitted_at|date:"d M Y, H.i" r_orders_count=r.orders.count %}{{ r_submitted_at }} · {{ r_orders_count }} paket{% endblocktranslate %}</div>
                             </div>
-                            <div class="so-amount">Rp {{ r.amount|rupiah }}</div>
+                            <span class="sg-sp"></span>
+                            <span class="sg-big">Rp {{ r.amount|rupiah }}</span>
                         </div>
-                        <ul class="so-items">
-                            {% for o in r.orders.all %}<li>#{{ o.pk }} {{ o.customer.name }} · Rp {{ o.cash_collected|rupiah }}</li>{% endfor %}
-                        </ul>
-                        <form method="post" class="row g-2 align-items-end">
+                        <div class="sg-sub sg-mt12">
+                            <ul class="sg-lines">
+                                {% for o in r.orders.all %}
+                                    <li><span><i class="bi bi-box-seam" aria-hidden="true"></i> <b style="display:inline">#{{ o.pk }} {{ o.customer.name }}</b>{% if o.delivered_at %} · {% blocktranslate trimmed with t=o.delivered_at|time:"H.i" %}diserahkan {{ t }}{% endblocktranslate %}{% endif %}</span><b>Rp {{ o.cash_collected|rupiah }}</b></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <form method="post" class="sg-form sg-mt16" data-cash-diff data-expected="{{ r.amount }}">
                             {% csrf_token %}
                             <input type="hidden" name="remittance" value="{{ r.pk }}">
-                            <div class="col-sm-4">
-                                <label class="form-label small fw-bold" for="amt-{{ r.pk }}">{% translate "Uang diterima (Rp)" %}</label>
-                                <input id="amt-{{ r.pk }}" name="received_amount" class="form-control" inputmode="numeric" value="{{ r.amount }}" required>
+                            <div class="sg-grid is-tight">
+                                <div class="sg-s5">
+                                    <label class="sg-lbl" for="amt-{{ r.pk }}">{% translate "Uang diterima (Rp)" %}</label>
+                                    <input id="amt-{{ r.pk }}" name="received_amount" data-cash-input inputmode="numeric" value="{{ r.amount }}" required>
+                                </div>
+                                <div class="sg-s7">
+                                    <label class="sg-lbl" for="note-{{ r.pk }}">{% translate "Catatan selisih" %}</label>
+                                    <input id="note-{{ r.pk }}" name="note" data-cash-note maxlength="255" placeholder="{% translate 'Kosongkan bila pas' %}">
+                                </div>
                             </div>
-                            <div class="col-sm-5">
-                                <label class="form-label small fw-bold" for="note-{{ r.pk }}">{% translate "Catatan selisih" %}</label>
-                                <input id="note-{{ r.pk }}" name="note" class="form-control" maxlength="255" placeholder="{% translate 'Kosongkan bila pas' %}">
-                            </div>
-                            <div class="col-sm-3">
-                                <button type="submit" class="btn btn-primary fw-bold w-100" data-confirm="{% translate 'Uang sudah dihitung dan diterima?' %}">{% translate "Terima" %}</button>
+                            <div class="sg-row is-wrap sg-mt12">
+                                <p class="sg-alert is-ok" data-cash-result hidden style="padding:8px 12px"><i class="bi bi-check2-circle" aria-hidden="true"></i><span></span></p>
+                                <span class="sg-sp"></span>
+                                <button type="submit" class="ui-btn ui-btn--primary" data-confirm="{% translate 'Uang sudah dihitung dan diterima?' %}"><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Terima setoran" %}</button>
                             </div>
                         </form>
-                    </article>
+                    </section>
                 {% empty %}
-                    <p class="text-muted">{% translate "Tidak ada setoran yang menunggu." %}</p>
+                    <section class="sg-card is-focus">
+                        <p class="sg-live mb-0"><i aria-hidden="true"></i>{% translate "Menunggu diterima (0)" %}</p>
+                        <p class="sg-empty"><i class="bi bi-wallet2" aria-hidden="true"></i>{% translate "Tidak ada setoran yang menunggu." %}</p>
+                    </section>
                 {% endfor %}
+                <section class="sg-card sg-mt20" aria-labelledby="remit-done">
+                    <div class="sg-card__head"><h2 id="remit-done" class="sg-h3">{% translate "Riwayat diterima" %}</h2></div>
+                    <div class="sg-tbl-box">
+                        <table class="sg-tbl is-stack">
+                            <thead><tr><th>{% translate "Setoran" %}</th><th>{% translate "Kurir" %}</th><th>{% translate "Diterima" %}</th><th class="is-num">{% translate "Jumlah" %}</th><th class="is-num">{% translate "Selisih" %}</th></tr></thead>
+                            <tbody>
+                                {% for r in done %}
+                                    <tr>
+                                        <td><b>#{{ r.pk }}</b></td>
+                                        <td data-label="{% translate 'Kurir' %}" class="is-nowrap">{{ r.courier.name }}</td>
+                                        <td data-label="{% translate 'Diterima' %}" class="sg-sm sg-muted">{% blocktranslate trimmed with r_received_at=r.received_at|date:"d M H.i" r_received_by_name=r.received_by.name|default:"-" %}{{ r_received_at }} oleh {{ r_received_by_name }}{% endblocktranslate %}{% if r.note %}<div class="sg-xs">{{ r.note }}</div>{% endif %}</td>
+                                        <td class="is-num" data-label="{% translate 'Jumlah' %}">Rp {{ r.received_amount|rupiah }}</td>
+                                        <td class="is-num" data-label="{% translate 'Selisih' %}">
+                                            {% if r.difference < 0 %}<span class="sg-pill is-bad">−{{ r.difference|rupiah|cut:"-" }}</span>
+                                            {% elif r.difference > 0 %}<span class="sg-pill is-gold">+{{ r.difference|rupiah }}</span>
+                                            {% else %}<span class="sg-pill is-ok">{% translate "Pas" %}</span>{% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="5"><p class="sg-empty">{% translate "Belum ada." %}</p></td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
-            <div class="col-xl-4">
-                <div class="card-custom so-card mb-4">
-                    <h2 class="h6 fw-bold mb-2">{% translate "Uang COD masih di kurir" %}</h2>
-                    <ul class="list-unstyled mb-0 so-list">
-                        {% for c in on_hand %}
-                            <li><span>{{ c.courier__first_name }} {{ c.courier__last_name|default:c.courier__username }} <small class="text-muted">{% blocktranslate trimmed with c_n=c.n %}({{ c_n }} paket){% endblocktranslate %}</small></span><b>Rp {{ c.total|rupiah }}</b></li>
-                        {% empty %}
-                            <li class="text-muted">{% translate "Semua uang COD sudah disetor." %}</li>
-                        {% endfor %}
-                    </ul>
+            <section class="sg-card sg-s5" aria-labelledby="remit-hand">
+                <h2 id="remit-hand" class="sg-h3">{% translate "Uang COD masih di kurir" %}</h2>
+                <div class="sg-list sg-mt12">
+                    {% for c in on_hand %}
+                        <div class="sg-item">
+                            <span class="sg-av" aria-hidden="true" style="width:40px;height:40px;font-size:0.8rem">{{ c.courier__first_name|first|upper }}{{ c.courier__last_name|first|upper }}</span>
+                            <span class="sg-item__body"><b>{{ c.courier__first_name }} {{ c.courier__last_name|default:c.courier__username }}</b><small>{% blocktranslate trimmed with c_n=c.n %}{{ c_n }} paket belum disetor{% endblocktranslate %}</small></span>
+                            <b>Rp {{ c.total|rupiah }}</b>
+                        </div>
+                    {% empty %}
+                        <p class="sg-empty"><i class="bi bi-check2-all" aria-hidden="true"></i>{% translate "Semua uang COD sudah disetor." %}</p>
+                    {% endfor %}
                 </div>
-                <div class="card-custom so-card">
-                    <h2 class="h6 fw-bold mb-2">{% translate "Riwayat diterima" %}</h2>
-                    <ul class="list-unstyled mb-0 so-list">
-                        {% for r in done %}
-                            <li>
-                                <span>#{{ r.pk }} {{ r.courier.name }}<small class="d-block text-muted">{% blocktranslate trimmed with r_received_at=r.received_at|date:"d M H:i" r_received_by_name=r.received_by.name|default:"-" %}{{ r_received_at }} oleh {{ r_received_by_name }}{% endblocktranslate %}{% if r.note %} · {{ r.note }}{% endif %}</small></span>
-                                <b>Rp {{ r.received_amount|rupiah }}{% if r.difference %} <span class="so-badge">{{ r.difference|rupiah }}</span>{% endif %}</b>
-                            </li>
-                        {% empty %}
-                            <li class="text-muted">{% translate "Belum ada." %}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
+                <p class="sg-alert is-pri sg-sm sg-mt12"><i class="bi bi-info-circle" aria-hidden="true"></i><span>{% translate "Kurir mengajukan setoran dari HP; setoran muncul di kiri untuk dihitung." %}</span></p>
+            </section>
         </div>
     </div>
+    {% include "partials/_cash_diff_texts.html" %}
 {% endblock %}

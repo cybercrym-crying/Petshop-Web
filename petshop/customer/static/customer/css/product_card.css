@@ -1,0 +1,75 @@
+/* Kartu produk ringkas: kategori sebagai teks kecil, harga & tombol satu baris,
+   di HP tombol keranjang hanya ikon supaya kartu tidak penuh. */
+.product-card {
+  border: 1px solid #eadcf4;
+  border-radius: 16px;
+  box-shadow: none;
+}
+.product-card .product-photo { aspect-ratio: 4 / 3; background: #f7f2fb; }
+.product-card .product-info { gap: 4px; padding: 12px 14px 14px; }
+.product-card .product-info .chip-category {
+  position: static;
+  align-self: flex-start;
+  padding: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a6aa6;
+  background: none;
+  box-shadow: none;
+}
+.product-card .product-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.7em;
+}
+.product-card .product-buy { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 8px; }
+.product-card .product-price { margin: 0; font-size: 1.05rem; font-weight: 800; color: #261a33; white-space: nowrap; }
+.product-card .btn-add-cart {
+  flex: none;
+  margin: 0;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: 12px;
+  background: #6b21a8;
+}
+.product-card .btn-add-cart:hover:not(:disabled) { background: #4c1577; transform: none; }
+.product-card .btn-add-cart__long { display: none; }
+.product-card .btn-add-cart__short { display: inline; }
+.product-card .wishlist-btn { width: 34px; height: 34px; font-size: 0.9rem; }
+.product-card .chip-stock { font-size: 0.72rem; }
+
+/* HP & kartu sempit: tombol keranjang jadi ikon bulat */
+@media (max-width: 767.98px) {
+  .product-card .product-info { padding: 10px 12px 12px; }
+  .product-card .product-name { font-size: 0.9rem; }
+  .product-card .product-price { font-size: 0.975rem; }
+  .product-card .btn-add-cart { position: relative; width: 40px; height: 40px; padding: 0; border-radius: 50%; }
+  .product-card .btn-add-cart__short,
+  .product-card .btn-add-cart__long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .product-card .btn-add-cart:disabled { width: auto; padding: 0 10px; border-radius: 12px; font-size: 0.75rem; }
+  .product-card:hover { transform: none; }
+}
+
+/* Kategori cepat di halaman produk (HP & tablet, saat panel filter tersembunyi) */
+.shop-cats { display: none; }
+@media (max-width: 991.98px) {
+  .shop-cats { display: flex; gap: 8px; margin: 0 0 14px; padding-bottom: 2px; overflow-x: auto; scrollbar-width: none; }
+  .shop-cats::-webkit-scrollbar { display: none; }
+  .shop-cats a {
+    flex: none; display: inline-flex; align-items: center; min-height: 38px; padding: 0 14px;
+    font-size: 0.875rem; font-weight: 700; text-decoration: none; white-space: nowrap;
+    color: #6f6479; background: #fff; border: 1px solid #eadcf4; border-radius: 999px;
+  }
+  .shop-cats a.is-on { color: #fff; background: #6b21a8; border-color: #6b21a8; }
+}
+.shop-results { min-width: 0; }

@@ -9,45 +9,49 @@
     </head>
     <body>
         {% include "courier/_nav.html" %}
-        <main class="container-fluid px-xl-5 px-3 py-4" style="max-width: 760px">
-            <a href="{% url 'courier:dashboard' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {% translate "Rute" %}</a>
-            <h1 class="page-title mt-2 mb-1">{% blocktranslate trimmed with order_pk=order.pk %}Serah terima #{{ order_pk }}{% endblocktranslate %}</h1>
-            <p class="text-muted">{{ order.customer.name }} · {{ order.delivery_address }}</p>
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
-            {% endfor %}
-            <form method="post" enctype="multipart/form-data" data-handover data-check-url="{% url 'courier:check_handover' order.pk %}" data-csrf="{{ csrf_token }}">
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-page is-narrow sg">
+            {% url 'courier:order_detail' order.pk as back_url %}{% blocktranslate trimmed asvar t_title with order_pk=order.pk %}Serah terima #{{ order_pk }}{% endblocktranslate %}
+            {% include "courier/_page_head.html" with back=back_url title=t_title lead=order.customer.name %}
+            {% include "partials/_sg_messages.html" %}
+            <p class="sg-sm sg-muted"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ order.delivery_address }}</p>
+            <form method="post" enctype="multipart/form-data" class="ck-flow" data-handover data-check-url="{% url 'courier:check_handover' order.pk %}" data-csrf="{{ csrf_token }}">
                 {% csrf_token %}
-                <section class="step" data-step-scan>
-                    <div class="step__title"><span class="step__num">1</span> {% translate "Scan QR di HP penerima" %}</div>
-                    <p class="small text-muted">{% translate "Minta penerima membuka Dasbor / Pesanan Saya lalu menampilkan QR serah-terima. Bila tidak bisa, minta penerima membacakan kode 8 huruf." %}</p>
-                    <div data-qr-scanner data-target="#handover-code" data-autostart>
+                <section class="ck-flow__step" data-step-scan>
+                    <div class="ck-flow__title"><span class="ck-flow__no">1</span> {% translate "Scan QR di HP penerima" %}</div>
+                    <p class="sg-xs sg-muted">{% translate "Minta penerima membuka Dasbor / Pesanan Saya lalu menampilkan QR serah-terima. Bila tidak bisa, minta penerima membacakan kode 8 huruf." %}</p>
+                    <div class="ck-scan" data-qr-scanner data-target="#handover-code" data-autostart>
                         <video data-qr-video playsinline muted hidden></video>
+                        <div class="ck-scan__frame" aria-hidden="true"><span></span></div>
                         <p class="scan-status" data-qr-status>{% translate "Membuka kamera…" %}</p>
-                        <button type="button" class="btn-route is-primary w-100" data-qr-start data-needs-gps>{% translate "Scan QR" %}</button>
+                        <button type="button" class="ck-btn is-primary w-100" data-qr-start data-needs-gps><i class="bi bi-qr-code-scan" aria-hidden="true"></i> {% translate "Scan QR" %}</button>
                     </div>
-                    <div class="scan-manual">
-                        <input id="handover-code" name="code" class="form-control" aria-label="{% translate 'Kode serah-terima dari HP penerima' %}" placeholder="{% translate 'Kode 8 huruf' %}" autocomplete="off" required>
-                        <button type="button" class="btn-route" data-check-code>{% translate "Cek" %}</button>
+                    <div class="ck-scan-manual sg-form">
+                        <input id="handover-code" name="code" aria-label="{% translate 'Kode serah-terima dari HP penerima' %}" placeholder="{% translate 'Kode 8 huruf' %}" autocomplete="off" required>
+                        <button type="button" class="ck-btn" data-check-code>{% translate "Cek" %}</button>
                     </div>
-                    <p class="scan-status" data-check-status></p>
+                    <p class="scan-status sg-sm" data-check-status></p>
                 </section>
-                <section class="step is-locked" data-step-photo>
-                    <div class="step__title"><span class="step__num">2</span> {% translate "Foto paket di tangan penerima" %}</div>
-                    {% include "partials/_camera.html" with btn="btn-route is-primary" btn2="btn-route" hint="Foto paket saat dipegang penerima (wajah tidak harus terlihat)." %}
+                <section class="ck-flow__step is-locked" data-step-photo>
+                    <div class="ck-flow__title"><span class="ck-flow__no">2</span> {% translate "Foto paket di tangan penerima" %}</div>
+                    {% include "partials/_camera.html" with btn="ck-btn is-primary" btn2="ck-btn" hint="Foto paket saat dipegang penerima (wajah tidak harus terlihat)." %}
                     <input type="hidden" name="latitude" data-gps-lat>
                     <input type="hidden" name="longitude" data-gps-lng>
                     {% if cod %}
-                        <label class="cod-box d-flex gap-2 align-items-center">
+                        <label class="sg-alert is-gold sg-mt12" style="cursor:pointer">
                             <input type="checkbox" name="cash_received" value="1" class="form-check-input m-0" required>
-                            {% blocktranslate trimmed with order_total_payment=order.total_payment|rupiah %}Uang tunai Rp {{ order_total_payment }} sudah saya terima{% endblocktranslate %}
+                            <span>{% blocktranslate trimmed with order_total_payment=order.total_payment|rupiah %}Uang tunai Rp {{ order_total_payment }} sudah saya terima{% endblocktranslate %}</span>
                         </label>
+                    {% else %}
+                        <p class="sg-alert is-ok sg-sm sg-mt12"><i class="bi bi-check2-circle" aria-hidden="true"></i><span>{% translate "Order sudah lunas, tidak ada uang yang ditagih." %}</span></p>
                     {% endif %}
-                    <label class="form-label small fw-bold mt-3" for="handover-note">{% translate "Catatan (opsional)" %}</label>
-                    <input id="handover-note" name="note" maxlength="255" class="form-control mb-3" placeholder="{% translate 'mis. diterima adik pemesan' %}">
-                    <button type="submit" class="btn-route is-ok w-100" data-needs-gps><i class="bi bi-check2-circle"></i> {% translate "Selesai, paket diterima" %}</button>
+                    <div class="sg-form sg-mt12">
+                        <label class="sg-lbl" for="handover-note">{% translate "Catatan (opsional)" %}</label>
+                        <input id="handover-note" name="note" maxlength="255" placeholder="{% translate 'mis. diterima adik pemesan' %}">
+                    </div>
+                    <button type="submit" class="ck-btn is-primary is-lg w-100 sg-mt12" data-needs-gps><i class="bi bi-check2-circle" aria-hidden="true"></i> {% translate "Selesai, paket diterima" %}</button>
                 </section>
             </form>
+            <p class="sg-xs sg-muted sg-mt12"><i class="bi bi-shield-check" aria-hidden="true"></i> {% translate "Pelanggan melihat foto ini di Pesanan Saya; admin bisa membukanya bila ada komplain." %}</p>
         </main>
         <script src="{% static 'vendor/jsqr/jsQR.js' %}"></script>
         <script src="{% static 'js/qr_scanner.js' %}?v=1"></script>

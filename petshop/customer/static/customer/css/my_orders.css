@@ -1,0 +1,175 @@
+/* Pesanan Saya: tab status, kartu pesanan tersusun dari atas ke bawah */
+.mo-page {
+  --mo-ink: #261a33;
+  --mo-muted: #6f6479;
+  --mo-line: #eadcf4;
+  --mo-soft: #f2e8f9;
+  --mo-purple: #6b21a8;
+  --mo-purple-dark: #4c1577;
+  max-width: 880px;
+  padding-top: 24px;
+  padding-bottom: 48px;
+  color: var(--mo-ink);
+}
+
+.mo-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.mo-title { margin: 0 0 6px; font-size: clamp(1.625rem, 1.3rem + 1vw, 2.125rem); font-weight: 800; letter-spacing: -0.02em; color: var(--mo-ink); }
+.mo-lead { margin: 0; font-size: 0.975rem; color: var(--mo-muted); }
+.mo-success { margin-bottom: 16px; }
+
+/* Tombol */
+.mo-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 16px; font-size: 0.925rem; font-weight: 700;
+  text-decoration: none; border-radius: 12px; border: 1.5px solid transparent; white-space: nowrap;
+}
+.mo-btn--solid { color: #fff; background: var(--mo-purple); }
+.mo-btn--solid:hover { color: #fff; background: var(--mo-purple-dark); }
+.mo-btn--soft { color: var(--mo-purple); background: var(--mo-soft); }
+.mo-btn--soft:hover { color: var(--mo-purple-dark); background: #e7d6f4; }
+.mo-btn--ghost { color: var(--mo-purple); background: #fff; border-color: #d2aee9; }
+.mo-btn--ghost:hover { color: var(--mo-purple-dark); border-color: var(--mo-purple); }
+
+/* Tab status */
+.mo-tabs { display: flex; gap: 8px; margin: 0 0 18px; padding-bottom: 4px; overflow-x: auto; scrollbar-width: none; }
+.mo-tabs::-webkit-scrollbar { display: none; }
+.mo-tab {
+  flex: none; display: inline-flex; align-items: center; gap: 8px;
+  min-height: 40px; padding: 0 14px; font-size: 0.9rem; font-weight: 700;
+  color: var(--mo-muted); text-decoration: none; background: #fff;
+  border: 1px solid var(--mo-line); border-radius: 999px;
+}
+.mo-tab:hover { color: var(--mo-purple); border-color: #d2aee9; }
+.mo-tab.is-on { color: #fff; background: var(--mo-purple); border-color: var(--mo-purple); }
+.mo-tab__n { min-width: 22px; padding: 1px 7px; font-size: 0.75rem; text-align: center; border-radius: 999px; background: var(--mo-soft); color: var(--mo-purple); }
+.mo-tab.is-on .mo-tab__n { background: rgba(255, 255, 255, 0.22); color: #fff; }
+
+/* Kartu pesanan */
+.mo-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.mo-card {
+  display: grid; gap: 14px; padding: 20px 22px;
+  background: #fff; border: 1px solid var(--mo-line); border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(38, 26, 51, 0.04);
+}
+.mo-card.is-new { border-color: var(--mo-purple); box-shadow: 0 0 0 3px var(--mo-soft); }
+.mo-card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.mo-card__id h2 { margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--mo-ink); }
+.mo-card__id p { margin: 2px 0 0; font-size: 0.875rem; color: var(--mo-muted); }
+.mo-status { flex: none; padding: 5px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 999px; white-space: nowrap; }
+.mo-resi { margin: -6px 0 0; font-size: 0.875rem; color: var(--mo-muted); }
+.mo-resi .co-resi { font-size: 0.9rem; word-break: break-all; }
+
+/* Perlu tindakan: transfer */
+.mo-attn { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #fef3c7; color: #92400e; }
+.mo-attn > i { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: #fff; }
+.mo-attn__body { display: flex; flex-direction: column; gap: 2px; font-size: 0.875rem; }
+.mo-attn__body strong { font-size: 0.95rem; }
+.mo-attn.is-check { background: #dbeafe; color: #1e40af; }
+.mo-transfer { margin-top: -6px; }
+.mo-transfer > summary { cursor: pointer; font-size: 0.875rem; font-weight: 700; color: var(--mo-purple); }
+.mo-transfer[open] > summary { margin-bottom: 10px; }
+.mo-transfer .co-transfer__btn { display: none; }
+
+/* Barang & total */
+.mo-items { list-style: none; margin: 0; padding: 12px 0 0; border-top: 1px solid #f1e8f7; display: grid; gap: 8px; }
+.mo-items li { display: flex; justify-content: space-between; gap: 12px; font-size: 0.925rem; }
+.mo-items li > span:last-child { white-space: nowrap; font-weight: 600; }
+.mo-items__name small { color: var(--mo-muted); font-size: 0.85rem; }
+.mo-items__ship { color: var(--mo-muted); }
+.mo-items__ship span:last-child { font-weight: 500 !important; }
+.mo-total { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 12px; border-top: 1px dashed #dccbea; }
+.mo-total__pay { display: flex; gap: 6px; flex-wrap: wrap; }
+.mo-chip { padding: 3px 10px; font-size: 0.8rem; font-weight: 700; border-radius: 999px; color: var(--mo-muted); background: #f5f1f8; }
+.mo-chip--lunas { color: #166534; background: #dcfce7; }
+.mo-chip--menunggu { color: #92400e; background: #fef3c7; }
+.mo-total__sum { display: flex; align-items: baseline; gap: 8px; font-size: 0.9rem; color: var(--mo-muted); }
+.mo-total__sum strong { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: var(--mo-purple); }
+
+.mo-note { margin: 0; padding: 10px 12px; font-size: 0.875rem; line-height: 1.5; color: #4a3d58; background: #faf7fc; border-radius: 12px; }
+.mo-note i { margin-right: 6px; color: var(--mo-purple); }
+.mo-card .co-qr { margin: 0; }
+.mo-rate, .mo-rated { margin: 0; }
+
+/* Aksi */
+.mo-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.mo-links { display: flex; gap: 16px; flex-wrap: wrap; margin-top: -4px; font-size: 0.875rem; }
+.mo-links a { color: var(--mo-muted); }
+.mo-links a:hover { color: var(--mo-purple); }
+.mo-links .co-cancel-form { margin: 0; }
+
+@media (max-width: 575px) {
+  .mo-page { padding-top: 16px; }
+  .mo-head .mo-btn { width: 100%; }
+  .mo-card { padding: 16px; border-radius: 16px; }
+  .mo-card__id h2 { font-size: 1.05rem; }
+  .mo-actions .mo-btn { flex: 1 1 calc(50% - 4px); }
+  .mo-actions .mo-btn:first-child:nth-last-child(odd) { flex-basis: 100%; }
+}
+
+.mo-page .mo-transfer .co-transfer__btn { display: none !important; }
+.mo-page .mo-links .co-cancel-form { flex-basis: auto; margin: 0 !important; padding: 0; border: 0; text-align: left; }
+
+/* Booking Saya memakai kartu yang sama */
+.mo-head__links { display: flex; gap: 8px; flex-wrap: wrap; }
+.mo-page .mo-card.svc-item { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 20px 22px; border: 1px solid var(--mo-line); border-radius: 18px; box-shadow: 0 1px 2px rgba(38, 26, 51, 0.04); }
+.mo-card__id h2 small { font-size: 0.9rem; font-weight: 600; color: var(--mo-muted); }
+.mo-meta { list-style: none; margin: -4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.9rem; color: #4a3d58; }
+.mo-meta i { width: 16px; margin-right: 4px; text-align: center; color: var(--mo-purple); }
+.mo-page .svc-stages { margin: 0; gap: 4px; font-size: 0.78rem; }
+.mo-page .svc-stages li { padding-top: 6px; border-top-width: 5px; border-radius: 2px; }
+.mo-page .svc-stages li.is-done { border-color: var(--mo-purple); color: var(--mo-purple); }
+.mo-page .svc-stages li.is-now { border-color: #a855f7; color: var(--mo-ink); font-weight: 800; }
+.mo-page .svc-queue,
+.mo-page .svc-ready { margin: 0; border-radius: 14px; }
+.mo-page .co-qr { margin: 0; }
+.mo-steps > summary { cursor: pointer; font-size: 0.9rem; font-weight: 700; color: var(--mo-purple); }
+.mo-steps[open] > summary { margin-bottom: 10px; }
+.mo-page .svc-checkin,
+.mo-page .svc-note { margin: 0; padding: 10px 12px; font-size: 0.875rem; background: #faf7fc; border-radius: 12px; }
+.mo-total__sum small { font-size: 0.78rem; }
+.mo-page .mo-links form { margin: 0; }
+@media (max-width: 575px) {
+  .mo-head__links { width: 100%; }
+  .mo-head__links .mo-btn { flex: 1; }
+  .mo-page .mo-card.svc-item { padding: 16px; border-radius: 16px; }
+  .mo-meta { flex-direction: column; }
+}
+.mo-total__sum { flex-wrap: wrap; justify-content: flex-end; }
+.mo-total__sum small { flex-basis: 100%; text-align: right; color: var(--mo-muted); }
+.mo-page .svc-queue__no { white-space: nowrap; }
+
+/* Bukti pengiriman (foto dari kurir) */
+.mo-proof { border: 1px solid var(--mo-line); border-radius: 14px; background: #faf7fc; }
+.mo-proof > summary { cursor: pointer; padding: 12px 14px; font-size: 0.9rem; font-weight: 700; color: var(--mo-purple); }
+.mo-proof > summary small { font-weight: 600; color: var(--mo-muted); }
+.mo-proof > summary i { margin-right: 4px; }
+.mo-proof__body { display: flex; gap: 16px; align-items: flex-start; padding: 0 14px 14px; }
+.mo-proof__photo { flex: none; display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none; color: var(--mo-purple); }
+.mo-proof__photo img { width: 160px; height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid var(--mo-line); background: #fff; }
+.mo-proof__none { margin: 0; flex: 0 1 220px; font-size: 0.875rem; color: var(--mo-muted); }
+.mo-proof__facts { flex: 1; min-width: 0; margin: 0; display: grid; gap: 8px; font-size: 0.875rem; }
+.mo-proof__facts dt { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--mo-muted); }
+.mo-proof__facts dd { margin: 0; color: var(--mo-ink); }
+.mo-proof__courier { display: flex; align-items: center; gap: 8px; }
+.mo-proof__courier img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.mo-proof__ok { color: #15803d; }
+@media (max-width: 575px) {
+  .mo-proof__body { flex-direction: column; }
+  .mo-proof__photo, .mo-proof__photo img { width: 100%; }
+  .mo-proof__photo img { height: auto; aspect-ratio: 4 / 3; }
+}
+
+/* Booking: status pembayaran (bayar setelah jadwal dikonfirmasi) */
+.mo-pay { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border-radius: 14px; background: var(--mo-soft); color: var(--mo-ink); }
+.mo-pay > i { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: #fff; color: var(--mo-purple); }
+.mo-pay p { flex: 1 1 260px; margin: 0; font-size: 0.875rem; line-height: 1.5; }
+.mo-pay p strong { display: block; font-size: 0.95rem; }
+.mo-pay .mo-btn { flex: none; }
+.mo-pay__reject { display: block; margin-top: 4px; font-weight: 600; color: #b91c1c; }
+.mo-pay--wait { background: #f5f1f8; }
+.mo-pay--wait > i { color: var(--mo-muted); }
+.mo-pay--check { background: #dbeafe; color: #1e40af; }
+.mo-pay--check > i { color: #1e40af; }
+@media (max-width: 575px) {
+  .mo-pay .mo-btn { width: 100%; }
+}

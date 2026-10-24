@@ -4,8 +4,11 @@
 {% block title %}{% translate "Dasbor - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=4">
-    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
+    <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'customer/css/dashboard.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'customer/css/dashboard-dark.css' %}?v=1">
     {% if live_orders %}
         <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
     {% endif %}

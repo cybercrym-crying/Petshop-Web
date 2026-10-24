@@ -2,72 +2,87 @@
 {% load i18n %}
 {% load static rupiah %}
 {% block title %}{% blocktranslate trimmed with order_pk=order.pk %}Seelly - Cek Bukti Transfer #{{ order_pk }}{% endblocktranslate %}{% endblock %}
-{% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
-    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
-{% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <a href="{% url 'transaction:manage_transaction' %}?payment=proof" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {% translate "Semua bukti transfer" %}</a>
-        <div class="mb-3 mt-2">
-            <p class="eyebrow">{% translate "Penjualan" %}</p>
-            <h1 class="page-title mb-1">{% blocktranslate trimmed with order_pk=order.pk %}Cek Bukti Transfer · Order #{{ order_pk }}{% endblocktranslate %}</h1>
-            <p class="text-muted mb-0">{% translate "Cocokkan nominal, nama pengirim, dan waktu dengan mutasi rekening toko sebelum menyetujui." %}</p>
-        </div>
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
-        {% endfor %}
-        <div class="row g-4">
-            <div class="col-lg-7">
-                <div class="card-custom so-card">
-                    {% if order.payment_proof %}
-                        <a href="{{ order.payment_proof.url }}" target="_blank" rel="noopener" class="so-proof">
-                            <img src="{{ order.payment_proof.url }}" alt="{% blocktranslate trimmed with order_pk=order.pk %}Bukti transfer order #{{ order_pk }}{% endblocktranslate %}">
-                        </a>
-                        <p class="small text-muted mt-2 mb-0">{% blocktranslate trimmed with order_payment_proof_at=order.payment_proof_at|date:"d M Y, H:i" %}Dikirim {{ order_payment_proof_at }} · klik foto untuk ukuran penuh{% endblocktranslate %}</p>
-                    {% else %}
-                        <p class="text-muted mb-0"><i class="bi bi-image"></i> {% translate "Belum ada bukti transfer untuk order ini." %}</p>
-                    {% endif %}
-                </div>
+    <div class="sg sg-page">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <a href="{% url 'transaction:manage_transaction' %}?payment=proof" class="sg-link"><i class="bi bi-arrow-left" aria-hidden="true"></i> {% translate "Semua bukti transfer" %}</a>
+                <p class="sg-eyebrow sg-mt8">{% translate "Penjualan" %}</p>
+                <h1>{% translate "Cek Bukti Transfer" %}</h1>
+                <p>{% translate "Cocokkan nominal, nama pengirim, dan waktu dengan mutasi rekening toko sebelum menyetujui." %}</p>
             </div>
-            <div class="col-lg-5">
-                <div class="card-custom so-card">
-                    <dl class="so-dl">
-                        <dt>{% translate "Harus diterima" %}</dt><dd class="so-amount">Rp {{ order.total_payment|rupiah }}</dd>
-                        {% if order.shipping_fee %}<dt>{% translate "Rincian" %}</dt><dd>{% blocktranslate trimmed with order_items_total=order.items_total|rupiah order_shipping_fee=order.shipping_fee|rupiah %}Barang Rp {{ order_items_total }} + ongkir Rp {{ order_shipping_fee }}{% endblocktranslate %}</dd>{% endif %}
-                        <dt>{% translate "Pelanggan" %}</dt><dd>{{ order.customer.name }} · <a href="{{ order.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {{ order.customer.phone_number }}</a></dd>
-                        <dt>{% translate "Resi" %}</dt><dd>{{ order.tracking_number }}</dd>
-                        <dt>{% translate "Batas bayar" %}</dt><dd>{{ order.payment_due_at|date:"d M Y, H:i"|default:"-" }}</dd>
-                        <dt>{% translate "Status" %}</dt><dd>{{ order.get_order_status_display }} · {{ order.get_payment_status_display }}</dd>
-                    </dl>
-                    {% if order.awaiting_payment_check %}
-                        <form method="post" class="mt-3">
-                            {% csrf_token %}
-                            <button type="submit" name="decision" value="approve" class="btn btn-primary fw-bold w-100 mb-3"
-                                    data-confirm="{% blocktranslate trimmed with order_total_payment=order.total_payment|rupiah %}Dana Rp {{ order_total_payment }} sudah masuk ke rekening toko?{% endblocktranslate %}">
-                                <i class="bi bi-check2-circle"></i> {% translate "Dana masuk, setujui" %}
-                            </button>
-                        </form>
-                        <form method="post">
-                            {% csrf_token %}
-                            <label for="reject-note" class="form-label small fw-bold">{% translate "Tolak dengan alasan" %}</label>
-                            <textarea id="reject-note" name="note" rows="2" class="form-control mb-2" maxlength="255" required
-                                      placeholder="mis. nominal kurang Rp 5.000 / foto buram"></textarea>
-                            <button type="submit" name="decision" value="reject" class="btn btn-outline-danger fw-bold w-100">{% translate "Tolak, minta kirim ulang" %}</button>
-                        </form>
-                    {% endif %}
+            <div class="sg-hd__actions">
+                <span class="sg-pill is-gold">{% blocktranslate trimmed with n=queue|length %}{{ n }} menunggu dicek{% endblocktranslate %}</span>
+            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        <div class="sg-grid">
+            <section class="sg-card is-sm sg-s3" aria-labelledby="proof-queue">
+                <h2 id="proof-queue" class="sg-eyebrow" style="padding:4px 4px 10px">{% translate "Antrean bukti" %}</h2>
+                <div class="sg-list">
+                    {% for o in queue %}
+                        <a href="{% url 'transaction:payment_check' o.pk %}" class="sg-item{% if o.pk == order.pk %} is-on{% endif %}"{% if o.pk == order.pk %} aria-current="page"{% endif %}>
+                            <span class="sg-item__body">
+                                <b>#{{ o.pk }} · {{ o.customer.name }}</b>
+                                <small>Rp {{ o.total_payment|rupiah }} · {% blocktranslate trimmed with t=o.payment_proof_at|timesince %}masuk {{ t }} lalu{% endblocktranslate %}</small>
+                            </span>
+                        </a>
+                    {% empty %}
+                        <p class="sg-empty"><i class="bi bi-check2-all" aria-hidden="true"></i>{% translate "Tidak ada bukti lain yang menunggu." %}</p>
+                    {% endfor %}
                 </div>
-                {% if waiting %}
-                    <div class="card-custom so-card mt-4">
-                        <h2 class="h6 fw-bold mb-2">{% translate "Bukti lain yang menunggu" %}</h2>
-                        <ul class="list-unstyled mb-0 so-list">
-                            {% for o in waiting %}
-                                <li><a href="{% url 'transaction:payment_check' o.pk %}">#{{ o.pk }} · {{ o.customer.name }}</a> <span class="text-muted">Rp {{ o.total_payment|rupiah }}</span></li>
-                            {% endfor %}
-                        </ul>
+            </section>
+            <section class="sg-card sg-s5" aria-labelledby="proof-photo">
+                <div class="sg-card__head">
+                    <h2 id="proof-photo" class="sg-h3">{% translate "Foto bukti dari pelanggan" %}</h2>
+                    <span class="sg-sp"></span>
+                    {% if order.payment_proof_at %}<span class="sg-chip">{% blocktranslate trimmed with t=order.payment_proof_at|date:"d M, H.i" %}Diunggah {{ t }}{% endblocktranslate %}</span>{% endif %}
+                </div>
+                {% if order.payment_proof %}
+                    <a href="{{ order.payment_proof.url }}" target="_blank" rel="noopener" class="sg-photo" style="aspect-ratio:auto;max-height:560px">
+                        <img src="{{ order.payment_proof.url }}" alt="{% blocktranslate trimmed with order_pk=order.pk %}Bukti transfer order #{{ order_pk }}{% endblocktranslate %}" style="object-fit:contain;background:var(--sg-soft)">
+                        <span class="sg-photo__tag"><i class="bi bi-zoom-in" aria-hidden="true"></i>{% translate "Klik untuk ukuran penuh" %}</span>
+                    </a>
+                {% else %}
+                    <div class="sg-photo"><i class="bi bi-image" aria-hidden="true"></i></div>
+                    <p class="sg-muted sg-mt8 mb-0">{% translate "Belum ada bukti transfer untuk order ini." %}</p>
+                {% endif %}
+            </section>
+            <section class="sg-card is-focus sg-s4" aria-labelledby="proof-order">
+                <h2 id="proof-order" class="sg-live"><i aria-hidden="true"></i>{% blocktranslate trimmed with pk=order.pk %}Pesanan #{{ pk }}{% endblocktranslate %}</h2>
+                <p class="sg-h3 sg-mt8" style="font-size:1.35rem">{{ order.customer.name }}</p>
+                <p class="sg-muted sg-sm mb-0"><a href="{{ order.customer.whatsapp_url }}" target="_blank" rel="noopener" class="sg-link"><i class="bi bi-whatsapp" aria-hidden="true"></i> {{ order.customer.phone_number }}</a> · {{ order.tracking_number }}</p>
+                <ul class="sg-lines sg-mt12">
+                    {% for d in details %}
+                        <li><span>{{ d.quantity }}× {{ d.product.name }}</span><b>Rp {{ d.subtotal|rupiah }}</b></li>
+                    {% endfor %}
+                    {% if order.discount %}<li><span>{% translate "Diskon" %}</span><b>−Rp {{ order.discount|rupiah }}</b></li>{% endif %}
+                    {% if order.shipping_fee %}<li><span>{% translate "Ongkir" %}</span><b>Rp {{ order.shipping_fee|rupiah }}</b></li>{% endif %}
+                    <li class="is-tot"><span>{% translate "Harus diterima" %}</span><b>Rp {{ order.total_payment|rupiah }}</b></li>
+                </ul>
+                {% if bank_accounts %}
+                    <div class="sg-sub sg-mt12">
+                        <b class="sg-sm">{% translate "Rekening tujuan" %}</b>
+                        {% for a in bank_accounts %}<div class="sg-xs sg-muted sg-mt8">{{ a.bank }} {{ a.number }} · {{ a.holder }}</div>{% endfor %}
                     </div>
                 {% endif %}
-            </div>
+                <p class="sg-xs sg-muted sg-mt12 mb-0">{% translate "Batas bayar" %}: {{ order.payment_due_at|date:"d M Y, H.i"|default:"-" }} · {{ order.get_order_status_display }} · {{ order.get_payment_status_display }}</p>
+                {% if order.awaiting_payment_check %}
+                    <form method="post" class="sg-mt16">
+                        {% csrf_token %}
+                        <label class="sg-check"><input type="checkbox" required> {% translate "Dana sudah masuk di mutasi rekening toko" %}</label>
+                        <button type="submit" name="decision" value="approve" class="ui-btn ui-btn--primary ui-btn--lg ui-btn--block sg-mt12">
+                            <i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Setujui pembayaran" %}
+                        </button>
+                    </form>
+                    <form method="post" class="sg-form sg-mt16">
+                        {% csrf_token %}
+                        <label for="reject-note" class="sg-lbl">{% translate "Tolak dengan alasan" %}</label>
+                        <input id="reject-note" name="note" maxlength="255" required placeholder="{% translate 'mis. nominal kurang Rp 5.000 / foto buram' %}">
+                        <button type="submit" name="decision" value="reject" class="ui-btn ui-btn--bad-line ui-btn--block sg-mt8"><i class="bi bi-x-circle" aria-hidden="true"></i>{% translate "Tolak, minta kirim ulang" %}</button>
+                    </form>
+                {% endif %}
+            </section>
         </div>
     </div>
 {% endblock %}

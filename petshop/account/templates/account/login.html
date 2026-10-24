@@ -5,15 +5,19 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="{% static 'js/theme_boot.js' %}?v=1"></script>
         <title>{% translate "Masuk - Seelly Petshop" %}</title>
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
         <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux2">
+        <link rel="stylesheet" href="{% static 'account/css/login-dark.css' %}?v=1">
+        <link rel="stylesheet" href="{% static 'css/theme_toggle.css' %}?v=1">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body>
         {% include "partials/_lang_toggle.html" with extra="lang-toggle--corner" %}
+        {% include "partials/_theme_toggle.html" with extra="theme-toggle--corner" %}
         <div class="bg-blob blob-purple"></div>
         <div class="bg-blob blob-orange"></div>
         <div class="login-glass-card">

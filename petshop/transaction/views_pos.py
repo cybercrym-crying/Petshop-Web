@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.db.models import Count
 from django.views.decorators.http import require_POST
 
 from account.dashboard import Period, parse_range
@@ -16,7 +17,7 @@ from account.decorators import roleRequired
 from account.models import ADMIN_ROLES, POS_ROLES, Customer, Role, User
 from common.exceptions import PetshopError
 from product.models import Category, InsufficientStock, Product
-from store.models import StoreSettings
+from store.models import ActivityLog, StoreSettings
 
 from . import pos
 from .models import (
@@ -57,9 +58,27 @@ def _payable_bookings():
         ServiceBooking.objects.filter(status__in=pos.PAYABLE_BOOKING_STATUSES)
         .exclude(payment_lines__order__order_status__in=[s for s in OrderStatus.values if s != OrderStatus.CANCELLED])
         .select_related("service", "customer")
+        .prefetch_related("steps", "service__steps")
         .order_by("-schedule")[:40]
     )
     return list(candidates)
+
+
+def _with_step_rows(bookings):
+    """Tahapan layanan untuk kartu di tab Layanan grooming: centang = sudah dikerjakan groomer."""
+    from service.models import DEFAULT_STEPS
+
+    for b in bookings:
+        done = list(b.steps.all())
+        if done:
+            b.step_rows = [(s.name, s.done_at) for s in done]
+        else:
+            names = [s.name for s in b.service.steps.all()] or list(DEFAULT_STEPS)
+            b.step_rows = [(name, None) for name in names]
+        b.steps_done = sum(1 for _name, at in b.step_rows if at)
+    # Yang sudah siap diambil di atas, lalu yang sedang dikerjakan, lalu antrean.
+    order = {"SIAP": 0, "PROSES": 1, "ANTRE": 2}
+    return sorted(bookings, key=lambda b: order.get(b.status, 3))
 
 
 @roleRequired(*POS_ROLES)
@@ -96,7 +115,9 @@ def make_transaction(request):
             "couriers": User.couriers().filter(is_active=True),
             "shift": CashierShift.current(request.user),
             "held_sales": HeldSale.objects.filter(cashier=request.user),
-            "payable_bookings": [b for b in _payable_bookings() if b.pk not in in_cart],
+            "payable_bookings": _with_step_rows([b for b in _payable_bookings() if b.pk not in in_cart]),
+            "tab": "layanan" if request.GET.get("tab") == "layanan" else "produk",
+            "product_total": Product.objects.sellable().count(),
             "store": store,
             "fulfillments": Fulfillment.choices,
         },
@@ -201,6 +222,7 @@ def cashier_home(request):
     bookings = dashboard.bookings_today()
     for b in bookings:
         b.tone = dashboard.BOOKING_TONES.get(b.status, "mute")
+    tasks = dashboard.staff_tasks(request.user)
     recent = (
         Order.objects.filter(admin=request.user, receipt_no__isnull=False)
         .select_related("customer").prefetch_related("payments").order_by("-date", "-pk")[:6]
@@ -212,7 +234,8 @@ def cashier_home(request):
             "shift": current,
             "summary": current.summary() if current else None,
             "held_sales": HeldSale.objects.filter(cashier=request.user),
-            "tasks": dashboard.staff_tasks(request.user),
+            "tasks": tasks,
+            "tasks_total": sum(t["n"] for t in tasks),
             "recent": recent,
             "bookings": bookings,
         },
@@ -319,8 +342,9 @@ def receipt(request, pk):
         can_void=request.user.role in ADMIN_ROLES and order.order_status not in (OrderStatus.CANCELLED, OrderStatus.ON_DELIVERY),
         can_return=pos.can_return(order),
         staff_view=True,
+        log=ActivityLog.for_object(order),
     )
-    return render(request, "transaction/receipt.html", context)
+    return render(request, "transaction/receipt_staff.html", context)
 
 
 def receipt_public(request, token):
@@ -392,10 +416,13 @@ def returns(request):
     status = request.GET.get("status") or ReturnStatus.PENDING
     if status in ReturnStatus.values:
         qs = qs.filter(status=status)
+    counts = dict(ReturnRequest.objects.values_list("status").annotate(n=Count("pk")))
     return render(
         request,
         "transaction/returns.html",
         {"items": qs[:100], "status": status, "statuses": ReturnStatus.choices,
+         "tabs": [(value, label, counts.get(value, 0)) for value, label in ReturnStatus.choices],
+         "return_days": StoreSettings.current().return_days,
          "can_decide": request.user.role in ADMIN_ROLES},
     )
 

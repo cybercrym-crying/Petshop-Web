@@ -11,16 +11,21 @@
         <link rel="icon"
               href="{% static 'customer/img/favicon.svg' %}"
               type="image/svg+xml">
+        <script src="{% static 'js/theme_boot.js' %}?v=1"></script>
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
               rel="stylesheet">
         <link href="{% static 'vendor/fontawesome/css/all.min.css' %}" rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'customer/css/base.css' %}?v=3">
+        <link rel="stylesheet" href="{% static 'customer/css/base.css' %}?v=4">
+        <link rel="stylesheet" href="{% static 'customer/css/base-dark.css' %}?v=1">
         <link rel="stylesheet" href="{% static 'customer/css/nav.css' %}?v=ux2">
+        <link rel="stylesheet" href="{% static 'customer/css/nav-dark.css' %}?v=1">
         {% if user.is_authenticated and user.role == "CUSTOMER" %}
-            <link rel="stylesheet" href="{% static 'customer/css/app.css' %}?v=1">
+            <link rel="stylesheet" href="{% static 'customer/css/app.css' %}?v=2">
+            <link rel="stylesheet" href="{% static 'customer/css/app-dark.css' %}?v=1">
         {% endif %}
         {% block extra_css %}{% endblock %}
+        <link rel="stylesheet" href="{% static 'css/theme_toggle.css' %}?v=1">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body class="{% if user.is_authenticated and user.role == 'CUSTOMER' %}ca-app {% endif %}{% block body_class %}{% endblock %}"
@@ -86,7 +91,7 @@
         </div>
         <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
         <script src="{% static 'js/common.js' %}"></script>
-        <script src="{% static 'customer/js/nav.js' %}?v=ux3"></script>
+        <script src="{% static 'customer/js/nav.js' %}?v=ux4"></script>
         <script src="{% static 'customer/js/store.js' %}?v=3"></script>
         {% block extra_js %}{% endblock %}
         {% include "chatbot/_widget.html" %}

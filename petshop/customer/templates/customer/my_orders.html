@@ -3,17 +3,21 @@
 {% load static rupiah %}
 {% block title %}{% translate "Pesanan Saya - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
+    <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/my_orders.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'customer/css/my_orders-dark.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
+    <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
 {% endblock %}
 {% block content %}
-    <section class="container section co-page co-orders">
-        <header class="co-head">
+    <section class="container section co-page mo-page">
+        <header class="mo-head">
             <div>
-                <h1 class="co-title"><i class="fas fa-box" aria-hidden="true"></i> {% translate "Pesanan Saya" %}</h1>
-                <p class="muted mb-0">{% blocktranslate trimmed with user_name=user.name %}Halo {{ user_name }}, pantau semua pesanan Anda di sini.{% endblocktranslate %}</p>
+                <h1 class="mo-title">{% translate "Pesanan Saya" %}</h1>
+                <p class="mo-lead">{% blocktranslate trimmed with user_name=user.name %}Halo {{ user_name }}, pantau semua pesanan Anda di sini.{% endblocktranslate %}</p>
             </div>
-            <a href="{% url 'customer:shop' %}" class="btn-ghost"><i class="fas fa-store" aria-hidden="true"></i> {% translate "Belanja Lagi" %}</a>
+            <a href="{% url 'customer:shop' %}" class="mo-btn mo-btn--ghost"><i class="fas fa-store" aria-hidden="true"></i> {% translate "Belanja Lagi" %}</a>
         </header>
         {% if messages %}
             {% for message in messages %}
@@ -21,7 +25,7 @@
             {% endfor %}
         {% endif %}
         {% if new_order %}
-            <div class="co-success" role="status">
+            <div class="co-success mo-success" role="status">
                 <i class="fas fa-circle-check" aria-hidden="true"></i>
                 <div>
                     <strong>{% blocktranslate trimmed with new_order_pk=new_order.pk %}Pesanan #{{ new_order_pk }} berhasil dibuat!{% endblocktranslate %}</strong>
@@ -29,62 +33,62 @@
                 </div>
             </div>
         {% endif %}
-        <ul class="co-order-list">
+        <nav class="mo-tabs" aria-label="{% translate 'Saring pesanan' %}">
+            {% for key, label, count in tabs %}
+                <a href="{% url 'customer:my_orders' %}{% if key %}?tab={{ key }}{% endif %}" class="mo-tab{% if key == tab %} is-on{% endif %}"{% if key == tab %} aria-current="page"{% endif %}>{{ label }} <span class="mo-tab__n">{{ count }}</span></a>
+            {% endfor %}
+        </nav>
+        <ul class="mo-list">
             {% for order in orders %}
-                <li class="co-order{% if new_order and order.pk == new_order.pk %} is-new{% endif %}">
-                    <div class="co-order__top">
-                        <div>
-                            <div class="co-order__id">{% blocktranslate trimmed with order_pk=order.pk %}Pesanan #{{ order_pk }} ·{% endblocktranslate %} <span class="co-resi">{{ order.tracking_number }}</span></div>
-                            <div class="muted">{{ order.date|date:"d M Y, H:i" }} · {{ order.get_channel_display }}</div>
+                <li class="mo-card{% if new_order and order.pk == new_order.pk %} is-new{% endif %}">
+                    <div class="mo-card__head">
+                        <div class="mo-card__id">
+                            <h2>{% blocktranslate trimmed with order_pk=order.pk %}Pesanan #{{ order_pk }}{% endblocktranslate %}</h2>
+                            <p>{{ order.date|date:"d M Y, H:i" }} · {{ order.get_channel_display }}</p>
                         </div>
-                        <span class="co-status co-status--{{ order.order_status|lower }}">{{ order.status_display }}</span>
+                        <span class="co-status mo-status co-status--{{ order.order_status|lower }}">{{ order.status_display }}</span>
                     </div>
-                    <ul class="co-order__items">
+                    <p class="mo-resi"><span>{% translate "Resi" %}</span> <b class="co-resi">{{ order.tracking_number }}</b></p>
+                    {% if order.payment_method == "TRANSFER" and order.payment_status == "MENUNGGU" and order.order_status != "DIBATALKAN" %}
+                        <div class="mo-attn{% if order.awaiting_payment_check %} is-check{% endif %}">
+                            <i class="fas {% if order.awaiting_payment_check %}fa-hourglass-half{% else %}fa-money-bill-transfer{% endif %}" aria-hidden="true"></i>
+                            <div class="mo-attn__body">
+                                {% if order.awaiting_payment_check %}
+                                    <strong>{% translate "Bukti terkirim, sedang dicek" %}</strong>
+                                {% else %}
+                                    <strong>{% translate "Menunggu pembayaran" %}</strong>
+                                    {% if order.payment_due_at %}<span>{% blocktranslate trimmed with due=order.payment_due_at|date:"d M, H:i" %}Bayar sebelum {{ due }}{% endblocktranslate %}</span>{% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <details class="mo-transfer"{% if order.payment_reject_note and not order.awaiting_payment_check %} open{% endif %}>
+                            <summary>{% translate "Rekening & cara bayar" %}</summary>
+                            {% include "customer/_transfer_info.html" with order=order %}
+                        </details>
+                    {% endif %}
+                    <ul class="mo-items">
                         {% for d in order.details.all %}
-                            <li><span>{{ d.product.name }} <small>×{{ d.quantity }}</small></span><span>Rp {{ d.subtotal|rupiah }}</span></li>
+                            <li><span class="mo-items__name">{{ d.product.name }} <small>× {{ d.quantity }}</small></span><span>Rp {{ d.subtotal|rupiah }}</span></li>
                         {% endfor %}
-                        {% if order.shipping_fee %}<li class="muted"><span>{% translate "Ongkir" %}{% if order.delivery_distance_km %} ({{ order.delivery_distance_km }} km){% endif %}</span><span>Rp {{ order.shipping_fee|rupiah }}</span></li>{% endif %}
+                        {% if order.shipping_fee %}<li class="mo-items__ship"><span>{% translate "Ongkir" %}{% if order.delivery_distance_km %} ({{ order.delivery_distance_km }} km){% endif %}</span><span>Rp {{ order.shipping_fee|rupiah }}</span></li>{% endif %}
                     </ul>
+                    <div class="mo-total">
+                        <div class="mo-total__pay">
+                            <span class="mo-chip">{{ order.get_payment_method_display }}</span>
+                            <span class="mo-chip mo-chip--{{ order.payment_status|lower }}">{{ order.get_payment_status_display }}</span>
+                        </div>
+                        <div class="mo-total__sum"><span>{% translate "Total" %}</span> <strong>Rp {{ order.total_payment|rupiah }}</strong></div>
+                    </div>
                     {% if order.order_status == "DIKONFIRMASI" or order.order_status == "DALAM_PENGIRIMAN" %}
                         {% include "customer/_handover_qr.html" %}
                     {% endif %}
-                    <div class="co-order__foot">
-                        <div>
-                            <div class="co-order__total">Rp {{ order.total_payment|rupiah }}</div>
-                            <div class="muted">{{ order.get_payment_method_display }} · {{ order.get_payment_status_display }}</div>
-                        </div>
-                        <div class="co-order__actions">
-                            {% if order.order_status != "DIBATALKAN" and not order.is_take_away %}
-                                <a href="{% url 'customer:track_detail' order.tracking_number %}" class="{% if order.order_status == "DALAM_PENGIRIMAN" %}btn-primary-seelly{% else %}btn-soft{% endif %}">
-                                    <i class="fas fa-location-dot" aria-hidden="true"></i> {% if order.order_status == "DALAM_PENGIRIMAN" %}{% translate "Lacak Kurir" %}{% else %}{% translate "Lacak" %}{% endif %}
-                                </a>
-                            {% endif %}
-                            {% if order.receipt_token %}
-                                <a href="{% url 'transaction:receipt_public' order.receipt_token %}" class="btn-ghost" target="_blank" rel="noopener">
-                                    <i class="fas fa-receipt" aria-hidden="true"></i> {% translate "Struk" %}
-                                </a>
-                            {% endif %}
-                            <a href="{{ wa_link }}?text={% filter urlencode %}Halo admin, saya mau tanya pesanan #{{ order.pk }} (resi {{ order.tracking_number }}).{% endfilter %}"
-                               class="btn-ghost" target="_blank" rel="noopener">
-                                <i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Tanya Admin" %}
-                            </a>
-                            {% if order.order_status == "MENUNGGU" %}
-                                <form method="post" action="{% url 'customer:cancel_my_order' order.pk %}" class="co-cancel-form" data-confirm="{% blocktranslate trimmed with order_pk=order.pk %}Batalkan pesanan #{{ order_pk }}?{% endblocktranslate %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="co-cancel">{% translate "Batalkan pesanan" %}</button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% if order.payment_method == "TRANSFER" and order.payment_status == "MENUNGGU" and order.order_status != "DIBATALKAN" %}
-                        {% include "customer/_transfer_info.html" with order=order %}
-                    {% endif %}
-                    {% if order.customer_note %}<p class="co-order__note">{% blocktranslate trimmed with order_customer_note=order.customer_note %}Catatan Anda: {{ order_customer_note }}{% endblocktranslate %}</p>{% endif %}
+                    {% if order.customer_note %}<p class="mo-note"><i class="far fa-comment-dots" aria-hidden="true"></i> {% blocktranslate trimmed with order_customer_note=order.customer_note %}Catatan Anda: {{ order_customer_note }}{% endblocktranslate %}</p>{% endif %}
                     {% if order.order_status == "TERKIRIM" %}
+                        {% include "customer/_delivery_proof.html" %}
                         {% if order.rating %}
-                            <p class="svc-rated" aria-label="{% blocktranslate trimmed with order_rating=order.rating %}Ulasan {{ order_rating }} dari 5{% endblocktranslate %}">{% for _ in "12345" %}<i class="fa{% if forloop.counter <= order.rating %}s{% else %}r{% endif %} fa-star" aria-hidden="true"></i>{% endfor %} {{ order.review }}</p>
+                            <p class="svc-rated mo-rated" aria-label="{% blocktranslate trimmed with order_rating=order.rating %}Ulasan {{ order_rating }} dari 5{% endblocktranslate %}">{% for _ in "12345" %}<i class="fa{% if forloop.counter <= order.rating %}s{% else %}r{% endif %} fa-star" aria-hidden="true"></i>{% endfor %} {{ order.review }}</p>
                         {% else %}
-                            <form method="post" action="{% url 'customer:rate_order' order.pk %}" class="svc-rate">
+                            <form method="post" action="{% url 'customer:rate_order' order.pk %}" class="svc-rate mo-rate">
                                 {% csrf_token %}
                                 <fieldset class="svc-stars">
                                     <legend>{% translate "Nilai pesanan ini" %}</legend>
@@ -98,16 +102,45 @@
                             </form>
                         {% endif %}
                     {% endif %}
-                    {% if order.order_status != "MENUNGGU" and order.order_status != "DIBATALKAN" %}
-                        <p class="co-order__note"><a href="{% url 'store:complaints' %}?pesanan={{ order.pk }}"><i class="far fa-flag" aria-hidden="true"></i> {% translate "Ada masalah? Ajukan komplain" %}</a></p>
+                    <div class="mo-actions">
+                        {% if order.can_upload_proof and not order.awaiting_payment_check %}
+                            <a href="{% url 'customer:payment_proof' order.pk %}" class="mo-btn mo-btn--solid"><i class="fas fa-camera" aria-hidden="true"></i> {% translate "Kirim Bukti Transfer" %}</a>
+                        {% endif %}
+                        {% if order.order_status != "DIBATALKAN" and not order.is_take_away %}
+                            <a href="{% url 'customer:track_detail' order.tracking_number %}" class="mo-btn {% if order.order_status == "DALAM_PENGIRIMAN" %}mo-btn--solid{% else %}mo-btn--soft{% endif %}">
+                                <i class="fas fa-location-dot" aria-hidden="true"></i> {% if order.order_status == "DALAM_PENGIRIMAN" %}{% translate "Lacak Kurir" %}{% else %}{% translate "Lacak" %}{% endif %}
+                            </a>
+                        {% endif %}
+                        {% if order.receipt_token %}
+                            <a href="{% url 'transaction:receipt_public' order.receipt_token %}" class="mo-btn mo-btn--ghost" target="_blank" rel="noopener"><i class="fas fa-receipt" aria-hidden="true"></i> {% translate "Struk" %}</a>
+                        {% endif %}
+                        <a href="{{ wa_link }}?text={% filter urlencode %}Halo admin, saya mau tanya pesanan #{{ order.pk }} (resi {{ order.tracking_number }}).{% endfilter %}"
+                           class="mo-btn mo-btn--ghost" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Tanya Admin" %}</a>
+                    </div>
+                    {% if order.order_status == "MENUNGGU" or order.order_status != "DIBATALKAN" %}
+                        <div class="mo-links">
+                            {% if order.order_status == "MENUNGGU" %}
+                                <form method="post" action="{% url 'customer:cancel_my_order' order.pk %}" class="co-cancel-form" data-confirm="{% blocktranslate trimmed with order_pk=order.pk %}Batalkan pesanan #{{ order_pk }}?{% endblocktranslate %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="co-cancel">{% translate "Batalkan pesanan" %}</button>
+                                </form>
+                            {% else %}
+                                <a href="{% url 'store:complaints' %}?pesanan={{ order.pk }}"><i class="far fa-flag" aria-hidden="true"></i> {% translate "Ada masalah? Ajukan komplain" %}</a>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </li>
             {% empty %}
                 <li class="empty-state">
                     <i class="fas fa-box-open" aria-hidden="true"></i>
-                    <h2>{% translate "Belum ada pesanan" %}</h2>
-                    <p>{% translate "Pesanan yang Anda buat setelah login akan muncul di sini." %}</p>
-                    <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">{% translate "Mulai Belanja" %}</a>
+                    {% if tab %}
+                        <h2>{% translate "Tidak ada pesanan di kelompok ini" %}</h2>
+                        <p><a href="{% url 'customer:my_orders' %}">{% translate "Lihat semua pesanan" %}</a></p>
+                    {% else %}
+                        <h2>{% translate "Belum ada pesanan" %}</h2>
+                        <p>{% translate "Pesanan yang Anda buat setelah login akan muncul di sini." %}</p>
+                        <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">{% translate "Mulai Belanja" %}</a>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>

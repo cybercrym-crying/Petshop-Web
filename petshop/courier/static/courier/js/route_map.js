@@ -21,9 +21,9 @@
     icon: L.divIcon({ className: "route-me", html: '<span><i class="bi bi-scooter"></i></span>', iconSize: [40, 40], iconAnchor: [20, 20] }),
     zIndexOffset: 1000,
   }).addTo(map).bindTooltip("Posisi Anda");
-  var accuracy = L.circle(start, { radius: 0, color: "#4128b0", weight: 1, fillOpacity: 0.08 }).addTo(map);
-  var line = L.polyline([], { color: "#4128b0", weight: 4, opacity: 0.7, dashArray: "8 8" }).addTo(map);
-  var nextLine = L.polyline([], { color: "#c2410c", weight: 5, opacity: 0.9 }).addTo(map);
+  var accuracy = L.circle(start, { radius: 0, color: "#7c3aed", weight: 1, fillOpacity: 0.08 }).addTo(map);
+  var line = L.polyline([], { color: "#a78bfa", weight: 4, opacity: 0.9, dashArray: "8 8" }).addTo(map);
+  var nextLine = L.polyline([], { color: "#7c3aed", weight: 5, opacity: 0.95 }).addTo(map);
   var stopsLayer = L.layerGroup().addTo(map);
   var storeMarker = null;
   var stops = [];

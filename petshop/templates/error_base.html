@@ -5,10 +5,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="{% static 'js/theme_boot.js' %}?v=1"></script>
         <meta name="robots" content="noindex">
         <title>{% block title %}{% translate "Terjadi Kesalahan" %}{% endblock %} - Seelly Petshop</title>
         <link rel="icon" href="{% static 'customer/img/favicon.svg' %}" type="image/svg+xml">
         <link rel="stylesheet" href="{% static 'css/error.css' %}">
+        <link rel="stylesheet" href="{% static 'css/error-dark.css' %}?v=1">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body>

@@ -1,0 +1,64 @@
+{% load i18n rupiah %}
+<section class="sg-card is-focus" aria-labelledby="cp-title">
+    <div class="sg-row is-wrap">
+        <h2 id="cp-title" class="sg-live mb-0"><i aria-hidden="true"></i>{% blocktranslate trimmed with complaint_pk=complaint.pk %}Komplain #{{ complaint_pk }}{% endblocktranslate %}</h2>
+        <span class="sg-sp"></span>
+        <span class="sg-pill {% if complaint.status == 'BARU' %}is-gold{% elif complaint.status == 'SELESAI' %}is-ok{% else %}is-pri{% endif %}">{{ complaint.get_status_display }}</span>
+    </div>
+    <p class="sg-h3 sg-mt8 mb-0" style="font-size:1.35rem">{{ complaint.customer.name }} <small class="sg-sm sg-muted">{{ complaint.customer.phone_number }}</small></p>
+    <p class="sg-xs sg-muted mb-0">{{ complaint.get_category_display }} · {{ complaint.created_at|date:"d M Y, H.i" }}</p>
+    <p class="sg-mt8 mb-0">“{{ complaint.message|linebreaksbr }}”</p>
+    <div class="sg-grid is-tight sg-mt12">
+        {% if complaint.photo %}
+            <a href="{{ complaint.photo.url }}" target="_blank" rel="noopener" class="sg-photo sg-s5"><img src="{{ complaint.photo.url }}" alt="{% translate 'Foto komplain' %}"><span class="sg-photo__tag"><i class="bi bi-camera" aria-hidden="true"></i>{% translate "Foto dari pelanggan" %}</span></a>
+        {% endif %}
+        <div class="sg-sub {% if complaint.photo %}sg-s7{% else %}sg-s12{% endif %}">
+            {% if complaint.order %}
+                <div class="sg-row"><b class="sg-sm">{% blocktranslate trimmed with complaint_order_pk=complaint.order.pk %}Pesanan #{{ complaint_order_pk }}{% endblocktranslate %} · {{ complaint.order.get_order_status_display }}</b><span class="sg-sp"></span><a class="sg-link" href="{% url 'transaction:payment_check' complaint.order.pk %}">{% translate "Buka" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
+                <ul class="sg-lines sg-mt8">
+                    {% for d in complaint.order.details.all %}<li><span>{{ d.quantity }}× {{ d.product.name }}</span><b>Rp {{ d.subtotal|rupiah }}</b></li>{% endfor %}
+                    {% if complaint.order.courier %}<li><span>{% blocktranslate trimmed with c=complaint.order.courier.display_name %}Kurir {{ c }}{% endblocktranslate %}{% if complaint.order.delivered_at %} · {% blocktranslate trimmed with t=complaint.order.delivered_at|date:"d M H.i" %}diterima {{ t }}{% endblocktranslate %}{% endif %}</span>{% if complaint.order.delivery_photo %}<a class="sg-link" href="{{ complaint.order.delivery_photo.url }}" target="_blank" rel="noopener">{% translate "Foto serah" %}</a>{% endif %}</li>{% endif %}
+                </ul>
+            {% elif complaint.booking %}
+                <b class="sg-sm">{% blocktranslate trimmed with complaint_booking_pk=complaint.booking.pk complaint_booking_service_name=complaint.booking.service.name complaint_booking_get_status_display=complaint.booking.get_status_display %}Terkait booking #{{ complaint_booking_pk }} · {{ complaint_booking_service_name }} · {{ complaint_booking_get_status_display }}{% endblocktranslate %}</b>
+                <p class="sg-xs sg-muted sg-mt8 mb-0">{{ complaint.booking.pet_name }} · {{ complaint.booking.groomer.display_name|default:"-" }}</p>
+            {% else %}
+                <p class="sg-sm sg-muted mb-0">{% translate "Tidak terkait pesanan atau booking." %}</p>
+            {% endif %}
+        </div>
+    </div>
+    <form method="post" action="{% url 'store:staff_complaint' complaint.pk %}" class="sg-form sg-mt16">
+        {% csrf_token %}
+        <div class="sg-grid is-tight">
+            <div class="sg-s4">
+                <label class="sg-lbl" for="cp-status">{% translate "Status" %}</label>
+                <select id="cp-status" name="status">
+                    {% for value, label in form.fields.status.choices %}<option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="sg-s8">
+                <label class="sg-lbl" for="cp-response">{% translate "Balasan ke pelanggan" %}</label>
+                <textarea id="cp-response" name="response" rows="3" maxlength="1000">{{ form.response.value|default:"" }}</textarea>
+            </div>
+        </div>
+        <div class="sg-row is-wrap sg-mt12">
+            {% if complaint.handled_by %}<span class="sg-xs sg-muted">{% blocktranslate trimmed with complaint_handled_by_display_name=complaint.handled_by.display_name complaint_responded_at=complaint.responded_at|date:"d M H.i" %}Terakhir ditangani {{ complaint_handled_by_display_name }}, {{ complaint_responded_at }}{% endblocktranslate %}</span>{% endif %}
+            {% if complaint.order.receipt_no %}<a class="ui-btn" href="{% url 'transaction:receipt' complaint.order.pk %}"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>{% translate "Ajukan retur" %}</a>{% endif %}
+            <span class="sg-sp"></span>
+            <button type="submit" class="ui-btn ui-btn--primary"><i class="bi bi-send" aria-hidden="true"></i>{% translate "Simpan &amp; kirim notifikasi" %}</button>
+        </div>
+    </form>
+</section>
+{% if related_log %}
+    <section class="sg-card sg-mt16" aria-labelledby="cp-log">
+        <h2 id="cp-log" class="sg-h3 is-sm">{% translate "Riwayat status (bukti foto &amp; lokasi)" %}</h2>
+        <ul class="sg-rows sg-mt8">
+            {% for e in related_log %}
+                <li>
+                    {% if e.photo %}<a href="{{ e.photo.url }}" target="_blank" rel="noopener" class="bk-thumb" style="width:44px;height:44px"><img src="{{ e.photo.url }}" alt="{{ e.action }}"></a>{% else %}<span class="sg-av" style="width:44px;height:44px;font-size:1rem"><i class="bi bi-clock-history" aria-hidden="true"></i></span>{% endif %}
+                    <span style="min-width:0;flex:1"><b class="sg-sm">{{ e.action }}</b>{% if e.detail %} <span class="sg-sm sg-muted">· {{ e.detail }}</span>{% endif %}<br><small class="sg-xs sg-muted">{{ e.created_at|date:"d M Y H.i" }}{% if e.actor %} · {{ e.actor.display_name }}{% endif %}</small></span>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endif %}

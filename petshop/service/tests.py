@@ -7,7 +7,7 @@ from django.utils import timezone
 from account.models import Customer, Role, User
 from common.exceptions import PetshopError
 
-from .models import BookingStatus, InvalidBookingTransition, Service, ServiceBooking
+from .models import BookingStatus, InvalidBookingTransition, Service, ServiceBooking, ServiceStep
 
 
 def tomorrow_at(hour=10):
@@ -116,6 +116,12 @@ class BookingFlowTests(Fixtures, TestCase):
         b.refresh_from_db()
         self.assertEqual(b.status, BookingStatus.READY)
         self.assertEqual(b.groomer_note, "Bersih")
+        # Hewan tidak boleh diserahkan sebelum lunas.
+        with self.assertRaises(InvalidBookingTransition):
+            b.hand_to_owner()
+        from common.tests_helpers import pay_booking_at_counter
+
+        pay_booking_at_counter(b, self.kasir)
         b.hand_to_owner()
         self.assertEqual(b.status, BookingStatus.DONE)
 
@@ -188,6 +194,32 @@ class GroomerPageTests(Fixtures, TestCase):
         r = self.client.get(self.URL, {"status": "selesai"})
         self.assertContains(r, "Mochi")
 
+    def test_step_from_dashboard_card_returns_to_dashboard(self):
+        from common.tests_helpers import tiny_photo
+
+        b = self.queued()
+        b.start(self.groomer)
+        r = self.client.get(self.URL)
+        self.assertContains(r, 'name="from" value="dashboard"')
+        self.assertEqual(r.context["counts"], {"antrean": 0, "proses": 1, "selesai": 0})
+        url = reverse("service:groomer_update_status", args=[b.pk])
+        # Tahap wajib foto tetap ditolak tanpa foto, dan groomer kembali ke dasbor.
+        r = self.client.post(url, {"action": "step", "from": "dashboard"})
+        self.assertRedirects(r, f"{self.URL}?status=proses", fetch_redirect_response=False)
+        self.assertEqual(b.progress(), (0, 3))
+        r = self.client.post(url, {"action": "step", "from": "dashboard", "photo": tiny_photo()})
+        self.assertRedirects(r, f"{self.URL}?status=proses", fetch_redirect_response=False)
+        self.assertEqual(b.progress(), (1, 3))
+
+    def test_dashboard_shows_today_progress(self):
+        done = self.queued()
+        done.start(self.groomer)
+        self.finish_all(done, self.groomer)
+        self.queued(pet_name="Bobi")
+        r = self.client.get(self.URL)
+        self.assertEqual((r.context["done_today"], r.context["day_total"]), (1, 2))
+        self.assertContains(r, "gd-tabbar")
+
     def test_cannot_open_booking_of_other_groomer(self):
         b = self.book(groomer=self.groomer2)
         r = self.client.get(reverse("service:groomer_booking_detail", args=[b.pk]))
@@ -204,6 +236,25 @@ class StaffAndCustomerPagesTests(Fixtures, TestCase):
         self.assertEqual(self.client.get("/staff/layanan/booking/").status_code, 200)
         self.assertEqual(self.client.get("/staff/admin/manage_account").status_code, 403)
         self.assertEqual(self.client.get("/staff/admin/layanan/").status_code, 403)
+
+    def test_pos_service_tab_shows_steps_done_by_groomer(self):
+        from common.tests_helpers import tiny_photo
+
+        ServiceStep.objects.create(service=self.service, position=1, name="Potong kuku")
+        ServiceStep.objects.create(service=self.service, position=2, name="Mandi")
+        b = self.queued()
+        b.start(self.groomer)
+        b.complete_step(self.groomer, tiny_photo())
+        self.client.login(username="ksr", password="x")
+        r = self.client.get("/staff/admin/make_transaction/?tab=layanan")
+        self.assertEqual(r.context["tab"], "layanan")
+        card = r.context["payable_bookings"][0]
+        self.assertEqual(card, b)
+        self.assertEqual([at is not None for _name, at in card.step_rows], [True, False])
+        self.assertContains(r, "Tahapan layanan (2)")
+        self.assertContains(r, f'name="booking" value="{b.pk}"')
+        # Tab Produk tidak memuat kartu layanan.
+        self.assertNotContains(self.client.get("/staff/admin/make_transaction/"), "Tahapan layanan")
 
     def test_kasir_creates_walk_in_booking(self):
         self.client.login(username="ksr", password="x")
@@ -286,3 +337,100 @@ class StaffAndCustomerPagesTests(Fixtures, TestCase):
         self.assertEqual(r.status_code, 200)
         by = {s["label"]: s["value"] for s in r.context["stats"]}
         self.assertEqual(by, {"Ditangani": 1, "Sedang diproses": 1, "Selesai": 0})
+
+
+class BookingTransferPaymentTests(Fixtures, TestCase):
+    """Bayar booking setelah jadwal dikonfirmasi: transfer + bukti dicek kasir/admin, atau bayar di kasir."""
+
+    def setUp(self):
+        import shutil
+        import tempfile
+
+        from django.test import override_settings
+
+        self.make_people()
+        media = tempfile.mkdtemp(prefix="petshop-test-media-")
+        self.addCleanup(shutil.rmtree, media, ignore_errors=True)
+        override = override_settings(MEDIA_ROOT=media)
+        override.enable()
+        self.addCleanup(override.disable)
+        self.booking = self.book()
+
+    def photo(self):
+        from common.tests_helpers import tiny_photo
+
+        return tiny_photo()
+
+    def test_cannot_pay_before_schedule_is_confirmed(self):
+        self.assertFalse(self.booking.can_pay_transfer)
+        with self.assertRaises(InvalidBookingTransition):
+            self.booking.submit_payment_proof(self.customer, self.photo())
+        self.client.force_login(self.customer)
+        html = self.client.get(reverse("service:my_bookings")).content.decode()
+        self.assertIn("mo-pay--wait", html)
+        self.assertNotIn(reverse("service:booking_payment", args=[self.booking.pk]), html)
+        response = self.client.get(reverse("service:booking_payment", args=[self.booking.pk]))
+        self.assertRedirects(response, reverse("service:my_bookings") + f"#booking-{self.booking.pk}",
+                             fetch_redirect_response=False)
+
+    def test_customer_uploads_proof_and_staff_approves(self):
+        self.booking.confirm(self.kasir)
+        self.client.force_login(self.customer)
+        html = self.client.get(reverse("service:my_bookings")).content.decode()
+        self.assertIn(reverse("service:booking_payment", args=[self.booking.pk]), html)
+        response = self.client.post(
+            reverse("service:booking_payment", args=[self.booking.pk]), {"photo": self.photo()}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.booking.refresh_from_db()
+        self.assertTrue(self.booking.awaiting_payment_check)
+        self.assertFalse(self.booking.is_paid)
+        # Pelanggan tidak bisa membatalkan sendiri setelah transfer.
+        with self.assertRaises(InvalidBookingTransition):
+            self.booking.cancel_by_customer(self.customer)
+
+        self.client.force_login(self.kasir)
+        self.assertContains(self.client.get(reverse("service:manage_bookings")),
+                            reverse("service:booking_payment_check", args=[self.booking.pk]))
+        self.client.post(reverse("service:booking_payment_check", args=[self.booking.pk]), {"decision": "approve"})
+        self.booking.refresh_from_db()
+        self.assertTrue(self.booking.is_paid)
+        order = self.booking.payment_line.order
+        self.assertEqual(order.payment_method, "TRANSFER")
+        self.assertEqual(order.total_payment, self.booking.total_price)
+        self.assertTrue(order.receipt_no)
+        # Kasir tidak bisa menagih lagi.
+        from transaction.pos import PosError, ensure_booking_payable
+
+        self.booking.check_in(self.kasir)
+        with self.assertRaises(PosError):
+            ensure_booking_payable(self.booking)
+        # Pembayaran layanan saja tidak muncul sebagai "pesanan" barang.
+        self.client.force_login(self.customer)
+        self.assertNotContains(self.client.get(reverse("customer:my_orders")), f"Pesanan #{order.pk}")
+
+    def test_staff_rejects_with_reason_and_customer_can_resend(self):
+        self.booking.confirm(self.kasir)
+        self.booking.submit_payment_proof(self.customer, self.photo())
+        self.client.force_login(self.kasir)
+        self.client.post(reverse("service:booking_payment_check", args=[self.booking.pk]),
+                         {"decision": "reject", "note": "Nominal kurang"})
+        self.booking.refresh_from_db()
+        self.assertFalse(self.booking.payment_proof)
+        self.assertEqual(self.booking.payment_reject_note, "Nominal kurang")
+        self.assertTrue(self.booking.can_pay_transfer)
+
+    def test_cashier_cannot_collect_while_proof_is_waiting(self):
+        from transaction.pos import PosError, ensure_booking_payable
+
+        self.booking.confirm(self.kasir)
+        self.booking.submit_payment_proof(self.customer, self.photo())
+        self.booking.check_in(self.kasir)
+        with self.assertRaises(PosError):
+            ensure_booking_payable(self.booking)
+
+    def test_other_customer_cannot_pay_someone_elses_booking(self):
+        self.booking.confirm(self.kasir)
+        other = Customer.objects.create(name="Lain", phone_number="081300000099", address="x")
+        self.client.force_login(other)
+        self.assertEqual(self.client.get(reverse("service:booking_payment", args=[self.booking.pk])).status_code, 404)

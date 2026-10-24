@@ -51,6 +51,13 @@
 
   apply(preferred());
 
+  // Menu samping yang diciutkan (layar lebar) dipasang sebelum halaman digambar.
+  try {
+    if (window.localStorage.getItem("courierNavCollapsed") === "1") root.classList.add("ck-collapsed");
+  } catch (error) {
+    // localStorage tidak tersedia: menu tetap terbuka.
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     apply(root.getAttribute("data-bs-theme") || preferred());
   });

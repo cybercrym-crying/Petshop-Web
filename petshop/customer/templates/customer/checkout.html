@@ -4,173 +4,139 @@
 {% block title %}{% translate "Checkout - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/checkout.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'customer/css/checkout-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/checkout_ux.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/checkout_ux-dark.css' %}?v=1">
 {% endblock %}
 {% block content %}
-    <section class="checkout-container" data-guest-checkout data-wa-number="{{ wa_number }}">
-        <nav class="crumbs" aria-label="{% translate 'Breadcrumb' %}">
-            <a href="{% url 'customer:home' %}">{% translate "Beranda" %}</a> / <a href="{% url 'customer:cart' %}">{% translate "Keranjang" %}</a> {% translate "/ Checkout" %}
-        </nav>
-        <h1 class="page-title">{% translate "Checkout" %}</h1>
-            <div class="guest-banner" role="note">
-                <i class="fas fa-circle-info" aria-hidden="true"></i>
-                <div class="guest-banner__text">
-                    <strong>{% translate "Anda belum masuk." %}</strong>
-                    {% translate "Pesanan akan dikirim lewat WhatsApp admin. Masuk sebagai customer untuk memesan langsung di situs dan memantau status pesanan." %}
-                </div>
-                <div class="guest-banner__actions">
-                    <a href="{% url 'login_form' %}?next={{ next_url|urlencode }}" class="guest-banner__btn is-primary">{% translate "Masuk" %}</a>
-                    <a href="{% url 'register' %}?next={{ next_url|urlencode }}" class="guest-banner__btn">{% translate "Daftar" %}</a>
-                </div>
+    <section class="container section cx-page" data-guest-checkout data-wa-number="{{ wa_number }}">
+        {% include "customer/_checkout_steps.html" with guest=True %}
+        <header class="cx-head">
+            <h1 class="cx-title">{% translate "Checkout" %}</h1>
+            <p class="cx-lead">{% translate "Isi data di bawah, lalu pesanan dikirim ke WhatsApp admin. Admin membalas dengan total dan ongkir." %}</p>
+        </header>
+        <div class="cx-guest" role="note">
+            <span class="cx-guest__icon" aria-hidden="true"><i class="fas fa-user-check"></i></span>
+            <div class="cx-guest__text">
+                <strong>{% translate "Punya akun? Pesan langsung di situs." %}</strong>
+                <span>{% translate "Dengan akun, ongkir langsung terhitung, status pesanan bisa dipantau, dan posisi kurir terlihat di peta." %}</span>
             </div>
-            <div class="row">
-                <!-- Left Column: Delivery & Payment -->
-                <div class="col-lg-7">
-                    <!-- Informasi Pengiriman -->
-                    <div class="delivery-section">
-                        <div class="section-title">
-                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-                            {% translate "Informasi Pengiriman" %}
-                        </div>
-                        <form id="checkout-form">
-                            <div class="mb-3">
-                                <label class="form-label" for="co-guest-name">{% translate "Nama lengkap *" %}</label>
-                                <input type="text"
-                                       id="co-guest-name"
-                                       name="nama"
-                                       autocomplete="name"
-                                       class="form-control"
-                                       required
-                                       placeholder="{% translate 'Masukkan nama lengkap' %}">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label" for="co-guest-phone">{% translate "Nomor WhatsApp *" %}</label>
-                                <input type="tel"
-                                       id="co-guest-phone"
-                                       name="no_wa"
-                                       autocomplete="tel"
-                                       class="form-control"
-                                       required
-                                       placeholder="081234567890">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label" for="co-guest-address">{% translate "Alamat *" %}</label>
-                                <textarea id="co-guest-address"
-                                          name="alamat"
-                                          autocomplete="street-address"
-                                          class="form-control"
-                                          rows="3"
-                                          required
-                                          placeholder="Masukkan alamat lengkap (Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Kode Pos)"></textarea>
-                                <small class="text-muted">{% translate "Contoh: Jl. Merdeka No. 123, RT 001/RW 002, Kel. Sukamaju, Kec. Samarinda Ulu, Kota Samarinda, 75124" %}</small>
-                            </div>
-                        </form>
-                    </div>
-                    <!-- Metode Pembayaran -->
-                    <div class="payment-section">
-                        <div class="section-title">
-                            <i class="fas fa-credit-card" aria-hidden="true"></i>
-                            {% translate "Metode Pembayaran" %}
-                        </div>
-                        <div class="payment-option">
-                            <input type="radio"
-                                   name="payment_method"
-                                   id="cod"
-                                   value="Bayar di Tempat (COD)"
-                                   checked>
-                            <label for="cod">{% translate "Bayar di Tempat (COD)" %}</label>
-                        </div>
-                        <div class="payment-option">
-                            <input type="radio"
-                                   name="payment_method"
-                                   id="transfer"
-                                   value="Transfer Bank">
-                            <label for="transfer">{% translate "Transfer Bank" %}</label>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-place-order" data-place-order>
-                        <i class="fab fa-whatsapp"></i> {% translate "Pesan via WhatsApp" %}
-                    </button>
-                </div>
-                <!-- Right Column: Ringkasan Pesanan -->
-                <div class="col-lg-5">
-                    <div class="summary-section">
-                        <div class="section-title">
-                            <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-                            {% translate "Ringkasan Pesanan" %}
-                        </div>
-                        <div id="order-items"></div>
-                        <div id="empty-cart" class="empty-cart-message" hidden>
-                            <i class="fas fa-shopping-cart"></i>
-                            <p class="text-muted">{% translate "Keranjang Anda kosong" %}</p>
-                            <a href="{% url 'customer:products' %}"
-                               class="btn-primary-seelly mt-3">{% translate "Mulai Belanja" %}</a>
-                        </div>
-                        <div class="total-section">
-                            <div class="total-row">
-                                <span>{% translate "Total" %}</span>
-                                <span id="total-price">Rp 0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="cx-guest__actions">
+                <a href="{% url 'login_form' %}?next={{ next_url|urlencode }}" class="cx-btn cx-btn--solid">{% translate "Masuk" %}</a>
+                <a href="{% url 'register' %}?next={{ next_url|urlencode }}" class="cx-btn">{% translate "Daftar" %}</a>
             </div>
+        </div>
+        <div class="cx-layout">
+            <div class="cx-main">
+                <form id="checkout-form" class="cx-main" novalidate>
+                    <section class="cx-card delivery-section" aria-labelledby="cx-who">
+                        <h2 id="cx-who" class="cx-card__title"><span class="cx-num" aria-hidden="true">1</span> {% translate "Data penerima" %}</h2>
+                        <div class="cx-grid2">
+                            <div class="cx-field">
+                                <label for="co-guest-name">{% translate "Nama lengkap" %}</label>
+                                <input type="text" id="co-guest-name" name="nama" autocomplete="name" required placeholder="{% translate 'Masukkan nama lengkap' %}">
+                            </div>
+                            <div class="cx-field">
+                                <label for="co-guest-phone">{% translate "Nomor WhatsApp" %}</label>
+                                <input type="tel" id="co-guest-phone" name="no_wa" autocomplete="tel" inputmode="tel" required placeholder="081234567890">
+                            </div>
+                        </div>
+                    </section>
+                    <section class="cx-card delivery-section" aria-labelledby="cx-addr">
+                        <h2 id="cx-addr" class="cx-card__title"><span class="cx-num" aria-hidden="true">2</span> {% translate "Alamat pengiriman" %}</h2>
+                        <div class="cx-field mb-0">
+                            <label for="co-guest-address">{% translate "Alamat lengkap" %}</label>
+                            <textarea id="co-guest-address" name="alamat" autocomplete="street-address" rows="3" required placeholder="{% translate 'Jalan, RT/RW, kelurahan, kecamatan, kota' %}"></textarea>
+                            <p class="cx-hint">{% translate "Contoh: Jl. Merdeka No. 123, RT 001/RW 002, Kel. Sukamaju, Kec. Samarinda Ulu, Kota Samarinda, 75124" %}</p>
+                        </div>
+                    </section>
+                </form>
+                <section class="cx-card payment-section" aria-labelledby="cx-pay">
+                    <h2 id="cx-pay" class="cx-card__title"><span class="cx-num" aria-hidden="true">3</span> {% translate "Cara bayar" %}</h2>
+                    <div class="cx-pay">
+                        <label class="cx-pay__opt">
+                            <input type="radio" name="payment_method" id="cod" value="Bayar di Tempat (COD)" checked>
+                            <span class="cx-pay__icon" aria-hidden="true"><i class="fas fa-money-bill-wave"></i></span>
+                            <span class="cx-pay__body">
+                                <strong>{% translate "Bayar di Tempat (COD)" %}</strong>
+                                <small>{% translate "Bayar tunai ke kurir saat barang sampai." %}</small>
+                            </span>
+                        </label>
+                        <label class="cx-pay__opt">
+                            <input type="radio" name="payment_method" id="transfer" value="Transfer Bank">
+                            <span class="cx-pay__icon" aria-hidden="true"><i class="fas fa-building-columns"></i></span>
+                            <span class="cx-pay__body">
+                                <strong>{% translate "Transfer Bank" %}</strong>
+                                <small>{% translate "Nomor rekening dikirim admin lewat WhatsApp bersama total pembayaran." %}</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+            </div>
+            <aside class="cx-card cx-summary summary-section" aria-labelledby="cx-sum">
+                <h2 id="cx-sum" class="cx-card__title">{% translate "Ringkasan pesanan" %}</h2>
+                <div id="order-items" class="cx-items"></div>
+                <div id="empty-cart" class="co-empty" hidden>
+                    <i class="fas fa-cart-shopping" aria-hidden="true"></i>
+                    <p>{% translate "Keranjang Anda kosong" %}</p>
+                    <a href="{% url 'customer:products' %}" class="btn-primary-seelly">{% translate "Mulai Belanja" %}</a>
+                </div>
+                <div class="cx-rows total-section">
+                    <div class="cx-row"><span>{% translate "Ongkir" %}</span><span class="cx-muted">{% translate "Diinfokan admin" %}</span></div>
+                    <div class="cx-row cx-row--total">
+                        <span>{% translate "Total barang" %}</span>
+                        <strong id="total-price">Rp 0</strong>
+                    </div>
+                </div>
+                <button type="button" class="cx-submit cx-submit--wa btn-place-order" data-place-order>
+                    <i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Pesan via WhatsApp" %}
+                </button>
+                <ul class="cx-assure">
+                    <li><i class="fas fa-comments" aria-hidden="true"></i> {% translate "WhatsApp terbuka dengan pesan pesanan yang sudah terisi; tinggal tekan kirim." %}</li>
+                </ul>
+                <a href="{% url 'customer:cart' %}" class="cx-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> {% translate "Ubah keranjang" %}</a>
+            </aside>
+        </div>
     </section>
-    <dialog class="confirm-dialog"
-                id="confirm-dialog"
-                aria-labelledby="confirm-title">
-            <div class="confirm-dialog__box">
-                <h2 class="confirm-dialog__title" id="confirm-title">
-                    <i class="fas fa-clipboard-check"></i> {% translate "Periksa Pesanan Anda" %}
-                </h2>
-                <p class="confirm-dialog__lead">
-                    {% translate "Pastikan barang dan data di bawah ini sudah benar sebelum pesanan dikirim ke WhatsApp admin." %}
-                </p>
-                <section class="confirm-block">
-                    <h3 class="confirm-block__title">{% translate "Data Penerima" %}</h3>
-                    <dl class="confirm-data">
-                        <div class="confirm-data__row">
-                            <dt>{% translate "Nama" %}</dt>
-                            <dd id="confirm-name">
-                            </dd>
-                        </div>
-                        <div class="confirm-data__row">
-                            <dt>{% translate "Nomor Telepon" %}</dt>
-                            <dd id="confirm-phone">
-                            </dd>
-                        </div>
-                        <div class="confirm-data__row">
-                            <dt>{% translate "Alamat" %}</dt>
-                            <dd id="confirm-address">
-                            </dd>
-                        </div>
-                        <div class="confirm-data__row">
-                            <dt>{% translate "Pembayaran" %}</dt>
-                            <dd id="confirm-payment">
-                            </dd>
-                        </div>
-                    </dl>
-                </section>
-                <section class="confirm-block">
-                    <h3 class="confirm-block__title">{% translate "Barang" %}</h3>
-                    <ul class="confirm-items" id="confirm-items">
-                    </ul>
-                    <div class="confirm-total">
-                        <span>{% translate "Total" %}</span>
-                        <strong id="confirm-total"></strong>
-                    </div>
-                </section>
-                <label class="confirm-check">
-                    <input type="checkbox" id="confirm-check">
-                    <span>{% translate "Saya sudah memeriksa barang dan data di atas, dan semuanya sudah benar." %}</span>
-                </label>
-                <div class="confirm-actions">
-                    <button type="button" class="btn-confirm-back" data-confirm-back>{% translate "Periksa Lagi" %}</button>
-                    <button type="button" class="btn-confirm-send" data-confirm-send disabled>
-                        <i class="fab fa-whatsapp"></i> {% translate "Ya, Kirim Pesanan" %}
-                    </button>
-                </div>
+    <dialog class="confirm-dialog cx-dialog" id="confirm-dialog" aria-labelledby="confirm-title">
+        <div class="cx-dialog__head">
+            <span class="cx-dialog__icon" aria-hidden="true"><i class="fas fa-clipboard-check"></i></span>
+            <div>
+                <h2 id="confirm-title">{% translate "Periksa Pesanan Anda" %}</h2>
+                <p>{% translate "Pastikan barang dan data di bawah ini sudah benar sebelum pesanan dikirim ke WhatsApp admin." %}</p>
             </div>
-        </dialog>
+            <form method="dialog"><button class="cx-dialog__x" aria-label="{% translate 'Tutup' %}"><i class="fas fa-xmark" aria-hidden="true"></i></button></form>
+        </div>
+        <div class="cx-dialog__body">
+            <section class="cx-dialog__block">
+                <h3><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Dikirim ke" %}</h3>
+                <p class="cx-dialog__who"><strong id="confirm-name"></strong> · <span id="confirm-phone"></span></p>
+                <p class="cx-dialog__addr" id="confirm-address"></p>
+            </section>
+            <section class="cx-dialog__block">
+                <h3><i class="fas fa-wallet" aria-hidden="true"></i> {% translate "Cara bayar" %}</h3>
+                <p class="cx-dialog__pay" id="confirm-payment"></p>
+            </section>
+            <section class="cx-dialog__block">
+                <h3><i class="fas fa-box" aria-hidden="true"></i> {% translate "Barang" %}</h3>
+                <ul class="confirm-items cx-items" id="confirm-items"></ul>
+                <div class="cx-rows">
+                    <div class="cx-row"><span>{% translate "Ongkir" %}</span><span class="cx-muted">{% translate "Diinfokan admin" %}</span></div>
+                    <div class="cx-row cx-row--total"><span>{% translate "Total barang" %}</span><strong id="confirm-total"></strong></div>
+                </div>
+            </section>
+            <label class="cx-dialog__check">
+                <input type="checkbox" id="confirm-check">
+                <span>{% translate "Saya sudah memeriksa barang dan data di atas, dan semuanya sudah benar." %}</span>
+            </label>
+        </div>
+        <div class="cx-dialog__foot">
+            <button type="button" class="cx-dialog__back" data-confirm-back>{% translate "Periksa Lagi" %}</button>
+            <button type="button" class="cx-dialog__go cx-dialog__go--wa" data-confirm-send disabled>
+                <i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Ya, Kirim Pesanan" %}
+            </button>
+        </div>
+    </dialog>
 {% endblock %}
 {% block extra_js %}
     <script src="{% static 'customer/js/checkout.js' %}?v=ux2"></script>

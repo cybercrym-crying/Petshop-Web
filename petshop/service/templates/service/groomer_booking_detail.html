@@ -8,7 +8,7 @@
         <title>{% blocktranslate trimmed with booking_pk=booking.pk %}Booking #{{ booking_pk }} - Groomer{% endblocktranslate %}</title>
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
-    <body>
+    <body class="gd">
         {% include "service/_groomer_nav.html" %}
         <main class="container-fluid px-xl-5 px-4 py-5 groomer-detail">
             <div class="pf-crumb">

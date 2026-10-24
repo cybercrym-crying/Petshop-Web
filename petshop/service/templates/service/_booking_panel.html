@@ -1,0 +1,128 @@
+{% load i18n rupiah %}
+{% comment %}Panel detail booking terpilih di halaman Booking Layanan (b = booking, dianotasi `paid`).{% endcomment %}
+<aside class="sg-card bk-panel" aria-labelledby="bk-panel-title">
+    <a class="bk-panel__close" href="{{ here }}{% if keep %}?{{ keep }}{% endif %}" aria-label="{% translate 'Tutup detail' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
+    <div class="bk-panel__hd">
+        <span class="sg-av bk-panel__av" aria-hidden="true">{% if b.pet.photo %}<img src="{{ b.pet.photo.url }}" alt="">{% else %}{% include "partials/_paw.html" %}{% endif %}</span>
+        <div style="min-width:0">
+            <p class="sg-xs sg-muted mb-0">#{{ b.pk }} · {% if b.schedule|date:"Y-m-d" == today|date:"Y-m-d" %}{% translate "hari ini" %}{% else %}{{ b.schedule|date:"D, j M" }}{% endif %} {{ b.schedule|time:"H.i" }}{% if b.is_late %} · <span style="color:var(--sg-bad)">{% translate "lewat jadwal" %}</span>{% endif %}</p>
+            <h2 id="bk-panel-title">{{ b.pet_name }}</h2>
+            <p class="sg-sm sg-muted mb-0">{{ b.get_pet_type_display }}{% if b.pet.breed %} · {{ b.pet.breed }}{% endif %} · {{ b.service.name }}</p>
+        </div>
+    </div>
+    <div class="sg-mt8">{% include "service/_booking_status_pill.html" %}{% if b.rating %} <span class="sg-pill is-gold"><i class="bi bi-star-fill" aria-hidden="true"></i> {{ b.rating }}/5</span>{% endif %}</div>
+
+    {% if steps %}
+        <ol class="bk-steps" aria-label="{% translate 'Tahapan booking' %}">
+            {% for label, state in steps %}<li class="is-{{ state }}"{% if state == "now" %} aria-current="step"{% endif %}><span>{{ label }}</span></li>{% endfor %}
+        </ol>
+    {% endif %}
+    {% if b.status == "PROSES" %}
+        {% with p=b.progress %}<p class="sg-xs sg-muted mb-0">{% blocktranslate trimmed with done=p.0 total=p.1 %}Tahap {{ done }} dari {{ total }} selesai{% endblocktranslate %}</p>{% endwith %}
+    {% endif %}
+
+    <dl class="bk-kv">
+        <dt>{% translate "Pelanggan" %}</dt>
+        <dd>{{ b.customer.name }}<small>{% if b.customer.whatsapp_url %}<a href="{{ b.customer.whatsapp_url }}" target="_blank" rel="noopener" class="sg-link"><i class="bi bi-whatsapp" aria-hidden="true"></i> {{ b.customer.phone_number }}</a>{% else %}{{ b.customer.phone_number }}{% endif %}</small></dd>
+        <dt>{% translate "Datang" %}</dt>
+        <dd>{% if b.pickup_requested %}{% translate "Dijemput kurir" %}<small>{{ b.transport_address|default:"-" }} · {{ b.transport_distance_km }} km</small>{% else %}{% translate "Diantar sendiri" %}{% endif %}</dd>
+        <dt>{% translate "Pulang" %}</dt>
+        <dd>{% if b.return_requested %}{% translate "Diantar kurir" %}{% else %}{% translate "Diambil pemilik" %}{% endif %}</dd>
+        <dt>{% translate "Bayar" %}</dt>
+        <dd>{% if b.paid %}<span class="sg-pill is-ok">{% translate "Lunas" %}</span>{% elif b.payment_proof %}<a class="sg-pill is-pri" href="{% url 'service:booking_payment_check' b.pk %}">{% translate "Bukti transfer menunggu dicek" %}</a>{% else %}<span class="sg-pill is-line">{% translate "Belum bayar" %}</span>{% if b.payment_choice == "TRANSFER" %}<small class="bk-due">{% if b.payment_due_at %}{% blocktranslate trimmed with due=b.payment_due_at|date:"d M, H:i" %}Pilih transfer/QRIS · batal otomatis bila belum bayar sampai {{ due }}{% endblocktranslate %}{% else %}{% translate "Pilih transfer/QRIS · batas bayar mulai saat dikonfirmasi" %}{% endif %}</small>{% endif %}{% endif %}</dd>
+        <dt>{% translate "Total" %}</dt>
+        <dd class="bk-total">Rp {{ b.total_price|rupiah }}{% if b.transport_fee %}<small>{% blocktranslate trimmed with fee=b.transport_fee|rupiah %}termasuk antar-jemput Rp {{ fee }}{% endblocktranslate %}</small>{% endif %}</dd>
+    </dl>
+
+    {% if b.pet.notes %}<div class="sg-alert is-bad sg-mt12"><i class="bi bi-heart-pulse" aria-hidden="true"></i><span>{{ b.pet.notes }}</span></div>{% endif %}
+    {% if b.customer_note %}<div class="sg-alert is-gold sg-mt8"><i class="bi bi-chat-left-text" aria-hidden="true"></i><span>“{{ b.customer_note }}”</span></div>{% endif %}
+    {% if b.groomer_note %}<div class="sg-alert is-pri sg-mt8"><i class="bi bi-scissors" aria-hidden="true"></i><span>{{ b.groomer_note }}</span></div>{% endif %}
+    {% if b.review %}<p class="sg-sm sg-mt8 mb-0"><span class="sg-stars">★</span> “{{ b.review }}”</p>{% endif %}
+
+    <section class="bk-staff" aria-labelledby="bk-staff-title">
+        <h3 id="bk-staff-title">{% translate "Petugas" %}</h3>
+        {% if b.status == "PENDING" or b.status == "TERJADWAL" or b.status == "DIJEMPUT" or b.status == "ANTRE" %}
+            <form method="post" action="{% url 'service:assign_groomer' b.pk %}" class="bk-assign sg-form">
+                {% csrf_token %}
+                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                <label class="visually-hidden" for="bk-groomer-{{ b.pk }}">{% translate "Groomer" %}</label>
+                <select id="bk-groomer-{{ b.pk }}" name="groomer" required class="{% if not b.groomer %}is-empty{% endif %}">
+                    <option value="">{% translate "Pilih groomer" %}</option>
+                    {% for g in groomers %}<option value="{{ g.pk }}" {% if g.pk == b.groomer_id %}selected{% endif %}>{{ g.display_name }} · {% blocktranslate trimmed with n=g.load %}{{ n }} booking lain hari itu{% endblocktranslate %}</option>{% endfor %}
+                </select>
+                <button type="submit" class="ui-btn ui-btn--sm">{% translate "Simpan" %}</button>
+            </form>
+        {% else %}
+            <p class="sg-sm mb-0"><i class="bi bi-scissors" aria-hidden="true"></i> {% translate "Groomer" %}: <b>{{ b.groomer.display_name|default:"-" }}</b></p>
+        {% endif %}
+        {% if b.needs_transport %}
+            {% if b.is_open and b.status != "DIJEMPUT" and b.status != "DIANTAR" %}
+                <form method="post" action="{% url 'service:booking_action' b.pk %}" class="bk-assign sg-form sg-mt8">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="courier">
+                    <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                    <label class="visually-hidden" for="bk-courier-{{ b.pk }}">{% translate "Kurir hewan" %}</label>
+                    <select id="bk-courier-{{ b.pk }}" name="courier" required class="{% if not b.pet_courier %}is-empty{% endif %}">
+                        <option value="">{% translate "Pilih kurir hewan" %}</option>
+                        {% for c in pet_couriers %}<option value="{{ c.pk }}" {% if c.pk == b.pet_courier_id %}selected{% endif %}>{{ c.display_name }}</option>{% endfor %}
+                    </select>
+                    <button type="submit" class="ui-btn ui-btn--sm">{% translate "Simpan" %}</button>
+                </form>
+            {% elif b.pet_courier %}
+                <p class="sg-sm sg-mt8 mb-0"><i class="bi bi-truck" aria-hidden="true"></i> {% translate "Kurir" %}: <b>{{ b.pet_courier.display_name }}</b></p>
+            {% endif %}
+            {% if b.pickup_photo or b.return_photo %}
+                <div class="bk-photos sg-mt8">
+                    {% if b.pickup_photo %}<a href="{{ b.pickup_photo.url }}" target="_blank" rel="noopener"><img src="{{ b.pickup_photo.url }}" alt="{% translate 'Foto jemput' %}"><span>{% translate "Foto jemput" %}{% if b.pet_collected_at %} {{ b.pet_collected_at|time:"H.i" }}{% endif %}</span></a>{% endif %}
+                    {% if b.return_photo %}<a href="{{ b.return_photo.url }}" target="_blank" rel="noopener"><img src="{{ b.return_photo.url }}" alt="{% translate 'Foto serah' %}"><span>{% translate "Foto serah" %}</span></a>{% endif %}
+                </div>
+            {% endif %}
+        {% endif %}
+    </section>
+
+    <div class="bk-cta">
+        {% if b.status == "PENDING" %}
+            <form method="post" action="{% url 'service:booking_action' b.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="confirm">
+                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                <button type="submit" class="ui-btn ui-btn--primary ui-btn--block bk-main"><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Konfirmasi booking" %}</button>
+            </form>
+        {% elif b.payment_proof and not b.paid %}
+            <a class="ui-btn ui-btn--primary ui-btn--block bk-main" href="{% url 'service:booking_payment_check' b.pk %}"><i class="bi bi-receipt" aria-hidden="true"></i>{% translate "Cek bukti transfer" %}</a>
+        {% elif b.can_check_in %}
+            <a class="ui-btn ui-btn--primary ui-btn--block bk-main" href="{% url 'service:check_in' %}?booking={{ b.pk }}"><i class="bi bi-qr-code-scan" aria-hidden="true"></i>{% translate "Check-in sekarang" %}</a>
+        {% elif b.status == "DIJEMPUT" %}
+            <p class="sg-alert is-pri mb-0"><i class="bi bi-truck" aria-hidden="true"></i><span>{% translate "Kurir sedang menjemput. Check-in terbuka setelah kurir scan QR di rumah pelanggan." %}</span></p>
+        {% elif b.status == "SIAP" and not b.paid %}
+            <a class="ui-btn ui-btn--gold ui-btn--block bk-main" href="{% url 'transaction:make_transaction' %}?tab=layanan"><i class="bi bi-cash-coin" aria-hidden="true"></i>{% translate "Bayar di Kasir" %}</a>
+        {% elif b.status == "SIAP" and not b.return_requested %}
+            <form method="post" action="{% url 'service:booking_action' b.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="handover">
+                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                <button type="submit" class="ui-btn ui-btn--primary ui-btn--block bk-main" data-confirm="{% blocktranslate trimmed with b_pet_name=b.pet_name %}{{ b_pet_name }} sudah diambil pemiliknya?{% endblocktranslate %}"><i class="bi bi-person-check" aria-hidden="true"></i>{% translate "Diambil pemilik" %}</button>
+            </form>
+        {% elif b.status == "ANTRE" or b.status == "PROSES" %}
+            <a class="ui-btn ui-btn--block bk-main" href="{% url 'service:check_in' %}"><i class="bi bi-list-ol" aria-hidden="true"></i>{% translate "Lihat antrean" %}</a>
+        {% endif %}
+        <div class="bk-more">
+            {% if b.is_late %}
+                <form method="post" action="{% url 'service:booking_action' b.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="no_show">
+                    <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                    <button type="submit" class="bk-link is-bad" data-confirm="{% blocktranslate trimmed with b_pk=b.pk %}Tandai booking #{{ b_pk }} tidak datang?{% endblocktranslate %}">{% translate "Tidak datang" %}</button>
+                </form>
+            {% endif %}
+            {% if b.paid %}{% with line=b.payment_line %}{% if line %}<a class="bk-link" href="{% url 'transaction:receipt' line.order_id %}"><i class="bi bi-receipt" aria-hidden="true"></i> {% translate "Struk" %}</a>{% endif %}{% endwith %}{% endif %}
+            {% if b.can_cancel or b.status == "ANTRE" %}
+                <form method="post" action="{% url 'service:cancel_booking' b.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                    <button type="submit" class="bk-link is-bad" data-confirm="{% blocktranslate trimmed with b_pk=b.pk b_pet_name=b.pet_name %}Batalkan booking #{{ b_pk }} ({{ b_pet_name }})?{% endblocktranslate %}">{% translate "Batalkan booking" %}</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</aside>

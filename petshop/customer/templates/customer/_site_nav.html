@@ -41,6 +41,7 @@
                     aria-label="{% translate 'Cari produk' %}">
                 <i class="fas fa-search" aria-hidden="true"></i>
             </button>
+            {% include "partials/_theme_toggle.html" with extra="sn-icon" %}
             {% include "partials/_lang_toggle.html" %}
             <a class="sn-icon{% if active == 'wishlist' %} is-active{% endif %}"
                href="{% url 'customer:wishlist' %}"

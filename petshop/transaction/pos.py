@@ -77,6 +77,10 @@ def ensure_booking_payable(booking):
         )
     if booking.is_paid:
         raise PosError(f"Booking #{booking.pk} sudah dibayar (struk {booking.payment_line.order.receipt_no}).")
+    if booking.awaiting_payment_check:
+        raise PosError(
+            f"Booking #{booking.pk} sudah mengirim bukti transfer. Cek buktinya dulu di Booking Layanan."
+        )
 
 
 def find_booking(code):

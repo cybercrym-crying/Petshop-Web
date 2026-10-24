@@ -174,3 +174,7 @@
 @media (max-width: 560px) {
   .co-order__id .co-resi { display: block; font-size: 0.86rem; white-space: nowrap; }
 }
+
+.co-transfer__qris { margin-top: 10px; }
+.co-transfer__qris summary { cursor: pointer; font-weight: 700; color: var(--primary-purple, #7c3aed); }
+.co-transfer__qris img { display: block; width: 100%; max-width: 240px; margin: 10px 0 6px; border-radius: 12px; background: #fff; }

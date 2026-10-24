@@ -32,6 +32,8 @@ class CourierProfile(TimeStampedModel):
     )
     # Kurir yang membawa kandang/boks hewan bisa ditugasi antar-jemput hewan grooming.
     can_carry_pets = models.BooleanField("Bisa antar-jemput hewan", default=False)
+    # Foto wajah kurir: tampil di halaman lacak pelanggan dan dasbor admin.
+    photo = models.ImageField(_("Foto kurir"), upload_to="couriers/%Y/%m", null=True, blank=True)
 
     def __str__(self):
         name = self.user.get_full_name() or self.user.username

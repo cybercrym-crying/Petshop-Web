@@ -1,20 +1,5 @@
 /* Aplikasi kurir: tab bawah, kunci GPS, peta rute, scan & serah terima */
-.courier-tabs {
-  position: sticky; top: 64px; z-index: 900; display: flex; gap: 4px; overflow-x: auto;
-  padding: 8px 16px; background: var(--c-surface); border-bottom: 1px solid var(--c-border);
-}
-.courier-tabs a {
-  flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px;
-  color: var(--c-text-2); font-weight: 700; font-size: 0.9rem; text-decoration: none;
-}
-.courier-tabs a.is-active { background: var(--c-brand-soft); color: var(--c-brand-dark); }
-@media (max-width: 640px) {
-  .courier-tabs { position: fixed; top: auto; bottom: 0; left: 0; right: 0; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid var(--c-border); border-bottom: 0; }
-  .courier-tabs a { flex-direction: column; gap: 2px; padding: 6px 8px; font-size: 0.75rem; border-radius: 12px; }
-  .courier-tabs a i { font-size: 1.2rem; }
-  body { padding-bottom: 76px; }
-  .navbar-custom { padding: 10px 14px; }
-}
+/* Menu bawah & menu samping: lihat nav.css */
 .gps-badge { padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; background: var(--c-ok-bg); color: var(--c-ok-text); border: 1px solid var(--c-ok-border); white-space: nowrap; }
 .gps-badge.is-off { background: var(--c-danger-bg); color: var(--c-danger-text); border-color: var(--c-danger-border); }
 
