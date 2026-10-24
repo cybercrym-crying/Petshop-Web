@@ -88,9 +88,57 @@ html[data-theme="dark"] .staff-shift.is-open { background: #173a2c; color: #86ef
 html[data-theme="dark"] .staff-shift.is-closed { background: #3b2a12; color: #fcd34d; }
 .staff-shift:focus-visible { outline: 3px solid #f0a63c; outline-offset: 2px; }
 .staff-topbar .staff-role { margin-right: auto; }
-.staff-topbar .staff-role + .staff-bell { margin-left: 0; }
+
 @media (max-width: 479.98px) {
   .staff-topbar { gap: 0.4rem; padding: 0.5rem 0.75rem; }
   .staff-topbar .staff-role { display: none; }
   .staff-topbar .staff-brand-name { margin-right: auto; }
 }
+
+/* =========================================================
+   Bilah atas gaya Groomer: kartu melayang di desktop (juga saat
+   sidebar terbuka), satu baris di HP. Tombol ikon kotak bergaris.
+   ========================================================= */
+:root { --staff-top: 0px; }
+.staff-topbar__brand { display: inline-flex; align-items: center; gap: 0.6rem; min-width: 0; margin-right: auto; }
+.staff-topbar .staff-role { margin-right: 0; }
+.staff-topbar .staff-logo--sm { width: 40px; height: 40px; border-radius: 12px; background: #7c3aed; box-shadow: 0 6px 14px rgba(124, 58, 237, 0.3); }
+.staff-topbar .staff-burger { border: 1px solid var(--ss-border); border-radius: 13px; background: var(--ss-bg); color: var(--ss-active-ink); font-size: 1.15rem; }
+.staff-topbar .staff-burger:hover { border-color: var(--ss-brand); background: var(--ss-active); color: var(--ss-active-ink); }
+.staff-topbar .staff-burger[data-staff-toggle] { font-size: 1.4rem; }
+.staff-topbar .staff-bell { margin-left: 0; }
+.staff-topbar .staff-bell__count { top: -7px; right: -7px; background: #f4b942; color: #4a3200; }
+.staff-topbar .lang-toggle { height: 44px; padding: 3px; border-color: var(--ss-border); color: var(--ss-text); opacity: 1; }
+.staff-topbar .lang-toggle__btn { min-height: 36px; }
+.staff-today { display: none; color: var(--ss-muted); font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+.staff-userpill { display: none; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 4px; border-radius: 13px; background: var(--ss-active); color: var(--ss-text); font-size: 0.9rem; font-weight: 700; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.staff-avatar--sm { width: 36px; height: 36px; border-radius: 10px; background: #7c3aed; font-size: 0.75rem; }
+.staff-topbar__out { display: none; margin: 0; }
+.staff-out { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border: 1px solid var(--ss-border); border-radius: 13px; background: var(--ss-bg); color: var(--ss-text); font: 700 0.9rem "Plus Jakarta Sans", system-ui, sans-serif; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+.staff-out:hover { border-color: #dc2626; color: #dc2626; }
+.staff-out:focus-visible { outline: 3px solid #f0a63c; outline-offset: 2px; }
+
+@media (min-width: 768px) {
+  .staff-userpill { display: inline-flex; }
+  .staff-topbar__out { display: block; }
+}
+@media (min-width: 992px) {
+  :root { --staff-top: 88px; }
+  html:not(.staff-collapsed) .staff-topbar,
+  .staff-topbar { display: flex; top: 14px; margin: 14px 20px 0; padding: 10px 14px; border: 1px solid var(--ss-border); border-radius: 22px; box-shadow: 0 1px 2px rgba(42, 33, 64, 0.04), 0 8px 24px rgba(42, 33, 64, 0.06); }
+  .staff-today { display: inline; margin-right: auto; }
+  /* Sidebar terbuka: merek sudah ada di sidebar, bilah atas menampilkan tanggal. */
+  html:not(.staff-collapsed) .staff-topbar__brand { display: none; }
+  html.staff-collapsed .staff-today { display: none; }
+}
+@media (max-width: 991.98px) {
+  .staff-topbar { padding: 10px 14px; }
+}
+@media (max-width: 479.98px) {
+  .staff-topbar { gap: 0.4rem; padding: 0.5rem 0.75rem; }
+  .staff-topbar .staff-burger { width: 40px; height: 40px; }
+  .staff-topbar .lang-toggle { height: 40px; }
+  .staff-topbar .lang-toggle__btn { min-height: 32px; min-width: 28px; padding: 0 6px; }
+  .staff-topbar .staff-logo--sm { width: 36px; height: 36px; }
+}
+.staff-topbar .staff-theme-icon { margin-left: 0; }

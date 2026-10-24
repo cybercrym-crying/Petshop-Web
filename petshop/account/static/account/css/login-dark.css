@@ -1,6 +1,6 @@
 /* Dibuat otomatis oleh `python manage.py build_dark_css` dari login.css. Jangan diubah manual. */
 html[data-theme="dark"] body { background: linear-gradient(180deg, #18121f 0%, #3f2a18 100%); }
-html[data-theme="dark"] .side-panel { background: linear-gradient( 145deg, #3a2e52, #453862 ); color: #fff; }
+html[data-theme="dark"] .side-panel { background: linear-gradient(145deg, #3a2e52, #453862); color: #fff; }
 html[data-theme="dark"] .brand-logo { background: #2b2139; color: #8b5fe0; }
 html[data-theme="dark"] .brand-name { color: #fff; }
 html[data-theme="dark"] .side-text { color: #c9c2de; }
@@ -27,8 +27,8 @@ html[data-theme="dark"] .foot-text { color: #b9adc7; }
 html[data-theme="dark"] body { background-color: #18121f; color: #f1ebf7; }
 html[data-theme="dark"] .blob-purple { background-color: #3d2b63; }
 html[data-theme="dark"] .blob-orange { background-color: #2b2139; }
-html[data-theme="dark"] .login-glass-card { background: rgba(33, 26, 43, 0.88); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); border: 1px solid rgba(58, 47, 72, 0.8); }
-html[data-theme="dark"] .panel-left { background: linear-gradient(180deg, rgba(30, 27, 75, 0.35) 0%, rgba(30, 27, 75, 0.85) 100%), url("../img/login-dog.jpg") center/cover no-repeat; color: white; }
+html[data-theme="dark"] .login-glass-card { background: rgba(33, 26, 43, 0.88); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); border: 1px solid rgba(58, 47, 72, 0.8); }
+html[data-theme="dark"] .panel-left { background: linear-gradient( 180deg, rgba(30, 27, 75, 0.35) 0%, rgba(30, 27, 75, 0.85) 100% ), url("../img/login-pet.jpg") center/cover no-repeat; color: white; }
 html[data-theme="dark"] .brand-badge { background: rgba(33, 26, 43, 0.2); border: 1px solid rgba(58, 47, 72, 0.3); }
 html[data-theme="dark"] .panel-right { background: #211a2b; }
 html[data-theme="dark"] .form-title { color: #f1ebf7; }
@@ -38,7 +38,7 @@ html[data-theme="dark"] .modern-input { border: 2px solid #31445e; background-co
 html[data-theme="dark"] .modern-input:focus { outline: none; background-color: #211a2b; border-color: #5b4775; box-shadow: 0 10px 20px -10px rgba(61, 43, 99, 0.3); }
 html[data-theme="dark"] .toggle-password { background: none; border: none; color: #94a3b8; }
 html[data-theme="dark"] .toggle-password:hover { color: #8c73c2; }
-html[data-theme="dark"] .btn-login { background: linear-gradient(135deg, #FF9000, #FF7300); color: white; border: none; box-shadow: 0 10px 20px -5px rgba(255, 144, 0, 0.4); }
+html[data-theme="dark"] .btn-login { background: linear-gradient(135deg, #ff9000, #ff7300); color: white; border: none; box-shadow: 0 10px 20px -5px rgba(255, 144, 0, 0.4); }
 html[data-theme="dark"] .btn-login:hover { box-shadow: 0 15px 25px -5px rgba(255, 144, 0, 0.5); }
 html[data-theme="dark"] .foot-text { color: #b9adc7; }
 html[data-theme="dark"] .link-purple { color: #d8b4fe; }

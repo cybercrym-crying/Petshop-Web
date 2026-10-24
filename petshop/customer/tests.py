@@ -62,14 +62,22 @@ class PublicPagesTests(TestCase):
         self.assertContains(r, "Whiskas 70g")
         self.assertContains(r, 'class="sn-link active">Belanja')
 
-    def test_nav_links_between_pages_and_search_goes_to_shop(self):
+    def test_nav_links_between_pages_and_search_lives_in_shop_filter(self):
         for name in ("customer:home", "customer:about", "customer:shop"):
             r = self.client.get(reverse(name))
             self.assertContains(r, 'href="/shop/"')
             self.assertContains(r, 'href="/about/"')
-            self.assertContains(r, 'action="/shop/"')
+            self.assertNotContains(r, 'id="nav-search"')  # cari produk pindah ke filter Belanja
             self.assertContains(r, 'id="cart-count"')
             self.assertContains(r, 'id="kontak"')  # tujuan tautan Contact Us
+
+    def test_product_search_in_shop_filter(self):
+        make_product("Whiskas 70g")
+        make_product("Pasir Kucing")
+        r = self.client.get(reverse("customer:products"), {"q": "whis"})
+        self.assertContains(r, 'id="filter-q" name="q" value="whis"')
+        names = [p.name for p in r.context["products"]]
+        self.assertEqual(names, ["Whiskas 70g"])
 
     def test_cart_and_checkout_still_load(self):
         self.assertEqual(self.client.get(reverse("customer:cart")).status_code, 200)

@@ -27,6 +27,7 @@
             <a href="{% url 'customer:account' %}" class="ca-link{% if v == 'customer:account' %} is-active{% endif %}"><i class="far fa-user" aria-hidden="true"></i> {% translate "Akun Saya" %}</a>
             <a href="{% url 'customer:about' %}" class="ca-link{% if v == 'customer:about' %} is-active{% endif %}"><i class="fas fa-circle-info" aria-hidden="true"></i> {% translate "Info Toko" %}</a>
         </nav>
+        <div class="ca-side__theme">{% include "partials/_theme_toggle.html" with extra="sn-icon" %}<span aria-hidden="true">{% translate "Mode gelap" %}</span></div>
         <form method="post" action="{% url 'logout' %}" class="ca-side__out">
             {% csrf_token %}
             <button type="submit" class="ca-link"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> {% translate "Keluar" %}</button>

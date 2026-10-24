@@ -6,170 +6,144 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/home.css' %}?v=ux2">
     <link rel="stylesheet" href="{% static 'customer/css/home-dark.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'customer/css/about.css' %}?v=2">
-    <link rel="stylesheet" href="{% static 'customer/css/about-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/about.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'customer/css/about-dark.css' %}?v=2">
 {% endblock %}
 {% block content %}
-        <!-- HERO SECTION (Sesuai Mockup Layout) -->
-        <header class="about-hero-section">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-6">
-                        <div class="about-hero-content">
-                            <div class="about-breadcrumb">
-                                <a href="{% url 'customer:home' %}">{% translate "Beranda" %}</a> {% translate "/ Tentang Kami" %}
-                            </div>
-                            <h1 class="about-hero-title">
-                                {% translate "Kisah Kami:" %}
-                                <br>
-                                <span>{% translate "Perawatan yang Datang" %}
-                                    <br>
-                                {% translate "dari Hati" %}</span>
-                            </h1>
-                            <p class="about-hero-subtext">
-                                {% translate "Di Seelly Petshop, setiap hewan peliharaan diperlakukan seperti keluarga. Tujuan kami sederhana: membantu menjaga hewan peliharaan tetap sehat dan bahagia." %}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="about-hero-img-wrap">
-                            <img src="{% static 'customer/img/about-hero.jpg' %}"
-                                 alt="{% translate 'Hewan peliharaan di Seelly Petshop' %}">
-                        </div>
-                    </div>
+    <div class="ab">
+        {# 1. Pembuka: siapa kami dalam satu kalimat + angka nyata dari database #}
+        <header class="container ab-hero">
+            <div class="ab-hero__text">
+                <nav class="ab-crumb" aria-label="{% translate 'Breadcrumb' %}"><a href="{% url 'customer:home' %}">{% translate "Beranda" %}</a> / {% translate "Tentang Kami" %}</nav>
+                <span class="ab-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Tentang Seelly Petshop" %}</span>
+                <h1 class="ab-title">{% translate "Kisah Kami:" %} <span>{% translate "Perawatan yang Datang dari Hati" %}</span></h1>
+                <p class="ab-lead">{% translate "Di Seelly Petshop, setiap hewan peliharaan diperlakukan seperti keluarga. Tujuan kami sederhana: membantu menjaga hewan peliharaan tetap sehat dan bahagia." %}</p>
+                <div class="ab-actions">
+                    <a class="ab-btn ab-btn--pri" href="{% url 'customer:shop' %}"><i class="fas fa-store" aria-hidden="true"></i> {% translate "Belanja Sekarang" %}</a>
+                    <a class="ab-btn" href="{% url 'service:catalog' %}#booking"><i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Booking Grooming" %}</a>
                 </div>
+                <dl class="ab-stats">
+                    <div><dt>{% translate "Produk" %}</dt><dd>{{ stats.products|default:"-" }}</dd></div>
+                    <div><dt>{% translate "Pelanggan" %}</dt><dd>{{ stats.customers|default:"-" }}</dd></div>
+                    <div><dt>{% translate "Pesanan terkirim" %}</dt><dd>{{ stats.orders|default:"-" }}</dd></div>
+                </dl>
             </div>
+            <figure class="ab-hero__media">
+                <img src="{% static 'customer/img/about-hero.jpg' %}" alt="{% translate 'Hewan peliharaan di Seelly Petshop' %}">
+                <figcaption class="ab-badge">
+                    <span class="ab-badge__ic"><i class="far fa-clock" aria-hidden="true"></i></span>
+                    <span><b>{% translate "Buka setiap hari" %}</b>{{ store.hours_display }}</span>
+                </figcaption>
+            </figure>
         </header>
-        <!-- WHO WE ARE SECTION -->
-        <section class="container mb-5">
-            <div class="row g-4 g-lg-5 align-items-center">
-                <div class="col-lg-6">
-                    <div class="about-hero-img-wrap about-hero-img-wrap--muted">
-                        <img src="{% static 'customer/img/about-collage.jpg' %}"
-                             alt="{% translate 'Kolase foto hewan' %}">
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <span class="sx-kicker"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Siapa Kami" %}</span>
-                    <h2 class="sx-h2">
-                        {% translate "Lebih dari Sekadar Toko Hewan," %}
-                        <br>
-                        {% translate "Kami Pecinta Hewan" %}
-                    </h2>
-                    <p class="sx-lead mb-4">
-                        {% translate "Seelly Petshop dimulai sebagai toko kecil yang dikelola oleh beberapa teman yang sekadar mencintai hewan. Apa yang membedakan kami adalah kami meluangkan waktu untuk mengenal setiap hewan peliharaan. Tim kami meluangkan waktu untuk mendengarkan, merekomendasikan apa yang benar-benar dibutuhkan hewan Anda, dan hanya menjanjikan apa yang bisa kami penuhi." %}
-                    </p>
-                    <!-- Stats Boxes Horizontal -->
-                    <div class="row g-3">
-                        <div class="col-4">
-                            <div class="about-stat-box">
-                                <b>{{ stats.products|default:"-" }}</b>
-                                <span>{% translate "Produk" %}</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="about-stat-box">
-                                <b>{{ stats.customers|default:"-" }}</b>
-                                <span>{% translate "Pelanggan" %}</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="about-stat-box">
-                                <b>{{ stats.orders|default:"-" }}</b>
-                                <span>{% translate "Pesanan" %}</span>
-                            </div>
-                        </div>
-                    </div>
+
+        {# 2. Cerita #}
+        <section class="container ab-sec" aria-labelledby="ab-story-h">
+            <div class="ab-story">
+                <figure class="ab-story__media">
+                    <img src="{% static 'customer/img/about-collage.jpg' %}" alt="{% translate 'Kolase foto hewan' %}" loading="lazy">
+                </figure>
+                <div class="ab-card ab-story__text">
+                    <span class="ab-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Siapa Kami" %}</span>
+                    <h2 class="ab-h2" id="ab-story-h">{% translate "Lebih dari Sekadar Toko Hewan, Kami Pecinta Hewan" %}</h2>
+                    <p>{% translate "Seelly Petshop dimulai sebagai toko kecil yang dikelola oleh beberapa teman yang sekadar mencintai hewan. Apa yang membedakan kami adalah kami meluangkan waktu untuk mengenal setiap hewan peliharaan. Tim kami meluangkan waktu untuk mendengarkan, merekomendasikan apa yang benar-benar dibutuhkan hewan Anda, dan hanya menjanjikan apa yang bisa kami penuhi." %}</p>
+                    <ul class="ab-ticks">
+                        <li><i class="fas fa-check" aria-hidden="true"></i> {% translate "Makanan, mainan, kesehatan, dan aksesori dalam satu tempat" %}</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> {% translate "Grooming dengan foto tiap tahap pengerjaan" %}</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> {% translate "Kurir toko mengantar pesanan dan menjemput hewan" %}</li>
+                    </ul>
                 </div>
             </div>
         </section>
-        <!-- VISION & MISSION -->
-        <section class="container mb-5">
-            <div class="row g-4">
-                <!-- Vision (Dark Card) -->
-                <div class="col-md-6">
-                    <div class="vm-card dark">
-                        <i class="fas fa-paw paw-watermark"></i>
-                        <div class="vm-icon-wrap">
-                            <i class="fas fa-bullseye"></i>
-                        </div>
-                        <h3>{% translate "Visi Kami" %}</h3>
-                        <p>{% translate "Menjadi mitra perawatan hewan peliharaan yang paling dipercaya di setiap komunitas, di mana setiap hewan peliharaan hidup dengan sehat, dicintai, dan bahagia." %}</p>
-                    </div>
-                </div>
-                <!-- Mission (Light Card) -->
-                <div class="col-md-6">
-                    <div class="vm-card light">
-                        <i class="fas fa-paw paw-watermark"></i>
-                        <div class="vm-icon-wrap">
-                            <i class="fas fa-flag"></i>
-                        </div>
-                        <h3>{% translate "Misi Kami" %}</h3>
-                        <ul>
-                            <li>{% translate "Menyediakan produk berkualitas dan aman untuk setiap tahap kehidupan hewan." %}</li>
-                            <li>{% translate "Memberikan layanan yang ramah, profesional, dan jujur." %}</li>
-                            <li>{% translate "Mengedukasi pemilik hewan agar mereka dapat merawat dengan percaya diri." %}</li>
-                            <li>{% translate "Membuat pengalaman berbelanja menjadi mudah bagi setiap keluarga." %}</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+
+        {# 3. Visi & misi #}
+        <section class="container ab-sec ab-vm" aria-label="{% translate 'Visi dan misi' %}">
+            <article class="ab-card ab-vm__vision">
+                <span class="ab-ic is-light"><i class="fas fa-bullseye" aria-hidden="true"></i></span>
+                <h2 class="ab-h3">{% translate "Visi Kami" %}</h2>
+                <p>{% translate "Menjadi mitra perawatan hewan peliharaan yang paling dipercaya di setiap komunitas, di mana setiap hewan peliharaan hidup dengan sehat, dicintai, dan bahagia." %}</p>
+                <i class="fas fa-paw ab-vm__paw" aria-hidden="true"></i>
+            </article>
+            <article class="ab-card ab-vm__mission">
+                <span class="ab-ic"><i class="fas fa-flag" aria-hidden="true"></i></span>
+                <h2 class="ab-h3">{% translate "Misi Kami" %}</h2>
+                <ol class="ab-steps">
+                    <li>{% translate "Menyediakan produk berkualitas dan aman untuk setiap tahap kehidupan hewan." %}</li>
+                    <li>{% translate "Memberikan layanan yang ramah, profesional, dan jujur." %}</li>
+                    <li>{% translate "Mengedukasi pemilik hewan agar mereka dapat merawat dengan percaya diri." %}</li>
+                    <li>{% translate "Membuat pengalaman berbelanja menjadi mudah bagi setiap keluarga." %}</li>
+                </ol>
+            </article>
         </section>
-        <!-- VALUES (What We Believe In - GRID LAYOUT) -->
-        <section class="container mb-5">
-            <div class="values-header">
-                <span class="sx-kicker"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Nilai Kami" %}</span>
-                <h2 class="sx-h2">{% translate "Yang Kami Yakini" %}</h2>
-                <p class="sx-lead">{% translate "Janji yang memandu semua yang kami lakukan, setiap hari." %}</p>
+
+        {# 4. Nilai #}
+        <section class="container ab-sec" aria-labelledby="ab-values-h">
+            <div class="ab-head">
+                <span class="ab-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Nilai Kami" %}</span>
+                <h2 class="ab-h2" id="ab-values-h">{% translate "Yang Kami Yakini" %}</h2>
+                <p>{% translate "Janji yang memandu semua yang kami lakukan, setiap hari." %}</p>
             </div>
             <div class="values-grid">
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-shield-alt"></i>
+                <article class="value-card">
+                    <img src="{% static 'customer/img/val-quality.jpg' %}" alt="" loading="lazy">
+                    <div class="value-card__body">
+                        <span class="ab-ic"><i class="fas fa-shield-alt" aria-hidden="true"></i></span>
+                        <h3>{% translate "Kualitas Terpercaya" %}</h3>
+                        <p>{% translate "Kami hanya menawarkan produk dan layanan dari merek serta mitra terpercaya." %}</p>
                     </div>
-                    <h3>{% translate "Kualitas Terpercaya" %}</h3>
-                    <p>{% translate "Kami hanya menawarkan produk dan layanan dari merek serta mitra terpercaya." %}</p>
+                </article>
+                <article class="value-card">
+                    <img src="{% static 'customer/img/val-health.jpg' %}" alt="" loading="lazy">
+                    <div class="value-card__body">
+                        <span class="ab-ic"><i class="fas fa-user-md" aria-hidden="true"></i></span>
+                        <h3>{% translate "Layanan Profesional" %}</h3>
+                        <p>{% translate "Tim kami terlatih, sabar, dan bersemangat dalam merawat hewan peliharaan." %}</p>
+                    </div>
+                </article>
+                <article class="value-card">
+                    <img src="{% static 'customer/img/val-order.jpg' %}" alt="" loading="lazy">
+                    <div class="value-card__body">
+                        <span class="ab-ic"><i class="fas fa-clock" aria-hidden="true"></i></span>
+                        <h3>{% translate "Layanan Praktis" %}</h3>
+                        <p>{% translate "Pemesanan online yang mudah dan layanan antar sampai rumah untuk Anda yang sibuk." %}</p>
+                    </div>
+                </article>
+                <article class="value-card">
+                    <img src="{% static 'customer/img/val-care.jpg' %}" alt="" loading="lazy">
+                    <div class="value-card__body">
+                        <span class="ab-ic"><i class="fas fa-heart" aria-hidden="true"></i></span>
+                        <h3>{% translate "Hewan Bahagia" %}</h3>
+                        <p>{% translate "Hewan peliharaan yang sehat, keluarga yang bahagia. Itulah janji utama kami kepada Anda." %}</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        {# 5. Kunjungi / hubungi #}
+        <section class="container ab-sec" aria-labelledby="ab-visit-h">
+            <div class="ab-visit">
+                <div class="ab-card ab-visit__info">
+                    <span class="ab-eyebrow"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Sapa Kami" %}</span>
+                    <h2 class="ab-h2" id="ab-visit-h">{% translate "Kunjungi Kami atau Hubungi Kami" %}</h2>
+                    <p>{% if store_address %}{{ store_address }}{% else %}{% translate "Kami siap melayani kebutuhan hewan Anda." %}{% endif %}</p>
+                    <ul class="ab-contact">
+                        <li><span class="ab-ic"><i class="fas fa-map-pin" aria-hidden="true"></i></span><span><b>{% translate "Alamat" %}</b>{{ store.address }}</span></li>
+                        <li><span class="ab-ic"><i class="far fa-clock" aria-hidden="true"></i></span><span><b>{% translate "Jam buka" %}</b>{{ store.hours_display }}</span></li>
+                        <li><span class="ab-ic"><i class="fab fa-whatsapp" aria-hidden="true"></i></span><span><b>{% translate "WhatsApp" %}</b>{{ wa_display }}</span></li>
+                        {% if store.email %}<li><span class="ab-ic"><i class="far fa-envelope" aria-hidden="true"></i></span><span><b>{% translate "Email" %}</b><a href="mailto:{{ store.email }}">{{ store.email }}</a></span></li>{% endif %}
+                    </ul>
+                    <div class="ab-actions">
+                        <a href="{{ wa_link }}" target="_blank" rel="noopener" class="ab-btn ab-btn--pri"><i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Hubungi Kami" %}</a>
+                        <a href="https://www.google.com/maps/search/?api=1&amp;query={{ store.latitude|stringformat:'.6f' }},{{ store.longitude|stringformat:'.6f' }}" target="_blank" rel="noopener" class="ab-btn"><i class="fas fa-diamond-turn-right" aria-hidden="true"></i> {% translate "Petunjuk arah" %}</a>
+                    </div>
                 </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-user-md"></i>
-                    </div>
-                    <h3>{% translate "Layanan Profesional" %}</h3>
-                    <p>{% translate "Tim kami terlatih, sabar, dan bersemangat dalam merawat hewan peliharaan." %}</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3>{% translate "Layanan Praktis" %}</h3>
-                    <p>{% translate "Pemesanan online yang mudah dan layanan antar sampai rumah untuk Anda yang sibuk." %}</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <h3>{% translate "Hewan Bahagia" %}</h3>
-                    <p>{% translate "Hewan peliharaan yang sehat, keluarga yang bahagia. Itulah janji utama kami kepada Anda." %}</p>
+                <div class="ab-visit__map">
+                    <iframe src="https://maps.google.com/maps?q={{ store.latitude|stringformat:'.6f' }},{{ store.longitude|stringformat:'.6f' }}&amp;z=15&amp;output=embed"
+                            title="{% translate 'Peta lokasi Seelly Petshop' %}"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
         </section>
-        <!-- CTA BANNER -->
-        <section class="container mb-5">
-            <div class="about-cta-banner">
-                <div class="about-cta-content">
-                    <i class="fas fa-paw about-cta-paw"></i>
-                    <div class="about-cta-text">
-                        <span class="sx-kicker">{% translate "Sapa Kami" %}</span>
-                        <h2>{% translate "Kunjungi Kami atau Hubungi Kami" %}</h2>
-                        <p>{% if store_address %}{{ store_address }}{% else %}{% translate "Kami siap melayani kebutuhan hewan Anda." %}{% endif %}</p>
-                    </div>
-                </div>
-                <a href="{{ wa_link }}"
-                   target="_blank"
-                   rel="noopener"
-                   class="about-cta-btn">
-                    {% translate "Hubungi Kami" %} <i class="fas fa-arrow-right ms-2"></i>
-                </a>
-            </div>
-        </section>
+    </div>
 {% endblock %}

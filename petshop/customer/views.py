@@ -91,7 +91,9 @@ def about(request):
     return render(
         request,
         "customer/about.html",
-        _site_context(active_page="about", stats=stats, store_address=STORE_ADDRESS),
+        _site_context(
+            active_page="about", stats=stats, store_address=STORE_ADDRESS, store=StoreSettings.current()
+        ),
     )
 
 
@@ -101,11 +103,11 @@ def cart_page(request):
 
 # Kategori di halaman Belanja: kode (sama dengan Category.name di database) -> gambar.
 CATEGORY_IMAGES = {
-    "MAKANAN": "customer/img/pet-food.png",
-    "PERLENGKAPAN": "customer/img/equipment-pets.png",
-    "AKSESORIS": "customer/img/pet-accessories.png",
-    "KESEHATAN": "customer/img/healtcare-cat.png",
-    "MAINAN": "customer/img/pet-toys.png",
+    "MAKANAN": "customer/img/category-food.jpg",
+    "PERLENGKAPAN": "customer/img/category-equipment.jpg",
+    "AKSESORIS": "customer/img/category-accessories.jpg",
+    "KESEHATAN": "customer/img/category-health.jpg",
+    "MAINAN": "customer/img/category-toys.jpg",
 }
 DEFAULT_CATEGORY_IMAGE = "customer/img/product-placeholder.svg"
 POPULAR_LIMIT = 8
@@ -489,7 +491,9 @@ def shipping_quote(request):
     """Ongkir untuk titik peta yang dipilih pelanggan (dipakai halaman checkout)."""
     location = _parse_location(request.GET)
     if location is None:
-        return JsonResponse({"ok": False, "message": "Tandai lokasi pengiriman di peta."}, status=400)
+        return JsonResponse(
+            {"ok": False, "message": "Tandai lokasi pengiriman di peta."}, status=400
+        )
     store = StoreSettings.current()
     distance = store.distance_km(*location)
     deliverable = store.can_deliver_to(distance)
@@ -499,9 +503,13 @@ def shipping_quote(request):
             "distance_km": round(distance, 2),
             "fee": store.shipping_fee(distance) if deliverable else None,
             "max_km": float(store.max_delivery_km),
-            "message": "" if deliverable else (
-                f"Lokasi berjarak {distance:.1f} km dari toko, di luar jangkauan antar "
-                f"(maks. {store.max_delivery_km} km)."
+            "message": (
+                ""
+                if deliverable
+                else (
+                    f"Lokasi berjarak {distance:.1f} km dari toko, di luar jangkauan antar "
+                    f"(maks. {store.max_delivery_km} km)."
+                )
             ),
         }
     )
@@ -527,7 +535,9 @@ def place_order(request):
     if not address:
         return _order_error("Alamat pengiriman wajib diisi.", field="address")
     if len(address) > ADDRESS_MAX:
-        return _order_error("Alamat terlalu panjang (maks. 255 karakter).", field="address")
+        return _order_error(
+            "Alamat terlalu panjang (maks. 255 karakter).", field="address"
+        )
 
     location = _parse_location(payload)
     if location is None:
@@ -562,14 +572,21 @@ def place_order(request):
             )
     except PriceChanged as error:
         return JsonResponse(
-            {"ok": False, "message": str(error), "field": None, "reason": "price_changed"},
+            {
+                "ok": False,
+                "message": str(error),
+                "field": None,
+                "reason": "price_changed",
+            },
             status=409,
         )
     except PetshopError as error:
         return _order_error(str(error))
     except IntegrityError:
         # Dua kiriman dengan token yang sama tiba bersamaan: pakai order yang menang.
-        order = Order.objects.filter(customer=customer, client_token=client_token).first()
+        order = Order.objects.filter(
+            customer=customer, client_token=client_token
+        ).first()
         if order is None:
             return _order_error("Pesanan gagal dibuat, coba lagi.")
     return JsonResponse(
@@ -586,7 +603,11 @@ def _order_error(message, field=None):
     return JsonResponse({"ok": False, "message": message, "field": field}, status=400)
 
 
-ACTIVE_ORDER_STATUSES = (OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
+ACTIVE_ORDER_STATUSES = (
+    OrderStatus.PENDING,
+    OrderStatus.CONFIRMED,
+    OrderStatus.ON_DELIVERY,
+)
 
 
 @roleRequired(Role.CUSTOMER)
@@ -607,13 +628,18 @@ def dashboard(request):
     for order in active:
         order.steps = _tracking_steps(order)
     unpaid = [
-        o for o in active
+        o
+        for o in active
         if o.payment_method == "TRANSFER" and o.payment_status == "MENUNGGU"
     ]
     bookings = user.service_bookings.select_related("service", "groomer")
     upcoming = list(
         bookings.exclude(
-            status__in=[BookingStatus.DONE, BookingStatus.CANCELLED, BookingStatus.NO_SHOW]
+            status__in=[
+                BookingStatus.DONE,
+                BookingStatus.CANCELLED,
+                BookingStatus.NO_SHOW,
+            ]
         ).order_by("schedule")[:5]
     )
     reminder_days = StoreSettings.current().grooming_reminder_days
@@ -622,7 +648,9 @@ def dashboard(request):
         pet.last = pet.last_service()
         pet.due = pet.grooming_due(reminder_days)
     history = list(
-        orders.filter(order_status__in=[OrderStatus.DELIVERED, OrderStatus.CANCELLED])[:5]
+        orders.filter(order_status__in=[OrderStatus.DELIVERED, OrderStatus.CANCELLED])[
+            :5
+        ]
     )
     spent = (
         orders.filter(payment_status="LUNAS")
@@ -667,12 +695,18 @@ def rate_order(request, pk):
         messages.error(request, _("Pilih jumlah bintang terlebih dahulu."))
         return redirect("customer:my_orders")
     try:
-        order.rate(request.user, form.cleaned_data["stars"], form.cleaned_data["review"])
+        order.rate(
+            request.user, form.cleaned_data["stars"], form.cleaned_data["review"]
+        )
     except InvalidTransition as e:
         messages.error(request, str(e))
     else:
         if order.courier_id:
-            Notification.send(order.courier, f"Ulasan {order.rating}★ untuk pesanan #{order.pk}", order.review)
+            Notification.send(
+                order.courier,
+                f"Ulasan {order.rating}★ untuk pesanan #{order.pk}",
+                order.review,
+            )
         messages.success(request, _("Terima kasih atas ulasannya!"))
     return redirect("customer:my_orders")
 
@@ -736,20 +770,23 @@ def my_orders(request):
     # Pembayaran layanan saja (tanpa barang) tampil di Booking Saya, bukan di sini.
     orders = (
         Order.objects.filter(customer=request.user)
-        .exclude(pk__in=Order.objects.filter(customer=request.user, details__isnull=True, service_lines__isnull=False).values("pk"))
+        .exclude(
+            pk__in=Order.objects.filter(
+                customer=request.user, details__isnull=True, service_lines__isnull=False
+            ).values("pk")
+        )
         .select_related("courier")
         .prefetch_related("details__product")
         .order_by("-date")
     )
     new_id = request.GET.get("baru", "")
-    new_order = (
-        orders.filter(pk=int(new_id)).first() if new_id.isdigit() else None
-    )
+    new_order = orders.filter(pk=int(new_id)).first() if new_id.isdigit() else None
     # Tab penyaring: kelompok status yang mudah dipahami pelanggan.
     running = (OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY)
     groups = {
         "berjalan": Q(order_status__in=running),
-        "bayar": Q(payment_method="TRANSFER", payment_status="MENUNGGU") & ~Q(order_status=OrderStatus.CANCELLED),
+        "bayar": Q(payment_method="TRANSFER", payment_status="MENUNGGU")
+        & ~Q(order_status=OrderStatus.CANCELLED),
         "selesai": Q(order_status=OrderStatus.DELIVERED),
         "batal": Q(order_status=OrderStatus.CANCELLED),
     }
@@ -788,7 +825,9 @@ def payment_proof(request, pk):
 
     order = get_object_or_404(Order, pk=pk, customer=request.user)
     if not order.can_upload_proof:
-        messages.info(request, f"Pesanan #{order.pk} tidak sedang menunggu bukti transfer.")
+        messages.info(
+            request, f"Pesanan #{order.pk} tidak sedang menunggu bukti transfer."
+        )
         return redirect("customer:dashboard")
     form = PaymentProofForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
@@ -801,10 +840,15 @@ def payment_proof(request, pk):
             Notification.to_staff(
                 [Role.SUPERADMIN, Role.ADMIN, Role.CASHIER],
                 f"Bukti transfer pesanan #{order.pk}",
-                f"{request.user.name} mengirim bukti Rp {order.total_payment:,}".replace(",", "."),
+                f"{request.user.name} mengirim bukti Rp {order.total_payment:,}".replace(
+                    ",", "."
+                ),
                 reverse("transaction:payment_check", args=[order.pk]),
             )
-            messages.success(request, _("Bukti transfer terkirim. Kami kabari begitu pembayaran dicek."))
+            messages.success(
+                request,
+                _("Bukti transfer terkirim. Kami kabari begitu pembayaran dicek."),
+            )
             return redirect("customer:dashboard")
     return render(
         request,
@@ -855,7 +899,9 @@ def _mask_name(name):
     parts = (name or "").split()
     if not parts:
         return ""
-    return " ".join([parts[0]] + [f"{p[0]}{'*' * min(len(p) - 1, 4)}" for p in parts[1:]])
+    return " ".join(
+        [parts[0]] + [f"{p[0]}{'*' * min(len(p) - 1, 4)}" for p in parts[1:]]
+    )
 
 
 def _tracking_steps(order):
@@ -871,9 +917,11 @@ def _tracking_steps(order):
             },
             {
                 "icon": "fa-clipboard-check",
-                "title": "Dikonfirmasi toko"
-                if order.order_status != OrderStatus.PENDING
-                else "Menunggu konfirmasi toko",
+                "title": (
+                    "Dikonfirmasi toko"
+                    if order.order_status != OrderStatus.PENDING
+                    else "Menunggu konfirmasi toko"
+                ),
                 "time": order.confirmed_at,
                 "done": order.order_status
                 not in (OrderStatus.PENDING, OrderStatus.CANCELLED),
@@ -931,9 +979,11 @@ def track_order(request, resi=None):
             order=order,
             steps=_tracking_steps(order),
             masked_name=_mask_name(order.customer.name),
-            courier_name=(order.courier.get_full_name() or order.courier.username)
-            if order.courier
-            else "",
+            courier_name=(
+                (order.courier.get_full_name() or order.courier.username)
+                if order.courier
+                else ""
+            ),
             courier_photo=order.courier.photo_url if order.courier else "",
             items=list(order.details.all()),
         )
@@ -958,7 +1008,12 @@ def _live_destination(request, order, last):
         return {}
     from courier.routing import eta_minutes, path_length
 
-    info = {"destination": {"lat": float(order.delivery_latitude), "lng": float(order.delivery_longitude)}}
+    info = {
+        "destination": {
+            "lat": float(order.delivery_latitude),
+            "lng": float(order.delivery_longitude),
+        }
+    }
     stops = order.stops_before()
     if stops is not None:
         info["stops_before"] = stops
@@ -970,7 +1025,9 @@ def _live_destination(request, order, last):
             route_position__lt=order.route_position or 0,
             delivery_latitude__isnull=False,
         ).order_by("route_position")
-        points = [(float(o.delivery_latitude), float(o.delivery_longitude)) for o in earlier]
+        points = [
+            (float(o.delivery_latitude), float(o.delivery_longitude)) for o in earlier
+        ]
         points.append((float(order.delivery_latitude), float(order.delivery_longitude)))
         km = path_length((last["lat"], last["lng"]), points)
         info["distance_km"] = round(km, 2)
@@ -1001,7 +1058,11 @@ def track_location(request, resi):
     # Peta tampil sejak pesanan dibuat (toko -> alamat); posisi kurir masuk begitu paket diantar.
     if order.order_status in (OrderStatus.PENDING, OrderStatus.CONFIRMED):
         store = StoreSettings.current()
-        data["store"] = {"lat": float(store.latitude), "lng": float(store.longitude), "name": store.name}
+        data["store"] = {
+            "lat": float(store.latitude),
+            "lng": float(store.longitude),
+            "name": store.name,
+        }
         data.update(_live_destination(request, order, None))
     elif order.order_status == OrderStatus.ON_DELIVERY:
         trail = CourierLocation.trail_for(order)
@@ -1014,7 +1075,11 @@ def track_location(request, resi):
                 stale=timezone.now() - last.recorded_at > LIVE_STALE_AFTER,
             )
         store = StoreSettings.current()
-        data["store"] = {"lat": float(store.latitude), "lng": float(store.longitude), "name": store.name}
+        data["store"] = {
+            "lat": float(store.latitude),
+            "lng": float(store.longitude),
+            "name": store.name,
+        }
         data.update(_live_destination(request, order, data["last"]))
     response = JsonResponse(data)
     response["Cache-Control"] = "private, no-store"

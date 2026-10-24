@@ -190,10 +190,10 @@ A = Category.ACCESSORIES
 K = Category.HEALTHCARE
 N = Category.TOYS
 
-PHOTO_FOOD = "customer/img/pet-food.png"
-PHOTO_TOYS = "customer/img/pet-toys.png"
-PHOTO_MEDICINE = "customer/img/pet-drug.png"
-PHOTO_ACCESSORIES = "customer/img/pet-accessories.png"
+PHOTO_FOOD = "customer/img/category-food.jpg"
+PHOTO_TOYS = "customer/img/category-toys.jpg"
+PHOTO_MEDICINE = "customer/img/category-health.jpg"
+PHOTO_ACCESSORIES = "customer/img/category-accessories.jpg"
 
 PRODUCTS = [
     (

@@ -7,8 +7,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script src="{% static 'js/theme_boot.js' %}?v=1"></script>
         <title>{% translate "Masuk - Seelly Petshop" %}</title>
-        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
-        <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+        <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+              rel="stylesheet" />
+        <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}"
+              rel="stylesheet">
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux2">
         <link rel="stylesheet" href="{% static 'account/css/login-dark.css' %}?v=1">
@@ -23,10 +25,12 @@
         <div class="login-glass-card">
             <!-- PANEL KIRI (Visual Gambar Anjing & Overlay) -->
             <div class="panel-left">
-                <div class="brand-badge">
-                    <i class="bi bi-box-fill fs-5"></i>
-                    <span>{% translate "SEELLY PETSHOP" %}</span>
-                </div>
+                <a href="/" style="text-decoration: none; color: inherit;">
+                    <div class="brand-badge">
+                        <i class="bi bi-box-fill fs-5"></i>
+                        <span>{% translate "SEELLY PETSHOP" %}</span>
+                    </div>
+                </a>
                 <div>
                     <h1 class="left-title">{% translate "Satu akun untuk semua kebutuhan hewanmu." %}</h1>
                     <p class="left-desc">{% translate "Pelanggan: pesan produk, booking grooming, dan pantau pesanan. Pegawai: kelola toko dari dasbor masing-masing." %}</p>
@@ -68,7 +72,8 @@
                                 type="button"
                                 aria-label="{% translate 'Tampilkan kata sandi' %}"
                                 data-toggle-password>
-                            <svg id="icon-show" data-icon-show
+                            <svg id="icon-show"
+                                 data-icon-show
                                  width="22"
                                  height="22"
                                  viewBox="0 0 24 24"
@@ -80,7 +85,8 @@
                                 <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
                                 <circle cx="12" cy="12" r="3" />
                             </svg>
-                            <svg id="icon-hide" data-icon-hide
+                            <svg id="icon-hide"
+                                 data-icon-hide
                                  class="d-none"
                                  width="22"
                                  height="22"
@@ -97,16 +103,21 @@
                     </div>
                     <button type="submit" class="btn-login">{% translate "Masuk" %}</button>
                     <p class="foot-text">
-                        {% translate "Lupa kata sandi?" %} <a href="{{ wa_link }}" target="_blank" rel="noopener" class="link-purple">{% translate "Hubungi admin via WhatsApp" %}</a> {% translate "untuk mengatur ulang." %}
+                        {% translate "Lupa kata sandi?" %} <a href="{{ wa_link }}"
+    target="_blank"
+    rel="noopener"
+    class="link-purple">{% translate "Hubungi admin via WhatsApp" %}</a> {% translate "untuk mengatur ulang." %}
                     </p>
                     <p class="foot-text">
                         <a href="{% url 'customer:home' %}" class="link-purple">{% translate "Kembali ke toko" %}</a>
                     </p>
                     <p class="foot-text">
-                        {% translate "Pelanggan baru?" %} <a href="{% url 'register' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}" class="link-purple">{% translate "Daftar akun customer" %}</a>
+                        {% translate "Pelanggan baru?" %} <a href="{% url 'register' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}"
+    class="link-purple">{% translate "Daftar akun customer" %}</a>
                     </p>
                     <p class="foot-text">
-                        {% translate "Ingin bergabung sebagai kurir?" %} <a href="{% url 'register_staff' %}" class="link-purple">{% translate "Daftar sebagai staf" %}</a>
+                        {% translate "Ingin bergabung sebagai kurir?" %} <a href="{% url 'register_staff' %}"
+    class="link-purple">{% translate "Daftar sebagai staf" %}</a>
                     </p>
                 </form>
             </div>

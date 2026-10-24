@@ -401,6 +401,22 @@ class ReportTests(PosTestCase):
         self.assertEqual(csv["Content-Type"], "text/csv; charset=utf-8")
         self.assertIn("STR-", csv.content.decode("utf-8"))
 
+    def test_report_summary_daily_and_shares(self):
+        self.sell(qty=1)
+        self.sell(qty=2)
+        r = self.client.get("/staff/admin/laporan-kasir/?range=7")
+        report = r.context["report"]
+        self.assertEqual(report["total_in"], 60000)
+        self.assertEqual(report["avg_offline"], 30000)
+        days = report["daily"]["days"]
+        self.assertEqual(len(days), 7)
+        self.assertEqual(days[-1]["day"], timezone.localdate())
+        self.assertEqual(sum(d["total"] for d in days), 60000)
+        self.assertEqual(days[-1]["pct"], 100)
+        self.assertEqual({m["code"]: m["pct"] for m in report["by_method"]}["TUNAI"], 100)
+        self.assertContains(r, "Total uang masuk")
+        self.assertContains(r, "Rp 60.000")
+
     def test_product_codes_generated(self):
         bare = make_product("Pasir kucing")
         self.client.post("/staff/admin/produk/kode-barang/")

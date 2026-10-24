@@ -28,3 +28,6 @@ html[data-theme="dark"] .shop-head__eyebrow { color: #b9adc7; }
 @media (max-width: 1199.98px) {
   html[data-theme="dark"] .ca-header .sn-search.open { background: #211a2b; }
 }
+html[data-theme="dark"] .ca-header { background: #211a2b; box-shadow: none; border-bottom: 1px solid #3a2f48; }
+html[data-theme="dark"] .ca-side__theme { color: #b9adc7; }
+html[data-theme="dark"] .ca-side__theme .sn-icon { border: 1px solid #3a2f48; background: #211a2b; color: #d8b4fe; }

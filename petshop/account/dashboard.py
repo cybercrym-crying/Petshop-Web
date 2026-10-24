@@ -17,6 +17,7 @@ from datetime import datetime, time, timedelta
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import Coalesce, TruncDate
 from django.utils import timezone
+from django.utils.translation import gettext_lazy
 
 from account.models import User
 from product.models import LOW_STOCK_THRESHOLD, Product
@@ -213,8 +214,26 @@ def comparison(period):
     }
 
 
-def _task(n, label, url, cta, tone="warn", hint=""):
-    return {"n": n, "label": label, "url": url, "cta": cta, "tone": tone, "hint": hint}
+def _task(n, label, url, cta, tone="warn", hint="", group="order"):
+    return {"n": n, "label": label, "url": url, "cta": cta, "tone": tone, "hint": hint, "group": group}
+
+
+# Urutan kelompok tugas di beranda admin.
+TASK_GROUPS = (
+    ("pay", gettext_lazy("Pembayaran")),
+    ("order", gettext_lazy("Pesanan")),
+    ("stock", gettext_lazy("Stok & produk")),
+    ("service", gettext_lazy("Layanan & staf")),
+)
+
+
+def group_tasks(tasks):
+    """Kelompokkan hasil staff_tasks per jenis pekerjaan; kelompok kosong dibuang."""
+    return [
+        {"key": key, "label": label, "items": items}
+        for key, label in TASK_GROUPS
+        if (items := [t for t in tasks if t["group"] == key])
+    ]
 
 
 def staff_tasks(user):
@@ -247,13 +266,13 @@ def staff_tasks(user):
     manage = reverse("transaction:manage_transaction")
     tasks = [
         _task(proof, _("Bukti transfer menunggu dicek"), manage + "?payment=proof", _("Cek"),
-              hint=_("Cocokkan dengan mutasi rekening")),
+              hint=_("Cocokkan dengan mutasi rekening"), group="pay"),
         _task(pending, _("Pesanan online menunggu konfirmasi"), manage, _("Konfirmasi")),
         _task(to_pack, _("Pesanan perlu dikemas"), reverse("transaction:packing_queue"), _("Kemas"), "run",
               _("Cetak label QR lalu tempel")),
         _task(remit.count(), _("Setoran COD dari kurir"), reverse("transaction:remittances"), _("Terima"),
-              hint=_("Hitung uangnya sebelum diterima")),
-        _task(not_in.count(), _("Booking hari ini belum check-in"), reverse("service:check_in"), _("Check-in"), "run"),
+              hint=_("Hitung uangnya sebelum diterima"), group="pay"),
+        _task(not_in.count(), _("Booking hari ini belum check-in"), reverse("service:check_in"), _("Check-in"), "run", group="service"),
         _task(returns, _("Retur menunggu persetujuan"), reverse("transaction:returns"),
               _("Putuskan") if admin else _("Lihat"),
               hint="" if admin else _("Diputuskan admin")),
@@ -266,13 +285,14 @@ def staff_tasks(user):
             no_price=Count("pk", filter=Q(selling_price__isnull=True)),
         )
         products = reverse("product:product_list")
-        tasks[2:2] = [_task(stock["empty"], _("Produk aktif stoknya habis"), products + "?filter=empty", _("Isi stok"), "bad")]
+        tasks[2:2] = [_task(stock["empty"], _("Produk aktif stoknya habis"), products + "?filter=empty", _("Isi stok"), "bad",
+                             group="stock")]
         tasks += [
             _task(User.objects.filter(approval=Approval.PENDING).count(), _("Pendaftar staf menunggu persetujuan"),
-                  reverse("manage_account") + "?tab=approval", _("Tinjau")),
+                  reverse("manage_account") + "?tab=approval", _("Tinjau"), group="service"),
             _task(stock["low"], _("Produk stok menipis"), products + "?filter=low", _("Lihat"), "warn",
-                  _("Sisa %(n)s atau kurang") % {"n": LOW_STOCK_THRESHOLD}),
-            _task(stock["no_price"], _("Produk aktif belum punya harga jual"), products + "?filter=noprice", _("Atur harga")),
+                  _("Sisa %(n)s atau kurang") % {"n": LOW_STOCK_THRESHOLD}, group="stock"),
+            _task(stock["no_price"], _("Produk aktif belum punya harga jual"), products + "?filter=noprice", _("Atur harga"), group="stock"),
         ]
     return [t for t in tasks if t["n"]]
 

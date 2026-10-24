@@ -1,13 +1,17 @@
 {% extends "customer/base.html" %}
 {% load i18n %}
 {% load static rupiah %}
-{% block title %}{% translate "Seelly Petshop - Semua Kebutuhan Hewan Peliharaan" %}{% endblock %}
+{% block title %}
+    {% translate "Seelly Petshop - Semua Kebutuhan Hewan Peliharaan" %}
+{% endblock %}
 {% block body_class %}sx{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/home.css' %}?v=ux3">
     <link rel="stylesheet" href="{% static 'customer/css/home-dark.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'customer/css/product_card.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'customer/css/product_card-dark.css' %}?v=1">
+    <link rel="stylesheet"
+          href="{% static 'customer/css/product_card.css' %}?v=2">
+    <link rel="stylesheet"
+          href="{% static 'customer/css/product_card-dark.css' %}?v=2">
 {% endblock %}
 {% block content %}
     <!-- HERO -->
@@ -56,7 +60,8 @@
         </div>
     </header>
     <!-- KEUNGGULAN SINGKAT -->
-    <section class="container sx-perks" aria-label="{% translate 'Kenapa belanja di sini' %}">
+    <section class="container sx-perks"
+             aria-label="{% translate 'Kenapa belanja di sini' %}">
         <div class="sx-perk">
             <i class="fas fa-receipt" aria-hidden="true"></i>
             <div>
@@ -87,17 +92,24 @@
         </div>
     </section>
     <!-- CARA MEMESAN -->
-    <section class="container sx-section sx-steps-wrap" id="cara-pesan" aria-labelledby="cara-pesan-title">
+    <section class="container sx-section sx-steps-wrap"
+             id="cara-pesan"
+             aria-labelledby="cara-pesan-title">
         <div class="sx-section-head">
             <div>
-                <span class="sx-kicker"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Mudah diikuti" %}</span>
+                <span class="sx-kicker"><i class="fas fa-paw"
+   aria-hidden="true"></i> {% translate "Mudah diikuti" %}</span>
                 <h2 class="sx-h2 mb-0" id="cara-pesan-title">{% translate "Cara memesan" %}</h2>
             </div>
         </div>
         <ol class="sx-steps">
             <li>
                 <span class="sx-steps__no" aria-hidden="true">1</span>
-                <span><strong>{% translate "Daftar akun" %}</strong><span>{% translate "Isi nama, nomor HP, dan alamat pengantaran." %}</span>{% if not user.is_authenticated %}<a href="{% url 'register' %}">{% translate "Daftar sekarang" %}</a>{% endif %}</span>
+                <span><strong>{% translate "Daftar akun" %}</strong><span>{% translate "Isi nama, nomor HP, dan alamat pengantaran." %}</span>
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'register' %}">{% translate "Daftar sekarang" %}</a>
+                    {% endif %}
+                </span>
             </li>
             <li>
                 <span class="sx-steps__no" aria-hidden="true">2</span>
@@ -123,7 +135,7 @@
         <div class="row g-4">
             <div class="col-sm-6 col-lg-3">
                 <a class="sx-card" href="{% url 'customer:products' %}?category=MAKANAN">
-                    <img src="{% static 'customer/img/svc-food.jpg' %}"
+                    <img src="{% static 'customer/img/category-food.jpg' %}"
                          width="640"
                          height="440"
                          loading="lazy"
@@ -131,13 +143,14 @@
                     <div class="sx-card-body">
                         <h3>{% translate "Makanan Hewan" %}</h3>
                         <p>{% translate "Makanan bergizi untuk anjing, kucing, dan hewan lainnya." %}</p>
-                        <span class="sx-link">{% translate "Belanja Makanan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                        <span class="sx-link">{% translate "Belanja Makanan" %} <i class="fas fa-arrow-right"
+    aria-hidden="true"></i></span>
                     </div>
                 </a>
             </div>
             <div class="col-sm-6 col-lg-3">
                 <a class="sx-card" href="{% url 'customer:products' %}?category=MAINAN">
-                    <img src="{% static 'customer/img/svc-toys.jpg' %}"
+                    <img src="{% static 'customer/img/category-toys.jpg' %}"
                          width="640"
                          height="440"
                          loading="lazy"
@@ -145,13 +158,15 @@
                     <div class="sx-card-body">
                         <h3>{% translate "Mainan Seru" %}</h3>
                         <p>{% translate "Mainan yang membuat hewan peliharaan aktif dan senang." %}</p>
-                        <span class="sx-link">{% translate "Belanja Mainan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                        <span class="sx-link">{% translate "Belanja Mainan" %} <i class="fas fa-arrow-right"
+    aria-hidden="true"></i></span>
                     </div>
                 </a>
             </div>
             <div class="col-sm-6 col-lg-3">
-                <a class="sx-card" href="{% url 'customer:products' %}?category=KESEHATAN">
-                    <img src="{% static 'customer/img/svc-health.jpg' %}"
+                <a class="sx-card"
+                   href="{% url 'customer:products' %}?category=KESEHATAN">
+                    <img src="{% static 'customer/img/category-health.jpg' %}"
                          width="640"
                          height="440"
                          loading="lazy"
@@ -159,13 +174,15 @@
                     <div class="sx-card-body">
                         <h3>{% translate "Kesehatan &amp; Perawatan" %}</h3>
                         <p>{% translate "Produk perawatan agar hewan peliharaan tetap prima." %}</p>
-                        <span class="sx-link">{% translate "Belanja Kesehatan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                        <span class="sx-link">{% translate "Belanja Kesehatan" %} <i class="fas fa-arrow-right"
+    aria-hidden="true"></i></span>
                     </div>
                 </a>
             </div>
             <div class="col-sm-6 col-lg-3">
-                <a class="sx-card" href="{% url 'customer:products' %}?category=AKSESORIS">
-                    <img src="{% static 'customer/img/svc-accessories.jpg' %}"
+                <a class="sx-card"
+                   href="{% url 'customer:products' %}?category=AKSESORIS">
+                    <img src="{% static 'customer/img/category-accessories.jpg' %}"
                          width="640"
                          height="440"
                          loading="lazy"
@@ -173,7 +190,8 @@
                     <div class="sx-card-body">
                         <h3>{% translate "Aksesori" %}</h3>
                         <p>{% translate "Kalung dan perlengkapan sehari-hari, dengan gaya." %}</p>
-                        <span class="sx-link">{% translate "Belanja Aksesori" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                        <span class="sx-link">{% translate "Belanja Aksesori" %} <i class="fas fa-arrow-right"
+    aria-hidden="true"></i></span>
                     </div>
                 </a>
             </div>
@@ -184,10 +202,12 @@
         <section class="container sx-section pt-0" id="terlaris">
             <div class="sx-section-head">
                 <div>
-                    <span class="sx-kicker"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Paling Dicari" %}</span>
+                    <span class="sx-kicker"><i class="fas fa-paw"
+   aria-hidden="true"></i> {% translate "Paling Dicari" %}</span>
                     <h2 class="sx-h2 mb-0">{% translate "Produk Terlaris" %}</h2>
                 </div>
-                <a href="{% url 'customer:products' %}" class="sx-link">{% translate "Lihat semua produk" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                <a href="{% url 'customer:products' %}"
+                   class="sx-link">{% translate "Lihat semua produk" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
             </div>
             <div class="sx-product-grid">
                 {% for item in popular_products %}
@@ -201,10 +221,13 @@
         <section class="container sx-section pt-0" id="layanan">
             <div class="sx-section-head">
                 <div>
-                    <span class="sx-kicker"><i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Layanan Hewan" %}</span>
+                    <span class="sx-kicker"><i class="fas fa-scissors"
+   aria-hidden="true"></i> {% translate "Layanan Hewan" %}</span>
                     <h2 class="sx-h2 mb-0">{% translate "Grooming & Perawatan" %}</h2>
                 </div>
-                <a href="{% url 'service:catalog' %}" class="sx-link">{% translate "Semua layanan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                <a href="{% url 'service:catalog' %}"
+                   class="sx-link">{% translate "Semua layanan" %} <i class="fas fa-arrow-right"
+    aria-hidden="true"></i></a>
             </div>
             <div class="sx-service-grid">
                 {% for service in services %}
@@ -212,12 +235,18 @@
                         <h3>{{ service.name }}</h3>
                         <p>{{ service.description|default:"Layanan perawatan oleh groomer kami."|truncatechars:110 }}</p>
                         <ul class="sx-service__meta">
-                            <li><i class="far fa-clock" aria-hidden="true"></i> {% blocktranslate trimmed with service_duration_minutes=service.duration_minutes %}± {{ service_duration_minutes }} menit{% endblocktranslate %}</li>
+                            <li>
+                                <i class="far fa-clock" aria-hidden="true"></i>
+                                {% blocktranslate trimmed with service_duration_minutes=service.duration_minutes %}
+                                    ± {{ service_duration_minutes }} menit
+                                {% endblocktranslate %}
+                            </li>
                             <li><i class="fas fa-paw" aria-hidden="true"></i> {{ service.get_pet_type_display }}</li>
                         </ul>
                         <div class="sx-service__foot">
                             <strong>Rp {{ service.price|rupiah }}</strong>
-                            <a href="{% url 'service:catalog' %}?layanan={{ service.pk }}#booking" class="sx-btn-solid">{% translate "Booking" %}</a>
+                            <a href="{% url 'service:catalog' %}?layanan={{ service.pk }}#booking"
+                               class="sx-btn-solid">{% translate "Booking" %}</a>
                         </div>
                     </article>
                 {% endfor %}
@@ -237,16 +266,24 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <span class="sx-kicker"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Lokasi" %}</span>
+                <span class="sx-kicker"><i class="fas fa-location-dot"
+   aria-hidden="true"></i> {% translate "Lokasi" %}</span>
                 <h2 class="sx-h2 mb-3">{% translate "Kunjungi toko" %}</h2>
                 <ul class="sx-visit">
-                    <li><i class="fas fa-map-pin" aria-hidden="true"></i><span><strong>{% translate "Alamat" %}</strong>{{ store.address }}</span></li>
-                    <li><i class="far fa-clock" aria-hidden="true"></i><span><strong>{% translate "Jam buka" %}</strong>{{ store.hours_display }}</span></li>
+                    <li><i class="fas fa-map-pin"
+   aria-hidden="true"></i><span><strong>{% translate "Alamat" %}</strong>{{ store.address }}</span></li>
+                    <li><i class="far fa-clock"
+   aria-hidden="true"></i><span><strong>{% translate "Jam buka" %}</strong>{{ store.hours_display }}</span></li>
                     <li><i class="fas fa-truck-fast" aria-hidden="true"></i><span><strong>{% translate "Antar ke rumah" %}</strong>{% translate "Kurir toko mengantar pesanan dan menjemput hewan untuk grooming." %}</span></li>
                 </ul>
                 <div class="sx-visit__actions">
-                    <a class="sx-btn-solid" href="{{ wa_link }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Chat WhatsApp" %}</a>
-                    <a class="sx-link" href="{% url 'customer:about' %}">{% translate "Tentang toko" %} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="sx-btn-solid"
+                       href="{{ wa_link }}"
+                       target="_blank"
+                       rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Chat WhatsApp" %}</a>
+                    <a class="sx-link"
+                       href="{% url 'customer:about' %}">{% translate "Tentang toko" %} <i class="fas fa-arrow-right"
+    aria-hidden="true"></i></a>
                 </div>
             </div>
         </div>
@@ -256,7 +293,8 @@
         {% if offer %}
             <div class="sx-cta">
                 <div>
-                    <span class="sx-kicker light"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Penawaran Spesial" %}</span>
+                    <span class="sx-kicker light"><i class="fas fa-paw"
+   aria-hidden="true"></i> {% translate "Penawaran Spesial" %}</span>
                     <h2>{{ offer.title }}</h2>
                     <p>{{ offer.text }}</p>
                 </div>
@@ -266,7 +304,8 @@
         {% else %}
             <div class="sx-cta">
                 <div>
-                    <span class="sx-kicker light"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Kami siap melayani" %}</span>
+                    <span class="sx-kicker light"><i class="fas fa-paw"
+   aria-hidden="true"></i> {% translate "Kami siap melayani" %}</span>
                     <h2>{% translate "Siap Memesan untuk Hewan Kesayangan?" %}</h2>
                     <p>{% translate "Daftar akun untuk memesan langsung di situs dan memantau statusnya, atau pesan lewat WhatsApp tanpa akun." %}</p>
                 </div>

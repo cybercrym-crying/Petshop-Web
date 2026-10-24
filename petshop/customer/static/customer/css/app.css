@@ -309,11 +309,6 @@
   }
 }
 
-@media (max-width: 420px) {
-  .ca-brand__tag {
-    display: none;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .ca-side {
@@ -361,5 +356,52 @@
   }
   .ca-header .sn-actions {
     gap: 0;
+  }
+}
+
+/* ---------- bilah atas gaya Groomer (lihat nav.css) ---------- */
+.ca-header {
+  background: #fff;
+  box-shadow: none;
+  border-bottom: 1px solid #e6dcf1;
+}
+.ca-header .ca-bar {
+  gap: 12px;
+}
+.ca-side__theme {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  font-weight: 600;
+  color: #5d5575;
+}
+.ca-side__theme .sn-icon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e6dcf1;
+  border-radius: 12px;
+  background: #fff;
+  color: #6d28d9;
+}
+@media (max-width: 575.98px) {
+  .ca-side__theme {
+    display: flex;
+  }
+}
+@media (max-width: 480px) {
+  .ca-header .sn-actions {
+    gap: 4px;
+  }
+}
+@media (max-width: 480px) {
+  .ca-brand .sn-logo {
+    display: grid;
+  }
+}
+/* Layar sangat sempit: cari lewat menu Belanja di bawah. */
+@media (max-width: 359.98px) {
+  .ca-header .sn-icon.sn-search-toggle {
+    display: none;
   }
 }

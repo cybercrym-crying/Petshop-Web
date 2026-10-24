@@ -90,7 +90,7 @@ a.bk-day:hover { border-color: var(--sg-pri); color: var(--sg-ink); }
 .bk-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 14px 0 0; font-size: 0.78rem; font-weight: 600; color: var(--sg-muted); }
 .bk .bk-panel { margin-top: 0; position: sticky; }
 .bk-hd .ui-btn { white-space: nowrap; }
-.bk-panel { position: sticky; top: 16px; padding: 22px; background: linear-gradient(165deg, var(--sg-card) 45%, var(--sg-soft)); }
+.bk-panel { position: sticky; top: calc(var(--staff-top, 0px) + 16px); padding: 22px; background: linear-gradient(165deg, var(--sg-card) 45%, var(--sg-soft)); }
 .bk-panel__close, .bk-dim { display: none; }
 .bk-panel__hd { display: flex; gap: 14px; align-items: center; }
 .bk .bk-panel__av { width: 58px; height: 58px; border-radius: 18px; font-size: 1.6rem; overflow: hidden; background: linear-gradient(135deg, var(--sg-soft), var(--sg-gold-soft)); }
