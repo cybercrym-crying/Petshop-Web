@@ -74,15 +74,27 @@ class DashboardMetricTests(TestCase):
         self.client.login(username="boss", password="x")
         r = self.client.get(reverse("staff_admin_dashboard"))
         self.assertContains(r, "Perlu tindakan sekarang")
-        self.assertContains(r, 'class="ui-tiles"')
+        self.assertContains(r, 'class="ad-task-list"')
         self.assertContains(r, "1 paket di jalan")
         self.assertContains(r, "Tidak membawa paket")
+
+    def test_tasks_grouped_in_fixed_order(self):
+        tasks = [
+            {"group": "stock", "label": "habis"},
+            {"group": "pay", "label": "bukti"},
+            {"group": "order", "label": "kemas"},
+            {"group": "pay", "label": "cod"},
+        ]
+        groups = dashboard.group_tasks(tasks)
+        self.assertEqual([g["key"] for g in groups], ["pay", "order", "stock"])
+        self.assertEqual([t["label"] for t in groups[0]["items"]], ["bukti", "cod"])
 
     def test_dashboard_page_and_csv_for_admin_only(self):
         make_order(self.customer, 50000, paid=True)
         self.client.force_login(self.admin)
         r = self.client.get(reverse("staff_admin_dashboard"), {"range": "7"})
         self.assertContains(r, "Rp 50.000")
+        self.assertContains(r, 'id="ad-trend-data"')  # data grafik garis
         csv = self.client.get(reverse("sales_report_csv"), {"range": "7"})
         self.assertEqual(csv["Content-Type"], "text/csv; charset=utf-8")
         self.assertIn("50000", csv.content.decode("utf-8"))

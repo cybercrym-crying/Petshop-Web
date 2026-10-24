@@ -2,10 +2,10 @@
 html[data-theme="dark"] .hero { background: radial-gradient( circle at 85% 20%, rgba(33, 26, 43, 0.7), transparent 45% ), linear-gradient(180deg, #2b2139 0%, #2b2139 55%, #18121f 100%); }
 html[data-theme="dark"] .hero::before, html[data-theme="dark"] .hero::after { background: rgba(155, 79, 207, 0.1); }
 html[data-theme="dark"] .hero-eyebrow { background: rgba(33, 26, 43, 0.75); color: #d8b4fe; }
-html[data-theme="dark"] .hero p { color: #b9adc7; }
+html[data-theme="dark"] .hero p { color: #fff; }
 html[data-theme="dark"] .hero-art video.hero-video-custom { box-shadow: 0 18px 30px rgba(107, 33, 168, 0.15); }
 html[data-theme="dark"] .category-item { color: #f1ebf7; }
-html[data-theme="dark"] .category-circle { background: #2b2139; border: 3px solid #3a2f48; box-shadow: 0 2px 10px rgba(107, 33, 168, 0.08); }
+html[data-theme="dark"] .category-circle { background: #2b2139; border: 3px solid #e5a41f; box-shadow: 0 2px 10px rgba(107, 33, 168, 0.08); }
 html[data-theme="dark"] .category-item:hover .category-circle { box-shadow: 0 10px 30px rgba(107, 33, 168, 0.14); background: #2b2139; }
 html[data-theme="dark"] .category-count { color: #b9adc7; }
 html[data-theme="dark"] .product-card { background: #211a2b; border: 1px solid #3a2f48; }
@@ -78,13 +78,21 @@ html[data-theme="dark"] .filter-panel { border-color: #5b4775; }
 html[data-theme="dark"] details.filter-group > summary i { color: #d8b4fe; }
 html[data-theme="dark"] details.filter-group > summary:focus-visible { outline: 3px solid #9b4fcf; }
 html[data-theme="dark"] .empty-state { color: #b9adc7; }
-html[data-theme="dark"] .hero-bg-overlay { background: linear-gradient(180deg, rgba(30, 27, 75, 0.8) 0%, rgba(92, 65, 140, 0.6) 50%, rgba(0, 0, 0, 0.4) 100%); }
+html[data-theme="dark"] .hero-bg-overlay { background: linear-gradient( 180deg, rgba(30, 27, 75, 0.8) 0%, rgba(92, 65, 140, 0.6) 50%, rgba(0, 0, 0, 0.4) 100% ); }
 html[data-theme="dark"] .hero-eyebrow-glass { background: rgba(33, 26, 43, 0.15); border: 1px solid rgba(58, 47, 72, 0.3); color: #ffffff; }
 html[data-theme="dark"] .hero-title-light { color: #ffffff; }
 html[data-theme="dark"] .hero-title-light span { color: #f5c484; }
 html[data-theme="dark"] .hero-desc-light { color: rgba(255, 255, 255, 0.85); }
-html[data-theme="dark"] .btn-solid-light { background: #211a2b; color: #d8b4fe; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
-html[data-theme="dark"] .btn-solid-light:hover { background: #FF9000; color: #ffffff; box-shadow: 0 12px 30px rgba(255, 144, 0, 0.4); }
+html[data-theme="dark"] .btn-solid-light { background: #211a2b; color: #d8b4fe; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); }
+html[data-theme="dark"] .btn-solid-light:hover { background: #ff9000; color: #ffffff; box-shadow: 0 12px 30px rgba(255, 144, 0, 0.4); }
 html[data-theme="dark"] .btn-outline-glass { background: rgba(33, 26, 43, 0.1); color: #ffffff; border: 2px solid rgba(58, 47, 72, 0.5); }
 html[data-theme="dark"] .btn-outline-glass:hover { background: rgba(33, 26, 43, 0.25); border-color: #3a2f48; color: #ffffff; }
-html[data-theme="dark"] .about-card, html[data-theme="dark"] .step-card { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+html[data-theme="dark"] .about-card, html[data-theme="dark"] .step-card { border: none; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); }
+html[data-theme="dark"] .filter-search__label { color: #f1ebf7; }
+html[data-theme="dark"] .filter-search__box { border: 1px solid #3a2f48; background: #211a2b; }
+html[data-theme="dark"] .filter-search__box:focus-within { border-color: #7e2fb8; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18); }
+html[data-theme="dark"] .filter-search__box i { color: #d8b4fe; }
+html[data-theme="dark"] .filter-search__box input { border: 0; background: transparent; color: #f1ebf7; outline: none; }
+html[data-theme="dark"] .filter-search__box button { border: 0; background: #6b21a8; color: #fff; }
+html[data-theme="dark"] .filter-search__box button:hover { background: #7e2fb8; }
+html[data-theme="dark"] .filter-search__box button:focus-visible { outline: 3px solid #886e3a; }

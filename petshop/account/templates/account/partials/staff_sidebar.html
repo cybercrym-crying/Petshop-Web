@@ -6,7 +6,7 @@ Dipakai oleh account/staff_base.html dan oleh partials/staff_nav.html (halaman a
 {% endcomment %}
 <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
 <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
-<link href="{% static 'account/css/staff_sidebar.css' %}?v=ux3"
+<link href="{% static 'account/css/staff_sidebar.css' %}?v=ux4"
       rel="stylesheet" />
 <link href="{% static 'account/css/staff_theme.css' %}?v=4"
       rel="stylesheet" />
@@ -14,6 +14,7 @@ Dipakai oleh account/staff_base.html dan oleh partials/staff_nav.html (halaman a
 <link href="{% static 'css/signature.css' %}?v=2" rel="stylesheet" />
 <link href="{% static 'css/sg_pages.css' %}?v=3" rel="stylesheet" />
 <script src="{% static 'account/js/staff_sidebar.js' %}?v=3"></script>
+{% include "partials/_motion.html" %}
 {% with rm=request.resolver_match %}
     <header class="staff-topbar">
         <button type="button"
@@ -24,9 +25,12 @@ Dipakai oleh account/staff_base.html dan oleh partials/staff_nav.html (halaman a
                 aria-label="{% translate 'Buka menu' %}">
             <i class="bi bi-list" aria-hidden="true"></i>
         </button>
+        <span class="staff-topbar__brand">
         <span class="staff-logo staff-logo--sm"><svg class="staff-paw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
         <span class="staff-brand-name">Seelly</span>
         <span class="staff-role">{{ request.user.get_role_display }}</span>
+        </span>
+        <span class="staff-today">{% now "l, j F Y" %}</span>
         <a href="{% url 'store:notifications' %}" class="staff-burger staff-bell" aria-label="{% translate 'Notifikasi' %}{% if unread_notifications %}, {% blocktranslate trimmed with n=unread_notifications %}{{ n }} belum dibaca{% endblocktranslate %}{% endif %}">
             <i class="bi bi-bell" aria-hidden="true"></i>
             {% if unread_notifications %}<span class="staff-bell__count">{{ unread_notifications }}</span>{% endif %}
@@ -40,6 +44,14 @@ Dipakai oleh account/staff_base.html dan oleh partials/staff_nav.html (halaman a
             <i class="bi bi-moon-stars when-light" aria-hidden="true"></i>
             <i class="bi bi-sun when-dark" aria-hidden="true"></i>
         </button>
+        <span class="staff-userpill">
+            <span class="staff-avatar staff-avatar--sm" aria-hidden="true">{{ request.user.first_name|default:request.user.username|make_list|first|upper }}{{ request.user.last_name|make_list|first|upper }}</span>
+            {{ request.user.get_full_name|default:request.user.username }}
+        </span>
+        <form method="post" action="{% url 'logout' %}" class="staff-topbar__out">
+            {% csrf_token %}
+            <button type="submit" class="staff-out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> {% translate "Keluar" %}</button>
+        </form>
     </header>
     <div class="staff-backdrop" data-staff-backdrop></div>
     <aside class="staff-sidebar" id="staffSidebar" aria-label="{% translate 'Menu admin' %}">

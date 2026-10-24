@@ -12,35 +12,12 @@
                 data-label-close="{% translate 'Tutup menu' %}">
             <i class="fas fa-bars" aria-hidden="true"></i>
         </button>
-        <a href="{% url 'customer:dashboard' %}" class="sn-brand ca-brand">
-            <i class="fas fa-paw" aria-hidden="true"></i>
-            <span>Seelly Petshop</span>
-            <small class="ca-brand__tag">{% translate "Area Pelanggan" %}</small>
+        <a href="{% url 'customer:dashboard' %}" class="sn-brand ca-brand" aria-label="{% translate 'Dasbor' %} Seelly Petshop">
+            <span class="sn-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
+            <span class="sn-brand__name">Seelly <small class="sn-brand__tag">{% translate "Pelanggan" %}</small></span>
         </a>
-        <form class="sn-search"
-              id="nav-search"
-              action="{% url 'customer:shop' %}"
-              method="get"
-              role="search">
-            <input type="search"
-                   name="q"
-                   value="{{ query|default:'' }}"
-                   placeholder="{% translate 'Cari produk...' %}"
-                   aria-label="{% translate 'Cari produk' %}">
-            <button type="submit" aria-label="{% translate 'Cari' %}">
-                <i class="fas fa-search" aria-hidden="true"></i>
-            </button>
-        </form>
         <div class="sn-actions">
-            <button type="button"
-                    class="sn-icon sn-search-toggle"
-                    id="nav-search-toggle"
-                    aria-controls="nav-search"
-                    aria-expanded="false"
-                    aria-label="{% translate 'Cari produk' %}">
-                <i class="fas fa-search" aria-hidden="true"></i>
-            </button>
-            {% include "partials/_theme_toggle.html" with extra="sn-icon" %}
+            <span class="sn-opt">{% include "partials/_theme_toggle.html" with extra="sn-icon" %}</span>
             {% include "partials/_lang_toggle.html" %}
             <a class="sn-icon"
                href="{% url 'customer:cart' %}"
@@ -56,12 +33,13 @@
             </a>
             <div class="sn-account" data-account>
                 <button type="button"
-                        class="sn-icon sn-account__btn"
+                        class="sn-icon sn-account__btn sn-account__btn--pill"
                         aria-haspopup="true"
                         aria-expanded="false"
                         aria-controls="nav-account-menu"
                         aria-label="{% blocktranslate trimmed with user_name=user.name %}Akun {{ user_name }}{% endblocktranslate %}">
                     <span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>
+                    <span class="sn-account__name" aria-hidden="true">{{ user.first_name|default:user.name }}</span>
                 </button>
                 <div class="sn-menu" id="nav-account-menu" hidden>
                     <div class="sn-menu__who">

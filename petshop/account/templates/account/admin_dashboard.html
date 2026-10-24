@@ -4,253 +4,301 @@
 {% block title %}{% translate "Seelly - Ringkasan Toko" %}{% endblock %}
 {% block extra_head %}
     <link href="{% static 'css/ui.css' %}?v=ux3" rel="stylesheet" />
+    <link href="{% static 'account/css/admin_home.css' %}?v=3" rel="stylesheet" />
 {% endblock %}
 {% block content %}
     {% if days == 1 %}{% translate "kemarin" as vs %}{% else %}{% blocktranslate trimmed asvar vs with n=days %}{{ n }} hari sebelumnya{% endblocktranslate %}{% endif %}
-    <div class="ui ui-wrap">
-        <header class="ui-head">
-            <div>
-                <p class="ui-date">{% now "l, j F Y" %}</p>
-                <h1 class="ui-title">{% blocktranslate trimmed with name=request.user.first_name|default:request.user.username %}Halo, {{ name }}{% endblocktranslate %}</h1>
-                <p class="ui-sub">{% translate "Ringkasan Toko" %} · {% blocktranslate trimmed with period_start=period.start|date:"j M Y" period_end=period.end|date:"j M Y" %}{{ period_start }} – {{ period_end }} · semua angka dihitung langsung dari database.{% endblocktranslate %}</p>
+    <div class="ui sg sg-page ad">
+        {# Kepala: tanggal huruf kapital, sapaan, ringkasan satu baris (gaya beranda groomer) #}
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% now "l, j F Y" %}</p>
+                <h1>{% blocktranslate trimmed with name=request.user.first_name|default:request.user.username %}Halo {{ name }}, ini kondisi toko{% endblocktranslate %}</h1>
+                <p>{% blocktranslate trimmed with t=tasks|length k=cashier.open|length b=bookings|length %}{{ t }} hal perlu tindakan · {{ k }} kasir buka · {{ b }} booking hari ini{% endblocktranslate %}</p>
+                <p class="ad-period">{% translate "Ringkasan Toko" %} · {% blocktranslate trimmed with period_start=period.start|date:"j M Y" period_end=period.end|date:"j M Y" %}{{ period_start }} – {{ period_end }} · semua angka dihitung langsung dari database.{% endblocktranslate %}</p>
             </div>
-            <div class="ui-actions">
-                <nav class="ui-seg" aria-label="{% translate 'Rentang waktu' %}">
+            <div class="sg-hd__actions">
+                <nav class="sg-seg" aria-label="{% translate 'Rentang waktu' %}">
                     {% for choice in range_choices %}
                         <a href="?range={{ choice }}"
-                           class="{% if choice == days %}is-active{% endif %}"
+                           class="{% if choice == days %}is-on{% endif %}"
                            {% if choice == days %}aria-current="true"{% endif %}>{% if choice == 1 %}{% translate "Hari ini" %}{% else %}{% blocktranslate trimmed with choice=choice %}{{ choice }} hari{% endblocktranslate %}{% endif %}</a>
                     {% endfor %}
                 </nav>
-                <a href="{% url 'sales_report_csv' %}?range={{ days }}" class="ui-btn">
-                    <i class="bi bi-download" aria-hidden="true"></i> {% translate "Unduh CSV" %}
-                </a>
-                <a href="{% url 'product:manage_product' %}" class="ui-btn">{% translate "Tambah produk" %}</a>
+                <a href="{% url 'sales_report_csv' %}?range={{ days }}" class="ui-btn"><i class="bi bi-download" aria-hidden="true"></i> {% translate "Unduh CSV" %}</a>
+                <a href="{% url 'product:manage_product' %}" class="ui-btn"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "Tambah produk" %}</a>
                 <a href="{% url 'transaction:make_transaction' %}" class="ui-btn ui-btn--primary"><i class="bi bi-cart3" aria-hidden="true"></i> {% translate "Buka kasir" %}</a>
             </div>
         </header>
 
-        <section class="ui-card ui-todo" aria-labelledby="todo-title">
-            <div class="ui-card__head">
-                <h2 id="todo-title" class="ui-h2">{% translate "Perlu tindakan sekarang" %}</h2>
-                {% if tasks %}<span class="ui-hint">{% translate "Urut dari yang paling mendesak" %}</span>{% endif %}
-            </div>
-            {% include "partials/_tasks.html" with tiles=True %}
-        </section>
-
-        <section class="ui-kpis" aria-label="{% translate 'Metrik utama' %}">
-            <article class="ui-card ui-kpi">
-                <span class="ui-kpi__label">{% translate "Penjualan lunas" %}</span>
-                <strong class="ui-kpi__value">Rp {{ summary.sales.total|rupiah }}</strong>
-                {% include "partials/_delta.html" with c=compare.sales pct=True %}
-                <span class="ui-kpi__note">{% blocktranslate trimmed with offline=summary.sales.offline|rupiah online=summary.sales.online|rupiah %}Kasir Rp {{ offline }} · online Rp {{ online }}{% endblocktranslate %}</span>
-            </article>
-            <article class="ui-card ui-kpi">
-                <span class="ui-kpi__label">{% translate "Pesanan" %}</span>
-                <strong class="ui-kpi__value">{{ summary.orders.n }}</strong>
-                {% include "partials/_delta.html" with c=compare.orders %}
-                <span class="ui-kpi__note">{% blocktranslate trimmed with n=summary.work.on_delivery avg=summary.avg_order|rupiah %}{{ n }} sedang diantar · rata-rata Rp {{ avg }}{% endblocktranslate %}</span>
-            </article>
-            <article class="ui-card ui-kpi">
-                <span class="ui-kpi__label">{% translate "Belum dibayar" %}</span>
-                <strong class="ui-kpi__value">Rp {{ summary.work.unpaid_total|rupiah }}</strong>
-                <span class="ui-delta ui-delta--{% if summary.work.unpaid_n %}warn{% else %}flat{% endif %}">{% blocktranslate trimmed with summary_work_unpaid_n=summary.work.unpaid_n %}{{ summary_work_unpaid_n }} order berjalan menunggu pembayaran{% endblocktranslate %}</span>
-                <span class="ui-kpi__note">{% translate "Semua tanggal, tanpa yang dibatalkan" %}</span>
-            </article>
-            <article class="ui-card ui-kpi">
-                <span class="ui-kpi__label">{% translate "Grooming selesai" %}</span>
-                <strong class="ui-kpi__value">{% blocktranslate trimmed with n=summary.services.n %}{{ n }} hewan{% endblocktranslate %}</strong>
-                {% include "partials/_delta.html" with c=compare.services %}
-                <span class="ui-kpi__note">{% blocktranslate trimmed with total=summary.services.total|rupiah %}Nilai layanan Rp {{ total }}{% endblocktranslate %}</span>
-            </article>
-        </section>
-
-        <div class="ui-split">
-            <section class="ui-card" aria-labelledby="trend-title">
-                <div class="ui-card__head">
-                    <h2 id="trend-title" class="ui-h2">{% blocktranslate trimmed with n=trend_days %}Penjualan {{ n }} hari terakhir{% endblocktranslate %}</h2>
-                    <div class="ui-legend" aria-hidden="true">
-                        <span><i class="is-store"></i>{% translate "Kasir" %}</span>
-                        <span><i class="is-online"></i>{% translate "Online" %}</span>
+        <div class="ad-split">
+            <div class="ad-col">
+                {# 1. Kartu sorotan: penjualan + grafik (gaya "Sedang dikerjakan" / "Total uang masuk") #}
+                <section class="sg-card is-focus ad-hero" id="ad-trend" aria-labelledby="trend-title">
+                    <div class="sg-card__head">
+                        <span class="sg-live"><i aria-hidden="true"></i>{% translate "Penjualan lunas" %}</span>
+                        <span class="sg-sp"></span>
+                        {% if trend_best %}
+                            <span class="sg-chip"><i class="bi bi-trophy" aria-hidden="true"></i>{% blocktranslate trimmed with day=trend_best.day|date:"D j M" total=trend_best.total|rupiah %}Hari terbaik {{ day }} · Rp {{ total }}{% endblocktranslate %}</span>
+                        {% endif %}
                     </div>
-                </div>
-                {% if trend_peak %}
-                    <div class="ui-chart{% if trend_days > 30 %} is-dense{% endif %}" role="img"
-                         aria-label="{% blocktranslate trimmed with days=trend_days %}Grafik batang penjualan lunas harian {{ days }} hari terakhir; rincian ada di tabel di bawahnya.{% endblocktranslate %}">
-                        {% for point in trend %}
-                            <div class="ui-col" title="{% blocktranslate trimmed with point_day=point.day|date:'j M' point_total=point.total|rupiah point_n=point.n %}{{ point_day }}: Rp {{ point_total }} ({{ point_n }} order){% endblocktranslate %}">
-                                <span class="is-online" data-h="{{ point.online_pct }}"></span>
-                                <span class="is-store" data-h="{{ point.store_pct }}"></span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="ui-axis" aria-hidden="true">
-                        {% for point in trend %}<span>{% if trend_days <= 14 or forloop.first or forloop.last %}{{ point.day|date:"j/n" }}{% endif %}</span>{% endfor %}
-                    </div>
-                    <p class="ui-hint mt-3 mb-2">
-                        {% blocktranslate trimmed with day=trend_best.day|date:"l j M" total=trend_best.total|rupiah %}Hari terbaik: {{ day }}, Rp {{ total }}.{% endblocktranslate %}
-                    </p>
-                    <details class="ui-notes">
-                        <summary>{% translate "Lihat angka per hari" %}</summary>
-                        <div class="ui-table-box">
-                            <table data-stack class="ui-table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">{% translate "Tanggal" %}</th>
-                                        <th scope="col" class="num">{% translate "Order lunas" %}</th>
-                                        <th scope="col" class="num">{% translate "Kasir" %}</th>
-                                        <th scope="col" class="num">{% translate "Online" %}</th>
-                                        <th scope="col" class="num">{% translate "Penjualan" %}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for point in trend %}
-                                        {% if point.total %}
-                                            <tr>
-                                                <td>{{ point.day|date:"l, j M Y" }}</td>
-                                                <td class="num">{{ point.n }}</td>
-                                                <td class="num">Rp {{ point.store|rupiah }}</td>
-                                                <td class="num">Rp {{ point.online|rupiah }}</td>
-                                                <td class="num">Rp {{ point.total|rupiah }}</td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    <div class="ad-hero__top">
+                        <div>
+                            <strong class="ad-hero__big">Rp {{ summary.sales.total|rupiah }}</strong>
+                            {% include "partials/_delta.html" with c=compare.sales pct=True %}
                         </div>
-                    </details>
-                {% else %}
-                    <p class="ui-empty">{% blocktranslate trimmed with days=trend_days %}Belum ada penjualan lunas pada {{ days }} hari terakhir.{% endblocktranslate %}
-                        <a href="{% url 'transaction:make_transaction' %}" class="ui-link">{% translate "Buat transaksi" %}</a></p>
-                {% endif %}
-            </section>
-            <div class="ui-stack">
-                <section class="ui-card" aria-labelledby="cash-title">
-                    <div class="ui-card__head">
-                        <h2 id="cash-title" class="ui-h2">{% translate "Kasir sekarang" %}</h2>
-                        {% if cashier.open %}
-                            <span class="ui-pill tone-ok">{% blocktranslate trimmed with n=cashier.open|length %}{{ n }} kasir buka{% endblocktranslate %}</span>
+                    </div>
+                    <dl class="sg-met">
+                        <div><dt><i class="bi bi-shop" aria-hidden="true"></i> {% translate "Di kasir" %}</dt><dd>Rp {{ summary.sales.offline|rupiah }}</dd></div>
+                        <div><dt><i class="bi bi-globe2" aria-hidden="true"></i> {% translate "Online" %}</dt><dd>Rp {{ summary.sales.online|rupiah }}</dd></div>
+                        <div><dt><i class="bi bi-bag" aria-hidden="true"></i> {% translate "Pesanan" %}</dt><dd>{{ summary.orders.n }}</dd>{% include "partials/_delta.html" with c=compare.orders %}</div>
+                        <div><dt><i class="bi bi-receipt" aria-hidden="true"></i> {% translate "Rata-rata order" %}</dt><dd>Rp {{ summary.avg_order|rupiah }}</dd></div>
+                    </dl>
+
+                    <div class="sg-sub ad-chart-panel">
+                        <div class="sg-card__head ad-chart-panel__head">
+                            <h2 id="trend-title" class="sg-h3 is-sm">{% blocktranslate trimmed with n=trend_days %}Penjualan {{ n }} hari terakhir{% endblocktranslate %}</h2>
+                            <span class="sg-sp"></span>
+                            {% if trend_peak %}
+                                <div class="ui-legend ad-legend" aria-hidden="true">
+                                    <span><i class="is-store"></i>{% translate "Kasir" %}</span>
+                                    <span><i class="is-online"></i>{% translate "Online" %}</span>
+                                </div>
+                                <div class="ad-switch" role="group" aria-label="{% translate 'Tampilan data penjualan' %}">
+                                    <button type="button" data-view="chart" aria-pressed="true">{% translate "Grafik" %}</button>
+                                    <button type="button" data-view="table" aria-pressed="false">{% translate "Tabel" %}</button>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% if trend_peak %}
+                            <p class="ad-sum"><b>Rp {{ trend_total|rupiah }}</b> {% blocktranslate trimmed with n=trend_days %}total {{ n }} hari{% endblocktranslate %}</p>
+                            {{ trend_chart|json_script:"ad-trend-data" }}
+                            <div class="ad-chart" data-chart
+                                 data-l-store="{% translate 'Kasir' %}" data-l-online="{% translate 'Online' %}"
+                                 data-l-total="{% translate 'Total' %}" data-l-orders="{% translate 'order' %}"
+                                 data-u-million="{% translate 'jt' %}" data-u-thousand="{% translate 'rb' %}"
+                                 data-aria="{% blocktranslate trimmed with days=trend_days %}Grafik garis penjualan lunas harian kasir dan online, {{ days }} hari terakhir. Angka lengkap ada di tampilan Tabel.{% endblocktranslate %}"></div>
+                            <p class="ui-hint ad-chart-hint">{% translate "Arahkan kursor atau ketuk satu hari untuk melihat rinciannya." %}</p>
+                            <div class="sg-tbl-box ad-trend__table">
+                                <table class="sg-tbl is-stack">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">{% translate "Tanggal" %}</th>
+                                            <th scope="col" class="is-num">{% translate "Order lunas" %}</th>
+                                            <th scope="col" class="is-num">{% translate "Kasir" %}</th>
+                                            <th scope="col" class="is-num">{% translate "Online" %}</th>
+                                            <th scope="col" class="is-num">{% translate "Penjualan" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for point in trend %}
+                                            {% if point.total %}
+                                                <tr>
+                                                    <td>{{ point.day|date:"l, j M Y" }}</td>
+                                                    <td class="is-num" data-label="{% translate 'Order lunas' %}">{{ point.n }}</td>
+                                                    <td class="is-num" data-label="{% translate 'Kasir' %}">Rp {{ point.store|rupiah }}</td>
+                                                    <td class="is-num" data-label="{% translate 'Online' %}">Rp {{ point.online|rupiah }}</td>
+                                                    <td class="is-num" data-label="{% translate 'Penjualan' %}">Rp {{ point.total|rupiah }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         {% else %}
-                            <span class="ui-pill tone-mute">{% translate "Kasir tutup" %}</span>
+                            <p class="sg-empty"><i class="bi bi-graph-up" aria-hidden="true"></i>{% blocktranslate trimmed with days=trend_days %}Belum ada penjualan lunas pada {{ days }} hari terakhir.{% endblocktranslate %}
+                                <a href="{% url 'transaction:make_transaction' %}" class="sg-link">{% translate "Buat transaksi" %}</a></p>
+                        {% endif %}
+                    </div>
+                </section>
+
+                {# 2. Kotak status berikon (gaya Antrean / Proses / Selesai di beranda groomer) #}
+                <section class="ad-stats" aria-label="{% translate 'Metrik utama' %}">
+                    <a class="ad-stat is-gold" href="{% url 'transaction:manage_transaction' %}?view=list">
+                        <span class="sg-av is-gold" aria-hidden="true"><i class="bi bi-hourglass-split"></i></span>
+                        <span class="ad-stat__text"><b>{% translate "Belum dibayar" %}</b><strong class="ad-stat__n">Rp {{ summary.work.unpaid_total|rupiah }}</strong><small>{% blocktranslate trimmed with n=summary.work.unpaid_n %}{{ n }} order menunggu{% endblocktranslate %}</small></span>
+                    </a>
+                    <a class="ad-stat" href="{% url 'transaction:manage_transaction' %}">
+                        <span class="sg-av" aria-hidden="true"><i class="bi bi-truck"></i></span>
+                        <span class="ad-stat__text"><b>{% translate "Sedang diantar" %}</b><strong class="ad-stat__n">{{ summary.work.on_delivery }}</strong><small>{% translate "Paket di tangan kurir" %}</small></span>
+                    </a>
+                    <a class="ad-stat is-ok" href="{% url 'service:manage_bookings' %}">
+                        <span class="sg-av is-ok" aria-hidden="true"><i class="bi bi-scissors"></i></span>
+                        <span class="ad-stat__text"><b>{% translate "Grooming selesai" %}</b><strong class="ad-stat__n">{% blocktranslate trimmed with n=summary.services.n %}{{ n }} hewan{% endblocktranslate %}</strong><small>{% blocktranslate trimmed with total=summary.services.total|rupiah %}Nilai layanan Rp {{ total }}{% endblocktranslate %}</small></span>
+                    </a>
+                </section>
+
+                {# 3. Produk #}
+                <div class="ad-pair">
+                    <section class="sg-card is-focus ad-top" aria-labelledby="top-title">
+                        <div class="sg-card__head">
+                            <h2 id="top-title" class="sg-h3">{% translate "Produk terlaris" %}</h2>
+                            <span class="sg-sp"></span>
+                            <a href="{% url 'product:product_list' %}" class="sg-link">{% translate "Semua produk" %}</a>
+                        </div>
+                        {% if top_products %}
+                            <ol class="ad-rank">
+                                {% for row in top_products %}
+                                    <li>
+                                        <span class="ad-rank__no">{{ forloop.counter }}</span>
+                                        <span class="ad-rank__body">
+                                            <span class="ad-rank__top"><b>{{ row.product__name }}</b><small>{% blocktranslate trimmed with row_qty=row.qty row_revenue=row.revenue|rupiah %}{{ row_qty }} pcs · Rp {{ row_revenue }}{% endblocktranslate %}</small></span>
+                                            <span class="sg-bar"><i data-w="{{ row.pct }}"></i></span>
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            </ol>
+                        {% else %}
+                            <p class="sg-empty"><i class="bi bi-bag" aria-hidden="true"></i>{% translate "Belum ada barang terjual pada rentang ini." %}</p>
+                        {% endif %}
+                    </section>
+                    <section class="sg-card ad-stock" aria-labelledby="stock-title">
+                        <div class="sg-card__head">
+                            <h2 id="stock-title" class="sg-h3">{% translate "Stok perlu diisi" %}</h2>
+                            <span class="sg-sp"></span>
+                            <a href="{% url 'product:product_list' %}?filter=low" class="sg-link">{% translate "Lihat produk" %}</a>
+                        </div>
+                        {% if low_stock %}
+                            <ul class="sg-rows">
+                                {% for product in low_stock %}
+                                    <li>
+                                        <span class="ad-grow sg-b sg-sm">{{ product.name }}</span>
+                                        {% if product.stock == 0 %}<span class="sg-pill is-bad">{% translate "Habis" %}</span>{% else %}<span class="sg-pill is-gold">{% blocktranslate trimmed with product_stock=product.stock %}Sisa {{ product_stock }}{% endblocktranslate %}</span>{% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="sg-empty"><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Stok semua produk aktif masih aman." %}</p>
+                        {% endif %}
+                    </section>
+                </div>
+
+                <div class="ad-pair">
+                    <section class="sg-card ad-book" aria-labelledby="booking-title">
+                        <div class="sg-card__head">
+                            <h2 id="booking-title" class="sg-h3">{% translate "Booking hari ini" %}</h2>
+                            <span class="sg-sp"></span>
+                            <a href="{% url 'service:check_in' %}" class="sg-link">{% translate "Papan antrean" %}</a>
+                        </div>
+                        {% if bookings %}
+                            <ul class="sg-rows">
+                                {% for booking in bookings %}
+                                    <li>
+                                        <span class="ad-time">{{ booking.schedule|time:"H.i" }}</span>
+                                        <span class="ad-grow ad-two">
+                                            <b>{{ booking.pet_name }} · {{ booking.service.name }}</b>
+                                            <small>{{ booking.customer.name }} · {% if booking.groomer %}{{ booking.groomer.display_name }}{% else %}<span class="ad-alert-text">{% translate "belum ada groomer" %}</span>{% endif %}</small>
+                                        </span>
+                                        <span class="ui-pill tone-{{ booking.tone }}">{{ booking.get_status_display }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="sg-empty"><i class="bi bi-calendar2-heart" aria-hidden="true"></i>{% translate "Tidak ada booking untuk hari ini." %} <a href="{% url 'service:manage_bookings' %}" class="sg-link">{% translate "Semua booking" %}</a></p>
+                        {% endif %}
+                    </section>
+
+                    <section class="sg-card ad-couriers" aria-labelledby="courier-title">
+                        <div class="sg-card__head">
+                            <h2 id="courier-title" class="sg-h3">{% translate "Kurir sekarang" %}</h2>
+                            <span class="sg-sp"></span>
+                            <a href="{% url 'transaction:manage_transaction' %}" class="sg-link">{% translate "Tugaskan" %}</a>
+                        </div>
+                        {% if couriers %}
+                            <ul class="sg-rows">
+                                {% for c in couriers %}
+                                    <li>
+                                        {% if c.user.photo_url %}<img class="sg-av is-round ad-photo" src="{{ c.user.photo_url }}" alt="" width="44" height="44">{% else %}<span class="sg-av is-round" aria-hidden="true">{{ c.user.display_name|make_list|first|upper }}</span>{% endif %}
+                                        <span class="ad-grow ad-two"><b>{{ c.user.display_name }}</b><small>{{ c.task }}</small></span>
+                                        <span class="ui-pill tone-{{ c.tone }}">{{ c.status }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <p class="sg-muted sg-xs sg-mt8">{% translate "Kurir yang sedang antar-jemput hewan tidak bisa diberi paket." %}</p>
+                        {% else %}
+                            <p class="sg-empty"><i class="bi bi-truck" aria-hidden="true"></i>{% translate "Belum ada kurir aktif." %}</p>
+                        {% endif %}
+                    </section>
+
+                </div>
+            </div>
+
+            <aside class="ad-col">
+                {# Daftar tugas berkelompok #}
+                <section class="sg-card is-focus ad-tasks" aria-labelledby="todo-title">
+                    <div class="sg-card__head">
+                        <h2 id="todo-title" class="sg-eyebrow">{% translate "Perlu tindakan sekarang" %}</h2>
+                        <span class="sg-sp"></span>
+                        {% if tasks %}<span class="sg-pill is-bad">{% blocktranslate trimmed with n=tasks|length %}{{ n }} hal{% endblocktranslate %}</span>{% endif %}
+                    </div>
+                    {% for group in task_groups %}
+                        <h3 class="ad-group">{{ group.label }}</h3>
+                        <ul class="ad-task-list">
+                            {% for t in group.items %}
+                                <li>
+                                    <a class="ad-task is-{{ t.tone }}" href="{{ t.url }}">
+                                        <span class="ad-task__n">{{ t.n }}</span>
+                                        <span class="ad-task__body">
+                                            <b>{{ t.label }}</b>
+                                            {% if t.hint %}<small>{{ t.hint }}</small>{% endif %}
+                                        </span>
+                                        <span class="ad-task__cta">{{ t.cta }}<i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% empty %}
+                        <p class="sg-empty"><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Semua beres. Tidak ada yang menunggu." %}</p>
+                    {% endfor %}
+                </section>
+
+                <section class="sg-card is-focus ad-cash" aria-labelledby="cash-title">
+                    <div class="sg-card__head">
+                        <h2 id="cash-title" class="sg-h3">{% translate "Kasir sekarang" %}</h2>
+                        <span class="sg-sp"></span>
+                        {% if cashier.open %}
+                            <span class="sg-pill is-ok">{% blocktranslate trimmed with n=cashier.open|length %}{{ n }} kasir buka{% endblocktranslate %}</span>
+                        {% else %}
+                            <span class="sg-pill is-line">{% translate "Kasir tutup" %}</span>
                         {% endif %}
                     </div>
                     {% for shift in cashier.open %}
-                        <div class="ui-facts mb-2">
-                            <div class="ui-fact"><span>{% translate "Kasir" %}</span><b>{{ shift.cashier.display_name }}</b></div>
-                            <div class="ui-fact"><span>{% translate "Uang di laci" %}</span><b>Rp {{ shift.info.expected_cash|rupiah }}</b></div>
-                            <div class="ui-fact"><span>{% translate "Transaksi" %}</span><b>{{ shift.info.orders }}</b></div>
-                        </div>
-                        <p class="ui-hint mb-2">{% blocktranslate trimmed with since=shift.opened_at|time:"H.i" total=shift.info.total|rupiah %}Buka sejak {{ since }} · penjualan Rp {{ total }}{% endblocktranslate %}</p>
+                        <dl class="sg-kv">
+                            <div><dt>{% translate "Kasir" %}</dt><dd>{{ shift.cashier.display_name }}</dd></div>
+                            <div><dt>{% translate "Uang di laci" %}</dt><dd>Rp {{ shift.info.expected_cash|rupiah }}</dd></div>
+                            <div><dt>{% translate "Transaksi" %}</dt><dd>{{ shift.info.orders }}</dd></div>
+                            <div><dt>{% translate "Penjualan" %}</dt><dd>Rp {{ shift.info.total|rupiah }}</dd></div>
+                        </dl>
+                        <p class="sg-muted sg-sm sg-mt8">{% blocktranslate trimmed with since=shift.opened_at|time:"H.i" %}Buka sejak {{ since }}{% endblocktranslate %}</p>
                     {% empty %}
-                        <p class="ui-empty">{% translate "Belum ada kasir yang membuka shift." %}</p>
+                        <p class="sg-empty"><i class="bi bi-shop" aria-hidden="true"></i>{% translate "Belum ada kasir yang membuka shift." %}</p>
                     {% endfor %}
                     {% with last=cashier.last_closed %}
                         {% if last %}
-                            <p class="ui-hint mb-0">
-                                {% blocktranslate trimmed with who=last.cashier.display_name when=last.closed_at|date:"j M, H.i" %}Shift terakhir ditutup {{ who }}, {{ when }}:{% endblocktranslate %}
-                                {% if last.difference %}
-                                    <b class="ui-delta--down">{% if last.difference < 0 %}-{% else %}+{% endif %}Rp {{ last.difference|rupiah|cut:"-" }}</b>{% if last.close_note %} · {{ last.close_note }}{% endif %}
-                                {% else %}
-                                    <b class="ui-delta--up">{% translate "uang pas" %}</b>
-                                {% endif %}
-                                · <a class="ui-link" href="{% url 'transaction:cashier_report' %}">{% translate "Laporan Kasir" %}</a>
+                            <p class="sg-alert sg-mt12 {% if last.difference %}is-gold{% else %}is-ok{% endif %} ad-shift">
+                                <i class="bi {% if last.difference %}bi-exclamation-triangle{% else %}bi-check2-circle{% endif %}" aria-hidden="true"></i>
+                                <span>
+                                    {% blocktranslate trimmed with who=last.cashier.display_name when=last.closed_at|date:"j M, H.i" %}Shift terakhir ditutup {{ who }}, {{ when }}:{% endblocktranslate %}
+                                    {% if last.difference %}{% if last.difference < 0 %}-{% else %}+{% endif %}Rp {{ last.difference|rupiah|cut:"-" }}{% if last.close_note %} · {{ last.close_note }}{% endif %}{% else %}{% translate "uang pas" %}{% endif %}
+                                    · <a class="sg-link" href="{% url 'transaction:cashier_report' %}">{% translate "Laporan Kasir" %}</a>
+                                </span>
                             </p>
                         {% endif %}
                     {% endwith %}
                 </section>
-                <section class="ui-card" aria-labelledby="courier-title">
-                    <div class="ui-card__head">
-                        <h2 id="courier-title" class="ui-h2">{% translate "Kurir sekarang" %}</h2>
-                        <a href="{% url 'transaction:manage_transaction' %}" class="ui-link">{% translate "Tugaskan" %}</a>
-                    </div>
-                    {% if couriers %}
-                        <ul class="ui-rows ui-rows--wrap">
-                            {% for c in couriers %}
-                                <li class="ui-row">
-                                    {% if c.user.photo_url %}<img class="ui-avatar ui-avatar--photo" src="{{ c.user.photo_url }}" alt="" width="36" height="36">{% else %}<span class="ui-avatar" aria-hidden="true">{{ c.user.display_name|make_list|first|upper }}</span>{% endif %}
-                                    <span class="ui-row__body">
-                                        <span class="ui-row__title">{{ c.user.display_name }}</span>
-                                        <span class="ui-row__sub">{{ c.task }}</span>
-                                    </span>
-                                    <span class="ui-pill tone-{{ c.tone }}">{{ c.status }}</span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                        <p class="ui-hint mt-2 mb-0">{% translate "Kurir yang sedang antar-jemput hewan tidak bisa diberi paket." %}</p>
-                    {% else %}
-                        <p class="ui-empty">{% translate "Belum ada kurir aktif." %}</p>
-                    {% endif %}
-                </section>
-            </div>
+
+            </aside>
         </div>
 
-        <div class="ui-grid-2">
-            <section class="ui-card" aria-labelledby="top-title">
-                <div class="ui-card__head">
-                    <h2 id="top-title" class="ui-h2">{% translate "Produk terlaris" %}</h2>
-                    <a href="{% url 'product:product_list' %}" class="ui-link">{% translate "Semua produk" %}</a>
-                </div>
-                {% if top_products %}
-                    <ol class="ui-rank">
-                        {% for row in top_products %}
-                            <li>
-                                <div class="ui-rank__top">
-                                    <span>{{ row.product__name }}</span>
-                                    <b>{% blocktranslate trimmed with row_qty=row.qty row_revenue=row.revenue|rupiah %}{{ row_qty }} pcs · Rp {{ row_revenue }}{% endblocktranslate %}</b>
-                                </div>
-                                <div class="ui-meter"><span data-w="{{ row.pct }}"></span></div>
-                            </li>
-                        {% endfor %}
-                    </ol>
-                {% else %}
-                    <p class="ui-empty">{% translate "Belum ada barang terjual pada rentang ini." %}</p>
-                {% endif %}
-                {% if low_stock %}
-                    <h3 class="ui-h2 mt-4 mb-1 fs-6">{% translate "Stok perlu diisi" %}</h3>
-                    <ul class="ui-rows">
-                        {% for product in low_stock %}
-                            <li class="ui-row">
-                                <span class="ui-row__body"><span class="ui-row__title">{{ product.name }}</span></span>
-                                <span class="ui-pill {% if product.stock == 0 %}tone-bad{% else %}tone-warn{% endif %}">
-                                    {% if product.stock == 0 %}{% translate "Habis" %}{% else %}{% blocktranslate trimmed with product_stock=product.stock %}Sisa {{ product_stock }}{% endblocktranslate %}{% endif %}
-                                </span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </section>
-            <section class="ui-card" aria-labelledby="booking-title">
-                <div class="ui-card__head">
-                    <h2 id="booking-title" class="ui-h2">{% translate "Booking hari ini" %}</h2>
-                    <a href="{% url 'service:check_in' %}" class="ui-link">{% translate "Papan antrean" %}</a>
-                </div>
-                {% if bookings %}
-                    <ul class="ui-rows">
-                        {% for booking in bookings %}
-                            <li class="ui-row">
-                                <span class="ui-row__time">{{ booking.schedule|time:"H.i" }}</span>
-                                <span class="ui-row__body">
-                                    <span class="ui-row__title">{{ booking.pet_name }} · {{ booking.service.name }}</span>
-                                    <span class="ui-row__sub">{{ booking.customer.name }} · {% if booking.groomer %}{{ booking.groomer.display_name }}{% else %}{% translate "belum ada groomer" %}{% endif %}</span>
-                                </span>
-                                <span class="ui-pill tone-{{ booking.tone }}">{{ booking.get_status_display }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="ui-empty">{% translate "Tidak ada booking untuk hari ini." %} <a href="{% url 'service:manage_bookings' %}" class="ui-link">{% translate "Semua booking" %}</a></p>
-                {% endif %}
-            </section>
-        </div>
-
-        <section class="ui-card" aria-labelledby="recent-title">
-            <div class="ui-card__head">
-                <h2 id="recent-title" class="ui-h2">{% translate "Pesanan terbaru" %}</h2>
-                <a href="{% url 'transaction:manage_transaction' %}?view=list" class="ui-link">{% translate "Kelola transaksi" %}</a>
+        <section class="sg-card ad-recent" aria-labelledby="recent-title">
+            <div class="sg-card__head">
+                <h2 id="recent-title" class="sg-h3">{% translate "Pesanan terbaru" %}</h2>
+                <span class="sg-sp"></span>
+                <a href="{% url 'transaction:manage_transaction' %}?view=list" class="sg-link">{% translate "Kelola transaksi" %}</a>
             </div>
             {% if recent_orders %}
-                <div class="ui-table-box">
-                    <table data-stack class="ui-table">
+                <div class="sg-tbl-box">
+                    <table class="sg-tbl is-stack">
                         <thead>
                             <tr>
                                 <th scope="col">{% translate "Pesanan" %}</th>
@@ -258,43 +306,33 @@
                                 <th scope="col">{% translate "Asal" %}</th>
                                 <th scope="col">{% translate "Status" %}</th>
                                 <th scope="col">{% translate "Bayar" %}</th>
-                                <th scope="col" class="num">{% translate "Total" %}</th>
+                                <th scope="col" class="is-num">{% translate "Total" %}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for order in recent_orders %}
                                 <tr>
                                     <td>
-                                        {% if order.receipt_no %}<a href="{% url 'transaction:receipt' order.pk %}">{{ order.receipt_no }}</a>{% else %}<strong>#{{ order.pk }}</strong>{% endif %}
-                                        <span class="ui-row__sub">{{ order.date|date:"j M, H.i" }}</span>
+                                        {% if order.receipt_no %}<a class="sg-link" href="{% url 'transaction:receipt' order.pk %}">{{ order.receipt_no }}</a>{% else %}<b>#{{ order.pk }}</b>{% endif %}
+                                        <small class="ad-block sg-muted sg-xs">{{ order.date|date:"j M, H.i" }}</small>
                                     </td>
-                                    <td>{{ order.buyer_display }}</td>
-                                    <td class="ui-muted">{{ order.get_channel_display }}</td>
-                                    <td><span class="ui-pill tone-{{ order.tone }}">{{ order.status_display }}</span></td>
-                                    <td><span class="ui-pill {% if order.payment_status == 'LUNAS' %}tone-ok{% else %}tone-warn{% endif %}">{{ order.get_payment_status_display }}</span></td>
-                                    <td class="num">Rp {{ order.total_payment|rupiah }}</td>
+                                    <td data-label="{% translate 'Pembeli' %}">{{ order.buyer_display }}</td>
+                                    <td data-label="{% translate 'Asal' %}" class="sg-muted">{{ order.get_channel_display }}</td>
+                                    <td data-label="{% translate 'Status' %}"><span class="ui-pill tone-{{ order.tone }}">{{ order.status_display }}</span></td>
+                                    <td data-label="{% translate 'Bayar' %}"><span class="ui-pill {% if order.payment_status == 'LUNAS' %}tone-ok{% else %}tone-warn{% endif %}">{{ order.get_payment_status_display }}</span></td>
+                                    <td class="is-num" data-label="{% translate 'Total' %}">Rp {{ order.total_payment|rupiah }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             {% else %}
-                <p class="ui-empty">{% translate "Belum ada order." %}</p>
+                <p class="sg-empty"><i class="bi bi-receipt" aria-hidden="true"></i>{% translate "Belum ada order." %}</p>
             {% endif %}
         </section>
-
-        <details class="ui-notes">
-            <summary>{% translate "Cara angka dihitung" %}</summary>
-            <ul>
-                <li><strong>{% translate "Penjualan lunas" %}</strong>{% translate ": total order berstatus bayar Lunas dan tidak dibatalkan, menurut tanggal order. Order tunai online baru lunas saat barang diterima; transaksi kasir langsung lunas." %}</li>
-                <li><strong>{% translate "Belum dibayar" %}</strong>{% translate ": order yang masih berjalan dengan pembayaran Menunggu (semua tanggal)." %}</li>
-                <li><strong>{% translate "Layanan selesai" %}</strong>{% translate ": harga booking grooming yang berstatus Selesai, menurut waktu selesai. Pembayaran jasa dicatat lewat kasir (lihat Laporan Kasir)." %}</li>
-                <li><strong>{% translate "Pembanding" %}</strong>{% translate ": angka ▲/▼ membandingkan dengan rentang yang sama panjang tepat sebelumnya (Hari ini dibanding kemarin pada jam yang sama)." %}</li>
-                <li><strong>{% translate "Pelanggan" %}</strong>{% blocktranslate trimmed with summary_customers_total=summary.customers.total summary_customers_new=summary.customers.new summary_stock_active=summary.stock.active %}: {{ summary_customers_total }} terdaftar, {{ summary_customers_new }} baru pada rentang ini. Produk aktif dijual: {{ summary_stock_active }}.{% endblocktranslate %}</li>
-            </ul>
-        </details>
     </div>
 {% endblock %}
 {% block extra_script %}
     <script src="{% static 'js/ui.js' %}?v=1"></script>
+    <script src="{% static 'account/js/admin_home.js' %}?v=2" defer></script>
 {% endblock %}

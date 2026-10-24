@@ -149,6 +149,11 @@ def staff_admin_dashboard(request):
     recent = dashboard.recent_orders()
     for o in recent:
         o.tone = dashboard.ORDER_TONES.get(o.order_status, "mute")
+    tasks = dashboard.staff_tasks(request.user)
+    # Data grafik garis (dibaca static/js/admin_home.js lewat json_script).
+    chart = [
+        {"d": p["day"].isoformat(), "s": p["store"], "o": p["online"], "n": p["n"]} for p in trend
+    ]
     return render(
         request,
         "account/admin_dashboard.html",
@@ -158,13 +163,16 @@ def staff_admin_dashboard(request):
             "period": period,
             "summary": dashboard.summary(period),
             "compare": dashboard.comparison(period),
-            "tasks": dashboard.staff_tasks(request.user),
+            "tasks": tasks,
+            "task_groups": dashboard.group_tasks(tasks),
             "cashier": dashboard.cashier_now(),
             "couriers": dashboard.couriers_now(),
             "trend": trend,
             "trend_days": len(trend),
             "trend_peak": best["total"] if best else 0,
             "trend_best": best if best and best["total"] else None,
+            "trend_total": sum(p["total"] for p in trend),
+            "trend_chart": chart,
             "top_products": top,
             "bookings": bookings,
             "low_stock": dashboard.low_stock_products(),

@@ -1,9 +1,9 @@
 {% load i18n %}
 <header class="sn-header">
     <nav class="container sn-bar" aria-label="{% translate 'Navigasi utama' %}">
-        <a href="{% url 'customer:home' %}" class="sn-brand">
-            <i class="fas fa-paw" aria-hidden="true"></i>
-            <span>Seelly Petshop</span>
+        <a href="{% url 'customer:home' %}" class="sn-brand" aria-label="Seelly Petshop">
+            <span class="sn-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
+            <span class="sn-brand__name">Seelly <small class="sn-brand__tag">Petshop</small></span>
         </a>
         <div class="sn-links" id="nav-links">
             <a href="{% url 'customer:home' %}"
@@ -17,33 +17,17 @@
             <a href="{% url 'customer:track' %}"
                class="sn-link{% if active == 'track' %} active{% endif %}">{% translate "Lacak Pesanan" %}</a>
             <a href="#kontak" class="sn-link">{% translate "Hubungi Kami" %}</a>
+            {# HP: favorit & mode gelap pindah ke menu supaya bilah atas tetap satu baris. #}
+            <div class="sn-drawer-extra">
+                <a href="{% url 'customer:wishlist' %}" class="sn-link{% if active == 'wishlist' %} active{% endif %}"><i class="far fa-heart" aria-hidden="true"></i> {% translate "Favorit" %}</a>
+                {% include "partials/_theme_toggle.html" with extra="sn-icon" %}
+            </div>
         </div>
-        <form class="sn-search"
-              id="nav-search"
-              action="{% url 'customer:shop' %}"
-              method="get"
-              role="search">
-            <input type="search"
-                   name="q"
-                   value="{{ query|default:'' }}"
-                   placeholder="{% translate 'Cari produk...' %}"
-                   aria-label="{% translate 'Cari produk' %}">
-            <button type="submit" aria-label="{% translate 'Cari' %}">
-                <i class="fas fa-search" aria-hidden="true"></i>
-            </button>
-        </form>
         <div class="sn-actions">
-            <button type="button"
-                    class="sn-icon sn-search-toggle"
-                    id="nav-search-toggle"
-                    aria-controls="nav-search"
-                    aria-expanded="false"
-                    aria-label="{% translate 'Cari produk' %}">
-                <i class="fas fa-search" aria-hidden="true"></i>
-            </button>
-            {% include "partials/_theme_toggle.html" with extra="sn-icon" %}
+            <span class="sn-opt">{% include "partials/_theme_toggle.html" with extra="sn-icon" %}</span>
             {% include "partials/_lang_toggle.html" %}
             <a class="sn-icon{% if active == 'wishlist' %} is-active{% endif %}"
+               data-sn-optional
                href="{% url 'customer:wishlist' %}"
                aria-label="{% translate 'Favorit' %}">
                 <i class="far fa-heart" aria-hidden="true"></i>
@@ -94,11 +78,12 @@
                     </div>
                 </div>
             {% else %}
-                <a class="sn-icon sn-login"
+                <a class="sn-login"
                    href="{% url 'login_form' %}"
                    aria-label="{% translate 'Masuk / Daftar' %}"
                    title="{% translate 'Masuk / Daftar' %}">
                     <i class="far fa-user" aria-hidden="true"></i>
+                    <span class="sn-login__text">{% translate "Masuk" %}</span>
                 </a>
             {% endif %}
         </div>

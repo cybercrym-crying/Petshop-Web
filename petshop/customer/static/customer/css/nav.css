@@ -274,7 +274,7 @@
 }
 
 /* Layar sedang: kolom cari jadi tombol ikon supaya menu tetap satu baris. */
-@media (min-width: 1200px) and (max-width: 1399.98px) {
+@media (min-width: 1200px) and (max-width: 1699.98px) {
   .sn-icon.sn-search-toggle {
     display: inline-flex;
   }
@@ -371,4 +371,335 @@
 /* Kolom cari sudah punya cincin fokus sendiri (:focus-within). */
 .sn-header .sn-search input:focus-visible {
   outline: none;
+}
+
+/* =========================================================
+   Bilah atas gaya Groomer: logo kotak ungu, tombol ikon
+   kotak bergaris, lencana emas. Desktop: kartu melayang.
+   ========================================================= */
+.sn-logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #7c3aed;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(124, 58, 237, 0.3);
+}
+.sn-logo svg {
+  width: 22px;
+  height: 22px;
+}
+.sn-brand {
+  gap: 12px;
+}
+.sn-brand__name {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  color: #2a2140;
+}
+.sn-brand__tag {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3ecf9;
+  color: #6d28d9;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.sn-header .sn-actions {
+  gap: 8px;
+}
+.sn-header .sn-icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #e6dcf1;
+  border-radius: 13px;
+  background: #fff;
+  color: #6d28d9;
+  font-size: 1.05rem;
+}
+.sn-header .sn-icon:hover,
+.sn-header .sn-icon.is-active,
+.sn-header .sn-icon[aria-expanded="true"] {
+  border-color: #7c3aed;
+  background: #f3ecf9;
+  color: #6d28d9;
+}
+.sn-header .sn-badge {
+  top: -7px;
+  right: -7px;
+  background: #f4b942;
+  color: #4a3200;
+}
+.sn-header .lang-toggle {
+  height: 44px;
+  padding: 3px;
+  border-color: #e6dcf1;
+  color: #2a2140;
+  opacity: 1;
+}
+.sn-header .lang-toggle__btn {
+  min-height: 36px;
+}
+.sn-header .sn-toggle {
+  border-radius: 13px;
+  background: #f3ecf9;
+  color: #6d28d9;
+}
+.sn-opt {
+  display: contents;
+}
+.sn-drawer-extra {
+  display: none;
+}
+/* Tombol akun: avatar + nama depan di layar lebar. */
+.sn-header .sn-account__btn--pill {
+  width: auto;
+  gap: 8px;
+  padding: 0 14px 0 4px;
+  border-color: transparent;
+  background: #f3ecf9;
+  color: #2a2140;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.sn-account__name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sn-header .sn-account__btn .sn-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #7c3aed;
+}
+/* Tamu: tombol Masuk bergaris seperti tombol Keluar groomer. */
+.sn-login {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid #e6dcf1;
+  border-radius: 13px;
+  background: #fff;
+  color: #2a2140;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.sn-login i {
+  color: #6d28d9;
+}
+.sn-login:hover {
+  border-color: #7c3aed;
+  color: #6d28d9;
+}
+
+@media (min-width: 1200px) and (max-width: 1299.98px) {
+  .sn-header:not(.ca-header) .sn-brand__tag {
+    display: none;
+  }
+}
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .sn-header .sn-link {
+    padding: 8px 9px;
+    font-size: 0.92rem;
+  }
+}
+
+/* Landing (tamu): kartu melayang seperti bilah groomer. */
+@media (min-width: 768px) {
+  .sn-header:not(.ca-header) {
+    padding: 14px 20px 0;
+    background: transparent;
+    border-bottom: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    pointer-events: none;
+  }
+  .sn-header:not(.ca-header) .sn-bar {
+    pointer-events: auto;
+    min-height: 66px;
+    padding: 10px 14px 10px 18px;
+    border: 1px solid #e6dcf1;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(42, 33, 64, 0.04), 0 8px 24px rgba(42, 33, 64, 0.08);
+  }
+}
+@media (min-width: 1700px) {
+  .sn-header:not(.ca-header) .sn-bar {
+    max-width: 1500px;
+  }
+}
+
+/* Tablet & HP: satu baris; kolom cari & menu muncul sebagai panel di bawah bilah. */
+@media (max-width: 1199.98px) {
+  .sn-header .sn-bar {
+    flex-wrap: nowrap;
+  }
+  .sn-header .sn-actions {
+    order: 2;
+  }
+  .sn-header .sn-toggle {
+    order: 3;
+  }
+  .sn-header .sn-icon.sn-search-toggle {
+    display: inline-flex;
+  }
+  .sn-header .sn-search {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 60;
+    width: auto;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(38, 26, 51, 0.16);
+  }
+  .sn-header .sn-search.open {
+    display: flex;
+  }
+  .sn-header .sn-links {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 60;
+    width: auto;
+    gap: 2px;
+    padding: 8px;
+    border: 1px solid #e6dcf1;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(38, 26, 51, 0.16);
+  }
+  .sn-header .sn-link {
+    padding: 11px 14px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .sn-header .sn-bar {
+    padding: 10px 14px;
+  }
+  .sn-header .sn-links,
+  .sn-header .sn-search {
+    left: 12px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .sn-header .sn-actions {
+    gap: 6px;
+  }
+  .sn-opt,
+  .sn-header [data-sn-optional] {
+    display: none;
+  }
+  .sn-drawer-extra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid #e6dcf1;
+  }
+  .sn-drawer-extra .sn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sn-login__text,
+  .sn-account__name {
+    display: none;
+  }
+  .sn-login {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .sn-header .sn-account__btn--pill {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .sn-brand__name {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .sn-header .sn-icon,
+  .sn-header .sn-toggle,
+  .sn-login,
+  .sn-header .sn-account__btn--pill {
+    width: 40px;
+    height: 40px;
+  }
+  .sn-header .lang-toggle {
+    height: 40px;
+  }
+  .sn-header .lang-toggle__btn {
+    min-height: 32px;
+  }
+  .sn-logo {
+    width: 38px;
+    height: 38px;
+  }
+  .sn-header .sn-account__btn .sn-avatar {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* HP sempit: tombol bahasa & ikon dipadatkan supaya semua muat satu baris. */
+@media (max-width: 480px) {
+  .sn-header .lang-toggle__btn {
+    min-width: 28px;
+    padding: 0 6px;
+  }
+  .sn-header .sn-bar {
+    gap: 8px;
+  }
+  .sn-header .sn-actions {
+    gap: 4px;
+  }
+}
+@media (max-width: 400px) {
+  .sn-header .sn-icon,
+  .sn-header .sn-toggle,
+  .sn-login,
+  .sn-header .sn-account__btn--pill {
+    width: 38px;
+    height: 38px;
+  }
+  .sn-header .lang-toggle {
+    height: 38px;
+  }
+  .sn-header .lang-toggle__btn {
+    min-height: 30px;
+  }
+  .sn-logo {
+    width: 36px;
+    height: 36px;
+  }
 }

@@ -6553,3 +6553,201 @@ msgstr "You chose transfer/QRIS. Once the schedule is confirmed, pay within %(h)
 
 msgid "Bayar sebelum %(due)s; lewat dari itu booking dibatalkan otomatis."
 msgstr "Pay before %(due)s; after that the booking is cancelled automatically."
+
+msgid "Uang masuk %(start)s – %(end)s. Hanya transaksi yang sudah lunas yang dihitung."
+msgstr "Money in %(start)s – %(end)s. Only fully paid transactions are counted."
+
+msgid "Rentang laporan"
+msgstr "Report range"
+
+msgid "Total uang masuk"
+msgstr "Total money in"
+
+msgid "Dari %(a)s transaksi di kasir dan %(b)s pesanan online yang sudah lunas."
+msgstr "From %(a)s cashier transactions and %(b)s paid online orders."
+
+msgid "Di kasir"
+msgstr "At the cashier"
+
+msgid "Rata-rata belanja per transaksi kasir"
+msgstr "Average spend per cashier transaction"
+
+msgid "Uang masuk per hari"
+msgstr "Money in per day"
+
+msgid "Tertinggi Rp %(v)s"
+msgstr "Highest Rp %(v)s"
+
+msgid "Pilih 7 hari atau lebih untuk melihat grafik harian."
+msgstr "Choose 7 days or more to see the daily chart."
+
+msgid "Belum ada uang masuk pada rentang ini."
+msgstr "No money in during this range yet."
+
+msgid "Kasir + online. Sentuh atau arahkan kursor ke batang untuk melihat angkanya."
+msgstr "Cashier + online. Tap or hover a bar to see its amount."
+
+msgid "Grafik uang masuk per hari. Angka lengkap ada di tabel di bawah grafik."
+msgstr "Chart of money in per day. Full figures are in the table below the chart."
+
+msgid "Lihat dalam tabel"
+msgstr "View as table"
+
+msgid "Cara pelanggan membayar"
+msgstr "How customers paid"
+
+msgid "Kasir + online. Persen dari total uang masuk."
+msgstr "Cashier + online. Percent of total money in."
+
+msgid "Penjualan per kasir"
+msgstr "Sales per cashier"
+
+msgid "Hanya transaksi di kasir. Batang dibandingkan dengan kasir tertinggi."
+msgstr "Cashier transactions only. Bars are compared with the top cashier."
+
+msgid "diskon Rp %(d)s"
+msgstr "discount Rp %(d)s"
+
+msgid "Potongan, batal & retur"
+msgstr "Discounts, voids & returns"
+
+msgid "Uang yang tidak jadi masuk atau dikembalikan."
+msgstr "Money that did not come in or was refunded."
+
+msgid "Potongan harga yang diberikan kasir"
+msgstr "Price cuts given by cashiers"
+
+msgid "Dibatalkan (%(n)s)"
+msgstr "Voided (%(n)s)"
+
+msgid "Struk yang dibatalkan, tidak dihitung"
+msgstr "Voided receipts, not counted"
+
+msgid "Retur disetujui (%(n)s)"
+msgstr "Approved returns (%(n)s)"
+
+msgid "Uang yang dikembalikan ke pembeli"
+msgstr "Money refunded to buyers"
+
+msgid "Jasa layanan (%(n)s)"
+msgstr "Services (%(n)s)"
+
+msgid "Sudah termasuk di total uang masuk"
+msgstr "Already included in total money in"
+
+msgid "Cek uang laci per shift"
+msgstr "Cash drawer check per shift"
+
+msgid "Seharusnya = modal awal + tunai masuk − uang dikembalikan. Dihitung = uang di laci saat kasir tutup. Selisih bukan nol perlu dicek."
+msgstr "Expected = opening cash + cash in − refunds. Counted = cash in the drawer at closing. Any non-zero difference needs checking."
+
+msgid "Kurang Rp %(v)s"
+msgstr "Short Rp %(v)s"
+
+msgid "Lebih Rp %(v)s"
+msgstr "Over Rp %(v)s"
+
+msgid "50 terakhir · semua ada di CSV"
+msgstr "Last 50 · everything is in the CSV"
+
+msgid "Perawatan yang Datang dari Hati"
+msgstr "Care That Comes from the Heart"
+
+msgid "Pesanan terkirim"
+msgstr "Orders delivered"
+
+msgid "Buka setiap hari"
+msgstr "Open every day"
+
+msgid "Lebih dari Sekadar Toko Hewan, Kami Pecinta Hewan"
+msgstr "More Than a Pet Shop, We Are Pet Lovers"
+
+msgid "Makanan, mainan, kesehatan, dan aksesori dalam satu tempat"
+msgstr "Food, toys, health care, and accessories in one place"
+
+msgid "Grooming dengan foto tiap tahap pengerjaan"
+msgstr "Grooming with a photo of every step"
+
+msgid "Kurir toko mengantar pesanan dan menjemput hewan"
+msgstr "Our couriers deliver orders and pick up pets"
+
+msgid "Visi dan misi"
+msgstr "Vision and mission"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Petunjuk arah"
+msgstr "Directions"
+
+msgid "Peta lokasi Seelly Petshop"
+msgstr "Seelly Petshop location map"
+
+msgid "Nama produk, mis. Whiskas"
+msgstr "Product name, e.g. Whiskas"
+
+msgid "Tampilan data penjualan"
+msgstr "Sales data view"
+
+msgid "Grafik"
+msgstr "Chart"
+
+msgid "Tabel"
+msgstr "Table"
+
+msgid "total %(n)s hari"
+msgstr "total for %(n)s days"
+
+msgid "order"
+msgstr "orders"
+
+msgid "jt"
+msgstr "M"
+
+msgid "rb"
+msgstr "k"
+
+msgid "Grafik garis penjualan lunas harian kasir dan online, %(days)s hari terakhir. Angka lengkap ada di tampilan Tabel."
+msgstr "Line chart of daily paid sales, cashier and online, over the last %(days)s days. Full figures are in the Table view."
+
+msgid "Arahkan kursor atau ketuk satu hari untuk melihat rinciannya."
+msgstr "Hover over or tap a day to see its details."
+
+msgid "%(n)s hal"
+msgstr "%(n)s items"
+
+msgid "Lihat produk"
+msgstr "View products"
+
+msgid "Stok semua produk aktif masih aman."
+msgstr "Stock for all active products is fine."
+
+msgid "Stok & produk"
+msgstr "Stock & products"
+
+msgid "Layanan & staf"
+msgstr "Services & staff"
+
+msgid "Buka sejak %(since)s"
+msgstr "Open since %(since)s"
+
+msgid "Halo %(name)s, ini kondisi toko"
+msgstr "Hi %(name)s, here is how the store is doing"
+
+msgid "%(t)s hal perlu tindakan · %(k)s kasir buka · %(b)s booking hari ini"
+msgstr "%(t)s items need action · %(k)s cashier open · %(b)s bookings today"
+
+msgid "Hari terbaik %(day)s · Rp %(total)s"
+msgstr "Best day %(day)s · Rp %(total)s"
+
+msgid "Rata-rata order"
+msgstr "Average order"
+
+msgid "%(n)s order menunggu"
+msgstr "%(n)s orders waiting"
+
+msgid "Sedang diantar"
+msgstr "Out for delivery"
+
+msgid "Paket di tangan kurir"
+msgstr "Parcels with couriers"

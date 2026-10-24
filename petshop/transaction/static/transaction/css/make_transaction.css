@@ -132,7 +132,7 @@ body.pos-body { background: var(--ui-bg); font-family: "Plus Jakarta Sans", syst
 .pos .ui-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Keranjang */
-.pos-cart { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; display: flex; flex-direction: column; border: 1px solid var(--ui-line); border-radius: var(--ui-radius); background: var(--ui-card); scrollbar-width: thin; }
+.pos-cart { position: sticky; top: calc(var(--staff-top, 0px) + 16px); max-height: calc(100vh - var(--staff-top, 0px) - 32px); overflow-y: auto; display: flex; flex-direction: column; border: 1px solid var(--ui-line); border-radius: var(--ui-radius); background: var(--ui-card); scrollbar-width: thin; }
 .pos-cart__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 18px 10px; }
 .pos-cart__title { margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--ui-ink); }
 .pos-count { padding: 2px 10px; border-radius: 999px; background: var(--ui-accent-soft); color: var(--ui-accent-soft-ink); font-size: 0.78rem; font-weight: 700; }

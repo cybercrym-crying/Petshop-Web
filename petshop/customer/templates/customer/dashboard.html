@@ -1,14 +1,20 @@
 {% extends "customer/base.html" %}
 {% load i18n %}
 {% load static rupiah %}
-{% block title %}{% translate "Dasbor - Seelly Petshop" %}{% endblock %}
+{% block title %}
+    {% translate "Dasbor - Seelly Petshop" %}
+{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=4">
-    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=1">
+    <link rel="stylesheet"
+          href="{% static 'customer/css/track-dark.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
-    <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
-    <link rel="stylesheet" href="{% static 'customer/css/dashboard.css' %}?v=ux3">
-    <link rel="stylesheet" href="{% static 'customer/css/dashboard-dark.css' %}?v=1">
+    <link rel="stylesheet"
+          href="{% static 'customer/css/orders-dark.css' %}?v=2">
+    <link rel="stylesheet"
+          href="{% static 'customer/css/dashboard.css' %}?v=ux3">
+    <link rel="stylesheet"
+          href="{% static 'customer/css/dashboard-dark.css' %}?v=1">
     {% if live_orders %}
         <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
     {% endif %}
@@ -18,37 +24,64 @@
         <header class="dash-hello">
             <div>
                 <p class="dash-hello__eyebrow">{% translate "Dasbor Pelanggan" %}</p>
-                <h1 class="page-title">{% blocktranslate trimmed with user_name=user.name %}Halo, {{ user_name }}{% endblocktranslate %}</h1>
+                <h1 class="page-title">
+                    {% blocktranslate trimmed with user_name=user.name %}
+                        Halo, {{ user_name }}
+                    {% endblocktranslate %}
+                </h1>
             </div>
         </header>
         <nav class="dash-tiles" aria-label="{% translate 'Aksi cepat' %}">
-            <a href="{% url 'customer:shop' %}" class="dash-tile"><i class="fas fa-store" aria-hidden="true"></i><span>{% translate "Belanja" %}</span></a>
-            <a href="{% url 'service:catalog' %}#booking" class="dash-tile"><i class="fas fa-scissors" aria-hidden="true"></i><span>{% translate "Booking grooming" %}</span></a>
-            <a href="{% url 'service:my_pets' %}" class="dash-tile"><i class="fas fa-paw" aria-hidden="true"></i><span>{% translate "Hewan saya" %}</span></a>
-            <a href="{% url 'customer:track' %}" class="dash-tile"><i class="fas fa-location-dot" aria-hidden="true"></i><span>{% translate "Lacak resi" %}</span></a>
+            <a href="{% url 'customer:shop' %}"
+               class="dash-tile"><i class="fas fa-store"
+   aria-hidden="true"></i><span>{% translate "Belanja" %}</span></a>
+            <a href="{% url 'service:catalog' %}#booking"
+               class="dash-tile"><i class="fas fa-scissors" aria-hidden="true"></i><span>{% translate "Booking grooming" %}</span></a>
+            <a href="{% url 'service:my_pets' %}"
+               class="dash-tile"><i class="fas fa-paw" aria-hidden="true"></i><span>{% translate "Hewan saya" %}</span></a>
+            <a href="{% url 'customer:track' %}"
+               class="dash-tile"><i class="fas fa-location-dot"
+   aria-hidden="true"></i><span>{% translate "Lacak resi" %}</span></a>
         </nav>
         {% include "service/_site_messages.html" %}
         {% for order in live_orders %}
             <section class="dash-card dash-live" aria-labelledby="live-{{ order.pk }}">
                 <h2 id="live-{{ order.pk }}">
                     <span class="track-live__dot" aria-hidden="true"></span>
-                    {% blocktranslate trimmed with order_pk=order.pk %}Pesanan #{{ order_pk }} sedang diantar{% endblocktranslate %}
+                    {% blocktranslate trimmed with order_pk=order.pk %}
+                        Pesanan #{{ order_pk }} sedang diantar
+                    {% endblocktranslate %}
                 </h2>
                 <div class="track-live"
                      data-track-live
                      data-url="{% url 'customer:track_location' order.tracking_number %}"
                      data-courier="{{ order.courier.name|default:'Kurir' }}">
                     <div class="track-live__head">
-                        <span class="muted">{% blocktranslate trimmed with order_tracking_number=order.tracking_number %}Resi {{ order_tracking_number }}{% endblocktranslate %}</span>
+                        <span class="muted">
+                            {% blocktranslate trimmed with order_tracking_number=order.tracking_number %}
+                                Resi {{ order_tracking_number }}
+                            {% endblocktranslate %}
+                        </span>
                         <span class="track-live__updated" data-live-updated>{% translate "Memuat lokasi…" %}</span>
                     </div>
-                    <div class="track-live__map" data-live-map role="img" aria-label="{% blocktranslate trimmed with order_pk=order.pk %}Peta posisi kurir pesanan #{{ order_pk }}{% endblocktranslate %}" hidden></div>
+                    <div class="track-live__map"
+                         data-live-map
+                         role="img"
+                         aria-label="{% blocktranslate trimmed with order_pk=order.pk %}Peta posisi kurir pesanan #{{ order_pk }}{% endblocktranslate %}"
+                         hidden></div>
                     <p class="track-note" data-live-eta hidden></p>
-                    <p class="track-note" data-live-empty>{% translate "Kurir belum membagikan lokasi. Peta muncul otomatis begitu lokasi masuk." %}</p>
+                    <p class="track-note"
+                       data-live-empty>{% translate "Kurir belum membagikan lokasi. Peta muncul otomatis begitu lokasi masuk." %}</p>
                     {% include "customer/_handover_qr.html" %}
                     <div class="dash-live__links">
-                        <a href="{% url 'customer:track_detail' order.tracking_number %}" class="btn-soft"><i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i> {% translate "Detail pelacakan" %}</a>
-                        <a class="btn-ghost" href="#" target="_blank" rel="noopener" data-live-gmaps hidden><i class="fas fa-map-location-dot" aria-hidden="true"></i> {% translate "Google Maps" %}</a>
+                        <a href="{% url 'customer:track_detail' order.tracking_number %}"
+                           class="btn-soft"><i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i> {% translate "Detail pelacakan" %}</a>
+                        <a class="btn-ghost"
+                           href="#"
+                           target="_blank"
+                           rel="noopener"
+                           data-live-gmaps
+                           hidden><i class="fas fa-map-location-dot" aria-hidden="true"></i> {% translate "Google Maps" %}</a>
                     </div>
                 </div>
             </section>
@@ -59,10 +92,18 @@
                     <li>
                         <span class="dash-attn__icon" aria-hidden="true">!</span>
                         <span class="dash-attn__body">
-                            <strong>{% blocktranslate trimmed with order_pk=order.pk %}Transfer pesanan #{{ order_pk }}{% endblocktranslate %}</strong>
+                            <strong>
+                                {% blocktranslate trimmed with order_pk=order.pk %}
+                                    Transfer pesanan #{{ order_pk }}
+                                {% endblocktranslate %}
+                            </strong>
                             <span class="muted">Rp {{ order.total_payment|rupiah }} · {{ order.get_payment_status_display }}</span>
                         </span>
-                        {% if order.awaiting_payment_check %}<a href="#bayar-{{ order.pk }}">{% translate "Lihat" %}</a>{% else %}<a href="{% url 'customer:payment_proof' order.pk %}">{% translate "Bayar" %}</a>{% endif %}
+                        {% if order.awaiting_payment_check %}
+                            <a href="#bayar-{{ order.pk }}">{% translate "Lihat" %}</a>
+                        {% else %}
+                            <a href="{% url 'customer:payment_proof' order.pk %}">{% translate "Bayar" %}</a>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>
@@ -72,7 +113,8 @@
                 <strong>{{ stats.active }}</strong>
                 <span>{% translate "Pesanan berjalan" %}</span>
             </a>
-            <a class="dash-stat{% if stats.unpaid %} is-warn{% endif %}" href="#menunggu-bayar">
+            <a class="dash-stat{% if stats.unpaid %} is-warn{% endif %}"
+               href="#menunggu-bayar">
                 <strong>{{ stats.unpaid }}</strong>
                 <span>{% translate "Menunggu pembayaran" %}</span>
             </a>
@@ -89,13 +131,28 @@
             <div class="dash-main">
                 {% if unpaid_orders %}
                     <section class="dash-card" id="menunggu-bayar" aria-labelledby="unpaid-title">
-                        <h2 id="unpaid-title"><i class="fas fa-money-bill-transfer" aria-hidden="true"></i> {% translate "Menunggu pembayaran" %}</h2>
+                        <h2 id="unpaid-title"><i class="fas fa-money-bill-transfer"
+   aria-hidden="true"></i> {% translate "Menunggu pembayaran" %}</h2>
                         {% for order in unpaid_orders %}
                             <details class="dash-unpaid" id="bayar-{{ order.pk }}"{% if order.payment_reject_note and not order.awaiting_payment_check %} open{% endif %}>
                                 <summary class="dash-row">
                                     <span class="dash-unpaid__what">
-                                        <strong>{% blocktranslate trimmed with order_pk=order.pk %}Pesanan #{{ order_pk }}{% endblocktranslate %}</strong>
-                                        <span class="muted">{% if order.awaiting_payment_check %}{% translate "Bukti terkirim, sedang dicek" %}{% elif order.payment_due_at %}{% blocktranslate trimmed with due=order.payment_due_at|date:"d M, H:i" %}Bayar sebelum {{ due }}{% endblocktranslate %}{% else %}{% translate "Rekening & cara bayar" %}{% endif %}</span>
+                                        <strong>
+                                            {% blocktranslate trimmed with order_pk=order.pk %}
+                                                Pesanan #{{ order_pk }}
+                                            {% endblocktranslate %}
+                                        </strong>
+                                        <span class="muted">
+                                            {% if order.awaiting_payment_check %}
+                                                {% translate "Bukti terkirim, sedang dicek" %}
+                                            {% elif order.payment_due_at %}
+                                                {% blocktranslate trimmed with due=order.payment_due_at|date:"d M, H:i" %}
+                                                    Bayar sebelum {{ due }}
+                                                {% endblocktranslate %}
+                                            {% else %}
+                                                {% translate "Rekening & cara bayar" %}
+                                            {% endif %}
+                                        </span>
                                     </span>
                                     <span class="dash-unpaid__amt">Rp {{ order.total_payment|rupiah }}</span>
                                 </summary>
@@ -106,14 +163,19 @@
                 {% endif %}
                 <section class="dash-card" id="pesanan-aktif" aria-labelledby="active-title">
                     <div class="dash-card__head">
-                        <h2 id="active-title"><i class="fas fa-box" aria-hidden="true"></i> {% translate "Pesanan berjalan" %}</h2>
+                        <h2 id="active-title"><i class="fas fa-box"
+   aria-hidden="true"></i> {% translate "Pesanan berjalan" %}</h2>
                         <a href="{% url 'customer:my_orders' %}">{% translate "Semua pesanan" %}</a>
                     </div>
                     {% for order in active_orders %}
                         <article class="dash-order">
                             <div class="dash-row">
                                 <div>
-                                    <strong>{% blocktranslate trimmed with order_pk=order.pk %}Pesanan #{{ order_pk }}{% endblocktranslate %}</strong>
+                                    <strong>
+                                        {% blocktranslate trimmed with order_pk=order.pk %}
+                                            Pesanan #{{ order_pk }}
+                                        {% endblocktranslate %}
+                                    </strong>
                                     <div class="muted">{{ order.date|date:"d M Y, H:i" }} · <span class="co-resi">{{ order.tracking_number }}</span></div>
                                 </div>
                                 <span class="track-badge track-badge--{{ order.order_status|lower }}">{{ order.status_display }}</span>
@@ -121,7 +183,8 @@
                             <ol class="track-steps dash-steps">
                                 {% for step in order.steps %}
                                     <li class="track-step{% if step.done %} is-done{% endif %}{% if step.current %} is-current{% endif %}">
-                                        <span class="track-step__dot"><i class="fas {{ step.icon }}" aria-hidden="true"></i></span>
+                                        <span class="track-step__dot"><i class="fas {{ step.icon }}"
+   aria-hidden="true"></i></span>
                                         <div>
                                             <div class="track-step__title">{{ step.title }}</div>
                                             <div class="track-step__time">{% if step.time %}{{ step.time|date:"d M, H:i" }}{% else %}{% translate "Belum" %}{% endif %}</div>
@@ -134,7 +197,8 @@
                             {% endif %}
                             <div class="dash-row">
                                 <span class="muted">Rp {{ order.total_payment|rupiah }}{% if order.shipping_fee %} {% translate "(termasuk ongkir)" %}{% endif %} · {{ order.get_payment_method_display }} · {{ order.get_payment_status_display }}</span>
-                                <a href="{% url 'customer:track_detail' order.tracking_number %}" class="btn-soft"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Lacak" %}</a>
+                                <a href="{% url 'customer:track_detail' order.tracking_number %}"
+                                   class="btn-soft"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Lacak" %}</a>
                             </div>
                         </article>
                     {% empty %}
@@ -143,7 +207,8 @@
                 </section>
                 <section class="dash-card" aria-labelledby="history-title">
                     <div class="dash-card__head">
-                        <h2 id="history-title"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> {% translate "Riwayat terakhir" %}</h2>
+                        <h2 id="history-title"><i class="fas fa-clock-rotate-left"
+   aria-hidden="true"></i> {% translate "Riwayat terakhir" %}</h2>
                         <a href="{% url 'customer:my_orders' %}">{% translate "Lihat semua" %}</a>
                     </div>
                     <ul class="dash-list">
@@ -162,7 +227,8 @@
             <aside class="dash-side">
                 <section class="dash-card" id="booking" aria-labelledby="booking-title">
                     <div class="dash-card__head">
-                        <h2 id="booking-title"><i class="far fa-calendar-check" aria-hidden="true"></i> {% translate "Booking" %}</h2>
+                        <h2 id="booking-title"><i class="far fa-calendar-check"
+   aria-hidden="true"></i> {% translate "Booking" %}</h2>
                         <a href="{% url 'service:my_bookings' %}">{% translate "Semua" %}</a>
                     </div>
                     <ul class="dash-list dash-list--stack">
@@ -171,7 +237,9 @@
                                 <strong>{{ b.service.name }}</strong>
                                 <span class="muted">{{ b.schedule|date:"D, d M Y H:i" }}{% if b.pet_name %} · {{ b.pet_name }}{% endif %}</span>
                                 <span class="dash-pill">{{ b.get_status_display }}{% if b.queue_label and b.status == "ANTRE" %} · {{ b.queue_label }}{% endif %}</span>
-                                {% if b.in_transport %}<a href="{% url 'service:my_bookings' %}#booking-{{ b.pk }}"><i class="fas fa-map-location-dot" aria-hidden="true"></i> {% translate "Lihat posisi kurir" %}</a>{% endif %}
+                                {% if b.in_transport %}
+                                    <a href="{% url 'service:my_bookings' %}#booking-{{ b.pk }}"><i class="fas fa-map-location-dot" aria-hidden="true"></i> {% translate "Lihat posisi kurir" %}</a>
+                                {% endif %}
                             </li>
                         {% empty %}
                             <li class="dash-empty">{% translate "Belum ada booking." %} <a href="{% url 'service:catalog' %}#booking">{% translate "Booking sekarang" %}</a></li>
@@ -180,7 +248,8 @@
                 </section>
                 <section class="dash-card" aria-labelledby="pets-title">
                     <div class="dash-card__head">
-                        <h2 id="pets-title"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Hewan Saya" %}</h2>
+                        <h2 id="pets-title"><i class="fas fa-paw"
+   aria-hidden="true"></i> {% translate "Hewan Saya" %}</h2>
                         <a href="{% url 'service:my_pets' %}">{% translate "Kelola" %}</a>
                     </div>
                     <ul class="dash-list dash-list--stack">
@@ -191,7 +260,10 @@
                                     <strong>{{ pet.name }}</strong>
                                     <span class="muted">{{ pet.get_pet_type_display }}{% if pet.last %} {% blocktranslate trimmed with pet_last_service_name=pet.last.service.name pet_last_finished_at=pet.last.finished_at|date:"d M" %}· terakhir {{ pet_last_service_name }} {{ pet_last_finished_at }}{% endblocktranslate %}{% endif %}</span>
                                 </span>
-                                {% if pet.due %}<a class="dash-pill dash-pill--warn" href="{% url 'service:catalog' %}?hewan={{ pet.pk }}#booking">{% translate "Waktunya grooming lagi" %}</a>{% endif %}
+                                {% if pet.due %}
+                                    <a class="dash-pill dash-pill--warn"
+                                       href="{% url 'service:catalog' %}?hewan={{ pet.pk }}#booking">{% translate "Waktunya grooming lagi" %}</a>
+                                {% endif %}
                             </li>
                         {% empty %}
                             <li class="dash-empty">{% translate "Simpan profil hewan agar riwayat & pengingat grooming tercatat." %} <a href="{% url 'service:add_pet' %}">{% translate "Tambah hewan" %}</a></li>
@@ -200,7 +272,8 @@
                 </section>
                 <section class="dash-card" aria-labelledby="notif-title">
                     <div class="dash-card__head">
-                        <h2 id="notif-title"><i class="far fa-bell" aria-hidden="true"></i> {% translate "Notifikasi" %}</h2>
+                        <h2 id="notif-title"><i class="far fa-bell"
+   aria-hidden="true"></i> {% translate "Notifikasi" %}</h2>
                         <a href="{% url 'store:notifications' %}">{% translate "Semua" %}</a>
                     </div>
                     <ul class="dash-list dash-list--stack">
@@ -217,8 +290,15 @@
                 </section>
                 <section class="dash-card dash-help">
                     <h2><i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Butuh bantuan?" %}</h2>
-                    <p class="muted">{% blocktranslate trimmed with store_hours_display=store.hours_display %}Admin siap membantu {{ store_hours_display }}.{% endblocktranslate %}</p>
-                    <a class="btn-whatsapp" href="{{ wa_link }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> {{ wa_display }}</a>
+                    <p class="muted">
+                        {% blocktranslate trimmed with store_hours_display=store.hours_display %}
+                            Admin siap membantu {{ store_hours_display }}.
+                        {% endblocktranslate %}
+                    </p>
+                    <a class="btn-whatsapp"
+                       href="{{ wa_link }}"
+                       target="_blank"
+                       rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> {{ wa_display }}</a>
                 </section>
             </aside>
         </div>

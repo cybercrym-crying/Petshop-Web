@@ -1,9 +1,15 @@
 /* Dibuat otomatis oleh `python manage.py build_dark_css` dari product_card.css. Jangan diubah manual. */
-html[data-theme="dark"] .product-card { border: 1px solid #3a2f48; box-shadow: none; }
+html[data-theme="dark"] .product-card { background: #211a2b; border: 1px solid #3a2f48; box-shadow: none; }
 html[data-theme="dark"] .product-card .product-photo { background: #18121f; }
+html[data-theme="dark"] .product-card .chip-stock { background: #3f3318; color: #f5ce84; }
+html[data-theme="dark"] .product-card .chip-out { background: #3f1818; color: #ef8a8a; }
+html[data-theme="dark"] .product-card .wishlist-btn { border: 1px solid #3a2f48; background: rgba(33, 26, 43, 0.95); color: #b9adc7; }
+html[data-theme="dark"] .product-card .wishlist-btn:hover, html[data-theme="dark"] .product-card .wishlist-btn.active { color: #f08ab1; }
+html[data-theme="dark"] .product-card .product-name a { color: #f1ebf7; }
+html[data-theme="dark"] .product-card .product-name a:hover { color: #d8b4fe; }
 html[data-theme="dark"] .product-card .product-info .chip-category { color: #d8b4fe; background: none; box-shadow: none; }
 html[data-theme="dark"] .product-card .product-price { color: #f1ebf7; }
-html[data-theme="dark"] .product-card .btn-add-cart { background: #6b21a8; }
+html[data-theme="dark"] .product-card .btn-add-cart { border: 0; color: #fff; background: #6b21a8; }
 html[data-theme="dark"] .product-card .btn-add-cart:hover:not(:disabled) { background: #4c1577; }
 @media (max-width: 991.98px) {
   html[data-theme="dark"] .shop-cats a { color: #b9adc7; background: #211a2b; border: 1px solid #3a2f48; }

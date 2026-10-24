@@ -1,11 +1,41 @@
 /* Kartu produk ringkas: kategori sebagai teks kecil, harga & tombol satu baris,
    di HP tombol keranjang hanya ikon supaya kartu tidak penuh. */
 .product-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
   border: 1px solid #eadcf4;
   border-radius: 16px;
   box-shadow: none;
 }
-.product-card .product-photo { aspect-ratio: 4 / 3; background: #f7f2fb; }
+/* Berdiri sendiri: halaman yang tidak memuat shop.css (mis. Beranda) tetap rapi. */
+.product-card .product-photo { position: relative; display: block; height: auto; aspect-ratio: 4 / 3; background: #f7f2fb; overflow: hidden; }
+.product-card .product-photo > a { display: block; width: 100%; height: 100%; }
+.product-card .product-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.product-card .product-photo .chip { position: absolute; }
+.product-card .chip-stock { top: auto; bottom: 10px; left: 10px; right: auto; padding: 4px 10px; border-radius: 999px; font-weight: 700; background: #fff3d6; color: #8a5a00; }
+.product-card .chip-out { background: #fde3e3; color: #a31616; }
+.product-card .wishlist-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #eadcf4;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #5d5575;
+  cursor: pointer;
+}
+.product-card .wishlist-btn:hover,
+.product-card .wishlist-btn.active { color: #e11d68; }
+.product-card .product-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.product-card .product-name a { color: #261a33; text-decoration: none; }
+.product-card .product-name a:hover { color: #6b21a8; text-decoration: underline; }
 .product-card .product-info { gap: 4px; padding: 12px 14px 14px; }
 .product-card .product-info .chip-category {
   position: static;
@@ -30,11 +60,21 @@
   overflow: hidden;
   min-height: 2.7em;
 }
-.product-card .product-buy { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 8px; }
+/* Harga & tombol satu baris; bila kartu sempit tombol turun ke baris berikutnya, tidak keluar kartu. */
+.product-card .product-buy { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; margin-top: auto; padding-top: 8px; }
 .product-card .product-price { margin: 0; font-size: 1.05rem; font-weight: 800; color: #261a33; white-space: nowrap; }
 .product-card .btn-add-cart {
-  flex: none;
-  margin: 0;
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 !important;
+  border: 0;
+  color: #fff;
+  white-space: nowrap;
   min-height: 40px;
   padding: 0 14px;
   font-size: 0.875rem;
