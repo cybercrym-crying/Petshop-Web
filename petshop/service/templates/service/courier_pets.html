@@ -9,34 +9,59 @@
     </head>
     <body>
         {% include "courier/_nav.html" %}
-        <main class="container-fluid px-xl-5 px-3 py-4">
-            <p class="eyebrow"><i class="bi bi-heart me-1"></i> {% translate "Antar-jemput hewan" %}</p>
-            <h1 class="page-title">{% translate "Tugas hewan grooming" %}</h1>
-            <p class="text-muted">{% translate "Jemput hewan di rumah pemilik (scan QR booking + foto), bawa ke kasir untuk check-in, lalu antar pulang setelah selesai (foto saat berangkat, scan QR + foto saat diserahkan). Pemilik bisa memantau posisi Anda di peta." %}</p>
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
-            {% endfor %}
-            <ul class="stop-list mb-4">
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-page sg">
+            {% translate "Antar-jemput hewan" as t_title %}{% blocktranslate trimmed asvar t_lead with n=active|length %}{{ n }} tugas aktif{% endblocktranslate %}
+            {% include "courier/_page_head.html" with title=t_title lead=t_lead %}
+            <p class="sg-sm sg-muted">{% translate "Jemput di rumah pemilik (scan QR + foto bukti), bawa ke kasir untuk check-in, lalu antar pulang setelah lunas (foto berangkat, scan QR + foto saat diserahkan)." %}</p>
+            {% include "partials/_sg_messages.html" %}
+            <div class="pt-grid">
                 {% for b in active %}
-                    <li>
-                        <a href="{% url 'service:courier_pet_trip' b.pk %}">
-                            <span class="stop-num">{{ b.schedule|date:"H:i" }}</span>
-                            <span>{{ b.pet_name }} · {{ b.customer.name }}
-                                <small>{{ b.get_status_display }} · {% if b.status == "SIAP" or b.status == "DIANTAR" or b.status == "PROSES" or b.status == "ANTRE" %}{% translate "antar pulang" %}{% else %}{% translate "jemput" %}{% endif %} · {{ b.transport_address|default:"-" }} · {{ b.transport_distance_km }} km</small>
-                            </span>
-                        </a>
-                    </li>
+                    <article class="sg-card pt-card{% if forloop.first or b.status == 'DIJEMPUT' or b.status == 'DIANTAR' %} is-focus{% endif %}">
+                        <div class="pt-card__top">
+                            {% if b.is_return_leg %}
+                                <span class="sg-pill is-ok"><i class="bi bi-house-heart" aria-hidden="true"></i> {% translate "Antar pulang" %}</span>
+                            {% else %}
+                                <span class="sg-pill is-pri"><i class="bi bi-house" aria-hidden="true"></i> {% translate "Jemput" %}</span>
+                            {% endif %}
+                            <span class="sg-pill is-line">{{ b.schedule|date:"H.i" }}</span>
+                            <span class="sg-pill is-line">{% if b.transport_distance_km %}{{ b.transport_distance_km|floatformat:1 }} km{% else %}{{ b.get_status_display }}{% endif %}</span>
+                        </div>
+                        <h2 class="pt-card__name">{{ b.pet_name }} · {{ b.get_pet_type_display }}</h2>
+                        <p class="pt-card__sub">{{ b.customer.name }} · {{ b.transport_address|default:"-" }}</p>
+                        <p class="pt-card__sub sg-xs">{{ b.service.name }} · {{ b.get_status_display }}</p>
+                        {% if b.pet.notes %}<div class="sg-alert is-bad"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span>{{ b.pet.notes }}</span></div>{% endif %}
+                        {% if b.is_return_leg %}
+                            {% if b.status == "SIAP" and not b.is_paid %}
+                                <div class="sg-alert is-gold"><i class="bi bi-hourglass-split" aria-hidden="true"></i><span>{% translate "Menunggu pembayaran pelanggan. Antar pulang dimulai setelah lunas." %}</span></div>
+                            {% elif b.status == "ANTRE" or b.status == "PROSES" %}
+                                <div class="sg-alert is-gold"><i class="bi bi-scissors" aria-hidden="true"></i><span>{% translate "Hewan masih dikerjakan groomer. Anda mendapat notifikasi saat siap." %}</span></div>
+                            {% endif %}
+                        {% else %}
+                            <ol class="pt-prog" aria-label="{% translate 'Langkah jemput' %}">
+                                <li class="{% if b.status == 'DIJEMPUT' %}is-done{% else %}is-now{% endif %}">{% translate "Berangkat" %}</li>
+                                <li class="{% if b.pet_collected_at %}is-done{% elif b.status == 'DIJEMPUT' %}is-now{% endif %}">{% translate "Scan QR" %}</li>
+                                <li class="{% if b.pet_collected_at %}is-done{% elif b.status == 'DIJEMPUT' %}is-now{% endif %}">{% translate "Foto bukti" %}</li>
+                                <li class="{% if b.pet_collected_at %}is-now{% endif %}">{% translate "Ke toko" %}</li>
+                            </ol>
+                            {% if carrying and b.status != "DIJEMPUT" %}
+                                <div class="sg-alert is-gold"><i class="bi bi-lock" aria-hidden="true"></i><span>{% blocktranslate trimmed with n=carrying %}Antar {{ n }} paket dulu sebelum berangkat.{% endblocktranslate %}</span></div>
+                            {% endif %}
+                        {% endif %}
+                        <a class="ck-btn is-block {% if forloop.first %}is-primary is-lg{% endif %}" href="{% url 'service:courier_pet_trip' b.pk %}">{% if b.is_return_leg %}{% translate "Buka langkah antar pulang" %}{% elif b.status == "DIJEMPUT" %}{% translate "Lanjutkan jemput" %}{% else %}{% translate "Buka langkah jemput" %}{% endif %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </article>
                 {% empty %}
-                    <li class="text-muted small">{% translate "Belum ada tugas antar-jemput hewan untuk Anda." %}</li>
+                    <p class="sg-card sg-empty">{% include "partials/_paw.html" %}{% translate "Belum ada tugas antar-jemput hewan untuk Anda." %}</p>
                 {% endfor %}
-            </ul>
+            </div>
             {% if done %}
-                <h2 class="h6 fw-bold">{% translate "Selesai terakhir" %}</h2>
-                <ul class="stop-list">
-                    {% for b in done %}
-                        <li><a href="{% url 'service:courier_pet_trip' b.pk %}"><span class="stop-num"><i class="bi bi-check2"></i></span><span>{{ b.pet_name }} · {{ b.customer.name }}<small>{{ b.closed_at|date:"d M H:i" }}</small></span></a></li>
-                    {% endfor %}
-                </ul>
+                <section class="sg-card">
+                    <h2 class="sg-h3">{% translate "Selesai terakhir" %}</h2>
+                    <div class="sg-list sg-mt12">
+                        {% for b in done %}
+                            <a class="sg-item" href="{% url 'service:courier_pet_trip' b.pk %}"><span class="sg-av is-ok"><i class="bi bi-check2" aria-hidden="true"></i></span><span class="sg-item__body"><b>{{ b.pet_name }} · {{ b.customer.name }}</b><small>{{ b.closed_at|date:"d M H.i" }}</small></span><i class="bi bi-chevron-right sg-muted" aria-hidden="true"></i></a>
+                        {% endfor %}
+                    </div>
+                </section>
             {% endif %}
         </main>
         <script src="{% static 'js/layout.js' %}?v=1"></script>

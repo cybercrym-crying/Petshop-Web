@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 import re
@@ -368,6 +369,17 @@ class User(AbstractUser):
         first = (self.first_name or "").strip()
         last = (self.last_name or "").strip()
         return ((first[:1] + last[:1]) or self.username[:2]).upper()
+
+    @property
+    def photo_url(self):
+        """Foto profil kurir (kosong kalau belum diunggah atau bukan kurir)."""
+        if self.role != Role.COURIER:
+            return ""
+        try:
+            photo = self.courier_profile.photo
+        except ObjectDoesNotExist:
+            return ""
+        return photo.url if photo else ""
 
     @property
     def tone(self):

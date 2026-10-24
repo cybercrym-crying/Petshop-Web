@@ -1,0 +1,4 @@
+/* Dibuat otomatis oleh `python manage.py build_dark_css` dari wishlist.css. Jangan diubah manual. */
+html[data-theme="dark"] .wishlist-title { color: #f1ebf7; }
+html[data-theme="dark"] .wishlist-title i { color: #d8b4fe; }
+html[data-theme="dark"] .wishlist-state { color: #b9adc7; }

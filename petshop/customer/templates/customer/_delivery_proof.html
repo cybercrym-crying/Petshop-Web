@@ -1,0 +1,39 @@
+{% load i18n %}
+{# Bukti pengiriman untuk pelanggan: foto dari kurir, waktu sampai, kurir, dan cara serah terima. #}
+<details class="mo-proof"{% if open %} open{% endif %}>
+    <summary><i class="fas fa-camera" aria-hidden="true"></i> {% translate "Bukti pengiriman" %}{% if order.delivered_at %} <small>· {{ order.delivered_at|date:"d M Y, H:i" }}</small>{% endif %}</summary>
+    <div class="mo-proof__body">
+        {% if order.delivery_photo %}
+            <a class="mo-proof__photo" href="{{ order.delivery_photo.url }}" target="_blank" rel="noopener">
+                <img src="{{ order.delivery_photo.url }}" alt="{% blocktranslate trimmed with n=order.pk %}Foto bukti pesanan #{{ n }} sampai{% endblocktranslate %}" loading="lazy" width="160" height="160">
+                <span><i class="fas fa-up-right-from-square" aria-hidden="true"></i> {% translate "Lihat foto penuh" %}</span>
+            </a>
+        {% else %}
+            <p class="mo-proof__none">{% translate "Pesanan ditandai sampai tanpa foto bukti. Hubungi kami jika ada kendala." %}</p>
+        {% endif %}
+        <dl class="mo-proof__facts">
+            {% if order.courier %}
+                <div>
+                    <dt>{% translate "Kurir" %}</dt>
+                    <dd class="mo-proof__courier">{% if order.courier.photo_url %}<img src="{{ order.courier.photo_url }}" alt="" width="28" height="28">{% endif %}{{ order.courier.display_name }}</dd>
+                </div>
+            {% endif %}
+            {% if order.delivered_at %}
+                <div>
+                    <dt>{% translate "Sampai" %}</dt>
+                    <dd>{{ order.delivered_at|date:"l, d M Y · H:i" }}</dd>
+                </div>
+            {% endif %}
+            <div>
+                <dt>{% translate "Serah terima" %}</dt>
+                <dd>{% if order.handover_verified %}<i class="fas fa-circle-check mo-proof__ok" aria-hidden="true"></i> {% translate "QR Anda dipindai kurir" %}{% else %}{% translate "Tanpa scan QR" %}{% endif %}</dd>
+            </div>
+            {% if order.delivery_note %}
+                <div>
+                    <dt>{% translate "Catatan kurir" %}</dt>
+                    <dd>{{ order.delivery_note }}</dd>
+                </div>
+            {% endif %}
+        </dl>
+    </div>
+</details>

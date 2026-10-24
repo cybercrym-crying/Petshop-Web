@@ -1,9 +1,11 @@
 from django.utils.translation import gettext_lazy as _
 import math
 import secrets
+import uuid
 from datetime import timedelta
 
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 from common.exceptions import PetshopError
@@ -11,6 +13,16 @@ from common.models import TimeStampedModel
 from product.models import PetType
 
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # tanpa 0/O/1/I agar mudah dibacakan
+
+
+def booking_payment_path(instance, filename):
+    """Nama file diacak (uuid) supaya URL bukti transfer tidak bisa ditebak."""
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else "jpg"
+    return f"booking_payments/{timezone.now():%Y/%m}/{uuid.uuid4().hex}.{extension}"
+
+
+# Bayar transfer dibuka setelah jadwal dikonfirmasi toko (bayar di kasir tetap bisa).
+TRANSFER_PAYABLE_STATUSES = ("TERJADWAL", "DIJEMPUT", "ANTRE", "PROSES", "SIAP", "DIANTAR", "SELESAI")
 
 
 def new_checkin_code():
@@ -43,6 +55,11 @@ WORK_DONE_STATUSES = (BookingStatus.READY, BookingStatus.RETURNING, BookingStatu
 
 # Tahapan bawaan bila admin belum mengatur tahapan untuk sebuah layanan.
 DEFAULT_STEPS = ["Pemeriksaan awal", "Pengerjaan layanan", "Pemeriksaan akhir"]
+
+
+class BookingPayChoice(models.TextChoices):
+    LATER = "NANTI", _("Bayar nanti di kasir")
+    TRANSFER = "TRANSFER", _("Transfer / QRIS sekarang")
 
 
 class InvalidBookingTransition(PetshopError):
@@ -214,6 +231,17 @@ class ServiceBooking(TimeStampedModel):
     confirmed_by = models.ForeignKey(
         "account.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
+    # Bayar transfer (setelah jadwal dikonfirmasi): bukti dicek kasir/admin, lalu dicatat
+    # sebagai transaksi berstruk supaya laporan & status lunas sama dengan bayar di kasir.
+    payment_proof = models.ImageField(upload_to=booking_payment_path, null=True, blank=True)
+    payment_proof_at = models.DateTimeField(null=True, blank=True)
+    payment_reject_note = models.CharField(max_length=255, blank=True, default="")
+    # Pilihan bayar pelanggan. Transfer/QRIS punya batas bayar sejak jadwal dikonfirmasi;
+    # lewat batas tanpa bukti, booking dibatalkan otomatis (lihat cancel_expired).
+    payment_choice = models.CharField(
+        _("Cara bayar"), max_length=10, choices=BookingPayChoice.choices, default=BookingPayChoice.LATER,
+    )
+    payment_due_at = models.DateTimeField(null=True, blank=True)
     # QR di HP pelanggan: dipindai kasir saat check-in dan kurir saat jemput/antar hewan.
     checkin_code = models.CharField(max_length=8, default=new_checkin_code, editable=False)
     checked_in_at = models.DateTimeField(null=True, blank=True)
@@ -298,6 +326,7 @@ class ServiceBooking(TimeStampedModel):
         location=None,
         address="",
         confirmed=False,
+        payment_choice=BookingPayChoice.LATER,
     ):
         """Satu pintu membuat booking baru (dari situs pelanggan atau kasir).
 
@@ -356,8 +385,16 @@ class ServiceBooking(TimeStampedModel):
             status=BookingStatus.SCHEDULED if confirmed else BookingStatus.PENDING,
             confirmed_at=now if confirmed else None,
             confirmed_by=created_by if confirmed else None,
+            payment_choice=payment_choice,
+            payment_due_at=cls._due_from(now) if confirmed and payment_choice == BookingPayChoice.TRANSFER else None,
             **transport,
         )
+
+    @staticmethod
+    def _due_from(start):
+        from store.models import StoreSettings
+
+        return start + timedelta(hours=StoreSettings.current().payment_deadline_hours)
 
     @classmethod
     def capacity(cls):
@@ -434,6 +471,85 @@ class ServiceBooking(TimeStampedModel):
     @property
     def is_paid(self):
         return self.payment_line is not None
+
+    @property
+    def can_pay_transfer(self):
+        """Jadwal sudah dikonfirmasi, belum lunas, dan belum ada bukti yang menunggu dicek."""
+        return (
+            self.status in TRANSFER_PAYABLE_STATUSES
+            and self.total_price > 0
+            and not self.payment_proof
+            and not self.is_paid
+        )
+
+    @property
+    def awaiting_payment_check(self):
+        return bool(self.payment_proof) and not self.is_paid
+
+    def submit_payment_proof(self, customer, photo):
+        if self.customer_id != customer.pk:
+            raise InvalidBookingTransition("Booking ini bukan milik Anda.")
+        if self.status == BookingStatus.PENDING:
+            raise InvalidBookingTransition("Tunggu jadwal dikonfirmasi toko dulu, baru bayar.")
+        if not self.can_pay_transfer:
+            raise InvalidBookingTransition(f"Booking #{self.pk} tidak sedang menunggu pembayaran.")
+        self.payment_proof = photo
+        self.payment_proof_at = timezone.now()
+        self.payment_reject_note = ""
+        self.save(update_fields=["payment_proof", "payment_proof_at", "payment_reject_note", "updated_at"])
+
+    def verify_transfer(self, staff):
+        """Kasir/admin mencocokkan bukti dengan mutasi rekening: dicatat sebagai transaksi transfer berstruk."""
+        from transaction.models import (
+            Fulfillment, Order, OrderChannel, OrderPayment, OrderServiceLine, OrderStatus,
+            PaymentMethod, PaymentStatus,
+        )
+        from transaction.pos import _new_receipt_no, _new_receipt_token
+
+        if not self.awaiting_payment_check:
+            raise InvalidBookingTransition(f"Booking #{self.pk} tidak punya bukti transfer yang menunggu dicek.")
+        now = timezone.now()
+        amount = self.total_price
+        order = Order.objects.create(
+            admin=staff,
+            customer=self.customer,
+            channel=OrderChannel.ONLINE,
+            fulfillment=Fulfillment.TAKE_AWAY,
+            order_status=OrderStatus.DELIVERED,
+            delivered_at=now,
+            payment_method=PaymentMethod.TRANSFER,
+            payment_status=PaymentStatus.PAID,
+            payment_verified_by=staff,
+            payment_verified_at=now,
+            payment_proof=self.payment_proof.name,
+            payment_proof_at=self.payment_proof_at,
+            confirmed_at=now,
+            total_payment=amount,
+            receipt_no=_new_receipt_no(),
+            receipt_token=_new_receipt_token(),
+        )
+        OrderServiceLine.objects.create(
+            order=order, booking=self,
+            description=f"{self.service.name} · {self.pet_name} (booking #{self.pk})"[:160],
+            amount=amount,
+        )
+        OrderPayment.objects.create(order=order, method=PaymentMethod.TRANSFER, amount=amount)
+        return order
+
+    def reject_transfer(self, staff, note):
+        note = (note or "").strip()
+        if not note:
+            raise InvalidBookingTransition("Tulis alasan penolakan supaya pelanggan tahu yang harus diperbaiki.")
+        if not self.awaiting_payment_check:
+            raise InvalidBookingTransition(f"Booking #{self.pk} tidak punya bukti transfer yang menunggu dicek.")
+        self.payment_proof.delete(save=False)
+        self.payment_proof = None
+        self.payment_proof_at = None
+        self.payment_reject_note = note[:255]
+        # Beri waktu lagi supaya pelanggan sempat mengirim ulang.
+        if self.payment_due_at:
+            self.payment_due_at = max(self.payment_due_at, self._due_from(timezone.now()))
+        self.save(update_fields=["payment_proof", "payment_proof_at", "payment_reject_note", "payment_due_at", "updated_at"])
 
     @property
     def queue_label(self):
@@ -533,6 +649,26 @@ class ServiceBooking(TimeStampedModel):
             .first()
         )
 
+    @classmethod
+    def pet_tasks(cls, courier):
+        """Tugas antar-jemput kurir yang masih berjalan atau menunggu: jemput, lalu antar pulang."""
+        from django.db.models import Q
+
+        return cls.objects.filter(pet_courier=courier).filter(
+            Q(status__in=[BookingStatus.PENDING, BookingStatus.SCHEDULED], pickup_requested=True)
+            | Q(status=BookingStatus.PICKUP)
+            | Q(status__in=[BookingStatus.QUEUED, BookingStatus.PROCESS, BookingStatus.READY], return_requested=True)
+            | Q(status=BookingStatus.RETURNING)
+        )
+
+    @property
+    def is_return_leg(self):
+        """Antar pulang (setelah check-in) atau masih tahap jemput."""
+        return self.status in (
+            BookingStatus.QUEUED, BookingStatus.PROCESS, BookingStatus.READY,
+            BookingStatus.RETURNING, BookingStatus.DONE,
+        ) and self.return_requested
+
     @staticmethod
     def _check_no_packages(courier):
         from transaction.models import Order, OrderStatus
@@ -550,7 +686,49 @@ class ServiceBooking(TimeStampedModel):
         self._move_to(BookingStatus.SCHEDULED)
         self.confirmed_at = timezone.now()
         self.confirmed_by = staff
-        self.save(update_fields=["status", "confirmed_at", "confirmed_by", "updated_at"])
+        if self.payment_choice == BookingPayChoice.TRANSFER and self.total_price > 0:
+            self.payment_due_at = self._due_from(self.confirmed_at)
+        self.save(update_fields=["status", "confirmed_at", "confirmed_by", "payment_due_at", "updated_at"])
+
+    @property
+    def payment_pending_due(self):
+        """Batas bayar transfer/QRIS yang masih berjalan (None bila tidak berlaku)."""
+        if self.status == BookingStatus.SCHEDULED and self.payment_due_at and not self.payment_proof and not self.is_paid:
+            return self.payment_due_at
+        return None
+
+    @classmethod
+    def cancel_expired(cls):
+        """Batalkan booking transfer/QRIS yang lewat batas bayar tanpa bukti.
+
+        Hanya booking Terjadwal (belum dijemput/check-in) yang dibatalkan. Dipanggil
+        dari halaman booking pelanggan & kasir dan dari `python manage.py cancel_expired_orders`.
+        """
+        from store.models import ActivityLog, Notification
+
+        expired = cls.objects.filter(
+            models.Q(payment_proof="") | models.Q(payment_proof__isnull=True),
+            status=BookingStatus.SCHEDULED,
+            payment_choice=BookingPayChoice.TRANSFER,
+            payment_due_at__lt=timezone.now(),
+        )
+        count = 0
+        for booking in expired.select_related("customer"):
+            if booking.is_paid:
+                continue
+            try:
+                booking.cancel()
+            except InvalidBookingTransition:
+                continue
+            ActivityLog.record(booking, "Dibatalkan otomatis", detail="Lewat batas waktu pembayaran")
+            Notification.send(
+                booking.customer,
+                f"Booking #{booking.pk} dibatalkan",
+                "Batas waktu transfer/QRIS sudah lewat. Silakan booking ulang bila masih berminat.",
+                reverse("service:my_bookings") + f"#booking-{booking.pk}",
+            )
+            count += 1
+        return count
 
     def cancel(self):
         """Batalkan booking yang belum dikerjakan (oleh pelanggan atau admin/kasir)."""
@@ -568,6 +746,10 @@ class ServiceBooking(TimeStampedModel):
         if not self.can_cancel:
             raise InvalidBookingTransition(
                 f"Booking #{self.pk} sudah berjalan, hubungi admin untuk pembatalan."
+            )
+        if self.is_paid or self.awaiting_payment_check:
+            raise InvalidBookingTransition(
+                f"Booking #{self.pk} sudah dibayar transfer. Hubungi admin untuk pembatalan & pengembalian dana."
             )
         self.cancel()
 
@@ -623,6 +805,12 @@ class ServiceBooking(TimeStampedModel):
         self.pickup_photo = photo
         self.pet_collected_at = timezone.now()
         self.save(update_fields=["pickup_photo", "pet_collected_at", "updated_at"])
+
+    def check_arrival(self, courier):
+        """Kurir tiba di toko membawa hewan (foto tiba opsional, dicatat di riwayat booking)."""
+        self._check_pet_courier(courier)
+        if self.status != BookingStatus.PICKUP or not self.pet_collected_at:
+            raise InvalidBookingTransition(f"Booking #{self.pk}: hewan belum dijemput atau sudah check-in.")
 
     def check_in(self, staff, weight_kg=None, condition="", photo=None):
         """Hewan tiba di toko: cek kesehatan singkat lalu dapat nomor antrean harian (G-001, ...)."""
@@ -709,6 +897,11 @@ class ServiceBooking(TimeStampedModel):
         """Pemilik mengambil hewan di toko: Siap diambil -> Selesai."""
         if self.status != BookingStatus.READY:
             raise InvalidBookingTransition(f"Booking #{self.pk} belum siap diambil.")
+        if not self.is_paid:
+            raise InvalidBookingTransition(
+                f"Booking #{self.pk} belum lunas. Terima pembayarannya dulu di Kasir (scan QR booking), "
+                "baru serahkan hewan ke pemilik."
+            )
         self._move_to(BookingStatus.DONE)
         self.closed_at = timezone.now()
         self.save(update_fields=["status", "closed_at", "updated_at"])
@@ -718,6 +911,10 @@ class ServiceBooking(TimeStampedModel):
         self._check_pet_courier(courier)
         if not self.return_requested:
             raise InvalidBookingTransition(f"Booking #{self.pk} tidak meminta diantar pulang.")
+        if not self.is_paid:
+            raise InvalidBookingTransition(
+                f"Booking #{self.pk} belum lunas. Hewan diantar pulang setelah pelanggan membayar transfer."
+            )
         if photo is None:
             raise InvalidBookingTransition("Foto hewan saat dibawa pulang wajib diambil.")
         self._check_no_packages(courier)

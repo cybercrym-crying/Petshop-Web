@@ -1,123 +1,80 @@
 {% load i18n %}
-{% load static rupiah %}
+{% load static rupiah l10n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'id' }}">
     <head>
         {% include "courier/_head.html" %}
-        <link href="{% static 'courier/css/order_detail.css' %}?v=ux3" rel="stylesheet" />
         <title>{% translate "Detail Order - Kurir" %}</title>
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body>
         {% include "courier/_nav.html" %}
-        <main class="container-fluid px-xl-5 px-4 py-5"
-              style="max-width: 1000px;
-                     margin: 0 auto">
-            <div class="pf-crumb">
-                <a href="{% url 'courier:dashboard' %}"><i class="bi bi-arrow-left me-1"></i> {% translate "Dasbor" %}</a>
-                <span>/</span>
-                <span class="text-dark fw-bold">{% blocktranslate trimmed with order_pk=order.pk %}Order #{{ order_pk }}{% endblocktranslate %}</span>
-            </div>
-            <div class="card-custom">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h1 class="fw-bold mb-0 h3 od-title">
-                        {% translate "Detail Pesanan" %} <span class="text-brand">#{{ order.pk }}</span>
-                    </h1>
-                    <span class="badge-status {{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
-                </div>
-                {% if order.tracking_number %}
-                    <p class="resi-line">
-                        <i class="bi bi-upc-scan me-1"></i> {% translate "Resi:" %} <strong>{{ order.tracking_number }}</strong>
-                    </p>
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-page is-narrow sg">
+            {% url 'courier:packages' as back_url %}{% blocktranslate trimmed asvar t_title with order_pk=order.pk %}Order #{{ order_pk }}{% endblocktranslate %}
+            {% include "courier/_page_head.html" with back=back_url title=t_title lead=order.get_order_status_display pill=order.get_order_status_display %}
+            {% include "partials/_sg_messages.html" %}
+            <section class="sg-card is-focus">
+                {% if order.order_status == "DALAM_PENGIRIMAN" and order.route_position %}
+                    <p class="sg-live mb-0"><i aria-hidden="true"></i>{% blocktranslate trimmed with n=order.route_position total=stops %}Tujuan {{ n }} dari {{ total }}{% endblocktranslate %}</p>
                 {% endif %}
-                <div class="meta-grid">
-                    <div class="meta-item">
-                        <div class="meta-label">{% translate "Pelanggan" %}</div>
-                        <div class="meta-value">{{ order.customer.name }}</div>
-                    </div>
-                    <div class="meta-item" style="grid-column: span 2">
-                        <div class="meta-label">{% translate "Alamat" %}</div>
-                        <div class="meta-value">
-                            <i class="bi bi-geo-alt text-brand me-1"></i> {{ order.delivery_address }}
-                        </div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-label">{% translate "Jenis Pembayaran" %}</div>
-                        <div class="meta-value">{{ order.payment_method }}</div>
-                    </div>
-                    <div class="meta-item" style="grid-column: span 2">
-                        <div class="meta-label">{% translate "Status Pembayaran" %}</div>
-                        <div class="meta-value">
-                            {% if order.payment_status == "LUNAS" %}<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> {% translate "LUNAS" %}</span>
-                        {% else %}<span class="text-warning"><i class="bi bi-clock-history me-1"></i> {% translate "MENUNGGU" %}</span>{% endif %}
-                    </div>
+                <h2 class="sg-h3 sg-mt8" style="font-size:1.4rem">{{ order.customer.name }}</h2>
+                <p class="sg-sm sg-muted mb-0"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ order.delivery_address }}</p>
+                {% if order.customer_note %}<p class="sg-sm sg-mt8 mb-0"><i class="bi bi-chat-left-text" aria-hidden="true"></i> {{ order.customer_note }}</p>{% endif %}
+                <div class="ck-row2 sg-mt12">
+                    {% if order.has_pin %}<a class="ck-btn" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ order.delivery_latitude|unlocalize }},{{ order.delivery_longitude|unlocalize }}&amp;travelmode=driving" target="_blank" rel="noopener"><i class="bi bi-compass" aria-hidden="true"></i> {% translate "Navigasi" %}</a>{% endif %}
+                    {% if order.customer.whatsapp_url %}<a class="ck-btn is-ok" href="{{ order.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> {% translate "Hubungi" %}</a>{% endif %}
                 </div>
-            </div>
-            <h4 class="fw-bold mb-3" style="color: var(--c-text)">{% translate "Daftar Barang" %}</h4>
-            <div class="table-responsive border rounded-4 mb-4">
-                <table data-stack class="table-custom">
-                    <thead>
-                        <tr>
-                            <th>{% translate "Produk" %}</th>
-                            <th class="text-center">{% translate "Jumlah" %}</th>
-                            <th>{% translate "Harga" %}</th>
-                            <th class="text-end">{% translate "Subtotal" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in order.details.all %}
-                            <tr>
-                                <td class="fw-bold">{{ item.product.name }}</td>
-                                <td class="text-center">{{ item.quantity }}</td>
-                                <td>Rp {{ item.unit_price|rupiah }}</td>
-                                <td class="text-end fw-bold text-brand">Rp {{ item.subtotal|rupiah }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
-                <a href="{% url 'courier:packages' %}" class="btn-cancel"><i class="bi bi-arrow-left me-2"></i> {% translate "Kembali" %}</a>
-                {% if order.order_status == "DALAM_PENGIRIMAN" %}
-                    <a href="{% url 'courier:handover' order.pk %}" class="btn-route is-primary ms-auto" data-needs-gps><i class="bi bi-qr-code-scan"></i> {% translate "Serahkan paket" %}</a>
-                    <a href="{% url 'courier:problem' order.pk %}" class="btn-route"><i class="bi bi-exclamation-triangle"></i> {% translate "Kendala" %}</a>
-                {% elif order.order_status == "DIKONFIRMASI" %}
-                    <a href="{% url 'courier:pickup' %}" class="btn-route is-primary ms-auto" data-needs-gps><i class="bi bi-qr-code-scan"></i> {% translate "Scan label untuk mengambil" %}</a>
+            </section>
+            <dl class="sg-kv sg-mt12">
+                <div><dt>{% translate "Resi" %}</dt><dd>{{ order.tracking_number|default:"-" }}</dd></div>
+                <div><dt>{% translate "Bayar" %}</dt><dd>{{ order.get_payment_method_display }}</dd></div>
+                <div><dt>{% translate "Status bayar" %}</dt><dd>{% if order.payment_status == "LUNAS" %}<span style="color:var(--sg-ok)"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% translate "Lunas" %}</span>{% else %}<span style="color:var(--sg-warn)"><i class="bi bi-clock-history" aria-hidden="true"></i> {% translate "Menunggu" %}</span>{% endif %}</dd></div>
+                <div><dt>{% translate "Telepon" %}</dt><dd>{{ order.customer.phone_number }}</dd></div>
+            </dl>
+            <section class="sg-card sg-mt12" aria-labelledby="od-items">
+                <h2 id="od-items" class="sg-h3 is-sm">{% translate "Daftar barang" %}</h2>
+                <ul class="sg-lines sg-mt8">
+                    {% for item in order.details.all %}<li><span>{{ item.quantity }}× {{ item.product.name }}</span><b>Rp {{ item.subtotal|rupiah }}</b></li>{% endfor %}
+                    {% if order.shipping_fee %}<li><span>{% translate "Ongkir" %}</span><b>Rp {{ order.shipping_fee|rupiah }}</b></li>{% endif %}
+                    <li class="is-tot"><span>{% translate "Total" %}</span><b>Rp {{ order.total_payment|rupiah }}</b></li>
+                </ul>
+                {% if order.order_status == "DALAM_PENGIRIMAN" and order.payment_method == "TUNAI" and order.payment_status != "LUNAS" %}
+                    <p class="sg-alert is-gold sg-mt12"><i class="bi bi-cash-coin" aria-hidden="true"></i><span>{% blocktranslate trimmed with n=order.total_payment|rupiah %}Tagih tunai Rp {{ n }} (COD){% endblocktranslate %}</span></p>
                 {% endif %}
-            </div>
+            </section>
+            {% if order.order_status == "DALAM_PENGIRIMAN" %}
+                <a href="{% url 'courier:handover' order.pk %}" class="ck-btn is-primary is-lg w-100 sg-mt16" data-needs-gps><i class="bi bi-check2-circle" aria-hidden="true"></i> {% translate "Sampai, serahkan paket" %}</a>
+                <a href="{% url 'courier:problem' order.pk %}" class="ck-btn is-bad w-100 sg-mt8"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> {% translate "Ada kendala" %}</a>
+            {% elif order.order_status == "DIKONFIRMASI" %}
+                <a href="{% url 'courier:pickup' %}" class="ck-btn is-primary is-lg w-100 sg-mt16" data-needs-gps><i class="bi bi-upc-scan" aria-hidden="true"></i> {% translate "Scan label untuk mengambil" %}</a>
+            {% endif %}
             {% if order.order_status == "TERKIRIM" %}
-                <section class="proof-card" id="bukti">
-                    <h4 class="fw-bold mb-3" style="color: var(--c-text)">
-                        <i class="bi bi-camera-fill text-brand me-2"></i>{% translate "Bukti Pengiriman" %}
-                    </h4>
-                    {% if order.delivered_at %}
-                        <p class="proof-hint">{% blocktranslate trimmed with order_delivered_at=order.delivered_at|date:"d M Y, H:i" %}Sampai pada {{ order_delivered_at }}{% endblocktranslate %}</p>
-                    {% endif %}
+                <section class="sg-card sg-mt16" id="bukti" aria-labelledby="od-proof">
+                    <h2 id="od-proof" class="sg-h3 is-sm"><i class="bi bi-camera" aria-hidden="true"></i> {% translate "Bukti Pengiriman" %}</h2>
+                    {% if order.delivered_at %}<p class="sg-xs sg-muted mb-2">{% blocktranslate trimmed with order_delivered_at=order.delivered_at|date:"d M Y, H.i" %}Sampai pada {{ order_delivered_at }}{% endblocktranslate %}</p>{% endif %}
                     {% if order.delivery_photo %}
-                        <a href="{{ order.delivery_photo.url }}" target="_blank" rel="noopener">
-                            <img class="proof-image"
-                                 src="{{ order.delivery_photo.url }}"
-                                 alt="{% blocktranslate trimmed with order_pk=order.pk %}Foto bukti pengiriman order #{{ order_pk }}{% endblocktranslate %}" />
-                        </a>
+                        <a href="{{ order.delivery_photo.url }}" target="_blank" rel="noopener" class="sg-photo"><img src="{{ order.delivery_photo.url }}" alt="{% blocktranslate trimmed with order_pk=order.pk %}Foto bukti pengiriman order #{{ order_pk }}{% endblocktranslate %}"></a>
                     {% else %}
-                        <p class="proof-hint mb-0">{% translate "Tidak ada foto bukti untuk order ini." %}</p>
+                        <p class="sg-sm sg-muted mb-0">{% translate "Tidak ada foto bukti untuk order ini." %}</p>
                     {% endif %}
-                    {% if order.delivery_note %}<p class="mt-2 mb-0"><strong>{% translate "Catatan:" %}</strong> {{ order.delivery_note }}</p>{% endif %}
-                    {% if order.handover_verified %}<p class="mt-2 mb-0 text-success"><i class="bi bi-qr-code"></i> {% translate "QR serah-terima pelanggan cocok" %}</p>{% endif %}
+                    {% if order.delivery_note %}<p class="sg-sm sg-mt8 mb-0"><b>{% translate "Catatan:" %}</b> {{ order.delivery_note }}</p>{% endif %}
+                    {% if order.handover_verified %}<p class="sg-alert is-ok sg-sm sg-mt8"><i class="bi bi-qr-code" aria-hidden="true"></i><span>{% translate "QR serah-terima pelanggan cocok" %}</span></p>{% endif %}
                 </section>
             {% endif %}
             {% if history %}
-                <section class="proof-card">
-                    <h4 class="fw-bold mb-3" style="color: var(--c-text)"><i class="bi bi-clock-history text-brand me-2"></i>{% translate "Riwayat status" %}</h4>
-                    <ul class="timeline">
+                <section class="sg-card sg-mt16" aria-labelledby="od-log">
+                    <h2 id="od-log" class="sg-h3 is-sm">{% translate "Riwayat status" %}</h2>
+                    <ul class="sg-rows sg-mt8">
                         {% for h in history %}
-                            <li><b>{{ h.action }}</b> · {{ h.created_at|date:"d M H:i" }}{% if h.actor %} · {{ h.actor.name }}{% endif %}{% if h.detail %}<br><span class="text-muted">{{ h.detail }}</span>{% endif %}{% if h.photo %}<a href="{{ h.photo.url }}" target="_blank" rel="noopener"><img src="{{ h.photo.url }}" alt="{% blocktranslate trimmed with h_action=h.action %}Foto {{ h_action }}{% endblocktranslate %}" loading="lazy"></a>{% endif %}</li>
+                            <li>
+                                {% if h.photo %}<a href="{{ h.photo.url }}" target="_blank" rel="noopener" class="ck-thumb"><img src="{{ h.photo.url }}" alt="{% blocktranslate trimmed with h_action=h.action %}Foto {{ h_action }}{% endblocktranslate %}" loading="lazy"></a>{% else %}<span class="sg-av" style="width:40px;height:40px;font-size:0.95rem"><i class="bi bi-clock-history" aria-hidden="true"></i></span>{% endif %}
+                                <span style="flex:1;min-width:0"><b class="sg-sm">{{ h.action }}</b><br><small class="sg-xs sg-muted">{{ h.created_at|date:"d M H.i" }}{% if h.actor %} · {{ h.actor.name }}{% endif %}{% if h.detail %} · {{ h.detail }}{% endif %}</small></span>
+                            </li>
                         {% endfor %}
                     </ul>
                 </section>
             {% endif %}
-        </div>
-    </main>
-    <script src="{% static 'js/layout.js' %}?v=1"></script>
-</body>
+        </main>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
 </html>

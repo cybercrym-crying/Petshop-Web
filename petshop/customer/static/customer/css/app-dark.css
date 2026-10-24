@@ -1,0 +1,30 @@
+/* Dibuat otomatis oleh `python manage.py build_dark_css` dari app.css. Jangan diubah manual. */
+html[data-theme="dark"] .ca-app { background: #18121f; }
+html[data-theme="dark"] .ca-brand__tag { background: #2b2139; color: #d8b4fe; }
+html[data-theme="dark"] .ca-side { background: #211a2b; border-right: 1px solid #3a2f48; }
+html[data-theme="dark"] .ca-side__who { border-bottom: 1px solid #3a2f48; }
+html[data-theme="dark"] .ca-side__who .sn-avatar { background: #6b21a8; color: #fff; }
+html[data-theme="dark"] .ca-side__who strong { color: #f1ebf7; }
+html[data-theme="dark"] .ca-side__who small { color: #b9adc7; }
+html[data-theme="dark"] .ca-nav__group { color: #b9adc7; }
+html[data-theme="dark"] .ca-link { border: 0; background: none; color: #f1ebf7; }
+html[data-theme="dark"] .ca-link i { color: #d8b4fe; }
+html[data-theme="dark"] .ca-link:hover { background: #18121f; color: #d8b4fe; }
+html[data-theme="dark"] .ca-link.is-active { background: #2b2139; color: #d8b4fe; }
+html[data-theme="dark"] .ca-link:focus-visible, html[data-theme="dark"] .ca-tab:focus-visible { outline: 3px solid #5b4775; }
+html[data-theme="dark"] .ca-count { background: #f59e0b; color: #1f1300; }
+html[data-theme="dark"] .ca-side__out { border-top: 1px solid #3a2f48; }
+html[data-theme="dark"] .ca-side__out .ca-link, html[data-theme="dark"] .ca-side__out .ca-link i { color: #ed8d8d; }
+html[data-theme="dark"] .ca-foot { border-top: 1px solid #3a2f48; color: #b9adc7; }
+html[data-theme="dark"] .ca-foot a { color: #d8b4fe; }
+@media (max-width: 991.98px) {
+  html[data-theme="dark"] .ca-side { box-shadow: 0 10px 40px rgba(38, 26, 51, 0.25); }
+  html[data-theme="dark"] .ca-scrim:not([hidden]) { background: rgba(38, 26, 51, 0.45); }
+  html[data-theme="dark"] .ca-tabs { background: #211a2b; border-top: 1px solid #3a2f48; box-shadow: 0 -4px 16px rgba(38, 26, 51, 0.06); }
+  html[data-theme="dark"] .ca-tab { border: 0; background: none; color: #b9adc7; }
+  html[data-theme="dark"] .ca-tab.is-active { color: #d8b4fe; background: #2b2139; }
+}
+html[data-theme="dark"] .shop-head__eyebrow { color: #b9adc7; }
+@media (max-width: 1199.98px) {
+  html[data-theme="dark"] .ca-header .sn-search.open { background: #211a2b; }
+}

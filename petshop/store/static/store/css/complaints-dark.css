@@ -1,0 +1,4 @@
+/* Dibuat otomatis oleh `python manage.py build_dark_css` dari complaints.css. Jangan diubah manual. */
+html[data-theme="dark"] .cp-status--baru { background: #3f3718; color: #f3af86; }
+html[data-theme="dark"] .cp-status--diproses { background: #182f3f; color: #84cef5; }
+html[data-theme="dark"] .cp-status--selesai { background: #183f25; color: #92e7b2; }

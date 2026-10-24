@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load static %}
+{% load static rupiah %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'id' }}">
     <head>
@@ -9,110 +9,47 @@
     </head>
     <body>
         {% include "courier/_nav.html" %}
-        <main class="container-fluid px-xl-5 px-4 py-5">
-            <div class="animate-fade-up anim-d0">
-                <p class="eyebrow"><i class="bi bi-box-seam me-1"></i> {% translate "Paket" %}</p>
-                <h1 class="page-title">{% translate "Paket Saya" %}</h1>
-                <p class="text-muted fw-medium">{% translate "Ambil paket dengan memindai QR label di menu" %} <a href="{% url 'courier:pickup' %}">{% translate "Ambil Paket" %}</a>{% translate "; serah terima lewat scan QR pelanggan di menu Rute." %}</p>
-            </div>
-            <section class="row g-4 mb-5 animate-fade-up anim-d1"
-                     aria-label="{% translate 'Ringkasan pengiriman' %}">
-                <div class="col-12 col-md-4">
-                    <a class="stat-box{% if current == 'pending' %} is-active{% endif %}"
-                       href="{% url 'courier:packages' %}?status=pending"
-                       {% if current == 'pending' %}aria-current="page"{% endif %}>
-                        <div class="stat-icon pending">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                        <div>
-                            <div class="num">{{ total_pending }}</div>
-                            <div class="lbl">{% translate "Menunggu Dikirim" %}</div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-12 col-md-4">
-                    <a class="stat-box{% if current == 'on_delivery' %} is-active{% endif %}"
-                       href="{% url 'courier:packages' %}?status=on_delivery"
-                       {% if current == 'on_delivery' %}aria-current="page"{% endif %}>
-                        <div class="stat-icon active">
-                            <i class="bi bi-truck"></i>
-                        </div>
-                        <div>
-                            <div class="num">{{ total_on_delivery }}</div>
-                            <div class="lbl">{% translate "Sedang Dikirim" %}</div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-12 col-md-4">
-                    <a class="stat-box{% if current == 'done' %} is-active{% endif %}"
-                       href="{% url 'courier:packages' %}?status=done"
-                       {% if current == 'done' %}aria-current="page"{% endif %}>
-                        <div class="stat-icon history">
-                            <i class="bi bi-check2-circle"></i>
-                        </div>
-                        <div>
-                            <div class="num">{{ total_delivered }}</div>
-                            <div class="lbl">{% translate "Riwayat Pengiriman" %}</div>
-                        </div>
-                    </a>
-                </div>
-            </section>
-            {% if messages %}
-                <div class="mb-4" aria-live="polite">
-                    {% for message in messages %}
-                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2"
-                             role="alert">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            <h4 class="fw-bold mb-4 d-flex align-items-center gap-2 board-title">
-                <i class="bi {{ meta.icon }}"></i> {{ meta.title }}
-                <span class="board-count">{% if current == "done" %}{{ total_delivered }}{% else %}{{ current_orders|length }}{% endif %}</span>
-            </h4>
-            <ul class="orders-grid">
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-page sg">
+            {% translate "Paket saya" as t_title %}{% blocktranslate trimmed asvar t_lead with n=total_on_delivery %}{{ n }} sedang dibawa · serah terima lewat scan QR pelanggan{% endblocktranslate %}
+            {% include "courier/_page_head.html" with title=t_title lead=t_lead %}
+            {% include "partials/_sg_messages.html" %}
+            <nav class="sg-seg" aria-label="{% translate 'Ringkasan pengiriman' %}">
+                <a href="{% url 'courier:packages' %}?status=on_delivery" class="{% if current == 'on_delivery' %}is-on{% endif %}"{% if current == 'on_delivery' %} aria-current="page"{% endif %}>{% translate "Dibawa" %} <span class="sg-c">{{ total_on_delivery }}</span></a>
+                <a href="{% url 'courier:packages' %}?status=pending" class="{% if current == 'pending' %}is-on{% endif %}"{% if current == 'pending' %} aria-current="page"{% endif %}>{% translate "Menunggu" %} <span class="sg-c">{{ total_pending }}</span></a>
+                <a href="{% url 'courier:packages' %}?status=done" class="{% if current == 'done' %}is-on{% endif %}"{% if current == 'done' %} aria-current="page"{% endif %}>{% translate "Selesai" %} <span class="sg-c">{{ total_delivered }}</span></a>
+            </nav>
+            <ul class="list-unstyled ck-pkgs sg-mt16">
                 {% for order in current_orders %}
-                    <li>{% include "courier/_order_card.html" with order=order action=meta.action %}</li>
+                    <li class="ck-dcard{% if forloop.first and current == 'on_delivery' %} is-first{% endif %}">
+                        <a class="ck-dcard__top" href="{% url 'courier:order_detail' order.pk %}">
+                            <span class="sg-qno" style="min-width:40px;height:40px;border-radius:50%">{% if current == "on_delivery" %}{{ order.route_position|default:forloop.counter }}{% elif current == "pending" %}{{ order.packing_label|default:"-" }}{% else %}<i class="bi bi-check2" aria-hidden="true"></i>{% endif %}</span>
+                            <span class="ck-pkg__body"><b>{{ order.customer.name }}</b><small>#{{ order.pk }} · {{ order.delivery_address }}</small></span>
+                            {% if order.payment_method == "TUNAI" %}<span class="sg-pill is-gold">COD</span>{% else %}<span class="sg-pill is-ok">{% translate "Lunas" %}</span>{% endif %}
+                        </a>
+                        <div class="ck-dcard__meta">
+                            <span class="sg-chip"><i class="bi bi-telephone" aria-hidden="true"></i>{{ order.customer.phone_number }}</span>
+                            <span class="sg-chip"><i class="bi bi-box-seam" aria-hidden="true"></i>{% blocktranslate trimmed with n=order.details.count %}{{ n }} barang{% endblocktranslate %}</span>
+                            <b>Rp {{ order.total_payment|rupiah }}</b>
+                        </div>
+                        {% if order.order_status == "DALAM_PENGIRIMAN" %}
+                            <a href="{% url 'courier:handover' order.pk %}" class="ck-btn{% if forloop.first %} is-primary{% endif %}" data-needs-gps><i class="bi bi-check2-circle" aria-hidden="true"></i> {% translate "Sampai, serahkan" %}</a>
+                        {% elif order.order_status == "DIKONFIRMASI" %}
+                            <p class="sg-xs sg-muted sg-mt8 mb-0">{% if order.packing_seq %}{% blocktranslate trimmed with order_packing_label=order.packing_label %}No. packing {{ order_packing_label }} · scan label di toko untuk membawa paket ini.{% endblocktranslate %}{% else %}{% translate "Belum masuk antrean packing." %}{% endif %}</p>
+                        {% elif order.delivered_at %}
+                            <p class="sg-xs sg-muted sg-mt8 mb-0">{% blocktranslate trimmed with t=order.delivered_at|date:"d M H.i" %}Diterima {{ t }}{% endblocktranslate %}</p>
+                        {% endif %}
+                    </li>
                 {% empty %}
-                    <li class="orders-empty">{{ meta.empty }}</li>
+                    <li class="sg-card sg-empty"><i class="bi {{ meta.icon }}" aria-hidden="true"></i>{{ meta.empty }}</li>
                 {% endfor %}
             </ul>
             {% if current == "done" and total_delivered > done_limit %}
-                <p class="mt-3">
+                <p class="sg-sm sg-mt12">
                     {% blocktranslate trimmed with done_limit=done_limit total_delivered=total_delivered %}Menampilkan {{ done_limit }} pengiriman terakhir dari {{ total_delivered }}.{% endblocktranslate %}
-                    <a href="{% url 'courier:history' %}" class="fw-semibold">{% translate "Lihat semua riwayat" %}</a>
+                    <a href="{% url 'courier:history' %}" class="sg-link">{% translate "Lihat semua riwayat" %}</a>
                 </p>
             {% endif %}
         </main>
-        <!-- Modal Dialog -->
-        <dialog class="modal" id="order-modal" aria-labelledby="order-modal-title">
-            <div class="modal__body">
-                <h2 class="modal__title" id="order-modal-title" data-field="customer">{% translate "Nama Pelanggan" %}</h2>
-                <p class="modal__date" data-field="date">0000-00-00 00:00:00</p>
-                <span class="modal__label">{% translate "Daftar Barang" %}</span>
-                <ul class="modal__items" data-field="items">
-                </ul>
-                <div class="modal__row">
-                    <span class="text-muted fw-bold">{% translate "Total Pembayaran" %}</span>
-                    <span class="fs-4 text-brand" data-field="total">Rp 0</span>
-                </div>
-                <div class="modal__row" style="margin-bottom: 0;">
-                    <span class="text-muted fw-bold fs-6">{% translate "Jenis Pembayaran" %}</span>
-                    <span class="badge bg-light text-dark border" data-field="payment">-</span>
-                </div>
-                <p class="modal__address" data-field="address">{% translate "Alamat" %}</p>
-                <div class="modal__actions">
-                    <button type="button" class="btn--cancel" data-action="cancel">{% translate "Tutup" %}</button>
-                    <a href="#" class="btn--confirm" id="modal-confirm-btn">{% translate "Lihat Detail" %}</a>
-                </div>
-            </div>
-        </dialog>
-        <template id="order-item-template">
-            <li class="modal__item">
-                <span class="modal__item-name"></span>
-                <span class="modal__item-price"></span>
-            </li>
-        </template>
-        <script src="{% static 'courier/js/script.js' %}?v=6"></script>
         <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>
 </html>

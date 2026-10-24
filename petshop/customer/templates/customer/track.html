@@ -4,6 +4,7 @@
 {% block title %}{% translate "Lacak Pesanan - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=1">
     {% if order.order_status == "MENUNGGU" or order.order_status == "DIKONFIRMASI" or order.order_status == "DALAM_PENGIRIMAN" %}
         <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
     {% endif %}
@@ -116,7 +117,7 @@
                     {% if courier_name and order.order_status != "DIBATALKAN" %}
                         <div>
                             <dt>{% translate "Kurir" %}</dt>
-                            <dd>{{ courier_name }}</dd>
+                            <dd class="track-courier">{% if courier_photo %}<img class="track-courier__photo" src="{{ courier_photo }}" alt="{% blocktranslate trimmed with name=courier_name %}Foto kurir {{ name }}{% endblocktranslate %}" width="40" height="40">{% endif %}{{ courier_name }}</dd>
                         </div>
                     {% endif %}
                     <div>

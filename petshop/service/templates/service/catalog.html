@@ -1,62 +1,238 @@
 {% extends "customer/base.html" %}
 {% load i18n %}
 {% load static rupiah l10n %}
-{% block title %}{% translate "Layanan Grooming - Seelly Petshop" %}{% endblock %}
+{% block title %}
+    {% translate "Layanan Grooming - Seelly Petshop" %}
+{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux7">
+    <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <section class="container section svc-page">
+        <!-- Ikon (sprite): dipakai lewat <use href="#i-..."> -->
+        <svg width="0"
+             height="0"
+             style="position:absolute"
+             aria-hidden="true"
+             focusable="false">
+            <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="5.5" cy="11" r="2" /><circle cx="9.5" cy="6.5" r="2" /><circle cx="14.5" cy="6.5" r="2" /><circle cx="18.5" cy="11" r="2" />
+            <path d="M12 11.5c-3 0-5.5 3-5.5 5.2 0 1.6 1.3 2.3 2.7 2.3 1 0 1.8-.5 2.8-.5s1.8.5 2.8.5c1.4 0 2.7-.7 2.7-2.3 0-2.2-2.5-5.2-5.5-5.2z" />
+            </symbol>
+            <symbol id="i-dog" viewBox="0 0 24 24">
+            <path d="M8 4.5h8v8.5a4 4 0 0 1-8 0z" />
+            <path d="M8 5.5C5.2 5.5 3.5 7 3.5 10.5v2c0 1.2.9 2 2 2M16 5.5c2.8 0 4.5 1.5 4.5 5v2c0 1.2-.9 2-2 2" />
+            <circle cx="10.3" cy="10" r=".6" fill="currentColor" /><circle cx="13.7" cy="10" r=".6" fill="currentColor" />
+            <path d="M11 13.2h2" />
+            </symbol>
+            <symbol id="i-cat" viewBox="0 0 24 24">
+            <path d="M4.5 4.5l3.5 3h8l3.5-3V12a7.5 7.5 0 0 1-15 0z" />
+            <path d="M10 15.2q2 1.4 4 0" />
+            <circle cx="9.3" cy="11.5" r=".6" fill="currentColor" /><circle cx="14.7" cy="11.5" r=".6" fill="currentColor" /></symbol>
+            <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+            </symbol>
+            <symbol id="i-tag" viewBox="0 0 24 24">
+            <path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V4h9l8.6 8.6a2 2 0 0 1 0 2.8z" />
+            <circle cx="7.5" cy="8.5" r="1.3" /></symbol>
+            <symbol id="i-check" viewBox="0 0 24 24">
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </symbol>
+            <symbol id="i-chevron" viewBox="0 0 24 24">
+            <path d="M6 9l6 6 6-6" />
+            </symbol>
+            <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" />
+            <path d="M8 3v4M16 3v4M3.5 10h17" />
+            </symbol>
+            <symbol id="i-calplus" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" />
+            <path d="M8 3v4M16 3v4M12 11v6M9 14h6" />
+            </symbol>
+            <symbol id="i-note" viewBox="0 0 24 24">
+            <path d="M5 20l1-4L17 5l3 3L9 19z" />
+            </symbol>
+            <symbol id="i-home" viewBox="0 0 24 24">
+            <path d="M3 11l9-7.5 9 7.5M5.5 9.5V20h13V9.5" />
+            </symbol>
+            <symbol id="i-arrow" viewBox="0 0 24 24">
+            <path d="M4 12h15M13 6l6 6-6 6" />
+            </symbol>
+        </svg>
         <header class="svc-head">
-            <div>
-                <h1 class="svc-title"><i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Layanan Grooming &amp; Perawatan" %}</h1>
-                <p class="muted mb-0">{% translate "Pilih layanan, tentukan jadwal datang, dan groomer kami siap merawat hewan kesayangan Anda." %}</p>
+            <div class="svc-head__text">
+                <h1 class="svc-title">{% translate "Layanan Grooming &amp; Perawatan" %}</h1>
+                <p class="svc-lead">{% translate "Pilih layanan, tentukan jadwal datang, dan groomer kami siap merawat hewan kesayangan Anda." %}</p>
             </div>
             {% if is_customer %}
                 <div class="svc-head__links">
-                    <a href="{% url 'service:my_pets' %}" class="btn-ghost"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Hewan Saya" %}</a>
-                    <a href="{% url 'service:my_bookings' %}" class="btn-ghost"><i class="fas fa-calendar-check" aria-hidden="true"></i> {% translate "Booking Saya" %}</a>
+                    <a href="{% url 'service:my_pets' %}" class="svc-pill">
+                        <svg class="ic ic--fill" width="18" height="18" aria-hidden="true">
+                            <use href="#i-paw" />
+                        </svg>
+                    {% translate "Hewan Saya" %}</a>
+                    <a href="{% url 'service:my_bookings' %}" class="svc-pill">
+                        <svg class="ic" width="18" height="18" aria-hidden="true">
+                            <use href="#i-cal" />
+                        </svg>
+                    {% translate "Booking Saya" %}</a>
                 </div>
             {% endif %}
         </header>
         {% include "service/_site_messages.html" %}
         <div class="svc-layout">
-            <div>
-                <ul class="svc-grid">
+            <!-- Bagian Kiri: Grid Layanan (bento) -->
+            <div class="svc-services">
+                {% if services %}
+                    <div class="svc-filter"
+                         role="group"
+                         aria-label="{% translate 'Filter jenis hewan' %}">
+                        <button type="button"
+                                class="svc-chip is-on"
+                                data-pet-filter="all"
+                                aria-pressed="true">
+                            <svg class="ic ic--fill" width="16" height="16" aria-hidden="true">
+                                <use href="#i-paw" />
+                            </svg>
+                            {% translate "Semua" %}
+                        </button>
+                        <button type="button"
+                                class="svc-chip"
+                                data-pet-filter="anjing"
+                                aria-pressed="false">
+                            <svg class="ic" width="18" height="18" aria-hidden="true">
+                                <use href="#i-dog" />
+                            </svg>
+                            {% translate "Anjing" %}
+                        </button>
+                        <button type="button"
+                                class="svc-chip"
+                                data-pet-filter="kucing"
+                                aria-pressed="false">
+                            <svg class="ic" width="18" height="18" aria-hidden="true">
+                                <use href="#i-cat" />
+                            </svg>
+                            {% translate "Kucing" %}
+                        </button>
+                    </div>
+                {% endif %}
+                <ul class="groom-grid">
                     {% for s in services %}
-                        <li class="svc-card">
-                            <div class="svc-card__top">
-                                <h2>{{ s.name }}</h2>
-                                <span class="svc-chip">{{ s.get_pet_type_display }}</span>
+                        <li class="groom-card {% if request.GET.layanan == s.pk|stringformat:'s' %}is-active{% endif %}"
+                            data-pet="{{ s.get_pet_type_display|slugify }}">
+                            <svg class="groom-wm ic ic--fill"
+                                 width="140"
+                                 height="140"
+                                 aria-hidden="true">
+                                <use href="#i-paw" />
+                            </svg>
+                            <div class="groom-card__main">
+                                <div class="groom-card__head">
+                                    <div class="groom-card__top">
+                                        <span class="groom-badge">
+                                            <span class="groom-ti" aria-hidden="true">
+                                                <svg class="ic ic--fill ic-paw" width="18" height="18">
+                                                    <use href="#i-paw" />
+                                                </svg>
+                                                <svg class="ic ic-dog" width="20" height="20">
+                                                    <use href="#i-dog" />
+                                                </svg>
+                                                <svg class="ic ic-cat" width="20" height="20">
+                                                    <use href="#i-cat" />
+                                                </svg>
+                                            </span>
+                                            {{ s.get_pet_type_display }}
+                                        </span>
+                                        {% if request.GET.layanan == s.pk|stringformat:"s" %}
+                                            <span class="groom-flag">
+                                                <svg class="ic"
+                                                     width="14"
+                                                     height="14"
+                                                     stroke-width="3"
+                                                     aria-hidden="true">
+                                                    <use href="#i-check" />
+                                                </svg>
+                                            {% translate "Dipilih" %}</span>
+                                        {% endif %}
+                                    </div>
+                                    <h2 class="groom-title">{{ s.name }}</h2>
+                                    {% if s.description %}
+                                        <p class="groom-desc">{{ s.description }}</p>
+                                    {% endif %}
+                                </div>
+                                <details class="groom-steps"
+                                         {% if request.GET.layanan == s.pk|stringformat:'s' %} open{% endif %}>
+                                    <summary>
+                                        <span>{% translate "Lihat tahapan" %}</span>
+                                        <svg class="ic toggle-icon" width="16" height="16" aria-hidden="true">
+                                            <use href="#i-chevron" />
+                                        </svg>
+                                    </summary>
+                                    <ol>
+                                        {% for name in s.step_names %}
+                                            <li>{{ name }}</li>
+                                        {% endfor %}
+                                    </ol>
+                                </details>
                             </div>
-                            {% if s.description %}<p class="muted">{{ s.description }}</p>{% endif %}
-                            <details class="svc-steps-preview">
-                                <summary>{% translate "Tahapan pengerjaan" %}</summary>
-                                <ol>{% for name in s.step_names %}<li>{{ name }}</li>{% endfor %}</ol>
-                            </details>
-                            <div class="svc-card__foot">
-                                <span class="svc-price">Rp {{ s.price|rupiah }}</span>
-                                <span class="muted"><i class="far fa-clock" aria-hidden="true"></i> {% blocktranslate trimmed with s_duration_minutes=s.duration_minutes %}± {{ s_duration_minutes }} menit{% endblocktranslate %}</span>
-                            </div>
-                            <a class="btn-soft svc-pick" href="?layanan={{ s.pk }}#booking">{% translate "Pilih layanan ini" %}</a>
-                        </li>
+                            <div class="groom-card__side">
+                                <div class="groom-card__body">
+                                    <div class="groom-price-box">
+                                        <div class="groom-price-info">
+                                            <span class="price-label">{% translate "Harga mulai" %}</span>
+                                            <span class="price-value">
+                                                <svg class="ic" width="22" height="22" aria-hidden="true">
+                                                    <use href="#i-tag" />
+                                                </svg>Rp {{ s.price|rupiah }}</span>
+                                            </div>
+                                            <div class="groom-time-badge">
+                                                <svg class="ic" width="16" height="16" aria-hidden="true">
+                                                    <use href="#i-clock" />
+                                                </svg>
+                                                {% blocktranslate trimmed with s_duration_minutes=s.duration_minutes %}
+                                                    ± {{ s_duration_minutes }} mnt
+                                                {% endblocktranslate %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="groom-card__foot">
+                                        <a href="?layanan={{ s.pk }}#booking"
+                                           {% if request.GET.layanan == s.pk|stringformat:'s' %}aria-current="true"{% endif %}
+                                           class="groom-btn {% if request.GET.layanan == s.pk|stringformat:'s' %}btn-selected{% else %}btn-outline{% endif %}">
+                                            {% if request.GET.layanan == s.pk|stringformat:"s" %}
+                                                <svg class="ic"
+                                                     width="18"
+                                                     height="18"
+                                                     stroke-width="3"
+                                                     aria-hidden="true">
+                                                    <use href="#i-check" />
+                                                </svg>
+                                                {% translate "Layanan terpilih" %}
+                                            {% else %}
+                                                {% translate "Pilih layanan" %}
+                                            {% endif %}
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
                     {% empty %}
-                        <li class="empty-state">
-                            <i class="fas fa-scissors" aria-hidden="true"></i>
+                        <li class="empty-state svc-wide">
+                            <i class="fas fa-bath" aria-hidden="true"></i>
                             <h2>{% translate "Belum ada layanan" %}</h2>
                             <p>{% translate "Layanan grooming akan segera tersedia." %}</p>
                         </li>
                     {% endfor %}
                 </ul>
             </div>
+            <!-- Bagian Kanan: Form Booking -->
             <aside class="svc-booking" id="booking" aria-labelledby="booking-title">
-                <h2 id="booking-title">{% translate "Booking Layanan" %}</h2>
+                <h2 id="booking-title">{% translate "Booking layanan" %}</h2>
                 {% if not user.is_authenticated %}
                     <p class="muted">{% translate "Masuk atau daftar akun customer untuk membuat booking dan memantau statusnya (konfirmasi → check-in & antrean → tiap tahap dengan foto → selesai)." %}</p>
                     <div class="svc-auth">
-                        <a class="btn-primary-seelly" href="{% url 'login_form' %}?next={% url 'service:catalog' %}">{% translate "Masuk" %}</a>
-                        <a class="btn-ghost" href="{% url 'register' %}?next={% url 'service:catalog' %}">{% translate "Daftar" %}</a>
+                        <a class="btn-primary-seelly"
+                           href="{% url 'login_form' %}?next={% url 'service:catalog' %}">{% translate "Masuk" %}</a>
+                        <a class="btn-ghost"
+                           href="{% url 'register' %}?next={% url 'service:catalog' %}">{% translate "Daftar" %}</a>
                     </div>
                 {% elif not is_customer %}
                     <p class="muted">{% translate "Anda masuk sebagai pegawai. Booking untuk pelanggan dibuat lewat menu" %} <strong>{% translate "Booking Layanan" %}</strong> {% translate "di halaman staf." %}</p>
@@ -64,38 +240,76 @@
                     <form method="post" novalidate data-booking-form>
                         {% csrf_token %}
                         {% if form.non_field_errors %}<div class="svc-alert svc-alert--error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-                        {% include "service/_field.html" with field=form.service %}
+                        {% include "service/_field.html" with field=form.service icon="tag" %}
                         {% if form.pet.field.queryset.exists %}
-                            {% include "service/_field.html" with field=form.pet %}
+                            {% include "service/_field.html" with field=form.pet icon="paw" %}
                         {% else %}
                             {{ form.pet }}
                         {% endif %}
                         <div data-new-pet>
-                            {% include "service/_field.html" with field=form.pet_name hide_optional=True %}
+                            {% include "service/_field.html" with field=form.pet_name hide_optional=True icon="paw" %}
                             {% include "service/_field.html" with field=form.pet_type hide_optional=True %}
                             {% if not form.pet.field.queryset.exists %}
                                 <p class="muted svc-hint"><a href="{% url 'service:add_pet' %}">{% translate "Simpan profil hewan" %}</a> {% translate "supaya booking berikutnya lebih cepat dan riwayat perawatannya tercatat." %}</p>
                             {% endif %}
                         </div>
-                        {% include "service/_field.html" with field=form.schedule %}
-                        {% include "service/_field.html" with field=form.note %}
+                        {% include "service/_field.html" with field=form.schedule icon="cal" %}
+                        {% include "service/_field.html" with field=form.note icon="note" %}
                         <fieldset class="svc-transport">
                             <legend>{% translate "Antar-jemput hewan" %} <span class="muted">{% translate "(opsional)" %}</span></legend>
-                            <label class="svc-check">{{ form.pickup }} {{ form.pickup.label }}</label>
-                            <label class="svc-check">{{ form.return_trip }} {{ form.return_trip.label }}</label>
+                            <label class="svc-check">
+                                <svg class="ic" width="20" height="20" aria-hidden="true">
+                                    <use href="#i-home" />
+                                </svg><span>{{ form.pickup.label }}</span>{{ form.pickup }}
+                            </label>
+                            <label class="svc-check">
+                                <svg class="ic" width="20" height="20" aria-hidden="true">
+                                    <use href="#i-arrow" />
+                                </svg><span>{{ form.return_trip.label }}</span>{{ form.return_trip }}
+                            </label>
                             <div class="svc-transport__detail" data-transport-detail>
-                                <p class="muted svc-hint">{% blocktranslate trimmed with store_pickup_base_fee=store.pickup_base_fee|rupiah store_pickup_base_km=store.pickup_base_km|unlocalize store_pickup_per_km=store.pickup_per_km|rupiah %}Kurir dengan kandang khusus hewan. Tarif Rp {{ store_pickup_base_fee }} untuk {{ store_pickup_base_km }} km pertama + Rp {{ store_pickup_per_km }}/km, per perjalanan. Dibayar di toko bersama biaya layanan.{% endblocktranslate %}</p>
+                                <p class="muted svc-hint">
+                                    {% blocktranslate trimmed with store_pickup_base_fee=store.pickup_base_fee|rupiah store_pickup_base_km=store.pickup_base_km|unlocalize store_pickup_per_km=store.pickup_per_km|rupiah %}
+                                        Kurir dengan kandang khusus hewan. Tarif Rp {{ store_pickup_base_fee }} untuk {{ store_pickup_base_km }} km pertama + Rp {{ store_pickup_per_km }}/km, per perjalanan, dibayar bersama biaya layanan. Bila hewan diantar pulang, bayar lewat transfer setelah jadwal dikonfirmasi; kurir berangkat mengantar setelah booking lunas.
+                                    {% endblocktranslate %}
+                                </p>
                                 {% include "service/_field.html" with field=form.address %}
                                 <button type="button" class="btn-ghost btn-sm-soft" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
-                                <div class="svc-map" data-map-picker data-default-lat="{{ store.latitude|unlocalize }}" data-default-lng="{{ store.longitude|unlocalize }}" role="application" aria-label="{% translate 'Peta lokasi jemput/antar' %}"></div>
+                                <div class="svc-map"
+                                     data-map-picker
+                                     data-default-lat="{{ store.latitude|unlocalize }}"
+                                     data-default-lng="{{ store.longitude|unlocalize }}"
+                                     role="application"
+                                     aria-label="{% translate 'Peta lokasi jemput/antar' %}"></div>
                                 {{ form.latitude }}{{ form.longitude }}
                                 <p class="muted svc-hint">{% translate "Ketuk peta atau geser pin ke titik rumah Anda." %}</p>
                             </div>
                         </fieldset>
-                        <p class="muted svc-hint">{% blocktranslate trimmed with store_hours_display=store.hours_display %}Jam layanan {{ store_hours_display }}. Booking dikonfirmasi toko, lalu tunjukkan QR booking saat check-in. Bayar di toko setelah layanan selesai.{% endblocktranslate %}</p>
-                        <button type="submit" class="btn-primary-seelly w-100">
-                            <i class="fas fa-calendar-plus" aria-hidden="true"></i> {% translate "Buat Booking" %}
+                        <fieldset class="svc-transport svc-pay">
+                            <legend>{% translate "Cara bayar" %}</legend>
+                            {% for choice in form.payment_choice %}
+                                <label class="svc-check svc-check--two" for="{{ choice.id_for_label }}">
+                                    <svg class="ic" width="20" height="20" aria-hidden="true">
+                                        <use href="#{% if choice.data.value == 'TRANSFER' %}i-clock{% else %}i-tag{% endif %}" />
+                                    </svg>
+                                    <span>{{ choice.choice_label }}
+                                        <small class="svc-check__sub">{% if choice.data.value == 'TRANSFER' %}{% blocktranslate trimmed with h=store.payment_deadline_hours %}Bayar maks. {{ h }} jam setelah jadwal dikonfirmasi. Lewat dari itu tanpa bukti bayar, booking dibatalkan otomatis.{% endblocktranslate %}{% else %}{% translate "Bayar tunai, transfer, atau QRIS di kasir saat datang." %}{% endif %}</small>
+                                    </span>{{ choice.tag }}
+                                </label>
+                            {% endfor %}
+                            {% for e in form.payment_choice.errors %}<p class="svc-error">{{ e }}</p>{% endfor %}
+                        </fieldset>
+                        <button type="submit" class="btn-primary-seelly svc-cta w-100">
+                            <svg class="ic" width="22" height="22" aria-hidden="true">
+                                <use href="#i-calplus" />
+                            </svg>
+                            {% translate "Buat booking" %}
                         </button>
+                        <p class="muted svc-hint svc-note">
+                            {% blocktranslate trimmed with store_hours_display=store.hours_display %}
+                                Jam layanan {{ store_hours_display }}. Booking dikonfirmasi toko, lalu tunjukkan QR booking saat check-in. Bayar di toko setelah layanan selesai.
+                            {% endblocktranslate %}
+                        </p>
                     </form>
                 {% endif %}
             </aside>
@@ -103,6 +317,7 @@
     </section>
 {% endblock %}
 {% block extra_js %}
+    <script src="{% static 'service/js/catalog_filter.js' %}?v=1"></script>
     {% if is_customer %}
         <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
         <script src="{% static 'store/js/map_picker.js' %}?v=1"></script>

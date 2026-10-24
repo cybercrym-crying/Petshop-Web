@@ -2,68 +2,85 @@
 {% load i18n %}
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Antrean Packing" %}{% endblock %}
-{% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
-    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
-{% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <div class="mb-4">
-            <p class="eyebrow">{% translate "Penjualan" %}</p>
-            <h1 class="page-title mb-1">{% translate "Antrean Packing" %}</h1>
-            <p class="text-muted mb-0">{% translate "Order yang sudah dikonfirmasi dan lunas (atau COD) mendapat nomor urut harian. Kemas sesuai urutan, tempel label ber-QR, lalu tandai siap diambil kurir." %}</p>
-        </div>
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
-        {% endfor %}
-        <h2 class="h6 fw-bold text-uppercase text-muted mb-3">{% blocktranslate trimmed with to_pack=to_pack|length %}Belum dikemas ({{ to_pack }}){% endblocktranslate %}</h2>
-        <div class="row g-3 mb-5">
-            {% for o in to_pack %}
-                <div class="col-12 col-md-6 col-xl-4">
-                    <article class="card-custom so-card so-pack">
-                        <div class="so-pack__num" title="{% blocktranslate trimmed with o_packing_date=o.packing_date|date:'d M' %}Nomor urut packing {{ o_packing_date }}{% endblocktranslate %}">{{ o.packing_label }}<small>{{ o.packing_date|date:"d/m" }}</small></div>
-                        <div class="so-pack__body">
-                            <div class="fw-bold">{% blocktranslate trimmed with o_pk=o.pk o_customer_name=o.customer.name %}Order #{{ o_pk }} · {{ o_customer_name }}{% endblocktranslate %}</div>
-                            <div class="small text-muted">{{ o.tracking_number }} · {{ o.packing_date|date:"d M" }} · {{ o.get_payment_method_display }}{% if o.payment_method == "TUNAI" %} {% blocktranslate trimmed with o_total_payment=o.total_payment|rupiah %}(tagih Rp {{ o_total_payment }}){% endblocktranslate %}{% endif %}</div>
-                            <ul class="so-items">
-                                {% for d in o.details.all %}<li>{{ d.quantity }}× {{ d.product.name }}</li>{% endfor %}
-                            </ul>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{% url 'transaction:print_label' o.pk %}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary"><i class="bi bi-printer"></i> {% translate "Cetak label" %}</a>
-                                <form method="post" action="{% url 'transaction:update_status' o.pk %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="next" value="packing">
-                                    <button type="submit" name="action" value="packed" class="btn btn-sm btn-primary fw-bold"><i class="bi bi-box-seam"></i> {% translate "Sudah dikemas" %}</button>
-                                </form>
+    {% with tab=request.GET.tab|default:"kemas" %}
+    <div class="sg sg-page">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Penjualan" %}</p>
+                <h1>{% translate "Antrean Packing" %}</h1>
+                <p>{% translate "Order yang sudah dikonfirmasi dan lunas (atau COD) mendapat nomor urut harian. Kemas sesuai urutan, tempel label ber-QR, lalu tandai siap diambil kurir." %}</p>
+            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        <nav class="sg-seg" aria-label="{% translate 'Antrean Packing' %}">
+            <a href="?tab=kemas" class="{% if tab != 'siap' %}is-on{% endif %}"{% if tab != 'siap' %} aria-current="page"{% endif %}>{% translate "Belum dikemas" %} <span class="sg-c">{{ to_pack|length }}</span></a>
+            <a href="?tab=siap" class="{% if tab == 'siap' %}is-on{% endif %}"{% if tab == 'siap' %} aria-current="page"{% endif %}>{% translate "Siap diambil kurir" %} <span class="sg-c">{{ packed|length }}</span></a>
+        </nav>
+        {% if tab != "siap" %}
+            <div class="sg-cards sg-mt16">
+                {% for o in to_pack %}
+                    <article class="sg-card is-sm">
+                        <div class="sg-row is-top">
+                            <span class="sg-qno{% if forloop.first %} is-on{% endif %}" style="height:60px" title="{% blocktranslate trimmed with o_packing_date=o.packing_date|date:'d M' %}Nomor urut packing {{ o_packing_date }}{% endblocktranslate %}">{{ o.packing_label }}<small>{{ o.packing_date|date:"d/m" }}</small></span>
+                            <div style="min-width:0">
+                                <b>{% blocktranslate trimmed with o_pk=o.pk o_customer_name=o.customer.name %}Order #{{ o_pk }} · {{ o_customer_name }}{% endblocktranslate %}</b>
+                                <div class="sg-xs sg-muted">{{ o.tracking_number }} · {{ o.get_payment_method_display }}{% if o.payment_method == "TUNAI" %} {% blocktranslate trimmed with o_total_payment=o.total_payment|rupiah %}(tagih Rp {{ o_total_payment }}){% endblocktranslate %}{% endif %}</div>
                             </div>
                         </div>
+                        <ul class="sg-sm" style="margin:12px 0 0 18px;padding:0;line-height:1.7">
+                            {% for d in o.details.all %}<li>{{ d.quantity }}× {{ d.product.name }}</li>{% endfor %}
+                        </ul>
+                        <div class="sg-row sg-mt12">
+                            <a href="{% url 'transaction:print_label' o.pk %}" target="_blank" rel="noopener" class="ui-btn ui-btn--sm"><i class="bi bi-qr-code" aria-hidden="true"></i>{% translate "Cetak label" %}</a>
+                            <form method="post" action="{% url 'transaction:update_status' o.pk %}" style="flex:1">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="packing">
+                                <button type="submit" name="action" value="packed" class="ui-btn ui-btn--sm ui-btn--block{% if forloop.first %} ui-btn--primary{% endif %}"><i class="bi bi-box-seam" aria-hidden="true"></i>{% translate "Sudah dikemas" %}</button>
+                            </form>
+                        </div>
                     </article>
-                </div>
-            {% empty %}
-                <div class="col-12"><p class="text-muted">{% translate "Tidak ada pesanan yang perlu dikemas." %}</p></div>
-            {% endfor %}
-        </div>
-        <h2 class="h6 fw-bold text-uppercase text-muted mb-3">{% blocktranslate trimmed with packed=packed|length %}Siap diambil kurir ({{ packed }}){% endblocktranslate %}</h2>
-        <div class="card-custom so-card">
-            <div class="table-responsive">
-                <table data-stack class="table table-custom align-middle mb-0">
-                    <thead><tr><th>{% translate "No." %}</th><th>{% translate "Order" %}</th><th>{% translate "Pelanggan" %}</th><th>{% translate "Kurir" %}</th><th>{% translate "Dikemas" %}</th><th></th></tr></thead>
-                    <tbody>
-                        {% for o in packed %}
-                            <tr>
-                                <td class="fw-bold">{{ o.packing_label }}<div class="small text-muted fw-normal">{{ o.packing_date|date:"d/m" }}</div></td>
-                                <td>#{{ o.pk }}<div class="small text-muted">{{ o.tracking_number }}</div></td>
-                                <td>{{ o.customer.name }}</td>
-                                <td>{% if o.courier %}{{ o.courier.name }}{% else %}<span class="text-muted">{% translate "Belum ada" %}</span>{% endif %}</td>
-                                <td class="small">{{ o.packed_at|date:"d M H:i" }}</td>
-                                <td><a href="{% url 'transaction:print_label' o.pk %}" target="_blank" rel="noopener" class="btn btn-sm btn-light"><i class="bi bi-printer" aria-hidden="true"></i> {% translate "Cetak ulang" %}</a></td>
-                            </tr>
-                        {% empty %}
-                            <tr><td colspan="6" class="text-muted">{% translate "Belum ada paket siap diambil." %}</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                    {% if forloop.first %}
+                        <aside class="sg-card is-sm is-gold">
+                            <p class="sg-eyebrow">{% translate "Label yang dicetak" %}</p>
+                            <div class="sg-row is-top sg-mt12" style="border:2px dashed var(--sg-line);border-radius:16px;padding:14px;background:var(--sg-card)">
+                                <img src="{% url 'transaction:label_qr' o.pk %}" alt="" width="88" height="88" style="border-radius:8px;background:#fff;flex:none">
+                                <div style="min-width:0">
+                                    <div class="sg-big" style="line-height:1">{{ o.packing_label }}</div>
+                                    <b class="sg-sm">{{ o.customer.name }}</b>
+                                    <div class="sg-xs sg-muted">{{ o.tracking_number }}</div>
+                                </div>
+                            </div>
+                            <p class="sg-xs sg-muted sg-mt12 mb-0">{% translate "Kurir memindai QR ini di menu Ambil Paket; status langsung berubah menjadi Dalam pengiriman." %}</p>
+                        </aside>
+                    {% endif %}
+                {% empty %}
+                    <p class="sg-card sg-empty"><i class="bi bi-box2-heart" aria-hidden="true"></i>{% translate "Tidak ada pesanan yang perlu dikemas." %}</p>
+                {% endfor %}
             </div>
-        </div>
+        {% else %}
+            <section class="sg-card sg-mt16">
+                <div class="sg-tbl-box">
+                    <table class="sg-tbl is-stack">
+                        <thead><tr><th>{% translate "No." %}</th><th>{% translate "Order" %}</th><th>{% translate "Pelanggan" %}</th><th>{% translate "Kurir" %}</th><th>{% translate "Dikemas" %}</th><th></th></tr></thead>
+                        <tbody>
+                            {% for o in packed %}
+                                <tr>
+                                    <td><span class="sg-qno" style="height:44px;min-width:52px">{{ o.packing_label }}<small>{{ o.packing_date|date:"d/m" }}</small></span></td>
+                                    <td data-label="{% translate 'Order' %}"><b>#{{ o.pk }}</b><div class="sg-xs sg-muted">{{ o.tracking_number }}</div></td>
+                                    <td data-label="{% translate 'Pelanggan' %}">{{ o.customer.name }}</td>
+                                    <td data-label="{% translate 'Kurir' %}">{% if o.courier %}<span class="sg-pill is-pri">{{ o.courier.name }}</span>{% else %}<span class="sg-pill is-line">{% translate "Belum ada" %}</span>{% endif %}</td>
+                                    <td data-label="{% translate 'Dikemas' %}" class="sg-sm">{{ o.packed_at|date:"d M H.i" }}</td>
+                                    <td class="is-num"><a href="{% url 'transaction:print_label' o.pk %}" target="_blank" rel="noopener" class="ui-btn ui-btn--sm"><i class="bi bi-printer" aria-hidden="true"></i>{% translate "Cetak ulang" %}</a></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="6"><p class="sg-empty"><i class="bi bi-truck" aria-hidden="true"></i>{% translate "Belum ada paket siap diambil." %}</p></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% endif %}
     </div>
+    {% endwith %}
 {% endblock %}

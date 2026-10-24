@@ -1,0 +1,17 @@
+/* Dibuat otomatis oleh `python manage.py build_dark_css` dari cart.css. Jangan diubah manual. */
+html[data-theme="dark"] .cart-loading { color: #b9adc7; }
+html[data-theme="dark"] .cart-notice--info { background: #18121f; border: 1px solid #2e4560; color: #92a8e7; }
+html[data-theme="dark"] .cart-notice--warn { background: #18121f; border: 1px solid #60492e; color: #f1a288; }
+html[data-theme="dark"] .cart-item { background: #211a2b; border: 1px solid #3a2f48; box-shadow: 0 2px 10px rgba(107, 33, 168, 0.08); }
+html[data-theme="dark"] .cart-item__photo { background: #18121f; color: #d2aee9; }
+html[data-theme="dark"] .cart-item__name { color: #f1ebf7; }
+html[data-theme="dark"] a.cart-item__name:hover { color: #d8b4fe; }
+html[data-theme="dark"] .cart-item__price { color: #b9adc7; }
+html[data-theme="dark"] .cart-item__stock { color: #f5b584; }
+html[data-theme="dark"] .cart-item__subtotal { color: #f1ebf7; }
+html[data-theme="dark"] .cart-item__remove { border: 0; background: transparent; color: #b9adc7; }
+html[data-theme="dark"] .cart-item__remove:hover { background: #3f1818; color: #ed8d8d; }
+html[data-theme="dark"] .cart-summary { background: #211a2b; border: 1px solid #3a2f48; box-shadow: 0 2px 10px rgba(107, 33, 168, 0.08); }
+html[data-theme="dark"] .cart-summary__muted { color: #b9adc7; }
+html[data-theme="dark"] .cart-summary__total { border-top: 1px dashed #3a2f48; }
+html[data-theme="dark"] .cart-summary__total strong { color: #d8b4fe; }

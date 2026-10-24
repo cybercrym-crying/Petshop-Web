@@ -150,3 +150,7 @@
 }
 .track-pin-icon--home span { background: var(--success); }
 .track-pin-icon--store span { background: var(--accent); }
+
+/* Foto kurir (diunggah kurir di Akun Saya) */
+.track-courier { display: flex; align-items: center; gap: 10px; }
+.track-courier__photo { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple-200); }

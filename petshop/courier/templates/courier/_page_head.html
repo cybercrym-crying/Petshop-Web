@@ -1,0 +1,11 @@
+{% load i18n %}
+{% comment %}Kepala halaman kurir: {% include "courier/_page_head.html" with back=url title=... lead=... eyebrow=... pill=... %}{% endcomment %}
+<header class="ck-pghd">
+    {% if back %}<a href="{{ back }}" class="ck-pghd__back" aria-label="{% translate 'Kembali' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i></a>{% endif %}
+    <div class="ck-pghd__text">
+        {% if eyebrow %}<p class="sg-eyebrow">{{ eyebrow }}</p>{% endif %}
+        <h1>{{ title }}</h1>
+        {% if lead %}<p>{{ lead }}</p>{% endif %}
+    </div>
+    {% if pill %}<span class="sg-pill is-pri">{{ pill }}</span>{% endif %}
+</header>

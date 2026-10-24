@@ -2,72 +2,85 @@
 {% load i18n %}
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Retur" %}{% endblock %}
-{% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
-    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
-    <link href="{% static 'transaction/css/pos_pages.css' %}?v=2" rel="stylesheet" />
-{% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <div class="mb-4">
-            <p class="eyebrow">{% translate "Penjualan" %}</p>
-            <h1 class="page-title mb-1">{% translate "Retur & Tukar Barang" %}</h1>
-            <p class="text-muted mb-0">{% translate "Kasir mengajukan retur dari halaman struk. Admin menyetujui (stok kembali, uang dikembalikan) atau menolak dengan alasan." %}</p>
-        </div>
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
-        {% endfor %}
-        <nav class="pos-tabs mb-3">
-            {% for value, label in statuses %}
-                <a href="?status={{ value }}" class="{% if value == status %}active{% endif %}">{{ label }}</a>
+    <div class="sg sg-page">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Penjualan" %}</p>
+                <h1>{% translate "Retur & Tukar Barang" %}</h1>
+                <p>{% translate "Kasir mengajukan retur dari halaman struk. Admin menyetujui (stok kembali, uang dikembalikan) atau menolak dengan alasan." %}</p>
+            </div>
+            <div class="sg-hd__actions">
+                <a href="{% url 'transaction:manage_transaction' %}?view=list" class="ui-btn ui-btn--gold"><i class="bi bi-receipt" aria-hidden="true"></i>{% translate "Ajukan retur dari struk" %}</a>
+            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        <nav class="sg-seg" aria-label="{% translate 'Status retur' %}">
+            {% for value, label, n in tabs %}
+                <a href="?status={{ value }}" class="{% if value == status %}is-on{% endif %}"{% if value == status %} aria-current="page"{% endif %}>{{ label }} <span class="sg-c">{{ n }}</span></a>
             {% endfor %}
         </nav>
-        {% for r in items %}
-            <article class="card-custom so-card mb-3">
-                <div class="d-flex justify-content-between flex-wrap gap-2">
-                    <div>
-                        <div class="fw-bold">
-                            {% blocktranslate trimmed with pk=r.pk no=r.order.receipt_no|default:r.order.pk %}Retur #{{ pk }} · {{ no }}{% endblocktranslate %}
-                            <span class="pos-pill pos-pill-{{ r.status|lower }}">{{ r.get_status_display }}</span>
+        <div class="sg-grid sg-mt16">
+            <div class="sg-s8">
+                {% for r in items %}
+                    <article class="sg-card{% if not forloop.first %} sg-mt16{% endif %}">
+                        <div class="sg-row is-wrap">
+                            <span class="sg-av" aria-hidden="true"><i class="bi bi-arrow-counterclockwise"></i></span>
+                            <div style="min-width:0;flex:1 1 260px">
+                                <b style="font-size:1.1rem">{% blocktranslate trimmed with pk=r.pk no=r.order.receipt_no|default:r.order.pk %}Retur #{{ pk }} · {{ no }}{% endblocktranslate %}</b>
+                                <div class="sg-sm sg-muted">
+                                    {% blocktranslate trimmed with when=r.requested_at|date:"d M Y, H.i" who=r.requested_by.display_name buyer=r.order.buyer_display %}
+                                        {{ when }} · diajukan {{ who }} · pembeli {{ buyer }}
+                                    {% endblocktranslate %}
+                                </div>
+                            </div>
+                            <span class="sg-pill {% if r.status == 'MENUNGGU' %}is-gold{% elif r.status == 'DISETUJUI' %}is-ok{% else %}is-bad{% endif %}">{{ r.get_status_display }}</span>
                         </div>
-                        <div class="small text-muted">
-                            {% blocktranslate trimmed with when=r.requested_at|date:"d M Y, H:i" who=r.requested_by.display_name buyer=r.order.buyer_display %}
-                                {{ when }} · diajukan {{ who }} · pembeli {{ buyer }}
-                            {% endblocktranslate %}
+                        <div class="sg-grid is-tight sg-mt16">
+                            <div class="sg-sub sg-s7">
+                                <p class="sg-eyebrow">{% translate "Barang diretur" %}</p>
+                                <ul class="sg-lines sg-mt8">
+                                    {% for line in r.lines.all %}<li><span>{{ line.quantity }}× {{ line.detail.product.name }}</span><b>Rp {{ line.amount|rupiah }}</b></li>{% endfor %}
+                                    <li class="is-tot"><span>{% translate "Dikembalikan" %}</span><b>Rp {{ r.refund_amount|rupiah }}</b></li>
+                                </ul>
+                            </div>
+                            <dl class="sg-kv sg-s5" style="grid-template-columns:1fr">
+                                <div><dt>{% translate "Alasan" %}</dt><dd>{{ r.reason }}</dd></div>
+                                <div><dt>{% translate "Uang kembali lewat" %}</dt><dd>{{ r.get_refund_method_display }}</dd></div>
+                            </dl>
                         </div>
-                    </div>
-                    <div class="so-amount">Rp {{ r.refund_amount|rupiah }}</div>
-                </div>
-                <ul class="so-items">
-                    {% for line in r.lines.all %}<li>{{ line.quantity }} x {{ line.detail.product.name }} · Rp {{ line.amount|rupiah }}</li>{% endfor %}
-                </ul>
-                <p class="small mb-2">
-                    <strong>{% translate "Alasan:" %}</strong> {{ r.reason }} ·
-                    {% blocktranslate trimmed with method=r.get_refund_method_display %}dikembalikan lewat {{ method }}{% endblocktranslate %}
-                </p>
-                {% if r.decided_at %}
-                    <p class="small text-muted mb-0">
-                        {% blocktranslate trimmed with who=r.decided_by.display_name|default:"-" when=r.decided_at|date:"d M Y, H:i" %}Diputuskan {{ who }}, {{ when }}{% endblocktranslate %}{% if r.decision_note %}: {{ r.decision_note }}{% endif %}
-                    </p>
-                {% endif %}
-                {% if can_decide and r.status == "MENUNGGU" %}
-                    <form method="post" action="{% url 'transaction:return_decide' r.pk %}" class="row g-2 align-items-end mt-1">
-                        {% csrf_token %}
-                        <div class="col-sm-6">
-                            <input name="note" class="form-control form-control-sm" maxlength="255" placeholder="{% translate 'Catatan (wajib bila ditolak)' %}" aria-label="{% translate 'Catatan keputusan' %}">
+                        {% if r.decided_at %}
+                            <p class="sg-alert {% if r.status == 'DISETUJUI' %}is-ok{% else %}is-bad{% endif %} sg-sm sg-mt12">
+                                <i class="bi bi-person-check" aria-hidden="true"></i>
+                                <span>{% blocktranslate trimmed with who=r.decided_by.display_name|default:"-" when=r.decided_at|date:"d M Y, H.i" %}Diputuskan {{ who }}, {{ when }}{% endblocktranslate %}{% if r.decision_note %}: {{ r.decision_note }}{% endif %}</span>
+                            </p>
+                        {% endif %}
+                        {% if can_decide and r.status == "MENUNGGU" %}
+                            <form method="post" action="{% url 'transaction:return_decide' r.pk %}" class="sg-form sg-row is-wrap sg-mt16">
+                                {% csrf_token %}
+                                <input name="note" maxlength="255" placeholder="{% translate 'Catatan (wajib bila ditolak)' %}" aria-label="{% translate 'Catatan keputusan' %}" style="flex:1 1 260px;width:auto">
+                                <button type="submit" name="decision" value="reject" class="ui-btn ui-btn--bad-line">{% translate "Tolak" %}</button>
+                                <button type="submit" name="decision" value="approve" class="ui-btn ui-btn--primary" data-confirm="{% translate 'Setujui retur? Stok dikembalikan dan uang harus diserahkan ke pembeli.' %}">{% translate "Setujui" %}</button>
+                            </form>
+                        {% endif %}
+                        <div class="sg-row is-wrap sg-mt16">
+                            {% if r.order.receipt_no %}<a href="{% url 'transaction:receipt' r.order.pk %}" class="sg-link"><i class="bi bi-receipt" aria-hidden="true"></i> {% translate "Lihat struk" %}</a>{% endif %}
+                            <span class="sg-sp"></span>
+                            {% if not can_decide and r.status == "MENUNGGU" %}<span class="sg-muted sg-sm"><i class="bi bi-lock" aria-hidden="true"></i> {% translate "Keputusan oleh admin. Anda mendapat notifikasi." %}</span>{% endif %}
                         </div>
-                        <div class="col-sm-6 d-flex gap-2">
-                            <button type="submit" name="decision" value="approve" class="btn btn-sm btn-primary fw-bold" data-confirm="{% translate 'Setujui retur? Stok dikembalikan dan uang harus diserahkan ke pembeli.' %}">{% translate "Setujui" %}</button>
-                            <button type="submit" name="decision" value="reject" class="btn btn-sm btn-outline-danger">{% translate "Tolak" %}</button>
-                        </div>
-                    </form>
-                {% endif %}
-                {% if r.order.receipt_no %}
-                    <a href="{% url 'transaction:receipt' r.order.pk %}" class="small">{% translate "Lihat struk" %}</a>
-                {% endif %}
-            </article>
-        {% empty %}
-            <p class="text-muted">{% translate "Tidak ada retur dengan status ini." %}</p>
-        {% endfor %}
+                    </article>
+                {% empty %}
+                    <p class="sg-card sg-empty"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>{% translate "Tidak ada retur dengan status ini." %}</p>
+                {% endfor %}
+            </div>
+            <aside class="sg-card sg-s4" aria-labelledby="return-rules">
+                <h2 id="return-rules" class="sg-h3">{% translate "Aturan retur" %}</h2>
+                <ol class="sg-steps sg-mt8">
+                    <li class="sg-step"><span class="sg-step__n">1</span><span class="sg-sm">{% blocktranslate trimmed with n=return_days %}Maksimal {{ n }} hari setelah barang diterima, transaksi sudah lunas.{% endblocktranslate %}</span></li>
+                    <li class="sg-step"><span class="sg-step__n">2</span><span class="sg-sm">{% translate "Nilai kembali dihitung otomatis sebanding dengan diskon dan pajak." %}</span></li>
+                    <li class="sg-step"><span class="sg-step__n">3</span><span class="sg-sm">{% translate "Tukar barang: setujui retur, lalu buat transaksi baru." %}</span></li>
+                </ol>
+            </aside>
+        </div>
     </div>
 {% endblock %}

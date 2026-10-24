@@ -1,0 +1,81 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% blocktranslate trimmed with no=order.receipt_no %}Struk {{ no }}{% endblocktranslate %}{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'transaction/css/receipt.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'transaction/css/receipt_staff.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <div class="sg sg-page rcp receipt-{{ size }}"{% if auto_print %} data-auto-print{% endif %}>
+        <header class="sg-hd no-print">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% if order.is_online %}{% translate "Transaksi online" %}{% else %}{% translate "Transaksi offline" %}{% endif %}</p>
+                <h1>{% blocktranslate trimmed with no=order.receipt_no %}Struk {{ no }}{% endblocktranslate %}</h1>
+                <p>{{ order.date|date:"d M Y, H.i" }} · {% blocktranslate trimmed with who=order.admin.display_name|default:"-" %}kasir {{ who }}{% endblocktranslate %} · {% blocktranslate trimmed with buyer=order.buyer_display %}pembeli {{ buyer }}{% endblocktranslate %}</p>
+            </div>
+            <div class="sg-hd__actions">
+                <a href="{% url 'transaction:make_transaction' %}" class="ui-btn"><i class="bi bi-arrow-left" aria-hidden="true"></i>{% translate "Kasir" %}</a>
+                {% if size == "a4" %}
+                    <a href="?size=58" class="ui-btn"><i class="bi bi-receipt" aria-hidden="true"></i>{% translate "Ukuran 58 mm" %}</a>
+                {% else %}
+                    <a href="?size=a4" class="ui-btn"><i class="bi bi-file-earmark" aria-hidden="true"></i>{% translate "Ukuran A4" %}</a>
+                {% endif %}
+                <a href="{{ share_wa_url }}" target="_blank" rel="noopener" class="ui-btn rcp-wa"><i class="bi bi-whatsapp" aria-hidden="true"></i>{% translate "Kirim WA" %}</a>
+                {% if can_return %}
+                    <a href="{% url 'transaction:return_create' order.pk %}" class="ui-btn ui-btn--gold"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>{% translate "Retur" %}</a>
+                {% endif %}
+                <button type="button" class="ui-btn ui-btn--primary" data-print><i class="bi bi-printer" aria-hidden="true"></i>{% translate "Cetak" %}</button>
+            </div>
+        </header>
+        <div class="no-print">{% include "partials/_sg_messages.html" %}</div>
+        <div class="sg-grid">
+            <section class="sg-card rcp-stage sg-s5">
+                {% include "transaction/_receipt_paper.html" %}
+            </section>
+            <div class="sg-s7 no-print">
+                <section class="sg-card is-focus">
+                    <p class="sg-live mb-0"><i aria-hidden="true"></i>{% if order.is_voided %}{% translate "Dibatalkan" %}{% else %}{{ order.get_payment_status_display }}{% for p in payments %} · {{ p.get_method_display }}{% endfor %}{% endif %}</p>
+                    <div class="sg-row is-wrap sg-mt8">
+                        <span class="sg-big" style="font-size:2.2rem">Rp {{ order.total_payment|rupiah }}</span>
+                        <span class="sg-sp"></span>
+                        {% if order.change_given %}<span class="sg-pill is-ok">{% blocktranslate trimmed with n=order.change_given|rupiah %}Kembalian Rp {{ n }}{% endblocktranslate %}</span>{% endif %}
+                    </div>
+                    <dl class="sg-kv sg-mt12">
+                        <div><dt>{% translate "Barang" %}</dt><dd>{% blocktranslate trimmed with n=details|length %}{{ n }} jenis{% endblocktranslate %}{% if service_lines %} · {% blocktranslate trimmed with n=service_lines|length %}{{ n }} layanan{% endblocktranslate %}{% endif %}</dd></div>
+                        <div><dt>{% translate "Pengambilan" %}</dt><dd>{{ order.get_fulfillment_display }}</dd></div>
+                        <div><dt>{% translate "Diskon" %}</dt><dd>Rp {{ order.discount|rupiah }}{% if order.discount_reason %} · {{ order.discount_reason }}{% endif %}</dd></div>
+                        <div><dt>{% translate "Struk digital" %}</dt><dd><a class="sg-link" href="{{ public_url }}" target="_blank" rel="noopener">{% translate "Buka tautan" %}</a></dd></div>
+                    </dl>
+                </section>
+                {% if log or returns %}
+                    <section class="sg-card sg-mt16" aria-labelledby="rcp-log">
+                        <h2 id="rcp-log" class="sg-h3">{% translate "Riwayat struk ini" %}</h2>
+                        <ol class="sg-steps sg-mt8">
+                            {% for e in log %}
+                                <li class="sg-step is-done"><span class="sg-step__n"><i class="bi bi-check-lg" aria-hidden="true"></i></span><b>{{ e.action }}{% if e.detail %} <span class="sg-muted sg-sm">· {{ e.detail }}</span>{% endif %}</b><small>{{ e.created_at|date:"d M H.i" }}</small></li>
+                            {% endfor %}
+                            {% for r in returns %}
+                                <li class="sg-step is-now"><span class="sg-step__n">!</span><b>{% blocktranslate trimmed with pk=r.pk status=r.get_status_display %}Retur #{{ pk }} ({{ status }}){% endblocktranslate %} <span class="sg-muted sg-sm">· {% for line in r.lines.all %}{{ line.quantity }}× {{ line.detail.product.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span></b><small>Rp {{ r.refund_amount|rupiah }}</small></li>
+                            {% endfor %}
+                        </ol>
+                    </section>
+                {% endif %}
+                {% if can_void %}
+                    <section class="sg-card sg-mt16" aria-labelledby="rcp-void">
+                        <h2 id="rcp-void" class="sg-h3 is-sm">{% translate "Batalkan transaksi (admin)" %}</h2>
+                        <p class="sg-sm sg-muted">{% translate "Stok barang dikembalikan dan pembatalan dicatat. Kembalikan uang pembeli sesuai metode bayarnya." %}</p>
+                        <form method="post" action="{% url 'transaction:void' order.pk %}" class="sg-form sg-row is-wrap">
+                            {% csrf_token %}
+                            <input type="text" name="reason" maxlength="200" required placeholder="{% translate 'Alasan pembatalan' %}" aria-label="{% translate 'Alasan pembatalan' %}" style="flex:1 1 220px;width:auto">
+                            <button type="submit" class="ui-btn ui-btn--bad-line" data-confirm="{% translate 'Batalkan transaksi ini? Tindakan ini tidak bisa diurungkan.' %}">{% translate "Batalkan" %}</button>
+                        </form>
+                    </section>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'transaction/js/receipt_staff.js' %}?v=1"></script>
+{% endblock %}

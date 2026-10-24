@@ -1,0 +1,284 @@
+/* Navigasi kurir: bilah atas, menu samping (diciutkan jadi ikon di layar lebar),
+   laci menu + menu bawah di HP. Warna dari token --c-* di theme.css (terang & gelap). */
+:root {
+  --ck-top: 65px;
+  --ck-side: 236px;
+}
+
+.ck-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+.ck-header .navbar-custom {
+  position: static;
+  gap: 12px;
+  min-height: var(--ck-top);
+  padding: 10px 20px;
+}
+.ck-header .brand-group {
+  margin-right: auto;
+}
+
+.ck-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--c-text);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.ck-icon:hover {
+  background: var(--c-brand-soft);
+  color: var(--c-brand-dark);
+}
+.ck-icon:focus-visible,
+.ck-link:focus-visible,
+.ck-avatar-link:focus-visible,
+.courier-tabs a:focus-visible,
+.courier-tabs button:focus-visible {
+  outline: 3px solid var(--c-brand);
+  outline-offset: 2px;
+}
+
+/* ---------- foto / inisial kurir ---------- */
+.ck-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #6b21a8;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+.ck-avatar--sm { width: 36px; height: 36px; font-size: 0.78rem; }
+.ck-avatar--lg { width: 96px; height: 96px; font-size: 1.8rem; }
+.ck-avatar-link {
+  display: inline-flex;
+  border-radius: 50%;
+}
+
+/* ---------- menu samping ---------- */
+.ck-side {
+  position: fixed;
+  top: var(--ck-top);
+  bottom: 0;
+  left: 0;
+  z-index: 1020;
+  width: var(--ck-side);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--c-surface);
+  border-right: 1px solid var(--c-border);
+}
+.ck-side__who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  padding: 4px 8px 14px;
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-text);
+  text-decoration: none;
+}
+.ck-side__name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.ck-side__name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ck-side__name small {
+  color: var(--c-muted);
+  font-size: 0.8rem;
+}
+.ck-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ck-nav__group {
+  margin: 12px 10px 4px;
+  color: var(--c-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ck-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--c-text);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ck-link i {
+  flex: none;
+  width: 22px;
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--c-brand);
+}
+.ck-link:hover {
+  background: var(--c-brand-soft);
+  color: var(--c-brand-dark);
+}
+.ck-link.is-active {
+  background: var(--c-brand-soft);
+  color: var(--c-brand-dark);
+}
+.ck-side__out {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--c-border);
+}
+.ck-side__out .ck-link,
+.ck-side__out .ck-link i {
+  color: var(--c-danger-text);
+}
+.ck-scrim {
+  display: none;
+}
+
+/* ---------- menu bawah HP ---------- */
+.courier-tabs {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .ck-side ~ main,
+  .ck-side ~ footer {
+    margin-left: var(--ck-side);
+    width: auto;
+  }
+  .ck-collapsed {
+    --ck-side: 76px;
+  }
+  .ck-collapsed .ck-side {
+    padding: 14px 10px;
+  }
+  .ck-collapsed .ck-side__who {
+    justify-content: center;
+    padding: 4px 0 12px;
+  }
+  .ck-collapsed .ck-side__name,
+  .ck-collapsed .ck-nav__group,
+  .ck-collapsed .ck-link span {
+    display: none;
+  }
+  .ck-collapsed .ck-link {
+    justify-content: center;
+    padding: 8px 0;
+  }
+  .ck-collapsed .ck-nav__group + .ck-link {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .ck-header .navbar-custom {
+    padding: 8px 12px;
+  }
+  .ck-side {
+    top: 0;
+    z-index: 1080;
+    width: min(300px, 86vw);
+    transform: translateX(-105%);
+    transition: transform 0.2s ease;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  }
+  .ck-menu-open .ck-side {
+    transform: none;
+  }
+  .ck-scrim:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1070;
+    background: rgba(20, 12, 30, 0.5);
+  }
+  .courier-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 1040;
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    background: var(--c-surface);
+    border-top: 1px solid var(--c-border);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  }
+  .courier-tabs a,
+  .courier-tabs button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 54px;
+    padding: 4px 2px;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    color: var(--c-muted);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+  }
+  .courier-tabs i {
+    font-size: 1.2rem;
+  }
+  .courier-tabs .is-active {
+    background: var(--c-brand-soft);
+    color: var(--c-brand-dark);
+  }
+  body {
+    padding-bottom: 76px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ck-header .gps-badge {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ck-side {
+    transition: none;
+  }
+}

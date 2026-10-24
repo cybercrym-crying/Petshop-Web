@@ -7,7 +7,9 @@
                 data-ca-menu
                 aria-controls="ca-side"
                 aria-expanded="false"
-                aria-label="{% translate 'Buka menu' %}">
+                aria-label="{% translate 'Buka menu' %}"
+                data-label-open="{% translate 'Buka menu' %}"
+                data-label-close="{% translate 'Tutup menu' %}">
             <i class="fas fa-bars" aria-hidden="true"></i>
         </button>
         <a href="{% url 'customer:dashboard' %}" class="sn-brand ca-brand">
@@ -38,6 +40,7 @@
                     aria-label="{% translate 'Cari produk' %}">
                 <i class="fas fa-search" aria-hidden="true"></i>
             </button>
+            {% include "partials/_theme_toggle.html" with extra="sn-icon" %}
             {% include "partials/_lang_toggle.html" %}
             <a class="sn-icon"
                href="{% url 'customer:cart' %}"

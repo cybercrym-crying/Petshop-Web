@@ -3,105 +3,142 @@
 {% load static l10n %}
 {% block title %}{% translate "Checkout - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
+    <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/checkout_ux.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/checkout_ux-dark.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
 {% endblock %}
 {% block content %}
-    <section class="container section co-page"
+    <section class="container section co-page cx-page"
              data-member-checkout
              data-place-url="{{ place_url }}"
              data-quote-url="{% url 'customer:shipping_quote' %}"
              data-csrf="{{ csrf_token }}">
-        <header class="co-head">
-            <h1 class="co-title"><i class="fas fa-bag-shopping" aria-hidden="true"></i> {% translate "Checkout" %}</h1>
-            <p class="muted mb-0">{% translate "Pesanan langsung masuk ke sistem toko. Anda bisa memantau statusnya di" %} <a href="{% url 'customer:my_orders' %}">{% translate "Pesanan Saya" %}</a>.</p>
+        {% include "customer/_checkout_steps.html" %}
+        <header class="cx-head">
+            <h1 class="cx-title">{% translate "Checkout" %}</h1>
+            <p class="cx-lead">{% translate "Pesanan langsung masuk ke sistem toko. Anda bisa memantau statusnya di" %} <a href="{% url 'customer:my_orders' %}">{% translate "Pesanan Saya" %}</a>.</p>
         </header>
         <div class="co-alert co-alert--error" data-co-error role="alert" hidden></div>
-        <div class="co-layout">
-            <div class="co-main">
-                <section class="co-card" aria-labelledby="co-ship">
-                    <h2 id="co-ship" class="co-card__title"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Dikirim ke" %}</h2>
-                    <dl class="co-who">
-                        <div><dt>{% translate "Nama" %}</dt><dd>{{ user.name }}</dd></div>
-                        <div><dt>{% translate "No. WhatsApp" %}</dt><dd>{{ user.phone_number|default:"-" }}</dd></div>
-                    </dl>
-                    <div class="co-field">
-                        <label for="co-address">{% translate "Alamat pengiriman" %}</label>
-                        <textarea id="co-address" name="address" rows="3" maxlength="255" required
-                                  placeholder="Jalan, RT/RW, kelurahan, kecamatan, kota">{{ user.address }}</textarea>
-                        <p class="co-hint">{% translate "Perubahan alamat juga disimpan sebagai alamat utama akun Anda." %}</p>
-                    </div>
-                    <div class="co-field mb-0">
-                        <div class="co-map-head">
-                            <label>{% translate "Titik lokasi di peta" %} <span class="co-req">{% translate "wajib" %}</span></label>
-                            <button type="button" class="btn-ghost co-map-locate" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
-                        </div>
-                        <div class="co-map" data-map-picker data-default-lat="{{ store.latitude|unlocalize }}" data-default-lng="{{ store.longitude|unlocalize }}" role="application" aria-label="{% translate 'Peta titik pengiriman' %}"></div>
-                        <input type="hidden" id="co-lat" data-map-lat value="{{ last_pin.0|unlocalize|default:'' }}">
-                        <input type="hidden" id="co-lng" data-map-lng value="{{ last_pin.1|unlocalize|default:'' }}">
-                        <p class="co-hint" data-co-ship-info>{% translate 'Klik peta atau tekan "Pakai lokasi saya". Kurir memakai titik ini untuk rute antar, ongkir dihitung dari jaraknya.' %}</p>
+        <div class="cx-layout">
+            <div class="cx-main">
+                <section class="cx-card" aria-labelledby="co-who-title">
+                    <h2 id="co-who-title" class="cx-card__title"><span class="cx-num" aria-hidden="true">1</span> {% translate "Penerima" %}</h2>
+                    <div class="cx-person">
+                        <span class="cx-person__avatar" aria-hidden="true">{{ user.name|slice:":1"|upper }}</span>
+                        <span class="cx-person__body">
+                            <strong>{{ user.name }}</strong>
+                            <span>{{ user.phone_number|default:"-" }}</span>
+                        </span>
+                        <a href="{% url 'customer:account' %}" class="cx-link">{% translate "Ubah" %}</a>
                     </div>
                 </section>
-                <section class="co-card" aria-labelledby="co-pay">
-                    <h2 id="co-pay" class="co-card__title"><i class="fas fa-wallet" aria-hidden="true"></i> {% translate "Pembayaran" %}</h2>
-                    <div class="co-pay">
+                <section class="cx-card" aria-labelledby="co-ship">
+                    <h2 id="co-ship" class="cx-card__title"><span class="cx-num" aria-hidden="true">2</span> {% translate "Alamat pengiriman" %}</h2>
+                    <div class="cx-field">
+                        <label for="co-address">{% translate "Alamat lengkap" %}</label>
+                        <textarea id="co-address" name="address" rows="3" maxlength="255" required
+                                  placeholder="Jalan, RT/RW, kelurahan, kecamatan, kota">{{ user.address }}</textarea>
+                        <p class="cx-hint">{% translate "Perubahan alamat juga disimpan sebagai alamat utama akun Anda." %}</p>
+                    </div>
+                    <div class="cx-field mb-0">
+                        <div class="cx-map-head">
+                            <label>{% translate "Titik lokasi di peta" %} <span class="co-req">{% translate "wajib" %}</span></label>
+                            <button type="button" class="cx-chip-btn" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
+                        </div>
+                        <div class="co-map cx-map" data-map-picker data-default-lat="{{ store.latitude|unlocalize }}" data-default-lng="{{ store.longitude|unlocalize }}" role="application" aria-label="{% translate 'Peta titik pengiriman' %}"></div>
+                        <input type="hidden" id="co-lat" data-map-lat value="{{ last_pin.0|unlocalize|default:'' }}">
+                        <input type="hidden" id="co-lng" data-map-lng value="{{ last_pin.1|unlocalize|default:'' }}">
+                        <p class="cx-hint cx-hint--info" data-co-ship-info>{% translate 'Klik peta atau tekan "Pakai lokasi saya". Kurir memakai titik ini untuk rute antar, ongkir dihitung dari jaraknya.' %}</p>
+                    </div>
+                </section>
+                <section class="cx-card" aria-labelledby="co-pay">
+                    <h2 id="co-pay" class="cx-card__title"><span class="cx-num" aria-hidden="true">3</span> {% translate "Cara bayar" %}</h2>
+                    <div class="cx-pay">
                         {% for code, label in payment_methods %}
-                            <label class="co-pay__opt">
+                            <label class="cx-pay__opt">
                                 <input type="radio" name="payment_method" value="{{ code }}" {% if forloop.first %}checked{% endif %}>
-                                <span>
+                                <span class="cx-pay__icon" aria-hidden="true"><i class="fas {% if code == "TUNAI" %}fa-money-bill-wave{% else %}fa-building-columns{% endif %}"></i></span>
+                                <span class="cx-pay__body">
                                     <strong>{% if code == "TUNAI" %}{% translate "Bayar di Tempat (COD)" %}{% else %}{% blocktranslate trimmed with label=label %}{{ label }} Bank{% endblocktranslate %}{% endif %}</strong>
                                     <small>{% if code == "TUNAI" %}{% translate "Bayar tunai ke kurir saat barang sampai." %}{% else %}{% blocktranslate trimmed with store_payment_deadline_hours=store.payment_deadline_hours %}Transfer ke rekening toko lalu foto bukti transfer dari Dasbor; barang dikirim setelah kasir memastikan dana masuk. Batas bayar {{ store_payment_deadline_hours }} jam.{% endblocktranslate %}{% endif %}</small>
-                                    {% if code != "TUNAI" and bank_accounts %}{% include "customer/_transfer_info.html" %}{% endif %}
+                                    {% if code != "TUNAI" and bank_accounts %}<span class="cx-pay__more">{% include "customer/_transfer_info.html" %}</span>{% endif %}
                                 </span>
                             </label>
                         {% endfor %}
                     </div>
                 </section>
-                <section class="co-card" aria-labelledby="co-note-title">
-                    <h2 id="co-note-title" class="co-card__title"><i class="far fa-comment-dots" aria-hidden="true"></i> {% translate "Catatan untuk toko" %} <span class="muted">{% translate "(opsional)" %}</span></h2>
-                    <div class="co-field mb-0">
+                <section class="cx-card" aria-labelledby="co-note-title">
+                    <h2 id="co-note-title" class="cx-card__title"><span class="cx-num" aria-hidden="true">4</span> {% translate "Catatan untuk toko" %} <span class="cx-opt">{% translate "(opsional)" %}</span></h2>
+                    <div class="cx-field mb-0">
                         <label class="visually-hidden" for="co-note">{% translate "Catatan" %}</label>
                         <textarea id="co-note" name="note" rows="2" maxlength="255" placeholder="mis. titip di pos satpam, kirim sore"></textarea>
                     </div>
                 </section>
             </div>
-            <aside class="co-card co-summary" aria-labelledby="co-sum">
-                <h2 id="co-sum" class="co-card__title"><i class="fas fa-receipt" aria-hidden="true"></i> {% translate "Ringkasan" %}</h2>
-                <ul class="co-items" data-co-items></ul>
+            <aside class="cx-card cx-summary" aria-labelledby="co-sum">
+                <h2 id="co-sum" class="cx-card__title">{% translate "Ringkasan pesanan" %}</h2>
+                <ul class="co-items cx-items" data-co-items></ul>
                 <div class="co-empty" data-co-empty hidden>
                     <i class="fas fa-cart-shopping" aria-hidden="true"></i>
                     <p>{% translate "Keranjang Anda kosong." %}</p>
                     <a href="{% url 'customer:shop' %}" class="btn-primary-seelly">{% translate "Mulai Belanja" %}</a>
                 </div>
-                <div class="co-subrow" data-co-ship-row>
-                    <span>{% translate "Ongkir" %} <small class="muted" data-co-distance></small></span>
-                    <span data-co-ship>{% translate "Pilih titik di peta" %}</span>
+                <div class="cx-rows" data-co-total-row>
+                    <div class="cx-row"><span>{% translate "Subtotal barang" %}</span><span data-co-subtotal>Rp 0</span></div>
+                    <div class="cx-row" data-co-ship-row>
+                        <span>{% translate "Ongkir" %} <small data-co-distance></small></span>
+                        <span data-co-ship>{% translate "Pilih titik di peta" %}</span>
+                    </div>
+                    <div class="cx-row cx-row--total">
+                        <span>{% translate "Total bayar" %}</span>
+                        <strong data-co-total>Rp 0</strong>
+                    </div>
                 </div>
-                <div class="co-total" data-co-total-row>
-                    <span>{% translate "Total" %}</span>
-                    <strong data-co-total>Rp 0</strong>
-                </div>
-                <p class="co-hint">{% blocktranslate trimmed with store_shipping_base_fee=store.shipping_base_fee store_shipping_base_km=store.shipping_base_km store_shipping_per_km=store.shipping_per_km %}Harga, stok, dan ongkir dihitung ulang oleh sistem saat pesanan dibuat. Tarif ongkir Rp {{ store_shipping_base_fee }} untuk {{ store_shipping_base_km }} km pertama, lalu Rp {{ store_shipping_per_km }}/km.{% endblocktranslate %}</p>
-                <button type="button" class="btn-primary-seelly co-submit" data-co-submit>
-                    <i class="fas fa-check" aria-hidden="true"></i> {% translate "Buat Pesanan" %}
+                <button type="button" class="cx-submit" data-co-submit>
+                    {% translate "Buat Pesanan" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
                 </button>
-                <a href="{% url 'customer:cart' %}" class="co-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> {% translate "Ubah keranjang" %}</a>
+                <ul class="cx-assure">
+                    <li><i class="fas fa-shield-halved" aria-hidden="true"></i> {% translate "Harga, stok, dan ongkir dihitung ulang oleh sistem saat pesanan dibuat." %}</li>
+                    <li><i class="fas fa-truck-fast" aria-hidden="true"></i> {% blocktranslate trimmed with store_shipping_base_fee=store.shipping_base_fee store_shipping_base_km=store.shipping_base_km store_shipping_per_km=store.shipping_per_km %}Ongkir Rp {{ store_shipping_base_fee }} untuk {{ store_shipping_base_km }} km pertama, lalu Rp {{ store_shipping_per_km }}/km.{% endblocktranslate %}</li>
+                </ul>
+                <a href="{% url 'customer:cart' %}" class="cx-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> {% translate "Ubah keranjang" %}</a>
             </aside>
         </div>
     </section>
-    <dialog class="co-dialog" data-co-dialog aria-labelledby="co-dialog-title">
-        <h2 id="co-dialog-title"><i class="fas fa-clipboard-check" aria-hidden="true"></i> {% translate "Konfirmasi Pesanan" %}</h2>
-        <p class="muted">{% translate "Pastikan barang & alamat sudah benar." %}</p>
-        <ul class="co-items co-items--compact" data-co-dialog-items></ul>
-        <div class="co-subrow"><span>{% translate "Ongkir" %}</span><span data-co-dialog-ship></span></div>
-        <div class="co-total"><span>{% translate "Total" %}</span><strong data-co-dialog-total></strong></div>
-        <dl class="co-who co-who--dialog">
-            <div><dt>{% translate "Alamat" %}</dt><dd data-co-dialog-address></dd></div>
-            <div><dt>{% translate "Pembayaran" %}</dt><dd data-co-dialog-payment></dd></div>
-        </dl>
-        <div class="co-dialog__actions">
-            <button type="button" class="btn-soft" data-co-cancel>{% translate "Periksa Lagi" %}</button>
-            <button type="button" class="btn-primary-seelly" data-co-confirm>
+    <dialog class="co-dialog cx-dialog" data-co-dialog aria-labelledby="co-dialog-title">
+        <div class="cx-dialog__head">
+            <span class="cx-dialog__icon" aria-hidden="true"><i class="fas fa-clipboard-check"></i></span>
+            <div>
+                <h2 id="co-dialog-title">{% translate "Periksa Pesanan Anda" %}</h2>
+                <p>{% translate "Pastikan barang, alamat, dan cara bayar sudah benar." %}</p>
+            </div>
+            <form method="dialog"><button class="cx-dialog__x" aria-label="{% translate 'Tutup' %}"><i class="fas fa-xmark" aria-hidden="true"></i></button></form>
+        </div>
+        <div class="cx-dialog__body">
+            <section class="cx-dialog__block">
+                <h3><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Dikirim ke" %}</h3>
+                <p class="cx-dialog__who"><strong>{{ user.name }}</strong> · {{ user.phone_number|default:"-" }}</p>
+                <p class="cx-dialog__addr" data-co-dialog-address></p>
+            </section>
+            <section class="cx-dialog__block">
+                <h3><i class="fas fa-wallet" aria-hidden="true"></i> {% translate "Cara bayar" %}</h3>
+                <p class="cx-dialog__pay" data-co-dialog-payment></p>
+            </section>
+            <section class="cx-dialog__block">
+                <h3><i class="fas fa-box" aria-hidden="true"></i> {% translate "Barang" %}</h3>
+                <ul class="co-items cx-items" data-co-dialog-items></ul>
+                <div class="cx-rows">
+                    <div class="cx-row"><span>{% translate "Subtotal barang" %}</span><span data-co-dialog-subtotal></span></div>
+                    <div class="cx-row"><span>{% translate "Ongkir" %}</span><span data-co-dialog-ship></span></div>
+                    <div class="cx-row cx-row--total"><span>{% translate "Total bayar" %}</span><strong data-co-dialog-total></strong></div>
+                </div>
+            </section>
+        </div>
+        <div class="cx-dialog__foot">
+            <button type="button" class="cx-dialog__back" data-co-cancel>{% translate "Periksa Lagi" %}</button>
+            <button type="button" class="cx-dialog__go" data-co-confirm>
                 <i class="fas fa-paper-plane" aria-hidden="true"></i> {% translate "Ya, Pesan Sekarang" %}
             </button>
         </div>
@@ -110,5 +147,5 @@
 {% block extra_js %}
     <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
     <script src="{% static 'store/js/map_picker.js' %}?v=1"></script>
-    <script src="{% static 'customer/js/checkout_member.js' %}?v=3"></script>
+    <script src="{% static 'customer/js/checkout_member.js' %}?v=5"></script>
 {% endblock %}

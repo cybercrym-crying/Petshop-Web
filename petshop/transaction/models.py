@@ -749,7 +749,10 @@ class Order(models.Model):
         self.payment_proof = None
         self.payment_reject_note = note[:255]
         # Beri waktu lagi supaya pelanggan sempat mengirim ulang.
-        self.payment_due_at = max(self.payment_due_at or timezone.now(), timezone.now() + timedelta(hours=6))
+        from store.models import StoreSettings
+
+        extra = timedelta(hours=StoreSettings.current().payment_deadline_hours)
+        self.payment_due_at = max(self.payment_due_at or timezone.now(), timezone.now() + extra)
         self.save(update_fields=["payment_proof", "payment_reject_note", "payment_due_at"])
 
     def cancel_by_customer(self, customer):

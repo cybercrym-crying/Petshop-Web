@@ -61,7 +61,8 @@ def cashier_report(period):
     returns = ReturnRequest.objects.filter(
         status=ReturnStatus.APPROVED, decided_at__gte=period.start, decided_at__lte=period.end
     ).aggregate(n=Count("pk"), total=Coalesce(Sum("refund_amount"), 0))
-    services = OrderServiceLine.objects.filter(order__in=store).aggregate(
+    # Layanan grooming: dibayar di kasir atau transfer setelah booking dikonfirmasi.
+    services = OrderServiceLine.objects.filter(order__in=_paid(in_range)).aggregate(
         n=Count("pk"), total=Coalesce(Sum("amount"), 0)
     )
     shifts = list(

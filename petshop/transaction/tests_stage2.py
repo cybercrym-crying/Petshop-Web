@@ -39,7 +39,7 @@ class TransferFlowTests(TestCase):
     def test_transfer_gets_deadline_and_shipping(self):
         self.assertIsNotNone(self.order.payment_due_at)
         hours = (self.order.payment_due_at - timezone.now()).total_seconds() / 3600
-        self.assertAlmostEqual(hours, 24, delta=0.1)
+        self.assertAlmostEqual(hours, 1, delta=0.1)  # batas bayar transfer/QRIS 1 jam
         self.assertEqual(self.order.shipping_fee, 5000)
 
     def upload(self):
@@ -79,7 +79,7 @@ class TransferFlowTests(TestCase):
         self.order.confirm(self.cashier)
         self.client.login(username="kas", password="Pass12345!x")
         r = self.client.get(reverse("transaction:payment_check", args=[self.order.pk]))
-        self.assertContains(r, "Dana masuk, setujui")
+        self.assertContains(r, "Setujui pembayaran")
         self.client.post(reverse("transaction:payment_check", args=[self.order.pk]), {"decision": "approve"})
         self.order.refresh_from_db()
         self.assertEqual(self.order.payment_status, PaymentStatus.PAID)

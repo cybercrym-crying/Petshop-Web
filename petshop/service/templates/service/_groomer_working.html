@@ -1,0 +1,65 @@
+{% load i18n %}
+{% comment %}Kartu "Sedang dikerjakan" di dasbor groomer: info hewan, catatan, tahap, dan form tahap berikutnya.{% endcomment %}
+<section class="gd-card gd-work" aria-labelledby="work-title">
+    <div class="gd-work__top">
+        <span class="gd-live"><i aria-hidden="true"></i>{% translate "Sedang dikerjakan" %}</span>
+        {% if working.started_at %}<span class="gd-chip">{% blocktranslate trimmed with t=working.started_at|time:"H.i" m=working.service.duration_minutes %}Mulai {{ t }} · ± {{ m }} menit{% endblocktranslate %}</span>{% endif %}
+    </div>
+    <div class="gd-pet">
+        <span class="gd-pet__avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
+        <div class="gd-pet__name">
+            <h2 id="work-title">{{ working.pet_name }} <small>· {{ working.get_pet_type_display }}</small></h2>
+            <p>{{ working.service.name }}</p>
+        </div>
+        {% if working.queue_label %}<div class="gd-pet__no"><b>{{ working.queue_label }}</b><span>{% translate "No. antrean" %}</span></div>{% endif %}
+    </div>
+    <dl class="gd-facts">
+        <div><dt>{% translate "Berat / kondisi" %}</dt><dd>{% if working.checkin_weight_kg %}{{ working.checkin_weight_kg }} kg{% if working.checkin_condition %} · {% endif %}{% endif %}{{ working.checkin_condition|default:"-" }}</dd></div>
+        <div><dt>{% translate "Profil hewan" %}</dt><dd>{% if working.pet %}{% if working.pet.breed %}{{ working.pet.breed }} · {% endif %}{% if working.pet.age_display %}{{ working.pet.age_display }} · {% endif %}{{ working.pet.get_sex_display }}{% else %}-{% endif %}</dd></div>
+        <div><dt>{% translate "Pemilik" %}</dt><dd>{{ working.customer.name }}{% if working.customer.whatsapp_url %} <a class="gd-wa" href="{{ working.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> WA</a>{% endif %}</dd></div>
+        <div><dt>{% translate "Check-in" %}</dt><dd>{% if working.checked_in_at %}{% blocktranslate trimmed with t=working.checked_in_at|time:"H.i" by=working.checked_in_by.display_name|default:"-" %}{{ t }} oleh {{ by }}{% endblocktranslate %}{% else %}-{% endif %}</dd></div>
+    </dl>
+    {% if working.pet.notes or working.customer_note %}
+        <div class="gd-notes">
+            {% if working.pet.notes %}<p class="is-health"><b><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> {% translate "Catatan kesehatan" %}</b>{{ working.pet.notes }}</p>{% endif %}
+            {% if working.customer_note %}<p class="is-owner"><b>{% translate "Catatan pemilik" %}</b>{{ working.customer_note }}</p>{% endif %}
+        </div>
+    {% endif %}
+    {% if working_steps %}
+        <ol class="gd-steps" aria-label="{% translate 'Tahapan pengerjaan' %}">
+            {% for row in working_steps %}
+                <li class="is-{{ row.state }}"{% if row.state == "now" %} aria-current="step"{% endif %}>
+                    <span class="gd-steps__no" aria-hidden="true">{% if row.state == "done" %}<i class="bi bi-check-lg"></i>{% else %}{{ forloop.counter }}{% endif %}</span>
+                    <b>{{ row.step.name }}</b>
+                    <small>{% if row.state == "done" %}{{ row.step.done_at|time:"H.i" }}{% if row.step.photo %} · <i class="bi bi-camera-fill" aria-hidden="true"></i> {% translate "foto" %}{% endif %}{% elif row.state == "now" %}{% translate "Tahap sekarang" %}{% elif row.step.needs_photo %}<i class="bi bi-camera-fill" aria-hidden="true"></i> {% translate "Wajib foto" %}{% else %}{% translate "Foto opsional" %}{% endif %}</small>
+                </li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+    {% if working.next_step_obj %}
+        <form method="post" action="{% url 'service:groomer_update_status' working.pk %}" enctype="multipart/form-data" class="gd-act">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="step">
+            <input type="hidden" name="from" value="dashboard">
+            <div class="gd-act__cam">
+                {% if working.next_step_obj.needs_photo %}
+                    {% include "partials/_camera.html" with btn="btn-orange" btn2="btn-cancel" geo=True hint="Tahap ini wajib foto." %}
+                {% else %}
+                    {% include "partials/_camera.html" with btn="btn-orange" btn2="btn-cancel" geo=True optional=True hint="Foto boleh dilewati untuk tahap ini." %}
+                {% endif %}
+            </div>
+            <div class="gd-act__form">
+                <label class="gd-label" for="work-note">{% if working.is_last_step %}{% translate "Catatan hasil untuk pemilik" %}{% else %}{% translate "Catatan (opsional)" %}{% endif %}</label>
+                <input type="text" id="work-note" name="note" maxlength="255" class="gd-input" placeholder="{% if working.is_last_step %}{% translate 'mis. kutu sudah bersih, kuku dipotong pendek' %}{% else %}{% translate 'mis. ada kusut di bagian perut' %}{% endif %}">
+                <button type="submit" class="gd-btn gd-btn--primary"{% if working.is_last_step %} data-confirm="{% translate 'Selesaikan tahap terakhir? Status berubah menjadi Siap dan pemilik serta kasir mendapat notifikasi.' %}"{% endif %}>
+                    <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                    {% if working.is_last_step %}{% translate "Selesaikan tahap terakhir (hewan siap)" %}{% else %}{% blocktranslate trimmed with s_name=working.next_step_obj.name %}Tahap "{{ s_name }}" selesai{% endblocktranslate %}{% endif %}
+                </button>
+            </div>
+        </form>
+    {% endif %}
+    <div class="gd-work__foot">
+        <span>{% blocktranslate trimmed with done=working.steps_done total=working_steps|length %}{{ done }} dari {{ total }} tahap selesai · pemilik menerima notifikasi tiap tahap{% endblocktranslate %}</span>
+        <a href="{% url 'service:groomer_booking_detail' working.pk %}">{% blocktranslate trimmed with pet=working.pet_name %}Detail & riwayat {{ pet }}{% endblocktranslate %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</section>

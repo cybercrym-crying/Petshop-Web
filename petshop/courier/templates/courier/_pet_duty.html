@@ -1,10 +1,10 @@
 {% load i18n %}
 {# Kurir sedang antar-jemput hewan: paket ditahan sampai tugas itu selesai. #}
-<div class="alert alert-warning d-flex gap-2 align-items-start" role="status">
-    <i class="bi bi-heart-pulse fs-5" aria-hidden="true"></i>
-    <div>
+<section class="ck-duty" role="status">
+    <span class="ck-duty__icon" aria-hidden="true"><svg class="ck-paw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
+    <p class="ck-duty__text">
         <strong>{% blocktranslate trimmed with pet=pet_trip.pet_name %}Anda sedang antar-jemput {{ pet }}.{% endblocktranslate %}</strong>
         {% translate "Selama tugas ini berjalan Anda tidak bisa mengambil atau mengantar paket. Selesaikan dulu, lalu paket bisa diambil lagi." %}
-        <a href="{% url 'service:courier_pet_trip' pet_trip.pk %}" class="alert-link d-inline-block mt-1">{% translate "Buka tugas hewan" %}</a>
-    </div>
-</div>
+    </p>
+    <a href="{% url 'service:courier_pet_trip' pet_trip.pk %}" class="ck-btn is-primary">{% translate "Buka tugas hewan" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+</section>

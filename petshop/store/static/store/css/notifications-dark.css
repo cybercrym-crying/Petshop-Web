@@ -1,0 +1,6 @@
+/* Dibuat otomatis oleh `python manage.py build_dark_css` dari notifications.css. Jangan diubah manual. */
+html[data-theme="dark"] .notif-item a { border: 1px solid #3a2f48; background: #211a2b; color: inherit; }
+html[data-theme="dark"] .notif-item a:hover { border-color: #5b4775; }
+html[data-theme="dark"] .notif-item.is-unread a { border-left: 4px solid #7e2fb8; }
+html[data-theme="dark"] [data-theme="dark"] .notif-item a { background: #1f2437; border-color: #2f3650; }
+html[data-theme="dark"] .notif-bell__count { background: #dc2626; color: #fff; }

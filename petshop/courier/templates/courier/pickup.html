@@ -9,55 +9,60 @@
     </head>
     <body>
         {% include "courier/_nav.html" %}
-        <main class="container-fluid px-xl-5 px-3 py-4">
-            <p class="eyebrow"><i class="bi bi-qr-code-scan me-1"></i> {% translate "Ambil paket" %}</p>
-            <h1 class="page-title">{% translate "Scan QR label paket" %}</h1>
-            <p class="text-muted">{% translate "Pindai QR di label setiap paket yang Anda bawa. Paket langsung berstatus" %} <b>{% translate "Dalam Pengiriman" %}</b>{% blocktranslate trimmed with max_packages=max_packages %}, pelanggan mendapat notifikasi, dan rute dihitung ulang. Maks. {{ max_packages }} paket per rute.{% endblocktranslate %}</p>
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
-            {% endfor %}
-            <div class="row g-4">
-                <div class="col-lg-6">
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-page sg">
+            {% translate "Ambil paket" as t_title %}{% translate "Scan QR di label setiap paket. Paket langsung berstatus Dalam Pengiriman, pelanggan mendapat notifikasi, dan rute dihitung ulang." as t_lead %}
+            {% include "courier/_page_head.html" with title=t_title lead=t_lead %}
+            {% include "partials/_sg_messages.html" %}
+            <div class="sg-grid">
+                <div class="sg-s6">
                     {% if pet_trip %}
                         {% include "courier/_pet_duty.html" %}
                     {% else %}
-                    <form method="post" class="scan-card">
-                        {% csrf_token %}
-                        <div data-qr-scanner data-target="#pickup-code" data-autosubmit data-autostart>
-                            <video data-qr-video playsinline muted hidden></video>
-                            <p class="scan-status" data-qr-status>{% translate "Membuka kamera…" %}</p>
-                            <button type="button" class="btn-route is-primary w-100" data-qr-start data-needs-gps>{% translate "Scan QR" %}</button>
-                        </div>
-                        <label class="form-label small fw-bold mt-3" for="pickup-code">{% translate "Atau ketik nomor resi" %}</label>
-                        <div class="scan-manual">
-                            <input id="pickup-code" name="code" class="form-control" placeholder="{% translate 'PS-261022-K7M2QX' %}" autocomplete="off" required>
-                            <button type="submit" class="btn-route" data-needs-gps>{% translate "Ambil" %}</button>
-                        </div>
-                    </form>
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="ck-scan" data-qr-scanner data-target="#pickup-code" data-autosubmit data-autostart>
+                                <video data-qr-video playsinline muted hidden></video>
+                                <div class="ck-scan__frame" aria-hidden="true"><span></span></div>
+                                <p class="scan-status" data-qr-status>{% translate "Membuka kamera…" %}</p>
+                                <button type="button" class="ck-btn is-primary w-100" data-qr-start data-needs-gps><i class="bi bi-upc-scan" aria-hidden="true"></i> {% translate "Scan QR" %}</button>
+                            </div>
+                            <div class="ck-scan-manual sg-form">
+                                <input id="pickup-code" name="code" placeholder="{% translate 'Atau ketik nomor resi' %}" aria-label="{% translate 'Atau ketik nomor resi' %}" autocomplete="off" required>
+                                <button type="submit" class="ck-btn" data-needs-gps>{% translate "Ambil" %}</button>
+                            </div>
+                        </form>
                     {% endif %}
+                    <section class="sg-card is-sm sg-mt16" aria-labelledby="pk-carry">
+                        <div class="sg-row"><h2 id="pk-carry" class="sg-h3 is-sm">{% translate "Sedang dibawa" %}</h2><span class="sg-sp"></span><span class="sg-sm sg-muted">{% blocktranslate trimmed with carrying=carrying|length max_packages=max_packages %}{{ carrying }} / {{ max_packages }} paket{% endblocktranslate %}</span></div>
+                        <div class="sg-bar sg-mt8 rv-carry" data-carry="{{ carrying|length }}/{{ max_packages }}"><i></i></div>
+                        <div class="sg-mt12">
+                            {% for o in carrying %}
+                                <a href="{% url 'courier:order_detail' o.pk %}" class="ck-pkg"><span class="sg-qno" style="min-width:40px;height:40px">{{ o.route_position|default:"-" }}</span><span class="ck-pkg__body"><b>#{{ o.pk }} {{ o.customer.name }}</b><small>{{ o.tracking_number }}</small></span><i class="bi bi-chevron-right sg-muted" aria-hidden="true"></i></a>
+                            {% empty %}
+                                <p class="sg-sm sg-muted mb-0">{% translate "Belum ada." %}</p>
+                            {% endfor %}
+                        </div>
+                    </section>
                 </div>
-                <div class="col-lg-6">
-                    <h2 class="h6 fw-bold">{% blocktranslate trimmed with carrying=carrying|length max_packages=max_packages %}Sedang dibawa ({{ carrying }}/{{ max_packages }}){% endblocktranslate %}</h2>
-                    <ol class="stop-list mb-4">
-                        {% for o in carrying %}
-                            <li><a href="{% url 'courier:order_detail' o.pk %}"><span class="stop-num">{{ o.route_position|default:"-" }}</span><span>#{{ o.pk }} {{ o.customer.name }}<small>{{ o.tracking_number }}</small></span></a></li>
-                        {% empty %}
-                            <li class="text-muted small">{% translate "Belum ada." %}</li>
-                        {% endfor %}
-                    </ol>
-                    <h2 class="h6 fw-bold">{% blocktranslate trimmed with ready=ready|length %}Siap diambil di toko ({{ ready }}){% endblocktranslate %}</h2>
-                    <ul class="stop-list">
+                <section class="sg-s6" aria-labelledby="pk-ready">
+                    <div class="sg-row"><h2 id="pk-ready" class="sg-h3">{% translate "Siap diambil di toko" %}</h2><span class="sg-sp"></span><span class="sg-pill is-gold">{{ ready|length }}</span></div>
+                    <div class="sg-mt12">
                         {% for o in ready %}
-                            <li><a href="{% url 'courier:order_detail' o.pk %}"><span class="stop-num">{{ o.packing_label }}</span><span>#{{ o.pk }} {{ o.customer.name }}<small>{{ o.tracking_number }}{% if o.packed_at %} {% translate "· sudah dikemas" %}{% else %} {% translate "· belum dikemas" %}{% endif %}{% if o.courier %} {% translate "· ditugaskan ke Anda" %}{% endif %}</small></span></a></li>
+                            <a href="{% url 'courier:order_detail' o.pk %}" class="ck-pkg">
+                                <span class="sg-qno">{{ o.packing_label }}</span>
+                                <span class="ck-pkg__body"><b>#{{ o.pk }} {{ o.customer.name }}</b><small>{{ o.delivery_address|default:o.tracking_number }}</small><small>{% if o.packed_at %}{% translate "sudah dikemas" %}{% else %}{% translate "belum dikemas" %}{% endif %}{% if o.courier %} {% translate "· ditugaskan ke Anda" %}{% endif %}</small></span>
+                                {% if o.payment_method == "TUNAI" %}<span class="sg-pill is-gold">COD</span>{% else %}<span class="sg-pill is-ok">{% translate "Lunas" %}</span>{% endif %}
+                            </a>
                         {% empty %}
-                            <li class="text-muted small">{% translate "Tidak ada paket yang menunggu kurir." %}</li>
+                            <p class="sg-card sg-empty"><i class="bi bi-box2" aria-hidden="true"></i>{% translate "Tidak ada paket yang menunggu kurir." %}</p>
                         {% endfor %}
-                    </ul>
-                </div>
+                    </div>
+                </section>
             </div>
         </main>
         <script src="{% static 'vendor/jsqr/jsQR.js' %}"></script>
         <script src="{% static 'js/qr_scanner.js' %}?v=1"></script>
+        <script src="{% static 'courier/js/carry_bar.js' %}?v=1"></script>
         <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>
 </html>

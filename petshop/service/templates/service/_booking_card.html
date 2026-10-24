@@ -1,30 +1,44 @@
 {% load i18n %}
-{% load rupiah %}
-<article class="order-card booking-card{% if booking.is_late %} is-late{% endif %}"
+<article class="order-card booking-card gd-job is-{{ booking.status|lower }}{% if booking.is_late %} is-late{% endif %}{% if first and booking.status == 'ANTRE' %} is-next{% endif %}"
          data-booking-url="{% url 'service:groomer_booking_detail' booking.pk %}"
          tabindex="0">
     <div class="booking-card__top">
-        <span class="booking-id">{% if booking.queue_label %}{{ booking.queue_label }}{% else %}#{{ booking.pk }}{% endif %}</span>
-        <span class="bk-status bk-{{ booking.status|lower }}">{{ booking.get_status_display }}</span>
-    </div>
-    <h2 class="order-card__name">{{ booking.pet_name }} <small class="booking-pet">· {{ booking.get_pet_type_display }}</small></h2>
-    <p class="booking-service"><i class="bi bi-stars me-1" aria-hidden="true"></i>{{ booking.service.name }}</p>
-    <p class="g-meta">
-        {% if booking.checked_in_at %}
-            <span>{% blocktranslate trimmed with t=booking.checked_in_at|date:"H:i" %}Check-in {{ t }}{% endblocktranslate %}{% if booking.checkin_weight_kg %} · {{ booking.checkin_weight_kg }} kg{% endif %}</span>
+        <span class="gd-job__no">{% if booking.queue_label %}{{ booking.queue_label }}{% else %}#{{ booking.pk }}{% endif %}</span>
+        {% if booking.status == "ANTRE" and first %}
+            <span class="gd-tag is-next">{% translate "Berikutnya" %}</span>
+        {% elif booking.status == "ANTRE" and booking.groomer_id %}
+            <span class="gd-tag is-mine">{% translate "Untukmu" %}</span>
+        {% elif booking.status == "PROSES" and booking.started_at %}
+            <span class="gd-tag is-mine">{% blocktranslate trimmed with t=booking.started_at|time:"H.i" %}Mulai {{ t }}{% endblocktranslate %}</span>
         {% else %}
-            <span>{% if booking.is_today %}<span class="bk-today">{% translate "Hari ini" %}</span> {{ booking.schedule|date:"H:i" }}{% else %}{{ booking.schedule|date:"d M Y, H:i" }}{% endif %}</span>
+            <span class="bk-status bk-{{ booking.status|lower }}">{{ booking.get_status_display }}</span>
+        {% endif %}
+    </div>
+    <h3 class="order-card__name">{{ booking.pet_name }} <small class="booking-pet">· {{ booking.get_pet_type_display }}</small></h3>
+    <p class="booking-service">{{ booking.service.name }}</p>
+    <p class="g-meta">
+        {% if booking.finished_at %}
+            <span>{% blocktranslate trimmed with t=booking.finished_at|date:"d M, H.i" %}Selesai {{ t }}{% endblocktranslate %}</span>
+        {% elif booking.checked_in_at %}
+            <span>{% blocktranslate trimmed with t=booking.checked_in_at|time:"H.i" %}Check-in {{ t }}{% endblocktranslate %}</span>
+            {% if booking.checkin_weight_kg %}<span>{{ booking.checkin_weight_kg }} kg</span>{% endif %}
+        {% else %}
+            <span>{% if booking.is_today %}<span class="bk-today">{% translate "Hari ini" %}</span> {{ booking.schedule|date:"H.i" }}{% else %}{{ booking.schedule|date:"d M Y, H.i" }}{% endif %}</span>
         {% endif %}
         <span>{{ booking.customer.name }}</span>
-        <span class="text-brand">Rp {{ booking.price|rupiah }}</span>
     </p>
     {% if booking.status == "PROSES" %}
-        <p class="g-meta"><span>{% blocktranslate trimmed with booking_steps_done=booking.steps_done booking_steps_total=booking.steps_total booking_started_at=booking.started_at|date:"H:i" %}Tahap {{ booking_steps_done }}/{{ booking_steps_total }} · mulai {{ booking_started_at }}{% endblocktranslate %}</span></p>
+        <div class="gd-mini" role="img" aria-label="{% blocktranslate trimmed with booking_steps_done=booking.steps_done booking_steps_total=booking.steps_total %}Tahap {{ booking_steps_done }}/{{ booking_steps_total }}{% endblocktranslate %}"><i style="width: {% widthratio booking.steps_done booking.steps_total|default:1 100 %}%"></i></div>
+        <p class="g-meta"><span>{% blocktranslate trimmed with done=booking.steps_done total=booking.steps_total %}Tahap {{ done }} dari {{ total }} selesai{% endblocktranslate %}</span>{% if booking.next_step_name %}<span>{% blocktranslate trimmed with step=booking.next_step_name %}berikutnya {{ step }}{% endblocktranslate %}</span>{% endif %}</p>
     {% elif booking.finished_at %}
-        <p class="g-meta"><span>{% blocktranslate trimmed with t=booking.finished_at|date:"d M Y, H:i" %}Selesai {{ t }}{% endblocktranslate %}{% if booking.rating %} · ★ {{ booking.rating }}{% endif %}</span></p>
+        {% if booking.rating %}<p class="gd-review"><span class="gd-stars">★ {{ booking.rating }}</span>{% if booking.review %} “{{ booking.review }}”{% endif %}</p>{% else %}<p class="gd-review is-none">{% translate "Belum diulas" %}</p>{% endif %}
+        {% if booking.step_photos %}
+            <div class="gd-thumbs">{% for photo in booking.step_photos %}<img src="{{ photo.url }}" alt="" width="48" height="48" loading="lazy">{% endfor %}</div>
+        {% endif %}
     {% endif %}
-    {% if booking.checkin_condition or booking.customer_note %}
+    {% if booking.pet.notes or booking.checkin_condition or booking.customer_note %}
         <ul class="g-notes">
+            {% if booking.pet.notes %}<li class="is-health"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i><span>{{ booking.pet.notes }}</span></li>{% endif %}
             {% if booking.checkin_condition %}<li><i class="bi bi-heart-pulse" aria-hidden="true"></i><span><b>{% translate "Kondisi" %}:</b> {{ booking.checkin_condition }}</span></li>{% endif %}
             {% if booking.customer_note %}<li class="is-owner"><i class="bi bi-chat-left-text" aria-hidden="true"></i><span><b>{% translate "Catatan pemilik" %}:</b> {{ booking.customer_note }}</span></li>{% endif %}
         </ul>
@@ -41,5 +55,7 @@
         <a href="{% url 'service:groomer_booking_detail' booking.pk %}" class="btn-green w-100 order-card__action text-center text-decoration-none">
             <i class="bi bi-camera me-2"></i>{% translate "Lanjut tahap berikutnya" %}
         </a>
+    {% else %}
+        <a href="{% url 'service:groomer_booking_detail' booking.pk %}" class="g-btn-outline w-100 order-card__action text-decoration-none">{% translate "Lihat detail" %}</a>
     {% endif %}
 </article>

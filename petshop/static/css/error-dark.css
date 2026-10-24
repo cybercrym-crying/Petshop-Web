@@ -1,0 +1,10 @@
+/* Dibuat otomatis oleh `python manage.py build_dark_css` dari error.css. Jangan diubah manual. */
+html[data-theme="dark"] body { background: linear-gradient(180deg, #18121f 0%, #18121f 100%); color: #f1ebf7; }
+html[data-theme="dark"] .err-brand { color: #d8b4fe; }
+html[data-theme="dark"] .err-code { color: #d2aee9; }
+html[data-theme="dark"] .err-text { color: #b9adc7; }
+html[data-theme="dark"] .err-btn { background: #6b21a8; color: #fff; }
+html[data-theme="dark"] .err-btn:hover { background: #7e2fb8; }
+html[data-theme="dark"] .err-btn--ghost { background: #211a2b; color: #d8b4fe; border: 1px solid #3a2f48; }
+html[data-theme="dark"] .err-btn--ghost:hover { background: #2b2139; }
+html[data-theme="dark"] .err-btn:focus-visible, html[data-theme="dark"] .err-brand:focus-visible { outline: 3px solid #9b4fcf; }

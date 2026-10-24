@@ -5305,3 +5305,1251 @@ msgstr "Chat on WhatsApp"
 
 msgid "Tentang toko"
 msgstr "About the store"
+
+msgid "Buat booking"
+msgstr "Make a booking"
+
+msgid "Dipilih"
+msgstr "Selected"
+
+msgid "Filter jenis hewan"
+msgstr "Filter by pet type"
+
+msgid "Harga mulai"
+msgstr "Starting price"
+
+msgid "Layanan terpilih"
+msgstr "Selected service"
+
+msgid "Lihat tahapan"
+msgstr "View steps"
+
+msgid "± %(s_duration_minutes)s mnt"
+msgstr "± %(s_duration_minutes)s min"
+
+msgid "Waktunya grooming"
+msgstr "Grooming due"
+
+msgid "Grooming terakhir"
+msgstr "Last grooming"
+
+msgid "Booking grooming lagi"
+msgstr "Book grooming again"
+
+msgid "Alamat lengkap"
+msgstr "Full address"
+
+msgid "Cara bayar"
+msgstr "Payment method"
+
+msgid "Ringkasan pesanan"
+msgstr "Order summary"
+
+msgid "Subtotal barang"
+msgstr "Items subtotal"
+
+msgid "Total bayar"
+msgstr "Total to pay"
+
+msgid "Harga, stok, dan ongkir dihitung ulang oleh sistem saat pesanan dibuat."
+msgstr "Prices, stock and shipping are recalculated by the system when the order is placed."
+
+msgid "Ongkir Rp %(store_shipping_base_fee)s untuk %(store_shipping_base_km)s km pertama, lalu Rp %(store_shipping_per_km)s/km."
+msgstr "Shipping Rp %(store_shipping_base_fee)s for the first %(store_shipping_base_km)s km, then Rp %(store_shipping_per_km)s/km."
+
+msgid "Langkah pemesanan"
+msgstr "Order steps"
+
+msgid "Data & pembayaran"
+msgstr "Details & payment"
+
+msgid "Kirim ke WhatsApp"
+msgstr "Send to WhatsApp"
+
+msgid "Pesanan dibuat"
+msgstr "Order placed"
+
+msgid "Isi data di bawah, lalu pesanan dikirim ke WhatsApp admin. Admin membalas dengan total dan ongkir."
+msgstr "Fill in the details below and your order is sent to the admin on WhatsApp. The admin replies with the total and shipping cost."
+
+msgid "Punya akun? Pesan langsung di situs."
+msgstr "Have an account? Order directly on the site."
+
+msgid "Dengan akun, ongkir langsung terhitung, status pesanan bisa dipantau, dan posisi kurir terlihat di peta."
+msgstr "With an account, shipping is calculated right away, you can track your order status, and see the courier on the map."
+
+msgid "Data penerima"
+msgstr "Recipient details"
+
+msgid "Nama lengkap"
+msgstr "Full name"
+
+msgid "Jalan, RT/RW, kelurahan, kecamatan, kota"
+msgstr "Street, RT/RW, village, district, city"
+
+msgid "Nomor rekening dikirim admin lewat WhatsApp bersama total pembayaran."
+msgstr "The admin sends the bank account number on WhatsApp together with the total."
+
+msgid "Diinfokan admin"
+msgstr "Confirmed by admin"
+
+msgid "Total barang"
+msgstr "Items total"
+
+msgid "WhatsApp terbuka dengan pesan pesanan yang sudah terisi; tinggal tekan kirim."
+msgstr "WhatsApp opens with your order message already filled in; just press send."
+
+msgid "Pastikan barang, alamat, dan cara bayar sudah benar."
+msgstr "Make sure the items, address and payment method are correct."
+
+msgid "Saring pesanan"
+msgstr "Filter orders"
+
+msgid "Tidak ada pesanan di kelompok ini"
+msgstr "No orders in this group"
+
+msgid "Lihat semua pesanan"
+msgstr "See all orders"
+
+msgid "Saring booking"
+msgstr "Filter bookings"
+
+msgid "Tahap perawatan (%(done)s/%(total)s)"
+msgstr "Care steps (%(done)s/%(total)s)"
+
+msgid "Tidak ditagih"
+msgstr "Not charged"
+
+msgid "Belum lunas · bayar di kasir"
+msgstr "Unpaid · pay at the cashier"
+
+msgid "Batalkan booking"
+msgstr "Cancel booking"
+
+msgid "Berjalan"
+msgstr "In progress"
+
+msgid "Perlu dibayar"
+msgstr "To pay"
+
+msgid "Akan datang"
+msgstr "Upcoming"
+
+msgid "Tambah %(item_name)s ke keranjang"
+msgstr "Add %(item_name)s to cart"
+
+msgid "Kategori cepat"
+msgstr "Quick categories"
+
+msgid "Beralih ke mode terang"
+msgstr "Switch to light mode"
+
+msgid "Foto kurir %(name)s"
+msgstr "Courier photo of %(name)s"
+
+msgid "Akun Saya - Kurir"
+msgstr "My Account - Courier"
+
+msgid "Ringkasan kurir"
+msgstr "Courier summary"
+
+msgid "%(n)s paket terkirim"
+msgstr "%(n)s parcels delivered"
+
+msgid "Data diri &amp; foto"
+msgstr "Personal details &amp; photo"
+
+msgid "Foto kurir"
+msgstr "Courier photo"
+
+msgid "Foto wajah yang jelas. Tampil untuk pelanggan saat paket diantar. JPG/PNG/WEBP, maks. 10 MB."
+msgstr "A clear photo of your face. Customers see it while their parcel is on the way. JPG/PNG/WEBP, max. 10 MB."
+
+msgid "Hapus foto"
+msgstr "Remove photo"
+
+msgid "Area layanan, status kerja, dan izin antar-jemput hewan diatur admin toko."
+msgstr "Service area, work status and pet pick-up permission are set by the store admin."
+
+msgid "Navigasi kurir"
+msgstr "Courier navigation"
+
+msgid "Kendaraan belum diisi"
+msgstr "Vehicle not set"
+
+msgid "Foto bukti pesanan #%(n)s sampai"
+msgstr "Proof photo of order #%(n)s delivered"
+
+msgid "Lihat foto penuh"
+msgstr "View full photo"
+
+msgid "Serah terima"
+msgstr "Handover"
+
+msgid "QR Anda dipindai kurir"
+msgstr "Your QR was scanned by the courier"
+
+msgid "Tanpa scan QR"
+msgstr "Without QR scan"
+
+msgid "Catatan kurir"
+msgstr "Courier note"
+
+msgid "Seelly - Cek Bukti Transfer Booking #%(pk)s"
+msgstr "Seelly - Check Booking Transfer #%(pk)s"
+
+msgid "Kembali ke Booking Layanan"
+msgstr "Back to Service Bookings"
+
+msgid "Cek Bukti Transfer · Booking #%(pk)s"
+msgstr "Check Transfer Proof · Booking #%(pk)s"
+
+msgid "Bukti transfer booking #%(pk)s"
+msgstr "Transfer proof for booking #%(pk)s"
+
+msgid "Dikirim %(at)s · klik foto untuk ukuran penuh"
+msgstr "Sent %(at)s · click the photo for full size"
+
+msgid "Booking ini sudah lunas (struk %(no)s)."
+msgstr "This booking is paid (receipt %(no)s)."
+
+msgid "Belum ada bukti transfer untuk booking ini."
+msgstr "No transfer proof for this booking yet."
+
+msgid "Layanan Rp %(price)s + antar-jemput Rp %(fee)s"
+msgstr "Service Rp %(price)s + pick-up/drop-off Rp %(fee)s"
+
+msgid "Dana Rp %(total)s sudah masuk ke rekening toko?"
+msgstr "Has Rp %(total)s arrived in the store account?"
+
+msgid "Sudah dibayar · hubungi admin"
+msgstr "Already paid · contact admin"
+
+msgid "Bukti transfer dicek"
+msgstr "Transfer proof being checked"
+
+msgid "Belum lunas"
+msgstr "Unpaid"
+
+msgid "Bayar setelah jadwal dikonfirmasi"
+msgstr "Pay after the schedule is confirmed"
+
+msgid "Toko mengecek jadwal groomer dulu. Setelah terjadwal, Anda bisa bayar transfer di sini atau bayar di kasir saat datang."
+msgstr "The store checks the groomer schedule first. Once scheduled, you can pay by transfer here or pay at the cashier when you arrive."
+
+msgid "Bukti transfer sedang dicek"
+msgstr "Transfer proof is being checked"
+
+msgid "Dikirim %(at)s. Kami kabari lewat notifikasi begitu pembayaran diterima."
+msgstr "Sent %(at)s. We will notify you once the payment is received."
+
+msgid "Jadwal sudah dikonfirmasi, silakan bayar"
+msgstr "Schedule confirmed, please pay"
+
+msgid "Transfer sekarang lalu kirim foto buktinya, atau bayar di kasir saat datang."
+msgstr "Transfer now and send a photo of the proof, or pay at the cashier when you arrive."
+
+msgid "Bukti sebelumnya ditolak: %(note)s"
+msgstr "Previous proof was rejected: %(note)s"
+
+msgid "Bayar Transfer"
+msgstr "Pay by Transfer"
+
+msgid "Bayar Booking #%(pk)s - Seelly Petshop"
+msgstr "Pay Booking #%(pk)s - Seelly Petshop"
+
+msgid "Bayar transfer"
+msgstr "Pay by transfer"
+
+msgid "Bayar Booking #%(pk)s"
+msgstr "Pay Booking #%(pk)s"
+
+msgid "Termasuk antar-jemput Rp %(fee)s"
+msgstr "Includes pick-up/drop-off Rp %(fee)s"
+
+msgid "Tidak ingin transfer? Bayar saja di kasir saat datang."
+msgstr "Prefer not to transfer? Just pay at the cashier when you arrive."
+
+msgid "Bukti transfer booking menunggu dicek: %(n)s"
+msgstr "Booking transfer proofs waiting to be checked: %(n)s"
+
+msgid "Scan QR booking di Kasir untuk menerima pembayaran"
+msgstr "Scan the booking QR at the Cashier to take payment"
+
+msgid "Belum lunas · bayar di Kasir"
+msgstr "Unpaid · pay at the Cashier"
+
+msgid "Kurir dengan kandang khusus hewan. Tarif Rp %(store_pickup_base_fee)s untuk %(store_pickup_base_km)s km pertama + Rp %(store_pickup_per_km)s/km, per perjalanan, dibayar bersama biaya layanan. Bila hewan diantar pulang, bayar lewat transfer setelah jadwal dikonfirmasi; kurir berangkat mengantar setelah booking lunas."
+msgstr "Courier with a dedicated pet carrier. Rate Rp %(store_pickup_base_fee)s for the first %(store_pickup_base_km)s km + Rp %(store_pickup_per_km)s/km, per trip, paid together with the service fee. If your pet is delivered home, pay by transfer after the schedule is confirmed; the courier leaves once the booking is paid."
+
+msgid "Toko mengecek jadwal groomer dulu. Setelah terjadwal, bayar transfer di sini. Hewan diantar pulang setelah lunas."
+msgstr "The store checks the groomer schedule first. Once scheduled, pay by transfer here. Your pet is delivered home once paid."
+
+msgid "Transfer lalu kirim foto buktinya. Kurir mengantar hewan pulang setelah booking lunas."
+msgstr "Transfer and send a photo of the proof. The courier delivers your pet home once the booking is paid."
+
+msgid "Menunggu pembayaran pelanggan"
+msgstr "Waiting for customer payment"
+
+msgid "Hewan sudah siap, tetapi booking belum lunas. Antar pulang bisa dimulai setelah pelanggan membayar transfer dan kasir/admin menyetujuinya. Anda akan mendapat notifikasi."
+msgstr "The pet is ready but the booking is unpaid. Delivery can start once the customer pays by transfer and the cashier/admin approves it. You will get a notification."
+
+msgid "Kurir mengantar hewan pulang setelah pembayaran ini disetujui."
+msgstr "The courier delivers your pet home once this payment is approved."
+
+msgid "Mulai %(t)s · ± %(m)s menit"
+msgstr "Started %(t)s · ± %(m)s min"
+
+msgid "No. antrean"
+msgstr "Queue no."
+
+msgid "%(t)s oleh %(by)s"
+msgstr "%(t)s by %(by)s"
+
+msgid "Tahap sekarang"
+msgstr "Current step"
+
+msgid "mis. kutu sudah bersih, kuku dipotong pendek"
+msgstr "e.g. fleas cleared, nails trimmed short"
+
+msgid "mis. ada kusut di bagian perut"
+msgstr "e.g. matted fur on the belly"
+
+msgid "Selesaikan tahap terakhir? Status berubah menjadi Siap dan pemilik serta kasir mendapat notifikasi."
+msgstr "Finish the last step? The status changes to Ready and the owner and cashier are notified."
+
+msgid "%(done)s dari %(total)s tahap selesai · pemilik menerima notifikasi tiap tahap"
+msgstr "%(done)s of %(total)s steps done · the owner is notified at every step"
+
+msgid "Detail & riwayat %(pet)s"
+msgstr "%(pet)s details & history"
+
+msgid "Halo %(name)s, ini pekerjaanmu hari ini"
+msgstr "Hi %(name)s, here is your work for today"
+
+msgid "%(run)s sedang dikerjakan · %(queue)s menunggu di antrean · %(done)s selesai hari ini"
+msgstr "%(run)s in progress · %(queue)s waiting in queue · %(done)s done today"
+
+msgid "Cari nama hewan, pemilik, atau kode"
+msgstr "Search pet, owner, or code"
+
+msgid "Belum ada yang sedang dikerjakan"
+msgstr "Nothing in progress yet"
+
+msgid "Ambil hewan pertama di antrean di bawah ini untuk mulai."
+msgstr "Take the first pet in the queue below to start."
+
+msgid "Hewan masuk antrean setelah check-in di meja kasir."
+msgstr "Pets join the queue after check-in at the cashier desk."
+
+msgid "Pilih status pekerjaan"
+msgstr "Choose work status"
+
+msgid "Sudah check-in"
+msgstr "Checked in"
+
+msgid "Proses"
+msgstr "In progress"
+
+msgid "Sedang kamu kerjakan"
+msgstr "You are working on"
+
+msgid "Riwayat %(n)s terakhir"
+msgstr "Last %(n)s"
+
+msgid "%(n)s hasil untuk “%(q)s”"
+msgstr "%(n)s results for “%(q)s”"
+
+msgid "Hapus pencarian"
+msgstr "Clear search"
+
+msgid "Urut sesuai nomor antrean. Ambil dari yang paling atas."
+msgstr "Sorted by queue number. Take from the top."
+
+msgid "Lanjutkan tahap berikutnya. Tahap bertanda kamera wajib foto."
+msgstr "Continue with the next step. Steps marked with a camera need a photo."
+
+msgid "Hasil kerjamu beserta ulasan pemilik."
+msgstr "Your finished work with owner reviews."
+
+msgid "Progres saya hari ini"
+msgstr "My progress today"
+
+msgid "dari %(total)s hewan selesai"
+msgstr "of %(total)s pets done"
+
+msgid "%(done)s dari %(total)s selesai"
+msgstr "%(done)s of %(total)s done"
+
+msgid "Akan datang hari ini"
+msgstr "Coming later today"
+
+msgid "untuk Anda"
+msgstr "for you"
+
+msgid "Tidak ada jadwal lain yang belum check-in hari ini."
+msgstr "No other bookings waiting for check-in today."
+
+msgid "Cara kerja"
+msgstr "How it works"
+
+msgid "Hewan masuk antrean setelah check-in di kasir. Ambil satu, lalu selesaikan tahap demi tahap. Tahap bertanda kamera wajib foto sebelum bisa ditandai selesai."
+msgstr "Pets join the queue after check-in at the cashier. Take one, then finish it step by step. Steps marked with a camera need a photo before they can be marked done."
+
+msgid "Menu groomer"
+msgstr "Groomer menu"
+
+msgid "Untukmu"
+msgstr "For you"
+
+msgid "Mulai %(t)s"
+msgstr "Started %(t)s"
+
+msgid "Tahap %(booking_steps_done)s/%(booking_steps_total)s"
+msgstr "Step %(booking_steps_done)s/%(booking_steps_total)s"
+
+msgid "Tahap %(done)s dari %(total)s selesai"
+msgstr "Step %(done)s of %(total)s done"
+
+msgid "berikutnya %(step)s"
+msgstr "next: %(step)s"
+
+msgid "Belum diulas"
+msgstr "Not reviewed yet"
+
+msgid "Lihat detail"
+msgstr "View details"
+
+msgid "Menunggu pembayaran pelanggan. Antar pulang dimulai setelah lunas."
+msgstr "Waiting for the customer's payment. The return trip starts once it is paid."
+
+msgid "Hewan masih dikerjakan groomer. Anda mendapat notifikasi saat siap."
+msgstr "The groomer is still working on the pet. You will be notified when it is ready."
+
+msgid "Langkah jemput"
+msgstr "Pickup steps"
+
+msgid "Berangkat"
+msgstr "Depart"
+
+msgid "Scan QR + foto"
+msgstr "Scan QR + photo"
+
+msgid "Ke toko"
+msgstr "To the store"
+
+msgid "Antar %(n)s paket dulu sebelum berangkat."
+msgstr "Deliver %(n)s package(s) first before you set off."
+
+msgid "Buka langkah antar pulang"
+msgstr "Open return steps"
+
+msgid "Buka langkah jemput"
+msgstr "Open pickup steps"
+
+msgid "Antar pulang %(pet)s"
+msgstr "Take %(pet)s home"
+
+msgid "Jemput %(pet)s"
+msgstr "Pick up %(pet)s"
+
+msgid "Langkah antar-jemput"
+msgstr "Pickup & return steps"
+
+msgid "Sekarang"
+msgstr "Now"
+
+msgid "Paket siap diambil di toko"
+msgstr "Packages ready for pickup at the store"
+
+msgid "Antar-jemput Hewan"
+msgstr "Pet Pickup & Return"
+
+msgid "Tugas antar-jemput hewan"
+msgstr "Pet pickup & return tasks"
+
+msgid "%(n)s paket dibawa"
+msgstr "%(n)s package(s) on board"
+
+msgid "± %(km)s km lagi"
+msgstr "± %(km)s km to go"
+
+msgid "perkiraan selesai %(t)s"
+msgstr "estimated finish %(t)s"
+
+msgid "Hitung ulang rute"
+msgstr "Recalculate route"
+
+msgid "Scan label paket di toko"
+msgstr "Scan package labels at the store"
+
+msgid "Tujuan berikutnya"
+msgstr "Next stop"
+
+msgid "%(n)s dari %(total)s"
+msgstr "%(n)s of %(total)s"
+
+msgid "± %(next_stop_eta)s menit"
+msgstr "± %(next_stop_eta)s min"
+
+msgid "Serah terima: scan QR pesanan di HP pelanggan, lalu foto bukti."
+msgstr "Handover: scan the order QR on the customer's phone, then take a proof photo."
+
+msgid "Belum ada paket dibawa"
+msgstr "No packages on board"
+
+msgid "Paket ditahan selama antar-jemput hewan berjalan."
+msgstr "Packages are on hold while a pet trip is running."
+
+msgid "Ambil paket di toko dengan memindai QR pada label."
+msgstr "Pick up packages at the store by scanning the QR on the label."
+
+msgid "%(s)s · jadwal %(t)s"
+msgstr "%(s)s · scheduled %(t)s"
+
+msgid "%(km)s km dari toko"
+msgstr "%(km)s km from the store"
+
+msgid "Lihat tugas hewan"
+msgstr "View pet task"
+
+msgid "Semua paket"
+msgstr "All packages"
+
+msgid "%(o_delivery_address)s · ± %(o_cum_km)s km · %(o_eta)s mnt"
+msgstr "%(o_delivery_address)s · ± %(o_cum_km)s km · %(o_eta)s min"
+
+msgid "Tidak ada tujuan lain setelah ini."
+msgstr "No other stops after this one."
+
+msgid "Siap di toko"
+msgstr "Ready at store"
+
+msgid "Progres rute"
+msgstr "Route progress"
+
+msgid "Shift berjalan %(since)s"
+msgstr "Shift running for %(since)s"
+
+msgid "%(n)s hal menunggu tindakanmu"
+msgstr "%(n)s item(s) waiting for you"
+
+msgid "tidak ada yang menunggu"
+msgstr "nothing waiting"
+
+msgid "Modal awal Rp %(cash)s"
+msgstr "Opening cash Rp %(cash)s"
+
+msgid "%(n)s transaksi diparkir"
+msgstr "%(n)s parked sale(s)"
+
+msgid "%(label)s · %(n)s item · Rp %(total)s"
+msgstr "%(label)s · %(n)s item(s) · Rp %(total)s"
+
+msgid "Tidak ada transaksi diparkir"
+msgstr "No parked sales"
+
+msgid "Keranjang yang diparkir muncul di sini."
+msgstr "Parked carts appear here."
+
+msgid "dijemput kurir"
+msgstr "picked up by courier"
+
+msgid "datang sendiri"
+msgstr "drop-off by owner"
+
+msgid "Kasir buka sejak %(since)s · modal Rp %(cash)s"
+msgstr "Register open since %(since)s · opening cash Rp %(cash)s"
+
+msgid "Scan barang atau QR booking"
+msgstr "Scan an item or booking QR"
+
+msgid "Kamera"
+msgstr "Camera"
+
+msgid "Transaksi diparkir: %(label)s"
+msgstr "Parked sale: %(label)s"
+
+msgid "%(n)s item · Rp %(total)s · %(time)s"
+msgstr "%(n)s item(s) · Rp %(total)s · %(time)s"
+
+msgid "Pilih yang dijual"
+msgstr "Choose what to sell"
+
+msgid "%(n)s siap dibayar"
+msgstr "%(n)s ready to pay"
+
+msgid "Dikerjakan · %(done)s/%(total)s"
+msgstr "In progress · %(done)s/%(total)s"
+
+msgid "Booking #%(pk)s · %(pet)s · %(name)s"
+msgstr "Booking #%(pk)s · %(pet)s · %(name)s"
+
+msgid "Tahapan layanan (%(n)s)"
+msgstr "Service steps (%(n)s)"
+
+msgid "sudah dikerjakan"
+msgstr "done"
+
+msgid "± %(m)s mnt"
+msgstr "± %(m)s min"
+
+msgid "Masukkan ke keranjang"
+msgstr "Add to cart"
+
+msgid "Belum ada booking yang bisa dibayar. Booking muncul di sini setelah hewan check-in."
+msgstr "No bookings can be paid yet. Bookings appear here after the pet checks in."
+
+msgid "Booking bisa dibayar setelah hewan check-in. Centang ungu = tahap sudah dikerjakan groomer."
+msgstr "Bookings can be paid after the pet checks in. Purple check = step already done by the groomer."
+
+msgid "Hewan selesai dan siap diantar"
+msgstr "Pet finished and ready to go home"
+
+msgid "Pembayaran lunas"
+msgstr "Payment completed"
+
+msgid "Foto hewan, berangkat antar pulang"
+msgstr "Photo the pet, set off for the return"
+
+msgid "Scan QR di HP pemilik, foto saat diserahkan"
+msgstr "Scan the QR on the owner's phone, photo at handover"
+
+msgid "Scan QR di HP pemilik, foto hewan saat diterima"
+msgstr "Scan the QR on the owner's phone, photo the pet on pickup"
+
+msgid "Bawa ke toko, check-in di kasir"
+msgstr "Bring to the store, check in at the cashier"
+
+msgid "jadwal %(t)s"
+msgstr "scheduled %(t)s"
+
+msgid "Dibawa kurir %(c)s"
+msgstr "Carried by courier %(c)s"
+
+msgid "Bukti foto dari kurir"
+msgstr "Photo proof from the courier"
+
+msgid "Kurir belum mengirim foto."
+msgstr "The courier has not sent a photo yet."
+
+msgid "akan dijemput kurir"
+msgstr "to be picked up by a courier"
+
+msgid "Semua booking hari ini sudah check-in."
+msgstr "All of today's bookings are checked in."
+
+msgid "%(n)s groomer aktif"
+msgstr "%(n)s groomer(s) active"
+
+msgid "Tunggu lunas"
+msgstr "Wait for payment"
+
+msgid "Siapkan sebelum berangkat"
+msgstr "Prepare before you leave"
+
+msgid "Kandang/boks hewan"
+msgstr "Pet cage/carrier"
+
+msgid "GPS aktif (pemilik memantau posisi Anda)"
+msgstr "GPS on (the owner follows your position)"
+
+msgid "Tidak ada paket di motor. Boleh berangkat."
+msgstr "No packages on the bike. You can leave."
+
+msgid "Minta pemilik membuka Booking Saya lalu QR"
+msgstr "Ask the owner to open My Bookings, then the QR"
+
+msgid "Bila kamera tidak bisa dibuka, minta pemilik membacakan kode 8 huruf di bawah QR."
+msgstr "If the camera will not open, ask the owner to read out the 8-letter code under the QR."
+
+msgid "Foto bukti hewan diterima"
+msgstr "Photo proof the pet was received"
+
+msgid "Foto bukti diterima pemilik"
+msgstr "Photo proof the owner received the pet"
+
+msgid "Kondisi saat diterima"
+msgstr "Condition when received"
+
+msgid "Catatan, mis. hewan agak gelisah"
+msgstr "Note, e.g. the pet is a little restless"
+
+msgid "Catatan, mis. diterima suami pemilik"
+msgstr "Note, e.g. received by the owner's husband"
+
+msgid "Serahkan %(pet)s ke kasir"
+msgstr "Hand %(pet)s over to the cashier"
+
+msgid "Kasir membuka booking #%(booking_pk)s dari daftar \"Belum check-in\", melihat foto bukti Anda, memeriksa kondisi %(booking_pet_name)s, lalu hewan masuk antrean."
+msgstr "The cashier opens booking #%(booking_pk)s from the \"Not checked in\" list, sees your photo proof, checks %(booking_pet_name)s's condition, and the pet joins the queue."
+
+msgid "Foto saat tiba di toko"
+msgstr "Photo on arrival at the store"
+
+msgid "Simpan foto tiba di toko"
+msgstr "Save arrival photo"
+
+msgid "Foto tiba di toko tersimpan."
+msgstr "Arrival photo saved."
+
+msgid "Menunggu check-in kasir. Tugas jemput selesai otomatis setelah check-in."
+msgstr "Waiting for cashier check-in. The pickup task finishes automatically after check-in."
+
+msgid "%(n)s tugas aktif"
+msgstr "%(n)s active task(s)"
+
+msgid "Jemput di rumah pemilik (scan QR + foto bukti), bawa ke kasir untuk check-in, lalu antar pulang setelah lunas (foto berangkat, scan QR + foto saat diserahkan)."
+msgstr "Pick up at the owner's home (scan QR + photo proof), bring to the cashier for check-in, then take the pet home once paid (photo on departure, scan QR + photo on handover)."
+
+msgid "Lanjutkan jemput"
+msgstr "Continue pickup"
+
+msgid "Status booking"
+msgstr "Booking status"
+
+msgid "Groomer / Kurir"
+msgstr "Groomer / Courier"
+
+msgid "Foto jemput"
+msgstr "Pickup photo"
+
+msgid "foto jemput %(t)s"
+msgstr "pickup photo %(t)s"
+
+msgid "Bayar di Kasir"
+msgstr "Pay at Cashier"
+
+msgid "Booking #%(booking_pk)s · %(service)s"
+msgstr "Booking #%(booking_pk)s · %(service)s"
+
+msgid "Bukti perjalanan"
+msgstr "Trip proof"
+
+msgid "Foto beserta jam dan lokasi terlihat juga oleh kasir dan pemilik."
+msgstr "Photos with time and location are also visible to the cashier and the owner."
+
+msgid "Tanpa foto"
+msgstr "No photo"
+
+msgid "Periode"
+msgstr "Period"
+
+msgid "Bintang ≤ 2 saja"
+msgstr "≤ 2 stars only"
+
+msgid "Kotak masuk"
+msgstr "Inbox"
+
+msgid "Foto dari pelanggan"
+msgstr "Photo from the customer"
+
+msgid "Pesanan #%(complaint_order_pk)s"
+msgstr "Order #%(complaint_order_pk)s"
+
+msgid "Kurir %(c)s"
+msgstr "Courier %(c)s"
+
+msgid "diterima %(t)s"
+msgstr "received %(t)s"
+
+msgid "Foto serah"
+msgstr "Handover photo"
+
+msgid "Tidak terkait pesanan atau booking."
+msgstr "Not linked to an order or booking."
+
+msgid "Notifikasi - Kurir"
+msgstr "Notifications - Courier"
+
+msgid "Status komplain"
+msgstr "Complaint status"
+
+msgid "Belum dibaca"
+msgstr "Unread"
+
+msgid "Uang yang harus disetor ke kasir"
+msgstr "Money to hand in to the cashier"
+
+msgid "%(t)s · ditagih tunai"
+msgstr "%(t)s · collected in cash"
+
+msgid "Tidak ada uang COD yang perlu disetor sekarang."
+msgstr "No COD money to hand in right now."
+
+msgid "diterima %(r_received_by_name)s"
+msgstr "received by %(r_received_by_name)s"
+
+msgid "Pas"
+msgstr "Exact"
+
+msgid "Paket saya"
+msgstr "My packages"
+
+msgid "%(n)s sedang dibawa · serah terima lewat scan QR pelanggan"
+msgstr "%(n)s being carried · hand over by scanning the customer's QR"
+
+msgid "Dibawa"
+msgstr "Carrying"
+
+msgid "%(n)s barang"
+msgstr "%(n)s item(s)"
+
+msgid "Sampai, serahkan"
+msgstr "Arrived, hand over"
+
+msgid "Diterima %(t)s"
+msgstr "Received %(t)s"
+
+msgid "Scan QR di label setiap paket. Paket langsung berstatus Dalam Pengiriman, pelanggan mendapat notifikasi, dan rute dihitung ulang."
+msgstr "Scan the QR on each package label. The package becomes On Delivery right away, the customer is notified, and the route is recalculated."
+
+msgid "Sedang dibawa"
+msgstr "Being carried"
+
+msgid "%(carrying)s / %(max_packages)s paket"
+msgstr "%(carrying)s / %(max_packages)s packages"
+
+msgid "sudah dikemas"
+msgstr "packed"
+
+msgid "belum dikemas"
+msgstr "not packed yet"
+
+msgid "Barang rusak"
+msgstr "Damaged goods"
+
+msgid "Ceritakan singkat"
+msgstr "Describe briefly"
+
+msgid "Ceritakan singkat kendalanya"
+msgstr "Briefly describe the problem"
+
+msgid "Foto bukti kunjungan (opsional)"
+msgstr "Visit photo proof (optional)"
+
+msgid "Order sudah lunas, tidak ada uang yang ditagih."
+msgstr "The order is already paid, no money to collect."
+
+msgid "Pelanggan melihat foto ini di Pesanan Saya; admin bisa membukanya bila ada komplain."
+msgstr "The customer sees this photo in My Orders; admins can open it if there is a complaint."
+
+msgid "Akun saya"
+msgstr "My account"
+
+msgid "Ganti foto"
+msgstr "Change photo"
+
+msgid "bergabung %(d)s"
+msgstr "joined %(d)s"
+
+msgid "Data diri &amp; kendaraan"
+msgstr "Personal details &amp; vehicle"
+
+msgid "Area layanan"
+msgstr "Service area"
+
+msgid "Simpan profil"
+msgstr "Save profile"
+
+msgid "Ganti kata sandi"
+msgstr "Change password"
+
+msgid "Tujuan %(n)s dari %(total)s"
+msgstr "Stop %(n)s of %(total)s"
+
+msgid "Status bayar"
+msgstr "Payment status"
+
+msgid "Daftar barang"
+msgstr "Items"
+
+msgid "Tagih tunai Rp %(n)s (COD)"
+msgstr "Collect Rp %(n)s in cash (COD)"
+
+msgid "Riwayat pengiriman"
+msgstr "Delivery history"
+
+msgid "Minggu ini"
+msgstr "This week"
+
+msgid "%(n)s terkirim"
+msgstr "%(n)s delivered"
+
+msgid "Nilai rata-rata"
+msgstr "Average rating"
+
+msgid "Saring riwayat"
+msgstr "Filter history"
+
+msgid "QR terverifikasi"
+msgstr "QR verified"
+
+msgid "Belum ada pengiriman di sini."
+msgstr "No deliveries here yet."
+
+msgid "Transaksi online"
+msgstr "Online transaction"
+
+msgid "kasir %(who)s"
+msgstr "cashier %(who)s"
+
+msgid "pembeli %(buyer)s"
+msgstr "buyer %(buyer)s"
+
+msgid "Kembalian Rp %(n)s"
+msgstr "Change Rp %(n)s"
+
+msgid "%(n)s jenis"
+msgstr "%(n)s kind(s)"
+
+msgid "%(n)s layanan"
+msgstr "%(n)s service(s)"
+
+msgid "Pengambilan"
+msgstr "Pickup"
+
+msgid "Struk digital"
+msgstr "Digital receipt"
+
+msgid "Buka tautan"
+msgstr "Open link"
+
+msgid "Riwayat struk ini"
+msgstr "This receipt's history"
+
+msgid "%(n)s menunggu dicek"
+msgstr "%(n)s waiting to be checked"
+
+msgid "Antrean bukti"
+msgstr "Proof queue"
+
+msgid "masuk %(t)s lalu"
+msgstr "arrived %(t)s ago"
+
+msgid "Tidak ada bukti lain yang menunggu."
+msgstr "No other proofs waiting."
+
+msgid "Foto bukti dari pelanggan"
+msgstr "Proof photo from the customer"
+
+msgid "Diunggah %(t)s"
+msgstr "Uploaded %(t)s"
+
+msgid "Klik untuk ukuran penuh"
+msgstr "Click for full size"
+
+msgid "Pesanan #%(pk)s"
+msgstr "Order #%(pk)s"
+
+msgid "Rekening tujuan"
+msgstr "Destination account"
+
+msgid "Dana sudah masuk di mutasi rekening toko"
+msgstr "The funds appear in the store's bank statement"
+
+msgid "Setujui pembayaran"
+msgstr "Approve payment"
+
+msgid "mis. nominal kurang Rp 5.000 / foto buram"
+msgstr "e.g. Rp 5,000 short / blurry photo"
+
+msgid "Buka Cek Bukti Transfer"
+msgstr "Open Transfer Proof Check"
+
+msgid "Cek bukti dulu"
+msgstr "Check proof first"
+
+msgid "Cetak rekap"
+msgstr "Print summary"
+
+msgid "Shift berjalan"
+msgstr "Current shift"
+
+msgid "Dibuka %(since)s · %(dur)s"
+msgstr "Opened %(since)s · %(dur)s"
+
+msgid "14 shift terakhir"
+msgstr "Last 14 shifts"
+
+msgid "Catatan shift %(day)s: “%(note)s”"
+msgstr "Shift note %(day)s: “%(note)s”"
+
+msgid "Belum dikemas"
+msgstr "Not packed yet"
+
+msgid "Siap diambil kurir"
+msgstr "Ready for courier pickup"
+
+msgid "Label yang dicetak"
+msgstr "Printed label"
+
+msgid "Kurir memindai QR ini di menu Ambil Paket; status langsung berubah menjadi Dalam pengiriman."
+msgstr "The courier scans this QR in the Pick Up Packages menu; the status changes to On delivery right away."
+
+msgid "Ajukan retur dari struk"
+msgstr "Request a return from the receipt"
+
+msgid "Status retur"
+msgstr "Return status"
+
+msgid "Barang diretur"
+msgstr "Returned items"
+
+msgid "Dikembalikan"
+msgstr "Refunded"
+
+msgid "Alasan"
+msgstr "Reason"
+
+msgid "Uang kembali lewat"
+msgstr "Refund via"
+
+msgid "Keputusan oleh admin. Anda mendapat notifikasi."
+msgstr "An admin decides. You will be notified."
+
+msgid "Aturan retur"
+msgstr "Return rules"
+
+msgid "Maksimal %(n)s hari setelah barang diterima, transaksi sudah lunas."
+msgstr "At most %(n)s days after the goods are received, and the transaction is paid."
+
+msgid "Nilai kembali dihitung otomatis sebanding dengan diskon dan pajak."
+msgstr "The refund is calculated automatically in proportion to discounts and tax."
+
+msgid "Tukar barang: setujui retur, lalu buat transaksi baru."
+msgstr "Exchanges: approve the return, then create a new transaction."
+
+msgid "Setoran #%(r_pk)s"
+msgstr "Remittance #%(r_pk)s"
+
+msgid "diserahkan %(t)s"
+msgstr "handed in %(t)s"
+
+msgid "Terima setoran"
+msgstr "Accept remittance"
+
+msgid "Menunggu diterima (0)"
+msgstr "Waiting to be accepted (0)"
+
+msgid "%(c_n)s paket belum disetor"
+msgstr "%(c_n)s package(s) not handed in yet"
+
+msgid "Kurir mengajukan setoran dari HP; setoran muncul di kiri untuk dihitung."
+msgstr "Couriers submit remittances from their phones; they appear on the left to be counted."
+
+msgid "Kurang Rp %%(n)s dari yang seharusnya. Catatan wajib diisi."
+msgstr "Rp %%(n)s short of the expected amount. A note is required."
+
+msgid "Lebih Rp %%(n)s dari yang seharusnya. Catatan wajib diisi."
+msgstr "Rp %%(n)s over the expected amount. A note is required."
+
+msgid "Pas, tidak ada selisih."
+msgstr "Exact, no difference."
+
+msgid "Foto hewan di kandang/boks bersama pemilik. Jam dan lokasi tercatat otomatis."
+msgstr "Photo of the pet in its cage/carrier with the owner. Time and location are recorded automatically."
+
+msgid "Foto hewan bersama pemilik saat diserahkan. Jam dan lokasi tercatat otomatis."
+msgstr "Photo of the pet with the owner at handover. Time and location are recorded automatically."
+
+msgid "Foto hewan di depan kasir. Jam dan lokasi tercatat otomatis."
+msgstr "Photo of the pet at the cashier. Time and location are recorded automatically."
+
+msgid "Foto tiba di toko sudah tersimpan."
+msgstr "The arrival photo is already saved."
+
+msgid "Foto tiba di toko tersimpan. Serahkan hewan ke kasir."
+msgstr "Arrival photo saved. Hand the pet over to the cashier."
+
+msgid "Kondisi: %(list)s."
+msgstr "Condition: %(list)s."
+
+msgid "Sehat"
+msgstr "Healthy"
+
+msgid "Gelisah"
+msgstr "Restless"
+
+msgid "Ada luka"
+msgstr "Injured"
+
+msgid "Ada kutu"
+msgstr "Has fleas"
+
+msgid "7 hari"
+msgstr "7 days"
+
+msgid "30 hari"
+msgstr "30 days"
+
+msgid "Tutup detail"
+msgstr "Close details"
+
+msgid "hari ini"
+msgstr "today"
+
+msgid "lewat jadwal"
+msgstr "past schedule"
+
+msgid "Tahapan booking"
+msgstr "Booking stages"
+
+msgid "Datang"
+msgstr "Arrival"
+
+msgid "Diantar sendiri"
+msgstr "Dropped off by owner"
+
+msgid "Pulang"
+msgstr "Return"
+
+msgid "Diantar kurir"
+msgstr "Delivered by courier"
+
+msgid "Belum bayar"
+msgstr "Unpaid"
+
+msgid "termasuk antar-jemput Rp %(fee)s"
+msgstr "includes pickup & delivery Rp %(fee)s"
+
+msgid "Petugas"
+msgstr "Staff"
+
+msgid "%(n)s booking lain hari itu"
+msgstr "%(n)s other bookings that day"
+
+msgid "Kurir hewan"
+msgstr "Pet courier"
+
+msgid "Konfirmasi booking"
+msgstr "Confirm booking"
+
+msgid "Cek bukti transfer"
+msgstr "Check transfer proof"
+
+msgid "Check-in sekarang"
+msgstr "Check in now"
+
+msgid "Kurir sedang menjemput. Check-in terbuka setelah kurir scan QR di rumah pelanggan."
+msgstr "The courier is picking up. Check-in opens after the courier scans the QR at the customer's home."
+
+msgid "Lihat antrean"
+msgstr "View queue"
+
+msgid "Cari hewan, pelanggan, #id"
+msgstr "Search pet, customer, #id"
+
+msgid "%(n)s booking online menunggu konfirmasi (semua tanggal)"
+msgstr "%(n)s online bookings awaiting confirmation (all dates)"
+
+msgid "Bukti transfer #%(pk)s · %(name)s · Rp %(total)s menunggu dicek"
+msgstr "Transfer proof #%(pk)s · %(name)s · Rp %(total)s awaiting review"
+
+msgid "Hasil pencarian \"%(q)s\" di semua tanggal"
+msgstr "Search results for \"%(q)s\" across all dates"
+
+msgid "Status \"%(s)s\" di semua tanggal"
+msgstr "Status \"%(s)s\" across all dates"
+
+msgid "Kembali ke hari ini"
+msgstr "Back to today"
+
+msgid "Pilih tanggal"
+msgstr "Pick a date"
+
+msgid "Pilih tanggal lain"
+msgstr "Pick another date"
+
+msgid "Kelompok booking"
+msgstr "Booking groups"
+
+msgid "Daftar booking"
+msgstr "Booking list"
+
+msgid "Pagi"
+msgstr "Morning"
+
+msgid "Siang"
+msgstr "Midday"
+
+msgid "Sore"
+msgstr "Afternoon"
+
+msgid "Malam"
+msgstr "Evening"
+
+msgid "Antar-jemput"
+msgstr "Pickup & delivery"
+
+msgid "Ada catatan"
+msgstr "Has notes"
+
+msgid "Belum ada groomer"
+msgstr "No groomer yet"
+
+msgid "Tidak ada booking yang cocok."
+msgstr "No matching bookings."
+
+msgid "Tidak ada booking di kelompok ini."
+msgstr "No bookings in this group."
+
+msgid "Belum ada booking di tanggal ini."
+msgstr "No bookings on this date yet."
+
+msgid "Menampilkan %(limit)s booking. Gunakan pencarian untuk yang lain."
+msgstr "Showing %(limit)s bookings. Use search to find others."
+
+msgid "antar-jemput"
+msgstr "pickup & delivery"
+
+msgid "ada catatan"
+msgstr "has notes"
+
+msgid "belum bayar"
+msgstr "unpaid"
+
+msgid "Lewat jadwal"
+msgstr "Past schedule"
+
+msgid "Belum datang"
+msgstr "Not arrived"
+
+msgid "Di toko"
+msgstr "In store"
+
+msgid "Selesai & batal"
+msgstr "Done & cancelled"
+
+msgid "Dipesan"
+msgstr "Booked"
+
+msgid "Bayar nanti di kasir"
+msgstr "Pay later at the cashier"
+
+msgid "Transfer / QRIS sekarang"
+msgstr "Transfer / QRIS now"
+
+msgid "Bayar pakai QRIS"
+msgstr "Pay with QRIS"
+
+msgid "Pindai dengan aplikasi bank/e-wallet, lalu foto layar bukti bayarnya."
+msgstr "Scan with your bank or e-wallet app, then take a screenshot of the payment proof."
+
+msgid "Pilih transfer/QRIS · batal otomatis bila belum bayar sampai %(due)s"
+msgstr "Chose transfer/QRIS · auto-cancelled if unpaid by %(due)s"
+
+msgid "Pilih transfer/QRIS · batas bayar mulai saat dikonfirmasi"
+msgstr "Chose transfer/QRIS · payment deadline starts on confirmation"
+
+msgid "Bayar maks. %(h)s jam setelah jadwal dikonfirmasi. Lewat dari itu tanpa bukti bayar, booking dibatalkan otomatis."
+msgstr "Pay within %(h)s hour(s) after the schedule is confirmed. Without payment proof by then, the booking is cancelled automatically."
+
+msgid "Bayar tunai, transfer, atau QRIS di kasir saat datang."
+msgstr "Pay by cash, transfer, or QRIS at the cashier when you arrive."
+
+msgid "Anda memilih transfer/QRIS. Setelah jadwal dikonfirmasi, bayar dalam %(h)s jam; lewat dari itu booking dibatalkan otomatis."
+msgstr "You chose transfer/QRIS. Once the schedule is confirmed, pay within %(h)s hour(s); after that the booking is cancelled automatically."
+
+msgid "Bayar sebelum %(due)s; lewat dari itu booking dibatalkan otomatis."
+msgstr "Pay before %(due)s; after that the booking is cancelled automatically."

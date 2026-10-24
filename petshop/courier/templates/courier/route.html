@@ -10,89 +10,134 @@
     </head>
     <body>
         {% include "courier/_nav.html" %}
-        <main class="container-fluid px-xl-5 px-3 py-4">
-            <header class="r-head">
-                <p class="r-head__who">{% blocktranslate trimmed with name=request.user.name %}Kurir · {{ name }}{% endblocktranslate %}</p>
-                <h1 class="r-head__title">{% translate "Rute hari ini" %}</h1>
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-main">
+            <header class="ck-head">
+                <div>
+                    <p class="sg-eyebrow">{% now "l, j F Y" %}</p>
+                    <h1 class="ck-head__title">{% translate "Rute hari ini" %}</h1>
+                    <p class="ck-head__lead">
+                        {% blocktranslate trimmed with n=carrying %}{{ n }} paket dibawa{% endblocktranslate %}{% if carrying %} · {% blocktranslate trimmed with km=remaining_km|floatformat:1 %}± {{ km }} km lagi{% endblocktranslate %}{% if finish_eta %} · {% blocktranslate trimmed with t=finish_eta|time:"H.i" %}perkiraan selesai {{ t }}{% endblocktranslate %}{% endif %}{% endif %}
+                    </p>
+                </div>
+                <div class="ck-head__actions">
+                    {% if next_stop %}
+                        <form method="post" action="{% url 'courier:reroute' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="ck-btn" data-needs-gps><i class="bi bi-arrow-repeat" aria-hidden="true"></i> {% translate "Hitung ulang rute" %}</button>
+                        </form>
+                    {% endif %}
+                    {% if not pet_trip %}
+                        <a class="ck-btn is-gold" href="{% url 'courier:pickup' %}" data-needs-gps><i class="bi bi-upc-scan" aria-hidden="true"></i> {% translate "Scan label paket di toko" %}</a>
+                    {% endif %}
+                </div>
             </header>
             {% for message in messages %}
                 <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
             {% endfor %}
             {% if pet_trip %}{% include "courier/_pet_duty.html" %}{% endif %}
-            <section class="route-stats" aria-label="{% translate 'Ringkasan' %}">
-                <a class="route-stat" href="{% url 'courier:packages' %}?status=on_delivery"><b>{{ carrying }} / {{ max_packages }}</b><span>{% translate "Paket dibawa" %}</span></a>
-                <a class="route-stat" href="{% url 'courier:pickup' %}"><b>{{ ready_count }}</b><span>{% translate "Siap diambil di toko" %}</span></a>
-                <a class="route-stat{% if cash_total %} is-warn{% endif %}" href="{% url 'courier:cash' %}"><b>Rp {{ cash_total|rupiah }}</b><span>{% translate "Uang COD belum disetor" %}</span></a>
-                <a class="route-stat" href="{% url 'courier:history' %}"><b>{{ delivered_today }}</b><span>{% translate "Terkirim hari ini" %}</span></a>
-            </section>
-            <div class="route-wrap">
-                <div class="route-wrap__map">
+            <div class="ck-bento">
+                <div class="ck-bento__next">
+                    {% if next_stop %}
+                        <section class="ck-card ck-next" aria-labelledby="next-title">
+                            <div class="ck-next__top">
+                                <span class="sg-live"><i aria-hidden="true"></i>{% translate "Tujuan berikutnya" %}</span>
+                                <span class="sg-pill is-line">{% blocktranslate trimmed with n=next_stop.route_position total=carrying %}{{ n }} dari {{ total }}{% endblocktranslate %}</span>
+                            </div>
+                            <h2 id="next-title" class="ck-next__name">{{ next_stop.customer.name }}</h2>
+                            <p class="ck-next__addr">{{ next_stop.delivery_address }}</p>
+                            {% if next_stop.customer_note %}<p class="ck-next__note"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ next_stop.customer_note }}</p>{% endif %}
+                            <div class="ck-chips">
+                                {% if next_stop.leg_km is not None %}<span class="sg-pill is-line"><i class="bi bi-signpost-2" aria-hidden="true"></i> ± {{ next_stop.leg_km|floatformat:1 }} km</span><span class="sg-pill is-line"><i class="bi bi-clock" aria-hidden="true"></i> {% blocktranslate trimmed with next_stop_eta=next_stop.eta %}± {{ next_stop_eta }} menit{% endblocktranslate %}</span>{% endif %}
+                                <span class="sg-pill is-line">{% blocktranslate trimmed with next_stop_packing_label=next_stop.packing_label %}No. {{ next_stop_packing_label }}{% endblocktranslate %}</span>
+                                {% if not next_stop.cod_due %}<span class="sg-pill is-ok">{% translate "Lunas" %}</span>{% endif %}
+                            </div>
+                            {% if next_stop.cod_due %}<div class="ck-cod"><i class="bi bi-cash-stack" aria-hidden="true"></i> {% blocktranslate trimmed with next_stop_total_payment=next_stop.total_payment|rupiah %}Tagih tunai Rp {{ next_stop_total_payment }}{% endblocktranslate %}<span>COD</span></div>{% endif %}
+                            <a class="ck-btn is-primary is-lg" href="{% url 'courier:handover' next_stop.pk %}" data-needs-gps><i class="bi bi-check2-circle" aria-hidden="true"></i> {% translate "Sampai, serahkan paket" %}</a>
+                            <div class="ck-row2">
+                                {% if next_stop.has_pin %}
+                                    <a class="ck-btn" href="https://www.google.com/maps/dir/?api=1&destination={{ next_stop.delivery_latitude|unlocalize }},{{ next_stop.delivery_longitude|unlocalize }}&travelmode=driving" target="_blank" rel="noopener"><i class="bi bi-compass" aria-hidden="true"></i> {% translate "Navigasi" %}</a>
+                                {% else %}
+                                    <a class="ck-btn" href="{{ next_stop.maps_url }}" target="_blank" rel="noopener"><i class="bi bi-compass" aria-hidden="true"></i> {% translate "Cari alamat" %}</a>
+                                {% endif %}
+                                <a class="ck-btn is-ok" href="{{ next_stop.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> {% translate "Hubungi" %}</a>
+                            </div>
+                            <a class="ck-btn is-bad" href="{% url 'courier:problem' next_stop.pk %}"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> {% translate "Ada kendala" %}</a>
+                            <p class="ck-foot">{% translate "Serah terima: scan QR pesanan di HP pelanggan, lalu foto bukti." %}</p>
+                        </section>
+                    {% else %}
+                        <section class="ck-card ck-next ck-empty">
+                            <span class="ck-empty__icon" aria-hidden="true"><i class="bi bi-box-seam"></i></span>
+                            <h2 class="ck-next__name">{% translate "Belum ada paket dibawa" %}</h2>
+                            <p class="ck-next__addr">{% if pet_trip %}{% translate "Paket ditahan selama antar-jemput hewan berjalan." %}{% else %}{% translate "Ambil paket di toko dengan memindai QR pada label." %}{% endif %}</p>
+                            {% if not pet_trip %}<a class="ck-btn is-primary is-lg" href="{% url 'courier:pickup' %}" data-needs-gps><i class="bi bi-qr-code-scan" aria-hidden="true"></i> {% translate "Scan ambil paket" %}</a>{% endif %}
+                        </section>
+                    {% endif %}
+                </div>
+                <section class="ck-card ck-bento__map" aria-label="{% translate 'Peta rute pengantaran' %}">
                     <div class="route-map" id="route-map" data-route-map
                          data-url="{% url 'courier:route_data' %}"
                          data-start-lat="{{ start.0|unlocalize }}" data-start-lng="{{ start.1|unlocalize }}"
                          role="application" aria-label="{% translate 'Peta rute pengantaran' %}"></div>
-                    <p class="small text-muted mt-2 mb-0">{% translate "Urutan antar dihitung dari jarak terdekat ke terjauh (nearest neighbour + 2-opt) dan diperbarui setiap paket diambil atau diserahkan." %}</p>
-                </div>
-                <div class="route-wrap__next">
-                    {% if next_stop %}
-                        <section class="next-card" aria-labelledby="next-title">
-                            <div class="next-card__label">{% blocktranslate trimmed with next_stop_route_position=next_stop.route_position carrying=carrying %}Tujuan berikutnya · {{ next_stop_route_position }} dari {{ carrying }}{% endblocktranslate %}</div>
-                            <div class="next-card__progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ trip_total }}" aria-valuenow="{{ delivered_today }}" aria-label="{% translate 'Paket terkirim hari ini' %}"><span data-w="{{ trip_pct }}"></span></div>
-                            <h2 id="next-title">{{ next_stop.customer.name }}</h2>
-                            <p>{{ next_stop.delivery_address }}</p>
-                            {% if next_stop.customer_note %}<p class="small"><i class="bi bi-chat-left-text"></i> {{ next_stop.customer_note }}</p>{% endif %}
-                            <div class="next-card__meta">
-                                {% if next_stop.leg_km is not None %}<span class="chip"><i class="bi bi-signpost"></i> ±{{ next_stop.leg_km|floatformat:1 }} km</span><span class="chip"><i class="bi bi-clock"></i> {% blocktranslate trimmed with next_stop_eta=next_stop.eta %}±{{ next_stop_eta }} menit{% endblocktranslate %}</span>{% endif %}
-                                <span class="chip">{% blocktranslate trimmed with next_stop_packing_label=next_stop.packing_label %}No. {{ next_stop_packing_label }}{% endblocktranslate %}</span>
-                                {% if not next_stop.cod_due %}<span class="chip is-paid">{% translate "Lunas" %}</span>{% endif %}
-                            </div>
-                            {% if next_stop.cod_due %}<div class="cod-due"><i class="bi bi-cash"></i> {% blocktranslate trimmed with next_stop_total_payment=next_stop.total_payment|rupiah %}Tagih tunai Rp {{ next_stop_total_payment }}{% endblocktranslate %}</div>{% endif %}
-                            <div class="next-card__actions">
-                                <a class="btn-route is-primary is-wide" href="{% url 'courier:handover' next_stop.pk %}" data-needs-gps><i class="bi bi-qr-code-scan"></i> {% translate "Sampai, serahkan paket" %}</a>
-                                {% if next_stop.has_pin %}
-                                    <a class="btn-route" href="https://www.google.com/maps/dir/?api=1&destination={{ next_stop.delivery_latitude|unlocalize }},{{ next_stop.delivery_longitude|unlocalize }}&travelmode=driving" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> {% translate "Navigasi" %}</a>
-                                {% else %}
-                                    <a class="btn-route" href="{{ next_stop.maps_url }}" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> {% translate "Cari alamat" %}</a>
-                                {% endif %}
-                                <a class="btn-route" href="{{ next_stop.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {% translate "Hubungi" %}</a>
-                                <a class="btn-route is-wide" href="{% url 'courier:problem' next_stop.pk %}"><i class="bi bi-exclamation-triangle"></i> {% translate "Ada kendala" %}</a>
-                            </div>
-                        </section>
-                    {% else %}
-                        <div class="empty-route">
-                            <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
-                            <p class="mb-3">{% translate "Belum ada paket yang dibawa. Ambil paket di toko dengan memindai QR pada label." %}</p>
-                            {% if not pet_trip %}<a class="btn-route is-primary" href="{% url 'courier:pickup' %}" data-needs-gps><i class="bi bi-qr-code-scan"></i> {% translate "Scan ambil paket" %}</a>{% endif %}
+                    <p class="ck-map-note">{% translate "Urutan antar dihitung dari jarak terdekat ke terjauh (nearest neighbour + 2-opt) dan diperbarui setiap paket diambil atau diserahkan." %}</p>
+                </section>
+
+                {% if pet_task %}
+                    <section class="ck-card ck-pet" aria-labelledby="pet-title">
+                        <div class="ck-pet__top">
+                            <span class="sg-eyebrow ck-pet__eyebrow"><svg class="ck-paw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg>{% translate "Tugas hewan" %}</span>
+                            <span class="sg-pill is-pri">{% if pet_task.is_return_leg %}{% translate "Antar pulang" %}{% else %}{% translate "Jemput" %}{% endif %}</span>
                         </div>
-                    {% endif %}
-                </div>
-                {% if next_stop %}
-                    <div class="route-wrap__rest">
-                        {% if stops|length > 1 %}
-                            <h2 class="h6 fw-bold mt-4 mb-0">{% translate "Urutan berikutnya" %}</h2>
-                            <ol class="stop-list">
-                                {% for o in stops %}
-                                    {% if not forloop.first %}
-                                        <li>
-                                            <a href="{% url 'courier:order_detail' o.pk %}">
-                                                <span class="stop-num">{{ o.route_position }}</span>
-                                                <span>{{ o.customer.name }}<small>{% blocktranslate trimmed with o_delivery_address=o.delivery_address|truncatechars:60 o_cum_km=o.cum_km|floatformat:1 o_eta=o.eta %}{{ o_delivery_address }} · ±{{ o_cum_km }} km · ±{{ o_eta }} mnt{% endblocktranslate %}</small></span>
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ol>
+                        <h3 id="pet-title" class="ck-pet__name">{{ pet_task.pet_name }} · {{ pet_task.get_pet_type_display }}</h3>
+                        <p class="ck-pet__sub">{% blocktranslate trimmed with s=pet_task.service.name t=pet_task.schedule|time:"H.i" %}{{ s }} · jadwal {{ t }}{% endblocktranslate %}</p>
+                        <p class="ck-pet__where">{{ pet_task.customer.name }} · {{ pet_task.transport_address|default:"-" }}{% if pet_task.transport_distance_km %} · {% blocktranslate trimmed with km=pet_task.transport_distance_km|floatformat:1 %}{{ km }} km dari toko{% endblocktranslate %}{% endif %}</p>
+                        {% if carrying and not pet_trip %}
+                            <p class="ck-lock"><i class="bi bi-lock" aria-hidden="true"></i> {% blocktranslate trimmed with n=carrying %}Antar {{ n }} paket dulu sebelum berangkat.{% endblocktranslate %}</p>
                         {% endif %}
-                        <form method="post" action="{% url 'courier:reroute' %}" class="mt-3">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-route w-100" data-needs-gps><i class="bi bi-arrow-repeat"></i> {% translate "Hitung ulang rute dari posisi saya" %}</button>
-                        </form>
-                    </div>
+                        <a class="ck-btn" href="{% url 'service:courier_pet_trip' pet_task.pk %}">{% translate "Lihat tugas hewan" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </section>
                 {% endif %}
+
+                <section class="ck-card ck-list" aria-labelledby="rest-title">
+                    <div class="ck-card__head">
+                        <h3 id="rest-title">{% translate "Urutan berikutnya" %}</h3>
+                        <a class="ck-more" href="{% url 'courier:packages' %}">{% translate "Semua paket" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </div>
+                    {% if stops|length > 1 %}
+                        <ol class="ck-stops">
+                            {% for o in stops %}
+                                {% if not forloop.first %}
+                                    <li>
+                                        <a href="{% url 'courier:order_detail' o.pk %}">
+                                            <span class="ck-stops__no">{{ o.route_position }}</span>
+                                            <span class="ck-stops__body"><b>{{ o.customer.name }}</b><small>{% blocktranslate trimmed with o_delivery_address=o.delivery_address|truncatechars:40 o_cum_km=o.cum_km|floatformat:1 o_eta=o.eta %}{{ o_delivery_address }} · ± {{ o_cum_km }} km · {{ o_eta }} mnt{% endblocktranslate %}</small></span>
+                                            {% if o.cod_due %}<span class="sg-pill is-gold">COD</span>{% else %}<span class="sg-pill is-ok">{% translate "Lunas" %}</span>{% endif %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ol>
+                    {% else %}
+                        <p class="ck-muted">{% translate "Tidak ada tujuan lain setelah ini." %}</p>
+                    {% endif %}
+                </section>
+
+                <section class="ck-card ck-today" aria-labelledby="today-title">
+                    <div class="ck-card__head">
+                        <h3 id="today-title" class="sg-eyebrow">{% translate "Hari ini" %}</h3>
+                        <a class="ck-more" href="{% url 'courier:cash' %}">{% translate "Setoran" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </div>
+                    <a class="ck-today__cod" href="{% url 'courier:cash' %}"><small>{% translate "Uang COD belum disetor" %}</small><b>Rp {{ cash_total|rupiah }}</b></a>
+                    <div class="ck-today__stats">
+                        <a href="{% url 'courier:packages' %}?status=on_delivery"><small>{% translate "Paket dibawa" %}</small><b>{{ carrying }} / {{ max_packages }}</b></a>
+                        <a href="{% url 'courier:pickup' %}"><small>{% translate "Siap di toko" %}</small><b>{{ ready_count }}</b></a>
+                        <a href="{% url 'courier:history' %}"><small>{% translate "Terkirim hari ini" %}</small><b>{{ delivered_today }}</b></a>
+                        <div><small>{% translate "Progres rute" %}</small><b>{{ trip_pct }}%</b></div>
+                    </div>
+                </section>
             </div>
         </main>
         <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
-        <script src="{% static 'courier/js/route_map.js' %}?v=2"></script>
+        <script src="{% static 'courier/js/route_map.js' %}?v=3"></script>
         <script src="{% static 'js/ui.js' %}?v=1"></script>
         <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>

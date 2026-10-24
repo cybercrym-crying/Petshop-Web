@@ -167,7 +167,7 @@
                         <ul class="ui-rows ui-rows--wrap">
                             {% for c in couriers %}
                                 <li class="ui-row">
-                                    <span class="ui-avatar" aria-hidden="true">{{ c.user.display_name|make_list|first|upper }}</span>
+                                    {% if c.user.photo_url %}<img class="ui-avatar ui-avatar--photo" src="{{ c.user.photo_url }}" alt="" width="36" height="36">{% else %}<span class="ui-avatar" aria-hidden="true">{{ c.user.display_name|make_list|first|upper }}</span>{% endif %}
                                     <span class="ui-row__body">
                                         <span class="ui-row__title">{{ c.user.display_name }}</span>
                                         <span class="ui-row__sub">{{ c.task }}</span>

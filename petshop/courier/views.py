@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.db import transaction
+from django.db import models
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -21,7 +22,8 @@ from transaction.models import Order, OrderStatus, PaymentMethod, PaymentStatus,
 from transaction.notify import order_event
 
 from . import routing
-from .forms import ProblemForm
+from .context_processors import ready_to_pick
+from .forms import CourierAccountForm, ProblemForm
 from .models import CashRemittance, CourierLocation, RemittanceStatus
 
 BOARD_DONE_LIMIT = 15
@@ -57,6 +59,10 @@ def packages(request):
     """Daftar paket per status (tanpa tombol aksi; ambil & serah wajib lewat scan QR)."""
     q = (request.GET.get("q") or "").strip()
     current = _board_status(request.GET.get("status"))
+    if not request.GET.get("status") and Order.objects.filter(
+        courier=request.user, order_status=OrderStatus.ON_DELIVERY
+    ).exists():
+        current = "on_delivery"  # paket yang sedang dibawa paling sering dibuka
     orders = (
         Order.objects.filter(courier=request.user)
         .select_related("customer", "admin", "courier")
@@ -78,7 +84,7 @@ def packages(request):
     pending_orders = orders.filter(pk__in=pending_ids).order_by("date")
 
     on_delivery_orders = orders.filter(order_status=OrderStatus.ON_DELIVERY).order_by(
-        "date"
+        "route_position", "date"
     )
     delivered_orders = orders.filter(order_status=OrderStatus.DELIVERED)
 
@@ -107,17 +113,31 @@ def packages(request):
 
 @roleRequired(Role.COURIER)
 def history(request):
+    mine = Order.objects.filter(courier=request.user)
+    filters = {
+        "": (_("Semua"), mine),
+        "terkirim": (_("Terkirim"), mine.filter(order_status=OrderStatus.DELIVERED)),
+        "berjalan": (_("Dibawa"), mine.filter(order_status=OrderStatus.ON_DELIVERY)),
+    }
+    current = request.GET.get("f", "")
+    if current not in filters:
+        current = ""
     history_orders = (
-        Order.objects.filter(courier=request.user)
+        filters[current][1]
         .select_related("customer", "admin")
-        .prefetch_related("details__product")
         .order_by("-date")
     )
-
+    delivered = mine.filter(order_status=OrderStatus.DELIVERED)
     return render(
         request,
         "courier/history.html",
-        {"history_orders": history_orders},
+        {
+            "history_orders": history_orders,
+            "filters": [(key, label, qs.count()) for key, (label, qs) in filters.items()],
+            "current": current,
+            "week_count": delivered.filter(delivered_at__gte=timezone.now() - timedelta(days=7)).count(),
+            "rating": delivered.exclude(rating__isnull=True).aggregate(avg=models.Avg("rating"))["avg"],
+        },
     )
 
 
@@ -130,10 +150,13 @@ def order_detail(request, pk):
         pk=pk,
         courier=request.user,
     )
+    stops = 0
+    if order.order_status == OrderStatus.ON_DELIVERY:
+        stops = Order.objects.filter(courier=request.user, order_status=OrderStatus.ON_DELIVERY).count()
     return render(
         request,
         "courier/order_detail.html",
-        {"order": order, "history": order_history(order)},
+        {"order": order, "history": order_history(order), "stops": stops},
     )
 
 
@@ -208,19 +231,15 @@ def dashboard(request):
     """Halaman utama kurir: peta rute realtime dengan tujuan berikutnya."""
     start, stops = routing.route_for(request.user)
     store = StoreSettings.current()
-    ready = Order.objects.filter(
-        Q(courier=request.user) | Q(courier__isnull=True),
-        order_status=OrderStatus.CONFIRMED,
-        packing_seq__isnull=False,
-    )
     cash = Order.cash_on_hand(request.user)
     next_stop = stops[0] if stops else None
-    if next_stop:
-        next_stop.cod_due = next_stop.payment_method == PaymentMethod.CASH and next_stop.payment_status != PaymentStatus.PAID
+    for stop in stops:
+        stop.cod_due = stop.payment_method == PaymentMethod.CASH and stop.payment_status != PaymentStatus.PAID
     delivered_today = Order.objects.filter(
         courier=request.user, delivered_at__date=timezone.localdate()
     ).count()
     trip_total = delivered_today + len(stops)
+    pet_trip = ServiceBooking.active_trip(request.user)
     return render(
         request,
         "courier/route.html",
@@ -232,11 +251,14 @@ def dashboard(request):
             "trip_pct": round(delivered_today * 100 / trip_total) if trip_total else 0,
             "carrying": len(stops),
             "max_packages": store.max_packages_per_courier,
-            "ready_count": sum(1 for o in ready if o.is_ready_to_ship),
+            "ready_count": ready_to_pick(request.user),
             "cash_total": sum(o.cash_collected for o in cash),
             "cash_count": cash.count(),
             "delivered_today": delivered_today,
-            "pet_trip": ServiceBooking.active_trip(request.user),
+            "pet_trip": pet_trip,
+            "pet_task": pet_trip or ServiceBooking.pet_tasks(request.user).select_related("customer", "service").order_by("schedule").first(),
+            "remaining_km": stops[-1].cum_km if stops else 0,
+            "finish_eta": timezone.localtime() + timedelta(minutes=stops[-1].eta) if stops else None,
         },
     )
 
@@ -448,3 +470,39 @@ def cash(request):
             "remittances": CashRemittance.objects.filter(courier=request.user).prefetch_related("orders")[:20],
         },
     )
+
+
+@roleRequired(Role.COURIER)
+def account(request):
+    """Akun kurir: ubah data diri, kendaraan, foto, dan kata sandi."""
+    from django.contrib.auth import update_session_auth_hash
+    from django.contrib.auth.forms import PasswordChangeForm
+
+    profile_form = CourierAccountForm(instance=request.user)
+    password_form = PasswordChangeForm(request.user)
+    if request.method == "POST":
+        if request.POST.get("form") == "password":
+            password_form = PasswordChangeForm(request.user, request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                update_session_auth_hash(request, password_form.user)
+                messages.success(request, _("Kata sandi berhasil diganti."))
+                return redirect("courier:account")
+        else:
+            profile_form = CourierAccountForm(request.POST, request.FILES, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, _("Profil berhasil diperbarui."))
+                return redirect("courier:account")
+    for form in (profile_form, password_form):
+        for name, field in form.fields.items():
+            if name != "remove_photo":
+                field.widget.attrs["class"] = "form-control"
+    delivered = Order.objects.filter(courier=request.user, order_status=OrderStatus.DELIVERED)
+    return render(request, "courier/account.html", {
+        "profile_form": profile_form,
+        "password_form": password_form,
+        "courier_profile": profile_form.profile,
+        "delivered_count": delivered.count(),
+        "rating": delivered.exclude(rating__isnull=True).aggregate(avg=models.Avg("rating"))["avg"],
+    })

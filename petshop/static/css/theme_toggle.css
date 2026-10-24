@@ -1,0 +1,52 @@
+/* Tombol mode terang/gelap: bulan saat terang, matahari saat gelap. */
+.theme-toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.theme-toggle svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.theme-toggle:hover {
+  background: rgba(127, 127, 127, 0.16);
+}
+.theme-toggle:focus-visible {
+  outline: 3px solid #9b4fcf;
+  outline-offset: 1px;
+}
+.theme-toggle__sun,
+html[data-theme="dark"] .theme-toggle__moon {
+  display: none;
+}
+html[data-theme="dark"] .theme-toggle__sun {
+  display: block;
+}
+
+/* Halaman login/daftar: di pojok, di sebelah tombol bahasa. */
+.theme-toggle--corner {
+  position: fixed;
+  top: 10px;
+  right: 104px;
+  z-index: 1050;
+  width: 40px;
+  height: 40px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+}
+.theme-toggle--corner:hover {
+  background: rgba(0, 0, 0, 0.5);
+}

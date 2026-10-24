@@ -1,0 +1,51 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% blocktranslate trimmed with pk=booking.pk %}Bayar Booking #{{ pk }} - Seelly Petshop{% endblocktranslate %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
+    <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/camera.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/camera-dark.css' %}?v=1">
+{% endblock %}
+{% block content %}
+    <section class="container section co-page co-proof">
+        <nav class="crumbs" aria-label="{% translate 'Breadcrumb' %}">
+            <a href="{% url 'service:my_bookings' %}">{% translate "Booking Saya" %}</a> / {% translate "Bayar transfer" %}
+        </nav>
+        <h1 class="co-title"><i class="fas fa-money-bill-transfer" aria-hidden="true"></i> {% blocktranslate trimmed with pk=booking.pk %}Bayar Booking #{{ pk }}{% endblocktranslate %}</h1>
+        {% include "service/_site_messages.html" %}
+        <div class="co-layout">
+            <div class="co-main">
+                <form method="post" enctype="multipart/form-data" class="co-card" novalidate>
+                    {% csrf_token %}
+                    <h2 class="co-card__title"><i class="fas fa-camera" aria-hidden="true"></i> {% translate "Foto bukti" %}</h2>
+                    <p class="muted">{% translate "Potret struk ATM / layar konfirmasi transfer langsung dari kamera. Kalau transfer lewat m-banking di HP yang sama, pilih tangkapan layarnya." %}</p>
+                    {% if booking.payment_reject_note %}<p class="co-alert co-alert--error">{% blocktranslate trimmed with note=booking.payment_reject_note %}Bukti sebelumnya ditolak: {{ note }}{% endblocktranslate %}</p>{% endif %}
+                    {% for e in form.photo.errors %}<p class="co-alert co-alert--error">{{ e }}</p>{% endfor %}
+                    {% include "partials/_camera.html" with allow_file=True %}
+                    <div class="co-field mt-3">
+                        <label for="id_note">{% translate "Catatan" %} <span class="muted">{% translate "(opsional)" %}</span></label>
+                        <input id="id_note" name="note" maxlength="255" class="form-control" placeholder="{% translate 'mis. transfer dari rekening a.n. ibu' %}">
+                    </div>
+                    <button type="submit" class="btn-primary-seelly co-submit"><i class="fas fa-paper-plane" aria-hidden="true"></i> {% translate "Kirim Bukti" %}</button>
+                </form>
+            </div>
+            <aside class="co-card co-summary">
+                <h2 class="co-card__title"><i class="fas fa-receipt" aria-hidden="true"></i> {% translate "Yang harus ditransfer" %}</h2>
+                <p class="co-proof__total">Rp {{ booking.total_price|rupiah }}</p>
+                {% if booking.payment_pending_due %}<p class="co-alert co-alert--error">{% blocktranslate trimmed with due=booking.payment_pending_due|date:"d M Y, H:i" %}Bayar sebelum {{ due }}; lewat dari itu booking dibatalkan otomatis.{% endblocktranslate %}</p>{% endif %}
+                <p class="muted mb-2">
+                    {{ booking.service.name }} · {{ booking.pet_name }}<br>
+                    {{ booking.schedule|date:"l, d M Y · H:i" }}
+                    {% if booking.transport_fee %}<br>{% blocktranslate trimmed with fee=booking.transport_fee|rupiah %}Termasuk antar-jemput Rp {{ fee }}{% endblocktranslate %}{% endif %}
+                </p>
+                {% include "customer/_transfer_info.html" with order=None %}
+                {% if booking.return_requested %}<p class="co-hint">{% translate "Kurir mengantar hewan pulang setelah pembayaran ini disetujui." %}</p>{% else %}<p class="co-hint">{% translate "Tidak ingin transfer? Bayar saja di kasir saat datang." %}</p>{% endif %}
+            </aside>
+        </div>
+    </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/camera.js' %}?v=1"></script>
+{% endblock %}

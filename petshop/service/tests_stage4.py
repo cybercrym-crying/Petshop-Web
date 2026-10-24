@@ -13,7 +13,7 @@ from django.utils import timezone
 from account.models import Customer, Role, User
 from common.tests_helpers import tiny_photo
 from courier.models import CourierLocation, CourierProfile
-from store.models import Complaint, ComplaintStatus, Notification, StoreSettings
+from store.models import ActivityLog, Complaint, ComplaintStatus, Notification, StoreSettings
 from transaction.models import Order, OrderStatus
 
 from .models import BookingStatus, InvalidBookingTransition, Pet, Service, ServiceBooking, ServiceStep
@@ -226,8 +226,15 @@ class PetTransportTests(Stage4Fixtures, TestCase):
         b.check_in(self.kasir)
         b.start(self.groomer)
         self.finish_all(b, self.groomer)
-        # Antar pulang.
+        # Antar pulang baru bisa setelah lunas.
         self.client.force_login(self.kurir)
+        self.assertContains(self.client.get(trip), "Menunggu pembayaran pelanggan")
+        self.client.post(trip, {"action": "start_return", "photo": tiny_photo()})
+        b.refresh_from_db()
+        self.assertEqual(b.status, BookingStatus.READY)
+        from common.tests_helpers import pay_booking_at_counter
+
+        pay_booking_at_counter(b, self.kasir)
         self.client.post(trip, {"action": "start_return", "photo": tiny_photo()})
         b.refresh_from_db()
         self.assertEqual(b.status, BookingStatus.RETURNING)
@@ -239,6 +246,39 @@ class PetTransportTests(Stage4Fixtures, TestCase):
         self.assertEqual(b.status, BookingStatus.DONE)
         self.assertTrue(b.return_photo)
         self.assertTrue(Notification.objects.filter(user=self.customer, title__contains="sampai di rumah").exists())
+
+    def test_pickup_records_condition_and_arrival_photo_for_cashier(self):
+        b = self.transport_booking()
+        self.client.force_login(self.kurir)
+        self.gps()
+        trip = reverse("service:courier_pet_trip", args=[b.pk])
+        # Foto tiba belum bisa sebelum hewan dijemput.
+        self.client.post(trip, {"action": "start_pickup"})
+        self.client.post(trip, {"action": "arrive", "photo": tiny_photo()})
+        self.assertFalse(ActivityLog.objects.filter(action="Tiba di toko").exists())
+        self.client.post(trip, {"action": "collect", "code": b.checkin_payload, "photo": tiny_photo(),
+                                "condition": ["Sehat", "Gelisah", "Palsu"], "note": "takut motor"})
+        log = ActivityLog.objects.get(action="Hewan dijemput kurir")
+        self.assertEqual(log.detail, "Kondisi: Sehat, Gelisah. takut motor")
+        page = self.client.get(trip)
+        self.assertEqual(page.context["step"], "arrive")
+        self.assertContains(page, 'value="arrive"')
+        self.assertContains(page, "Bukti perjalanan")
+        # Foto tiba wajib, lalu tersimpan sekali saja.
+        self.client.post(trip, {"action": "arrive"})
+        self.assertFalse(ActivityLog.objects.filter(action="Tiba di toko").exists())
+        self.client.post(trip, {"action": "arrive", "photo": tiny_photo(), "latitude": "-1.260000", "longitude": "116.831200"})
+        arrived = ActivityLog.objects.get(action="Tiba di toko")
+        self.assertTrue(arrived.photo)
+        self.assertIsNotNone(arrived.latitude)
+        self.client.post(trip, {"action": "arrive", "photo": tiny_photo()})
+        self.assertEqual(ActivityLog.objects.filter(action="Tiba di toko").count(), 1)
+        self.assertEqual(self.client.get(trip).context["step"], "at_store")
+        # Kasir melihat foto bukti kurir di halaman check-in booking ini.
+        self.client.force_login(self.kasir)
+        r = self.client.get(reverse("service:check_in"), {"booking": b.pk})
+        self.assertContains(r, "Bukti foto dari kurir")
+        self.assertContains(r, arrived.photo.url)
 
     def test_other_courier_and_other_customer_are_blocked(self):
         b = self.transport_booking()
@@ -327,6 +367,9 @@ class RatingAndComplaintTests(Stage4Fixtures, TestCase):
         b.check_in(self.kasir)
         b.start(self.groomer)
         self.finish_all(b, self.groomer)
+        from common.tests_helpers import pay_booking_at_counter
+
+        pay_booking_at_counter(b, self.kasir)
         b.hand_to_owner()
         self.client.post(url, {"stars": "4", "review": "Rapi"})
         self.client.post(url, {"stars": "1"})
@@ -441,3 +484,104 @@ class OneTaskPerCourierTests(Stage4Fixtures, TestCase):
         self.ready_order()
         self.client.force_login(self.admin)
         self.assertContains(self.client.get(reverse("transaction:manage_transaction")), "(sedang antar-jemput hewan)")
+
+    def test_route_shows_next_pet_task_locked_while_carrying_packages(self):
+        self.ready_order().pickup_by(self.kurir)
+        self.client.force_login(self.kurir)
+        r = self.client.get(reverse("courier:dashboard"))
+        self.assertEqual(r.context["pet_task"], self.trip)
+        self.assertEqual(r.context["ck_pet_count"], 1)
+        self.assertContains(r, reverse("service:courier_pet_trip", args=[self.trip.pk]))
+        self.assertContains(r, "Antar 1 paket dulu sebelum berangkat.")
+
+    def test_trip_page_lists_pickup_steps_in_order(self):
+        self.trip.start_pickup(self.kurir)
+        self.client.force_login(self.kurir)
+        r = self.client.get(reverse("service:courier_pet_trip", args=[self.trip.pk]))
+        self.assertEqual([state for _label, state, _at in r.context["trip_steps"]], ["done", "now", "todo"])
+        self.assertContains(r, 'aria-current="step"')
+
+
+class BookingListLayoutTests(Stage4Fixtures, TestCase):
+    """Halaman booking kasir: pilih tanggal, kelompok, dan panel detail."""
+
+    def setUp(self):
+        self.make_people()
+        self.client.force_login(self.kasir)
+
+    def test_day_group_and_panel(self):
+        besok = tomorrow_at(9)
+        pending = self.book(schedule=besok)
+        sore = self.book(schedule=besok.replace(hour=16), pet_name="Kopi")
+        sore.confirm(self.kasir)
+        sore.groomer = self.groomer
+        sore.save(update_fields=["groomer"])
+        url = reverse("service:manage_bookings")
+        day = besok.date().isoformat()
+
+        res = self.client.get(url, {"day": day})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual({b.pk for b in res.context["bookings"]}, {pending.pk, sore.pk})
+        # Tanpa id, panel memilih booking yang perlu tindakan (menunggu konfirmasi).
+        self.assertEqual(res.context["selected"].pk, pending.pk)
+        self.assertContains(res, "Konfirmasi booking")
+
+        res = self.client.get(url, {"day": day, "g": "aksi"})
+        self.assertEqual([b.pk for b in res.context["bookings"]], [pending.pk])
+
+        res = self.client.get(url, {"day": day, "id": sore.pk})
+        self.assertEqual(res.context["selected"].pk, sore.pk)
+        self.assertContains(res, "has-pick")
+
+        # Tanggal lain tidak menampilkan booking besok, tapi pencarian mencari semua tanggal.
+        res = self.client.get(url)
+        self.assertNotIn(sore.pk, {b.pk for b in res.context["bookings"]})
+        res = self.client.get(url, {"q": "Kopi"})
+        self.assertEqual([b.pk for b in res.context["bookings"]], [sore.pk])
+
+
+class PaymentDeadlineTests(Stage4Fixtures, TestCase):
+    """Transfer/QRIS yang belum dibayar 1 jam setelah dikonfirmasi dibatalkan otomatis."""
+
+    def setUp(self):
+        self.make_people()
+
+    def test_default_deadline_is_one_hour(self):
+        self.assertEqual(StoreSettings.current().payment_deadline_hours, 1)
+
+    def test_transfer_booking_expires_one_hour_after_confirmation(self):
+        b = self.book(payment_choice="TRANSFER")
+        self.assertIsNone(b.payment_due_at)
+        b.confirm(self.kasir)
+        self.assertAlmostEqual(b.payment_due_at, timezone.now() + timedelta(hours=1), delta=timedelta(seconds=30))
+        self.assertEqual(ServiceBooking.cancel_expired(), 0)
+
+        ServiceBooking.objects.filter(pk=b.pk).update(payment_due_at=timezone.now() - timedelta(minutes=1))
+        self.client.force_login(self.kasir)
+        self.client.get(reverse("service:manage_bookings"))
+        b.refresh_from_db()
+        self.assertEqual(b.status, BookingStatus.CANCELLED)
+        self.assertTrue(Notification.objects.filter(user=self.customer, title=f"Booking #{b.pk} dibatalkan").exists())
+
+    def test_pay_later_and_sent_proof_are_not_cancelled(self):
+        later = self.book()
+        later.confirm(self.kasir)
+        self.assertIsNone(later.payment_due_at)
+        sent = self.book(payment_choice="TRANSFER", pet_name="Kopi", schedule=tomorrow_at(13))
+        sent.confirm(self.kasir)
+        sent.submit_payment_proof(self.customer, tiny_photo())
+        ServiceBooking.objects.filter(pk=sent.pk).update(payment_due_at=timezone.now() - timedelta(minutes=1))
+        self.assertEqual(ServiceBooking.cancel_expired(), 0)
+        # Bukti ditolak: pelanggan diberi waktu lagi, bukan langsung batal.
+        sent.refresh_from_db()
+        sent.reject_transfer(self.kasir, "Nominal kurang")
+        self.assertGreater(sent.payment_due_at, timezone.now())
+        self.assertEqual(ServiceBooking.cancel_expired(), 0)
+
+    def test_customer_chooses_transfer_when_booking(self):
+        self.login_customer()
+        self.client.post(reverse("service:catalog"), {
+            "service": self.service.pk, "pet_name": "Mochi", "pet_type": "KUCING",
+            "schedule": tomorrow_at(10).strftime("%Y-%m-%dT%H:%M"), "payment_choice": "TRANSFER",
+        })
+        self.assertEqual(ServiceBooking.objects.get().payment_choice, "TRANSFER")

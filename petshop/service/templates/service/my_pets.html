@@ -3,52 +3,108 @@
 {% load static %}
 {% block title %}{% translate "Hewan Saya - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux7">
+    <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <section class="container section svc-page">
+        {# Ikon (sprite) bergaya sama dengan katalog layanan #}
+        <svg class="ic-sprite" width="0" height="0" aria-hidden="true" focusable="false">
+            <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="5.5" cy="11" r="2" /><circle cx="9.5" cy="6.5" r="2" /><circle cx="14.5" cy="6.5" r="2" /><circle cx="18.5" cy="11" r="2" /><path d="M12 11.5c-3 0-5.5 3-5.5 5.2 0 1.6 1.3 2.3 2.7 2.3 1 0 1.8-.5 2.8-.5s1.8.5 2.8.5c1.4 0 2.7-.7 2.7-2.3 0-2.2-2.5-5.2-5.5-5.2z" /></symbol>
+            <symbol id="i-dog" viewBox="0 0 24 24"><path d="M8 4.5h8v8.5a4 4 0 0 1-8 0z" /><path d="M8 5.5C5.2 5.5 3.5 7 3.5 10.5v2c0 1.2.9 2 2 2M16 5.5c2.8 0 4.5 1.5 4.5 5v2c0 1.2-.9 2-2 2" /><circle cx="10.3" cy="10" r=".6" fill="currentColor" /><circle cx="13.7" cy="10" r=".6" fill="currentColor" /><path d="M11 13.2h2" /></symbol>
+            <symbol id="i-cat" viewBox="0 0 24 24"><path d="M4.5 4.5l3.5 3h8l3.5-3V12a7.5 7.5 0 0 1-15 0z" /><path d="M10 15.2q2 1.4 4 0" /><circle cx="9.3" cy="11.5" r=".6" fill="currentColor" /><circle cx="14.7" cy="11.5" r=".6" fill="currentColor" /></symbol>
+            <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></symbol>
+            <symbol id="i-calplus" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" /><path d="M8 3v4M16 3v4M12 11v6M9 14h6" /></symbol>
+            <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><path d="M20 4L8.1 15.9M14.5 14.5L20 20M8.1 8.1L12 12" /></symbol>
+            <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 20l1-4L17 5l3 3L9 19z" /></symbol>
+            <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" /><path d="M10 20a2 2 0 0 0 4 0" /></symbol>
+            <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+        </svg>
         <header class="svc-head">
-            <div>
-                <h1 class="svc-title"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Hewan Saya" %}</h1>
-                <p class="muted mb-0">{% blocktranslate trimmed with reminder_days=reminder_days %}Profil hewan dipakai saat booking, menyimpan riwayat perawatan, dan mengingatkan jadwal grooming berikutnya (setiap {{ reminder_days }} hari).{% endblocktranslate %}</p>
+            <div class="svc-head__text">
+                <h1 class="svc-title">{% translate "Hewan Saya" %}</h1>
+                <p class="svc-lead">{% blocktranslate trimmed with reminder_days=reminder_days %}Profil hewan dipakai saat booking, menyimpan riwayat perawatan, dan mengingatkan jadwal grooming berikutnya (setiap {{ reminder_days }} hari).{% endblocktranslate %}</p>
             </div>
-            <a href="{% url 'service:add_pet' %}" class="btn-primary-seelly"><i class="fas fa-plus" aria-hidden="true"></i> {% translate "Tambah Hewan" %}</a>
+            <div class="svc-head__links">
+                <a href="{% url 'service:catalog' %}" class="svc-pill">
+                    <svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-scissors" /></svg>
+                    {% translate "Booking Layanan" %}
+                </a>
+                <a href="{% url 'service:my_bookings' %}" class="svc-pill">
+                    <svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-cal" /></svg>
+                    {% translate "Booking Saya" %}
+                </a>
+            </div>
         </header>
         {% include "service/_site_messages.html" %}
-        <ul class="pet-grid">
+        <ul class="groom-grid pet-bento" data-js>
             {% for pet in pets %}
-                <li class="pet-card{% if pet.due %} is-due{% endif %}">
-                    <div class="pet-card__head">
-                        {% if pet.photo %}
-                            <img class="pet-card__photo" src="{{ pet.photo.url }}" alt="{% blocktranslate trimmed with pet_name=pet.name %}Foto {{ pet_name }}{% endblocktranslate %}" width="64" height="64">
-                        {% else %}
-                            <span class="pet-card__photo" aria-hidden="true"><i class="fas fa-paw"></i></span>
-                        {% endif %}
-                        <div>
-                            <h2>{{ pet.name }}</h2>
-                            <span class="muted">{{ pet.get_pet_type_display }}{% if pet.breed %} · {{ pet.breed }}{% endif %}{% if pet.sex %} · {{ pet.get_sex_display }}{% endif %}</span>
+                <li class="groom-card pet-tile{% if pet.due %} is-due{% endif %}" data-pet="{{ pet.get_pet_type_display|slugify }}">
+                    <svg class="groom-wm ic ic--fill" width="140" height="140" aria-hidden="true"><use href="#i-paw" /></svg>
+                    <div class="groom-card__main">
+                        <div class="groom-card__top">
+                            <span class="groom-badge">
+                                <span class="groom-ti" aria-hidden="true">
+                                    <svg class="ic ic--fill ic-paw" width="18" height="18"><use href="#i-paw" /></svg>
+                                    <svg class="ic ic-dog" width="20" height="20"><use href="#i-dog" /></svg>
+                                    <svg class="ic ic-cat" width="20" height="20"><use href="#i-cat" /></svg>
+                                </span>
+                                {{ pet.get_pet_type_display }}{% if pet.breed %} · {{ pet.breed }}{% endif %}
+                            </span>
+                            {% if pet.due %}
+                                <span class="groom-flag">
+                                    <svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-bell" /></svg>
+                                    {% translate "Waktunya grooming" %}
+                                </span>
+                            {% endif %}
                         </div>
+                        <div class="pet-tile__id">
+                            {% if pet.photo %}
+                                <img class="pet-tile__photo" src="{{ pet.photo.url }}" alt="{% blocktranslate trimmed with pet_name=pet.name %}Foto {{ pet_name }}{% endblocktranslate %}" width="64" height="64">
+                            {% else %}
+                                <span class="pet-tile__photo" aria-hidden="true">{{ pet.name|slice:":1"|upper }}</span>
+                            {% endif %}
+                            <div>
+                                <h2 class="groom-title">{{ pet.name }}</h2>
+                                {% if pet.sex %}<p class="groom-desc">{{ pet.get_sex_display }}</p>{% endif %}
+                            </div>
+                        </div>
+                        <ul class="pet-tile__facts">
+                            {% if pet.age_display %}<li class="groom-time-badge"><span>{% translate "Umur" %}</span> {{ pet.age_display }}</li>{% endif %}
+                            {% if pet.weight_kg %}<li class="groom-time-badge"><span>{% translate "Berat" %}</span> {{ pet.weight_kg }} kg</li>{% endif %}
+                        </ul>
+                        <div class="pet-tile__last">
+                            <span class="price-label">{% translate "Grooming terakhir" %}</span>
+                            {% if pet.last %}
+                                <strong>{{ pet.last.service.name }}</strong>
+                                <span class="groom-desc">{{ pet.last.finished_at|date:"d M Y" }}</span>
+                            {% else %}
+                                <strong>{% translate "Belum pernah" %}</strong>
+                            {% endif %}
+                        </div>
+                        {% if pet.notes %}
+                            <p class="pet-tile__note">
+                                <svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-note" /></svg>
+                                <span><b>{% translate "Catatan" %}:</b> {{ pet.notes }}</span>
+                            </p>
+                        {% endif %}
                     </div>
-                    <dl>
-                        {% if pet.age_display %}<dt>{% translate "Umur" %}</dt><dd>{{ pet.age_display }}</dd>{% endif %}
-                        {% if pet.weight_kg %}<dt>{% translate "Berat" %}</dt><dd>{{ pet.weight_kg }} kg</dd>{% endif %}
-                        <dt>{% translate "Terakhir" %}</dt><dd>{% if pet.last %}{{ pet.last.service.name }}, {{ pet.last.finished_at|date:"d M Y" }}{% else %}{% translate "Belum pernah" %}{% endif %}</dd>
-                        {% if pet.notes %}<dt>{% translate "Catatan" %}</dt><dd>{{ pet.notes }}</dd>{% endif %}
-                    </dl>
-                    {% if pet.due %}<p class="pet-due"><i class="fas fa-bell" aria-hidden="true"></i> {% translate "Sudah waktunya grooming lagi." %}</p>{% endif %}
-                    <div class="pet-card__actions">
-                        <a class="btn-primary-seelly btn-sm-soft" href="{% url 'service:catalog' %}?hewan={{ pet.pk }}#booking">{% translate "Booking" %}</a>
-                        <a class="btn-ghost btn-sm-soft" href="{% url 'service:edit_pet' pet.pk %}">{% translate "Ubah &amp; riwayat" %}</a>
+                    <div class="pet-tile__foot">
+                        <a class="groom-btn {% if pet.due %}btn-selected{% else %}btn-solid{% endif %}" href="{% url 'service:catalog' %}?hewan={{ pet.pk }}#booking">
+                            <svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-calplus" /></svg>
+                            {% if pet.due %}{% translate "Booking grooming lagi" %}{% else %}{% translate "Booking" %}{% endif %}
+                        </a>
+                        <a class="groom-btn btn-outline" href="{% url 'service:edit_pet' pet.pk %}">{% translate "Ubah &amp; riwayat" %}</a>
                     </div>
-                </li>
-            {% empty %}
-                <li class="empty-state">
-                    <i class="fas fa-paw" aria-hidden="true"></i>
-                    <h2>{% translate "Belum ada profil hewan" %}</h2>
-                    <p>{% translate "Simpan nama, jenis, umur, dan catatan kesehatan hewan Anda." %}</p>
-                    <a href="{% url 'service:add_pet' %}" class="btn-primary-seelly">{% translate "Tambah Hewan" %}</a>
                 </li>
             {% endfor %}
+            <li class="pet-add{% if not pets %} is-empty{% endif %}">
+                <a href="{% url 'service:add_pet' %}">
+                    <span class="pet-add__icon" aria-hidden="true"><svg class="ic" width="28" height="28"><use href="#i-plus" /></svg></span>
+                    <strong>{% if pets %}{% translate "Tambah Hewan" %}{% else %}{% translate "Belum ada profil hewan" %}{% endif %}</strong>
+                    <span>{% translate "Simpan nama, jenis, umur, dan catatan kesehatan hewan Anda." %}</span>
+                </a>
+            </li>
         </ul>
     </section>
 {% endblock %}

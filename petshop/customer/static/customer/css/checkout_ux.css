@@ -1,0 +1,345 @@
+/* Checkout (pelanggan login & tamu): langkah, kartu bernomor, ringkasan menempel */
+.cx-page {
+  --cx-ink: #261a33;
+  --cx-muted: #6f6479;
+  --cx-line: #eadcf4;
+  --cx-soft: #f2e8f9;
+  --cx-purple: #6b21a8;
+  --cx-purple-dark: #4c1577;
+  --cx-wa: #15803d;
+  --cx-wa-dark: #166534;
+  padding-top: 24px;
+  padding-bottom: 48px;
+  color: var(--cx-ink);
+}
+
+/* Langkah */
+.cx-steps {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--cx-muted);
+}
+.cx-steps li { display: flex; align-items: center; gap: 8px; }
+.cx-steps li + li::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--cx-line);
+}
+.cx-steps a { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; }
+.cx-steps__dot {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #fff;
+  border: 2px solid var(--cx-line);
+}
+.cx-steps .is-done { color: var(--cx-purple); }
+.cx-steps .is-done .cx-steps__dot { color: #fff; background: var(--cx-purple); border-color: var(--cx-purple); }
+.cx-steps .is-current { color: var(--cx-ink); }
+.cx-steps .is-current .cx-steps__dot { color: var(--cx-purple); border-color: var(--cx-purple); box-shadow: 0 0 0 4px var(--cx-soft); }
+
+/* Judul halaman */
+.cx-head { margin-bottom: 20px; }
+.cx-title { margin: 0 0 6px; font-size: clamp(1.625rem, 1.3rem + 1vw, 2.125rem); font-weight: 800; letter-spacing: -0.02em; color: var(--cx-ink); }
+.cx-lead { margin: 0; max-width: 62ch; font-size: 0.975rem; line-height: 1.6; color: var(--cx-muted); }
+
+/* Ajakan masuk untuk tamu */
+.cx-guest {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid var(--cx-line);
+  border-left: 4px solid var(--cx-purple);
+  border-radius: 16px;
+}
+.cx-guest__icon { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; color: var(--cx-purple); background: var(--cx-soft); }
+.cx-guest__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cx-guest__text strong { font-size: 0.975rem; }
+.cx-guest__text span { font-size: 0.875rem; line-height: 1.5; color: var(--cx-muted); }
+.cx-guest__actions { display: flex; gap: 8px; }
+.cx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  font-weight: 700;
+  font-size: 0.925rem;
+  text-decoration: none;
+  color: var(--cx-purple);
+  background: #fff;
+  border: 1.5px solid #d2aee9;
+  border-radius: 12px;
+}
+.cx-btn:hover { color: var(--cx-purple-dark); border-color: var(--cx-purple); }
+.cx-btn--solid { color: #fff; background: var(--cx-purple); border-color: var(--cx-purple); }
+.cx-btn--solid:hover { color: #fff; background: var(--cx-purple-dark); }
+
+/* Tata letak */
+.cx-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+.cx-main { display: grid; gap: 16px; min-width: 0; }
+@media (min-width: 992px) {
+  .cx-layout { grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; }
+  .cx-summary { position: sticky; top: 92px; }
+}
+
+/* Kartu bernomor */
+.cx-card {
+  padding: 22px;
+  background: #fff;
+  border: 1px solid var(--cx-line);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(38, 26, 51, 0.04);
+}
+.cx-card[hidden] { display: none; }
+.cx-card__title { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 1.075rem; font-weight: 800; color: var(--cx-ink); }
+.cx-num { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; font-size: 0.85rem; font-weight: 800; color: #fff; background: var(--cx-purple); }
+.cx-opt { font-size: 0.85rem; font-weight: 500; color: var(--cx-muted); }
+
+/* Penerima (login) */
+.cx-person { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #faf7fc; }
+.cx-person__avatar { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; font-weight: 800; color: #fff; background: var(--cx-purple); }
+.cx-person__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cx-person__body span { font-size: 0.9rem; color: var(--cx-muted); }
+.cx-link { font-weight: 700; font-size: 0.9rem; color: var(--cx-purple); }
+
+/* Isian */
+.cx-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.cx-field { margin-bottom: 14px; }
+.cx-field label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 700; color: var(--cx-ink); }
+.cx-field input,
+.cx-field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--cx-ink);
+  background: #fff;
+  border: 1.5px solid #dccbea;
+  border-radius: 12px;
+}
+.cx-field textarea { resize: vertical; line-height: 1.5; }
+.cx-field input:focus,
+.cx-field textarea:focus { outline: 0; border-color: var(--cx-purple); box-shadow: 0 0 0 4px var(--cx-soft); }
+.cx-field input::placeholder,
+.cx-field textarea::placeholder { color: #9a8fa6; }
+.cx-hint { margin: 6px 0 0; font-size: 0.825rem; line-height: 1.5; color: var(--cx-muted); }
+.cx-hint--info { padding: 8px 12px; border-radius: 10px; background: #faf7fc; }
+.cx-map-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.cx-map-head label { margin: 0; }
+.cx-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--cx-purple);
+  background: var(--cx-soft);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cx-chip-btn:hover { background: #e7d6f4; }
+.cx-map { border-radius: 14px; }
+
+/* Pilihan bayar */
+.cx-pay { display: grid; gap: 10px; }
+.cx-pay__opt {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--cx-line);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cx-pay__opt:hover { border-color: #d2aee9; }
+.cx-pay__opt:has(input:checked) { border-color: var(--cx-purple); background: #faf5fd; box-shadow: 0 0 0 3px var(--cx-soft); }
+.cx-pay__opt input { margin-top: 12px; width: 18px; height: 18px; accent-color: var(--cx-purple); }
+.cx-pay__icon { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; color: var(--cx-purple); background: var(--cx-soft); }
+.cx-pay__opt:has(input:checked) .cx-pay__icon { color: #fff; background: var(--cx-purple); }
+.cx-pay__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cx-pay__body strong { font-size: 0.975rem; }
+.cx-pay__body small { font-size: 0.85rem; line-height: 1.5; color: var(--cx-muted); }
+/* Rekening hanya tampil saat transfer dipilih */
+.cx-pay__more { display: none; margin-top: 8px; }
+.cx-pay__opt:has(input:checked) .cx-pay__more { display: block; }
+.cx-pay__more .co-transfer__btn { display: none; }
+
+/* Ringkasan */
+.cx-summary .cx-card__title { margin-bottom: 12px; }
+.cx-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.cx-items .co-item,
+.cx-items .order-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1e8f7;
+}
+.cx-items .co-item__name,
+.cx-items .item-name { font-weight: 700; font-size: 0.925rem; color: var(--cx-ink); }
+.cx-items .co-item__detail,
+.cx-items .item-details { font-size: 0.825rem; color: var(--cx-muted); }
+.cx-items .co-item__price,
+.cx-items .item-price { font-weight: 700; font-size: 0.925rem; white-space: nowrap; color: var(--cx-ink); }
+.cx-rows { display: grid; gap: 8px; margin-top: 12px; }
+.cx-rows[hidden] { display: none; }
+.cx-row { display: flex; justify-content: space-between; gap: 12px; font-size: 0.925rem; color: var(--cx-muted); }
+.cx-row small { font-size: 0.8rem; }
+.cx-row span:last-child { color: var(--cx-ink); font-weight: 600; text-align: right; }
+.cx-row .cx-muted { color: var(--cx-muted); font-weight: 500; }
+.cx-row--total { margin-top: 4px; padding-top: 12px; border-top: 1px dashed #dccbea; font-size: 1rem; font-weight: 700; color: var(--cx-ink); }
+.cx-row--total strong { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: var(--cx-purple); }
+.cx-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  margin-top: 16px;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--cx-purple);
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cx-submit:hover { background: var(--cx-purple-dark); }
+.cx-submit:disabled { opacity: 0.6; cursor: wait; }
+.cx-submit[hidden] { display: none; }
+.cx-submit--wa { background: var(--cx-wa); }
+.cx-submit--wa:hover { background: var(--cx-wa-dark); }
+.cx-assure { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.cx-assure li { display: flex; gap: 10px; font-size: 0.825rem; line-height: 1.5; color: var(--cx-muted); }
+.cx-assure i { margin-top: 3px; color: var(--cx-purple); }
+.cx-back { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 14px; font-size: 0.9rem; font-weight: 700; color: var(--cx-purple); text-decoration: none; }
+.cx-back:hover { text-decoration: underline; }
+.cx-summary .co-empty { padding: 20px 0; text-align: center; color: var(--cx-muted); }
+
+/* HP */
+@media (max-width: 575px) {
+  .cx-page { padding-top: 16px; }
+  .cx-steps { font-size: 0.8rem; gap: 6px; }
+  .cx-steps li + li::before { width: 14px; }
+  .cx-steps li:not(.is-current) .cx-steps__label { display: none; }
+  .cx-card { padding: 18px 16px; border-radius: 16px; }
+  .cx-grid2 { grid-template-columns: 1fr; gap: 0; }
+  .cx-guest { flex-wrap: wrap; }
+  .cx-guest__icon { display: none; }
+  .cx-guest__actions { width: 100%; }
+  .cx-guest__actions .cx-btn { flex: 1; }
+  .cx-map-head { flex-wrap: wrap; }
+}
+
+/* Timpa gaya lama halaman tamu (checkout.css) */
+.cx-page .delivery-section,
+.cx-page .payment-section,
+.cx-page .summary-section { margin-bottom: 0; padding: 22px; border: 1px solid var(--cx-line); border-radius: 18px; }
+.cx-page .total-section { margin-top: 12px; padding: 0; background: none; border-radius: 0; }
+.cx-page .btn-place-order.cx-submit--wa { padding: 0; margin-top: 16px; font-size: 1.05rem; background: var(--cx-wa); transform: none; box-shadow: none; }
+.cx-page .btn-place-order.cx-submit--wa:hover { background: var(--cx-wa-dark); }
+@media (max-width: 575px) {
+  .cx-page .delivery-section,
+  .cx-page .payment-section,
+  .cx-page .summary-section { padding: 18px 16px; border-radius: 16px; }
+}
+
+
+/* Jendela "Periksa Pesanan Anda" (login & tamu) */
+.cx-dialog.co-dialog,
+.cx-dialog.confirm-dialog {
+  width: min(520px, calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  overflow: hidden;
+  color: #261a33;
+  background: #fff;
+  border: 0;
+  border-radius: 22px;
+  box-shadow: 0 30px 70px rgba(38, 26, 51, 0.35);
+}
+.cx-dialog[open] { display: flex; flex-direction: column; }
+.cx-dialog::backdrop { background: rgba(38, 26, 51, 0.55); }
+.cx-dialog__head { display: flex; align-items: flex-start; gap: 14px; padding: 22px 22px 16px; border-bottom: 1px solid #f1e8f7; }
+.cx-dialog__head > div { flex: 1; min-width: 0; }
+.cx-dialog__head h2 { margin: 0 0 4px; font-size: 1.25rem; font-weight: 800; color: #261a33; }
+.cx-dialog__head p { margin: 0; font-size: 0.9rem; line-height: 1.5; color: #6f6479; }
+.cx-dialog__icon { flex: none; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px; font-size: 1.15rem; color: #fff; background: #6b21a8; }
+.cx-dialog__head form { margin: 0; }
+.cx-dialog__x { width: 38px; height: 38px; display: grid; place-items: center; color: #6f6479; background: #f7f2fb; border: 0; border-radius: 50%; cursor: pointer; }
+.cx-dialog__x:hover { color: #6b21a8; background: #f2e8f9; }
+.cx-dialog__body { flex: 1; min-height: 0; overflow-y: auto; display: grid; gap: 12px; padding: 16px 22px; }
+.cx-dialog__block { padding: 14px 16px; border: 1px solid #eadcf4; border-radius: 16px; }
+.cx-dialog__block h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #6b21a8; }
+.cx-dialog__who { margin: 0 0 4px; font-size: 0.95rem; color: #261a33; }
+.cx-dialog__addr { margin: 0; font-size: 0.9rem; line-height: 1.5; color: #4a3d58; white-space: pre-line; word-break: break-word; }
+.cx-dialog__pay { margin: 0; font-size: 0.95rem; font-weight: 700; }
+.cx-dialog .cx-items { max-height: 220px; overflow-y: auto; margin: 0; }
+.cx-dialog .cx-items .confirm-item { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1e8f7; }
+.cx-dialog .confirm-item__name { font-weight: 700; font-size: 0.925rem; }
+.cx-dialog .confirm-item__detail { font-size: 0.825rem; color: #6f6479; }
+.cx-dialog .confirm-item__price { font-weight: 700; font-size: 0.925rem; white-space: nowrap; }
+.cx-dialog .cx-row { display: flex; justify-content: space-between; gap: 12px; font-size: 0.925rem; color: #6f6479; }
+.cx-dialog .cx-row span:last-child { color: #261a33; font-weight: 600; }
+.cx-dialog .cx-row .cx-muted { color: #6f6479; font-weight: 500; }
+.cx-dialog .cx-row--total { margin-top: 4px; padding-top: 10px; border-top: 1px dashed #dccbea; font-weight: 700; color: #261a33; }
+.cx-dialog .cx-row--total strong { font-size: 1.35rem; font-weight: 800; color: #6b21a8; }
+.cx-dialog__check { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; font-size: 0.9rem; line-height: 1.5; background: #faf5fd; border-radius: 14px; cursor: pointer; }
+.cx-dialog__check input { flex: none; width: 20px; height: 20px; margin-top: 1px; accent-color: #6b21a8; }
+.cx-dialog__foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 10px; padding: 14px 22px 20px; border-top: 1px solid #f1e8f7; background: #fff; }
+.cx-dialog__back,
+.cx-dialog__go {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 50px; padding: 0 16px; font: inherit; font-size: 1rem; font-weight: 800;
+  border-radius: 14px; cursor: pointer;
+}
+.cx-dialog__back { color: #6b21a8; background: #fff; border: 1.5px solid #d2aee9; }
+.cx-dialog__back:hover { background: #faf5fd; border-color: #6b21a8; }
+.cx-dialog__go { color: #fff; background: #6b21a8; border: 0; }
+.cx-dialog__go:hover:not(:disabled) { background: #4c1577; }
+.cx-dialog__go:disabled { opacity: 0.5; cursor: not-allowed; }
+.cx-dialog__go--wa { background: #15803d; }
+.cx-dialog__go--wa:hover:not(:disabled) { background: #166534; }
+
+/* HP: muncul dari bawah layar */
+@media (max-width: 575px) {
+  .cx-dialog.co-dialog,
+  .cx-dialog.confirm-dialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    margin: auto 0 0;
+    border-radius: 22px 22px 0 0;
+  }
+  .cx-dialog__head { padding: 18px 16px 14px; }
+  .cx-dialog__icon { display: none; }
+  .cx-dialog__body { padding: 14px 16px; }
+  .cx-dialog__foot { padding: 12px 16px 18px; }
+}

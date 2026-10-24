@@ -700,6 +700,22 @@ class CustomerAreaTests(TestCase):
         self.assertIn(store.hours_display, html)
         self.assertIn(f'href="{store.whatsapp_link}"', html)
 
+    def test_checkout_steps_and_numbered_sections_for_member_and_guest(self):
+        member = self.client.get(reverse("customer:checkout")).content.decode()
+        self.assertIn('class="cx-steps"', member)
+        self.assertEqual(len(re.findall(r'class="cx-num"', member)), 4)
+        self.assertIn("data-co-subtotal", member)
+        self.assertIn("data-co-submit", member)
+        self.client.logout()
+        guest = self.client.get(reverse("customer:checkout")).content.decode()
+        self.assertIn('class="cx-steps"', guest)
+        self.assertEqual(len(re.findall(r'class="cx-num"', guest)), 3)
+        # Kolom yang dibaca checkout.js tetap berada di dalam #checkout-form.
+        form = re.search(r'<form id="checkout-form".*?</form>', guest, re.S).group(0)
+        for field in ('name="nama"', 'name="no_wa"', 'name="alamat"'):
+            self.assertIn(field, form)
+        self.assertIn(f'href="{reverse("login_form")}?next=', guest)
+
     def test_staff_browsing_the_shop_keep_the_public_layout(self):
         self.client.force_login(User.objects.create_user("adm", password="x", role=Role.ADMIN))
         self.assertEqual(self.client.get(reverse("customer:home")).status_code, 200)
@@ -735,3 +751,41 @@ class ProductTrackingMapTests(TestCase):
         data = self.client.get(reverse("customer:track_location", args=[self.order.tracking_number])).json()
         self.assertIn("store", data)
         self.assertNotIn("destination", data)
+
+
+class DarkModeTests(TestCase):
+    """Mode gelap di semua halaman toko dan menu samping yang bisa diciutkan."""
+
+    def setUp(self):
+        self.user = Customer.objects.create(username="gelap", name="Gelap", phone_number="081299990001", address="x")
+
+    def test_dark_css_files_are_up_to_date(self):
+        from common.dark_css import build
+
+        for path, content in build().items():
+            self.assertTrue(path.exists(), f"{path.name} belum dibuat: python manage.py build_dark_css")
+            self.assertEqual(path.read_text(encoding="utf-8"), content, f"{path.name} kedaluwarsa: python manage.py build_dark_css")
+
+    def test_every_store_page_loads_theme_script_toggle_and_dark_css(self):
+        pages = [reverse("customer:home"), reverse("customer:shop"), reverse("customer:about"), reverse("login_form"), reverse("register")]
+        for url in pages:
+            html = self.client.get(url).content.decode()
+            self.assertIn("js/theme_boot.js", html, url)
+            self.assertIn("data-theme-toggle", html, url)
+            for css in re.findall(r"static/([\w/]+)\.css", html):
+                if finders.find(f"{css}-dark.css"):
+                    self.assertIn(f"{css}-dark.css", html, f"{url}: {css}")
+        self.client.force_login(self.user)
+        for url in (reverse("customer:dashboard"), reverse("customer:my_orders"), reverse("service:my_bookings")):
+            html = self.client.get(url).content.decode()
+            self.assertIn("data-theme-toggle", html, url)
+            for css in re.findall(r"static/([\w/]+)\.css", html):
+                if finders.find(f"{css}-dark.css"):
+                    self.assertIn(f"{css}-dark.css", html, f"{url}: {css}")
+
+    def test_sidebar_toggle_has_open_and_close_labels(self):
+        self.client.force_login(self.user)
+        html = self.client.get(reverse("customer:dashboard")).content.decode()
+        self.assertRegex(html, r'class="sn-icon ca-menu-btn"[^>]*data-label-open="[^"]+"\s+data-label-close="[^"]+"')
+        css = open(finders.find("customer/css/app.css"), encoding="utf-8").read()
+        self.assertIn(".ca-collapsed .ca-app", css)

@@ -1,0 +1,93 @@
+{% load i18n %}
+{% comment %}Isi langkah antar-jemput yang sedang berjalan (dipakai courier_pet_trip.html).{% endcomment %}
+{% if step == "start_pickup" %}
+    <form method="post" class="pt-panel">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="start_pickup">
+        <div class="sg-sub">
+            <b class="sg-sm">{% translate "Siapkan sebelum berangkat" %}</b>
+            <ul class="pt-check sg-mt8">
+                <li><i class="bi bi-check2" aria-hidden="true"></i>{% translate "Kandang/boks hewan" %}</li>
+                <li><i class="bi bi-check2" aria-hidden="true"></i>{% translate "GPS aktif (pemilik memantau posisi Anda)" %}</li>
+                <li><i class="bi bi-check2" aria-hidden="true"></i>{% translate "Tidak membawa paket" %}</li>
+            </ul>
+        </div>
+        {% if carrying %}
+            <div class="sg-alert is-gold sg-mt12"><i class="bi bi-lock" aria-hidden="true"></i><span>{% blocktranslate trimmed with n=carrying %}Antar {{ n }} paket dulu sebelum berangkat.{% endblocktranslate %}</span></div>
+        {% else %}
+            <div class="sg-alert is-ok sg-mt12"><i class="bi bi-check2-circle" aria-hidden="true"></i><span>{% translate "Tidak ada paket di motor. Boleh berangkat." %}</span></div>
+        {% endif %}
+        <button type="submit" class="ck-btn is-primary is-lg is-block sg-mt12" data-needs-gps{% if carrying %} disabled{% endif %}><i class="bi bi-scooter" aria-hidden="true"></i> {% translate "Berangkat sekarang" %}</button>
+    </form>
+{% elif step == "collect" or step == "deliver" %}
+    <form method="post" enctype="multipart/form-data" class="ck-flow pt-panel" data-handover data-check-url="{% url 'service:courier_pet_check' booking.pk %}" data-csrf="{{ csrf_token }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="{{ step }}">
+        <section class="ck-flow__step" data-step-scan>
+            <p class="ck-flow__title"><span class="ck-flow__no">1</span> {% translate "Scan QR booking di HP pemilik" %}</p>
+            <div class="ck-scan" data-qr-scanner data-target="#handover-code" data-autostart>
+                <video data-qr-video playsinline muted hidden></video>
+                <div class="ck-scan__frame" aria-hidden="true"><span></span></div>
+                <p class="scan-status" data-qr-status>{% translate "Minta pemilik membuka Booking Saya lalu QR" %}</p>
+                <button type="button" class="ck-btn is-primary w-100" data-qr-start data-needs-gps><i class="bi bi-upc-scan" aria-hidden="true"></i> {% translate "Scan QR" %}</button>
+            </div>
+            <div class="ck-scan-manual sg-form">
+                <input id="handover-code" name="code" placeholder="{% translate 'Kode 8 huruf' %}" aria-label="{% translate 'Kode 8 huruf' %}" autocomplete="off" required>
+                <button type="button" class="ck-btn" data-check-code>{% translate "Cek" %}</button>
+            </div>
+            <p class="sg-xs sg-muted sg-mt8 mb-0 scan-status" data-check-status>{% translate "Bila kamera tidak bisa dibuka, minta pemilik membacakan kode 8 huruf di bawah QR." %}</p>
+        </section>
+        <section class="ck-flow__step is-locked" data-step-photo>
+            <p class="ck-flow__title"><span class="ck-flow__no">2</span> {% if step == "collect" %}{% translate "Foto bukti hewan diterima" %}{% else %}{% translate "Foto bukti diterima pemilik" %}{% endif %}</p>
+            {% if step == "collect" %}
+                {% include "partials/_camera.html" with btn="ck-btn is-primary" btn2="ck-btn" hint="Foto hewan di kandang/boks bersama pemilik. Jam dan lokasi tercatat otomatis." %}
+            {% else %}
+                {% include "partials/_camera.html" with btn="ck-btn is-primary" btn2="ck-btn" hint="Foto hewan bersama pemilik saat diserahkan. Jam dan lokasi tercatat otomatis." %}
+            {% endif %}
+            <input type="hidden" name="latitude" data-gps-lat>
+            <input type="hidden" name="longitude" data-gps-lng>
+            {% if step == "collect" %}
+                <p class="sg-lbl sg-mt12">{% translate "Kondisi saat diterima" %}</p>
+                <div class="ck-chips-pick" role="group" aria-label="{% translate 'Kondisi saat diterima' %}">
+                    {% for c in conditions %}<label><input type="checkbox" name="condition" value="{{ c }}"><span>{{ c }}</span></label>{% endfor %}
+                </div>
+            {% endif %}
+            <div class="sg-form sg-mt12">
+                <input name="note" maxlength="255" aria-label="{% translate 'Catatan (opsional)' %}" placeholder="{% if step == 'collect' %}{% translate 'Catatan, mis. hewan agak gelisah' %}{% else %}{% translate 'Catatan, mis. diterima suami pemilik' %}{% endif %}">
+            </div>
+            <button type="submit" class="ck-btn is-primary is-lg is-block sg-mt12" data-needs-gps><i class="bi bi-check2-circle" aria-hidden="true"></i> {% if step == "collect" %}{% translate "Hewan sudah saya bawa" %}{% else %}{% translate "Selesai, hewan diterima pemilik" %}{% endif %}</button>
+        </section>
+    </form>
+{% elif step == "arrive" or step == "at_store" %}
+    <div class="pt-panel">
+        <div class="sg-sub">
+            <b class="sg-sm"><i class="bi bi-shop" aria-hidden="true"></i> {% blocktranslate trimmed with pet=booking.pet_name %}Serahkan {{ pet }} ke kasir{% endblocktranslate %}</b>
+            <p class="sg-xs sg-muted sg-mt8 mb-0">{% blocktranslate trimmed with booking_pet_name=booking.pet_name booking_pk=booking.pk %}Kasir membuka booking #{{ booking_pk }} dari daftar "Belum check-in", melihat foto bukti Anda, memeriksa kondisi {{ booking_pet_name }}, lalu hewan masuk antrean.{% endblocktranslate %}</p>
+        </div>
+        {% if step == "arrive" %}
+            <form method="post" enctype="multipart/form-data" class="sg-mt12">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="arrive">
+                <p class="sg-lbl">{% translate "Foto saat tiba di toko" %}</p>
+                {% include "partials/_camera.html" with btn="ck-btn is-primary" btn2="ck-btn" hint="Foto hewan di depan kasir. Jam dan lokasi tercatat otomatis." %}
+                <input type="hidden" name="latitude" data-gps-lat>
+                <input type="hidden" name="longitude" data-gps-lng>
+                <button type="submit" class="ck-btn is-block sg-mt12" data-needs-gps><i class="bi bi-camera" aria-hidden="true"></i> {% translate "Simpan foto tiba di toko" %}</button>
+            </form>
+        {% else %}
+            <div class="sg-alert is-ok sg-mt12"><i class="bi bi-check2-circle" aria-hidden="true"></i><span>{% translate "Foto tiba di toko tersimpan." %}</span></div>
+        {% endif %}
+        <div class="sg-alert is-pri sg-mt12"><i class="bi bi-hourglass-split" aria-hidden="true"></i><span>{% translate "Menunggu check-in kasir. Tugas jemput selesai otomatis setelah check-in." %}</span></div>
+    </div>
+{% elif step == "start_return" %}
+    <form method="post" enctype="multipart/form-data" class="pt-panel">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="start_return">
+        {% include "partials/_camera.html" with btn="ck-btn is-primary" btn2="ck-btn" hint="Foto hewan di kandang/boks sebelum berangkat dari toko." %}
+        <input type="hidden" name="latitude" data-gps-lat>
+        <input type="hidden" name="longitude" data-gps-lng>
+        <button type="submit" class="ck-btn is-primary is-lg is-block sg-mt12" data-needs-gps><i class="bi bi-scooter" aria-hidden="true"></i> {% translate "Berangkat antar pulang" %}</button>
+    </form>
+{% elif step == "wait_payment" %}
+    <div class="sg-alert is-gold pt-panel"><i class="bi bi-hourglass-split" aria-hidden="true"></i><span><b>{% translate "Menunggu pembayaran pelanggan" %}.</b> {% translate "Hewan sudah siap, tetapi booking belum lunas. Antar pulang bisa dimulai setelah pelanggan membayar transfer dan kasir/admin menyetujuinya. Anda akan mendapat notifikasi." %}</span></div>
+{% endif %}

@@ -1,0 +1,9 @@
+{% if messages %}
+    <div class="sg-msgs" role="status">
+        {% for message in messages %}
+            <p class="sg-alert {% if message.tags == 'error' %}is-bad{% elif message.tags == 'success' %}is-ok{% elif message.tags == 'warning' %}is-gold{% else %}is-pri{% endif %}">
+                <i class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% elif message.tags == 'success' %}bi-check2-circle{% elif message.tags == 'warning' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %}" aria-hidden="true"></i>{{ message }}
+            </p>
+        {% endfor %}
+    </div>
+{% endif %}

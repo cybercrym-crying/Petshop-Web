@@ -1,0 +1,26 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        {% include "courier/_head.html" %}
+        <title>{% translate "Notifikasi - Kurir" %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body>
+        {% include "courier/_nav.html" %}
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-page is-narrow sg">
+            {% translate "Notifikasi" as t_title %}{% blocktranslate trimmed asvar t_lead with n=unread_notifications|default:0 %}{{ n }} belum dibaca{% endblocktranslate %}
+            {% include "courier/_page_head.html" with title=t_title lead=t_lead %}
+            {% include "partials/_sg_messages.html" %}
+            {% if unread_notifications %}
+                <form method="post" action="{% url 'store:read_all' %}" class="text-end mb-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link sg-link p-0">{% translate "Tandai semua dibaca" %}</button>
+                </form>
+            {% endif %}
+            {% include "store/_notification_list_sg.html" %}
+        </main>
+        <script src="{% static 'js/layout.js' %}?v=1"></script>
+    </body>
+</html>

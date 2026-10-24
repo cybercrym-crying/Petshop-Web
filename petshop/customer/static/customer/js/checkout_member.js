@@ -18,6 +18,7 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
   var emptyEl = root.querySelector("[data-co-empty]");
   var totalRow = root.querySelector("[data-co-total-row]");
   var totalEl = root.querySelector("[data-co-total]");
+  var subtotalEl = root.querySelector("[data-co-subtotal]");
   var submitBtn = root.querySelector("[data-co-submit]");
   var errorEl = root.querySelector("[data-co-error]");
   var addressEl = document.getElementById("co-address");
@@ -46,6 +47,7 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
       distanceEl.textContent = "";
     }
     shipEl.classList.toggle("co-ship-bad", !!bad);
+    if (subtotalEl) subtotalEl.textContent = Store.formatRupiah(Store.cartTotal());
     totalEl.textContent = Store.formatRupiah(grandTotal());
   }
 
@@ -125,6 +127,7 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
     itemsEl.hidden = empty;
     totalRow.hidden = empty;
     submitBtn.hidden = empty;
+    if (subtotalEl) subtotalEl.textContent = Store.formatRupiah(Store.cartTotal());
     totalEl.textContent = Store.formatRupiah(grandTotal());
   }
 
@@ -155,6 +158,8 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
       list.appendChild(itemRow(item));
     });
     dialog.querySelector("[data-co-dialog-ship]").textContent = Store.formatRupiah(quote.fee) + " (" + quote.distance_km.toFixed(1) + " km)";
+    var dialogSubtotal = dialog.querySelector("[data-co-dialog-subtotal]");
+    if (dialogSubtotal) dialogSubtotal.textContent = Store.formatRupiah(Store.cartTotal());
     dialog.querySelector("[data-co-dialog-total]").textContent = Store.formatRupiah(grandTotal());
     dialog.querySelector("[data-co-dialog-address]").textContent = addressEl.value.trim();
     dialog.querySelector("[data-co-dialog-payment]").textContent = paymentLabel();

@@ -1,0 +1,6 @@
+{# Foto kurir, atau inisial bila belum ada foto. person = User, size = sm/md/lg #}
+{% if person.photo_url %}
+    <img class="ck-avatar ck-avatar--{{ size|default:'md' }}" src="{{ person.photo_url }}" alt="" width="40" height="40">
+{% else %}
+    <span class="ck-avatar ck-avatar--{{ size|default:'md' }}" aria-hidden="true">{{ person.initials }}</span>
+{% endif %}

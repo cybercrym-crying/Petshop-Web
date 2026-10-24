@@ -10,7 +10,7 @@
         <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
         <link href="{% static 'css/ui.css' %}?v=ux3" rel="stylesheet" />
-        <link rel="stylesheet" href="{% static 'transaction/css/make_transaction.css' %}?v=ux3">
+        <link rel="stylesheet" href="{% static 'transaction/css/make_transaction.css' %}?v=sg1">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
     <body class="pos-body">
@@ -43,48 +43,44 @@
                         {% if shift %}
                             <p class="pos-shift">
                                 <span class="pos-shift__dot" aria-hidden="true"></span>
-                                {% blocktranslate trimmed with since=shift.opened_at|time:"H:i" cash=shift.opening_cash|rupiah %}
-                                    Sejak {{ since }}, modal awal Rp {{ cash }}
+                                {% blocktranslate trimmed with since=shift.opened_at|time:"H.i" cash=shift.opening_cash|rupiah %}
+                                    Kasir buka sejak {{ since }} · modal Rp {{ cash }}
                                 {% endblocktranslate %}
-                                <a href="{% url 'transaction:shift' %}">{% translate "Rekap & tutup kasir" %}</a>
                             </p>
+                            <a href="{% url 'transaction:shift' %}" class="ui-btn pos-head__btn">{% translate "Rekap & tutup kasir" %}</a>
                         {% endif %}
                     </header>
 
                     <div class="pos-bar">
-                        <form method="post" action="{% url 'transaction:pos_scan' %}" class="pos-scan">
+                        <form method="post" action="{% url 'transaction:pos_scan' %}" class="pos-scan"
+                              data-qr-scanner
+                              data-target="#posCode"
+                              data-autosubmit
+                              data-formats="qr_code,ean_13,ean_8,code_128,code_39,upc_a,upc_e">
                             {% csrf_token %}
-                            <label for="posCode" class="pos-label">
-                                <i class="bi bi-upc-scan" aria-hidden="true"></i> {% translate "Scan kode barang / QR booking" %}
-                            </label>
-                            <div class="pos-field">
+                            <label for="posCode" class="visually-hidden">{% translate "Scan kode barang / QR booking" %}</label>
+                            <div class="pos-scanbox">
+                                <i class="bi bi-upc-scan" aria-hidden="true"></i>
                                 <input type="text"
                                        name="code"
                                        id="posCode"
                                        autocomplete="off"
                                        autofocus
                                        required
-                                       placeholder="{% translate 'Arahkan scanner USB ke sini, atau ketik kode lalu Enter' %}">
+                                       placeholder="{% translate 'Scan barang atau QR booking' %}">
+                                <button type="button" data-qr-start class="ui-btn pos-scanbox__cam">
+                                    <i class="bi bi-camera" aria-hidden="true"></i> {% translate "Kamera" %}
+                                </button>
                                 <button type="submit" class="ui-btn ui-btn--primary">{% translate "Tambah" %}</button>
                             </div>
-                            <div data-qr-scanner
-                                 data-target="#posCode"
-                                 data-autosubmit
-                                 data-formats="qr_code,ean_13,ean_8,code_128,code_39,upc_a,upc_e"
-                                 class="pos-cam">
-                                <video data-qr-video playsinline muted hidden class="pos-camera"></video>
-                                <p data-qr-status class="pos-hint mb-1"></p>
-                                <button type="button" data-qr-start class="pos-chip">
-                                    <i class="bi bi-camera" aria-hidden="true"></i> {% translate "Scan pakai kamera" %}
-                                </button>
-                            </div>
+                            <p data-qr-status class="pos-hint mb-0"></p>
+                            <video data-qr-video playsinline muted hidden class="pos-camera"></video>
                         </form>
                         <form method="get" action="{% url 'transaction:make_transaction' %}" class="pos-search" role="search">
-                            <label for="posSearch" class="pos-label">
-                                <i class="bi bi-search" aria-hidden="true"></i> {% translate "Cari Produk" %}
-                            </label>
+                            <label for="posSearch" class="visually-hidden">{% translate "Cari Produk" %}</label>
                             {% if cat %}<input type="hidden" name="cat" value="{{ cat }}">{% endif %}
-                            <div class="pos-field">
+                            <div class="pos-searchbox">
+                                <i class="bi bi-search" aria-hidden="true"></i>
                                 <input type="search"
                                        id="posSearch"
                                        name="q"
@@ -94,87 +90,127 @@
                         </form>
                     </div>
 
-                    <div class="pos-tools">
-                        <form method="post" action="{% url 'transaction:pos_add_booking' %}" class="pos-tool">
+                    {% for h in held_sales %}
+                        <form method="post" action="{% url 'transaction:pos_resume' h.pk %}" class="pos-held">
                             {% csrf_token %}
-                            <label for="posBooking" class="pos-label">
-                                <i class="bi bi-scissors" aria-hidden="true"></i> {% translate "Bayar layanan grooming" %}
-                            </label>
-                            <div class="pos-field">
-                                <select name="booking" id="posBooking" required>
-                                    <option value="">{% translate "- Pilih booking -" %}</option>
-                                    {% for b in payable_bookings %}
-                                        <option value="{{ b.pk }}">
-                                            #{{ b.pk }} {{ b.service.name }} - {{ b.pet_name }} ({{ b.customer.display_name }}) Rp {{ b.total_price|rupiah }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <button type="submit" class="ui-btn">{% translate "Tambah" %}</button>
-                            </div>
+                            <i class="bi bi-pause-circle pos-held__icon" aria-hidden="true"></i>
+                            <span class="pos-held__text">
+                                <strong>{% blocktranslate trimmed with label=h.label|default:h.pk %}Transaksi diparkir: {{ label }}{% endblocktranslate %}</strong>
+                                <small>
+                                    {% blocktranslate trimmed with n=h.item_count total=h.total|rupiah time=h.created_at|time:"H.i" %}
+                                        {{ n }} item · Rp {{ total }} · {{ time }}
+                                    {% endblocktranslate %}
+                                </small>
+                            </span>
+                            <button type="submit" name="action" value="resume" class="ui-btn ui-btn--gold pos-btn-sm" {% if not cart_empty %}disabled title="{% translate 'Selesaikan atau parkir keranjang yang sekarang dulu' %}"{% endif %}>{% translate "Lanjutkan" %}</button>
+                            <button type="submit"
+                                    name="action"
+                                    value="delete"
+                                    class="ui-btn pos-btn-sm pos-btn-danger"
+                                    data-confirm="{% translate 'Hapus transaksi parkir ini?' %}"
+                                    aria-label="{% translate 'Hapus' %}"><i class="bi bi-trash" aria-hidden="true"></i></button>
                         </form>
-                        {% if held_sales %}
-                            <div class="pos-tool">
-                                <span class="pos-label"><i class="bi bi-pause-circle" aria-hidden="true"></i> {% translate "Transaksi diparkir" %}</span>
-                                {% for h in held_sales %}
-                                    <form method="post" action="{% url 'transaction:pos_resume' h.pk %}" class="pos-held">
-                                        {% csrf_token %}
-                                        <span class="pos-held__text">
-                                            <strong>{{ h.label|default:"#" }}{% if not h.label %}{{ h.pk }}{% endif %}</strong>
-                                            <small>
-                                                {% blocktranslate trimmed with n=h.item_count total=h.total|rupiah time=h.created_at|time:"H:i" %}
-                                                    {{ n }} item, Rp {{ total }}, {{ time }}
-                                                {% endblocktranslate %}
-                                            </small>
-                                        </span>
-                                        <button type="submit" name="action" value="resume" class="ui-btn ui-btn--primary pos-btn-sm" {% if not cart_empty %}disabled title="{% translate 'Selesaikan atau parkir keranjang yang sekarang dulu' %}"{% endif %}>{% translate "Lanjutkan" %}</button>
-                                        <button type="submit"
-                                                name="action"
-                                                value="delete"
-                                                class="ui-btn pos-btn-sm pos-btn-danger"
-                                                data-confirm="{% translate 'Hapus transaksi parkir ini?' %}"
-                                                aria-label="{% translate 'Hapus' %}"><i class="bi bi-trash" aria-hidden="true"></i></button>
-                                    </form>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
+                    {% endfor %}
 
-                    <nav class="pos-cats" aria-label="{% translate 'Kategori produk' %}">
-                        <a href="?{% if q %}q={{ q|urlencode }}{% endif %}" class="pos-chip{% if not cat %} is-active{% endif %}"{% if not cat %} aria-current="true"{% endif %}>{% translate "Semua" %}</a>
-                        {% for c in categories %}
-                            <a href="?cat={{ c.pk }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}" class="pos-chip{% if cat == c.pk %} is-active{% endif %}"{% if cat == c.pk %} aria-current="true"{% endif %}>{{ c }}</a>
-                        {% endfor %}
+                    <nav class="pos-tabs" aria-label="{% translate 'Pilih yang dijual' %}">
+                        <a href="?{% if q %}q={{ q|urlencode }}{% endif %}" class="{% if tab == 'produk' %}is-active{% endif %}"{% if tab == 'produk' %} aria-current="page"{% endif %}>
+                            <i class="bi bi-box-seam" aria-hidden="true"></i>{% translate "Produk" %}
+                            <span class="pos-tabs__n">{{ product_total }}</span>
+                        </a>
+                        <a href="?tab=layanan" class="{% if tab == 'layanan' %}is-active{% endif %}"{% if tab == 'layanan' %} aria-current="page"{% endif %}>
+                            <i class="bi bi-scissors" aria-hidden="true"></i>{% translate "Layanan grooming" %}
+                            {% if payable_bookings %}<span class="pos-tabs__n is-pri">{% blocktranslate trimmed with n=payable_bookings|length %}{{ n }} siap dibayar{% endblocktranslate %}</span>{% endif %}
+                        </a>
                     </nav>
 
-                    <div class="pos-grid">
-                        {% for p in products %}
-                            <form method="post" action="{% url 'transaction:add_to_cart' p.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" class="pos-prod"{% if p.stock == 0 %} disabled{% endif %}>
-                                    <span class="pos-prod__img">
-                                        {% if p.photo %}
-                                            <img src="{{ p.photo.url }}" alt="" loading="lazy" />
+                    {% if tab == "layanan" %}
+                        <div class="pos-svc-grid">
+                            {% for b in payable_bookings %}
+                                <article class="pos-svc{% if b.status == 'SIAP' %} is-ready{% endif %}">
+                                    <div class="pos-svc__top">
+                                        <span class="pos-svc__pet"><span class="pos-svc__icon" aria-hidden="true"><i class="bi bi-heart"></i></span>{{ b.get_pet_type_display }}</span>
+                                        {% if b.status == "PROSES" %}
+                                            <span class="sg-pill is-pri">{% blocktranslate trimmed with done=b.steps_done total=b.step_rows|length %}Dikerjakan · {{ done }}/{{ total }}{% endblocktranslate %}</span>
+                                        {% elif b.status == "ANTRE" %}
+                                            <span class="sg-pill is-gold">{% translate "Dalam antrean" %}</span>
+                                        {% elif b.status == "SIAP" %}
+                                            <span class="sg-pill is-ok">{% translate "Siap diambil" %}</span>
                                         {% else %}
-                                            <i class="bi bi-box-seam" aria-hidden="true"></i>
+                                            <span class="sg-pill is-ok">{{ b.get_status_display }}</span>
                                         {% endif %}
-                                    </span>
-                                    <span class="pos-prod__name">{{ p.name }}</span>
-                                    <span class="pos-prod__sku">{{ p.sku|default:"-" }}</span>
-                                    <span class="pos-prod__foot">
-                                        <b>{% if p.selling_price %}Rp {{ p.selling_price|rupiah }}{% else %}{% translate "Belum diset" %}{% endif %}</b>
-                                        <span class="pos-stock {% if p.stock == 0 %}is-empty{% elif p.stock <= 10 %}is-low{% endif %}">
-                                            {% blocktranslate trimmed with p_stock=p.stock %}Stok {{ p_stock }}{% endblocktranslate %}
+                                    </div>
+                                    <h2 class="pos-svc__name">{{ b.service.name }}</h2>
+                                    {% if b.service.description %}<p class="pos-svc__desc">{{ b.service.description }}</p>{% endif %}
+                                    <p class="pos-svc__who"><i class="bi bi-person" aria-hidden="true"></i>{% blocktranslate trimmed with pk=b.pk pet=b.pet_name name=b.customer.display_name %}Booking #{{ pk }} · {{ pet }} · {{ name }}{% endblocktranslate %}</p>
+                                    <p class="pos-svc__label">{% blocktranslate trimmed with n=b.step_rows|length %}Tahapan layanan ({{ n }}){% endblocktranslate %}</p>
+                                    <ol class="pos-svc__steps">
+                                        {% for name, at in b.step_rows %}
+                                            <li class="{% if at %}is-done{% endif %}">
+                                                <i class="bi {% if at %}bi-check-circle-fill{% else %}bi-circle{% endif %}" aria-hidden="true"></i>
+                                                <span>{{ name }}{% if at %}<span class="visually-hidden"> ({% translate "sudah dikerjakan" %})</span>{% endif %}</span>
+                                                {% if at %}<time datetime="{{ at|date:'c' }}">{{ at|time:"H.i" }}</time>{% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ol>
+                                    <div class="pos-svc__foot">
+                                        <div class="pos-svc__price">
+                                            <span>{% translate "Harga" %}</span>
+                                            <b><i class="bi bi-tag" aria-hidden="true"></i>Rp {{ b.total_price|rupiah }}</b>
+                                        </div>
+                                        <span class="pos-svc__time"><i class="bi bi-clock" aria-hidden="true"></i>{% blocktranslate trimmed with m=b.service.duration_minutes %}± {{ m }} mnt{% endblocktranslate %}</span>
+                                    </div>
+                                    <form method="post" action="{% url 'transaction:pos_add_booking' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="booking" value="{{ b.pk }}">
+                                        <button type="submit" class="ui-btn {% if forloop.first %}ui-btn--primary{% endif %} pos-svc__add"><i class="bi bi-cart-plus" aria-hidden="true"></i>{% translate "Masukkan ke keranjang" %}</button>
+                                    </form>
+                                </article>
+                            {% empty %}
+                                <p class="pos-empty">
+                                    <i class="bi bi-scissors" aria-hidden="true"></i>
+                                    {% translate "Belum ada booking yang bisa dibayar. Booking muncul di sini setelah hewan check-in." %}
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <p class="pos-hint pos-svc-note"><i class="bi bi-info-circle" aria-hidden="true"></i> {% translate "Booking bisa dibayar setelah hewan check-in. Centang ungu = tahap sudah dikerjakan groomer." %}</p>
+                    {% else %}
+                        <nav class="pos-cats" aria-label="{% translate 'Kategori produk' %}">
+                            <a href="?{% if q %}q={{ q|urlencode }}{% endif %}" class="pos-chip{% if not cat %} is-active{% endif %}"{% if not cat %} aria-current="true"{% endif %}>{% translate "Semua" %}</a>
+                            {% for c in categories %}
+                                <a href="?cat={{ c.pk }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}" class="pos-chip{% if cat == c.pk %} is-active{% endif %}"{% if cat == c.pk %} aria-current="true"{% endif %}>{{ c }}</a>
+                            {% endfor %}
+                        </nav>
+
+                        <div class="pos-grid">
+                            {% for p in products %}
+                                <form method="post" action="{% url 'transaction:add_to_cart' p.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="pos-prod"{% if p.stock == 0 %} disabled{% endif %}>
+                                        <span class="pos-prod__img">
+                                            {% if p.photo %}
+                                                <img src="{{ p.photo.url }}" alt="" loading="lazy" />
+                                            {% else %}
+                                                <i class="bi bi-box-seam" aria-hidden="true"></i>
+                                            {% endif %}
                                         </span>
-                                    </span>
-                                </button>
-                            </form>
-                        {% empty %}
-                            <p class="pos-empty">
-                                <i class="bi bi-inboxes" aria-hidden="true"></i>
-                                {% if q or cat %}{% translate "Tidak ada produk yang cocok dengan pencarian." %}{% else %}{% translate "Belum ada produk." %}{% endif %}
-                            </p>
-                        {% endfor %}
-                    </div>
+                                        <span class="pos-prod__name">{{ p.name }}</span>
+                                        <span class="pos-prod__sku">{{ p.sku|default:"-" }}</span>
+                                        <span class="pos-prod__foot">
+                                            <b>{% if p.selling_price %}Rp {{ p.selling_price|rupiah }}{% else %}{% translate "Belum diset" %}{% endif %}</b>
+                                            <span class="pos-stock {% if p.stock == 0 %}is-empty{% elif p.stock <= 10 %}is-low{% endif %}">
+                                                {% blocktranslate trimmed with p_stock=p.stock %}Stok {{ p_stock }}{% endblocktranslate %}
+                                            </span>
+                                        </span>
+                                    </button>
+                                </form>
+                            {% empty %}
+                                <p class="pos-empty">
+                                    <i class="bi bi-inboxes" aria-hidden="true"></i>
+                                    {% if q or cat %}{% translate "Tidak ada produk yang cocok dengan pencarian." %}{% else %}{% translate "Belum ada produk." %}{% endif %}
+                                </p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
                 </section>
 

@@ -193,6 +193,7 @@ body.ui-page, body:has(.ui-wrap) { background: var(--ui-bg); }
 .ui-split { display: grid; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 1199.98px) { .ui-split { grid-template-columns: minmax(0, 1fr); } }
 .ui-avatar { width: 36px; height: 36px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--ui-accent-soft); color: var(--ui-accent-soft-ink); font-weight: 800; font-size: 0.85rem; }
+.ui-avatar--photo { object-fit: cover; }
 .ui-rows--wrap :is(.ui-row__title, .ui-row__sub) { white-space: normal; }
 @media (max-width: 575.98px) {
   .ui-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }

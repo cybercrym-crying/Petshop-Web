@@ -26,8 +26,9 @@
   font-weight: 700;
   white-space: nowrap;
 }
+/* Di layar lebar tombol ini menciutkan menu samping; di HP membuka laci menu. */
 .ca-menu-btn {
-  display: none;
+  margin-right: 4px;
 }
 
 /* ---------- kerangka ---------- */
@@ -182,6 +183,41 @@
   display: none;
 }
 
+/* ---------- menu samping diciutkan (layar lebar) ---------- */
+@media (min-width: 992px) {
+  .ca-shell {
+    transition: grid-template-columns 0.2s ease;
+  }
+  .ca-collapsed .ca-app {
+    --ca-side: 76px;
+  }
+  .ca-collapsed .ca-side {
+    padding: 14px 10px;
+    overflow-x: hidden;
+  }
+  .ca-collapsed .ca-side__who {
+    justify-content: center;
+    padding: 4px 0 12px;
+  }
+  .ca-collapsed .ca-side__who > div,
+  .ca-collapsed .ca-nav__group,
+  .ca-collapsed .ca-link .ca-count {
+    display: none;
+  }
+  .ca-collapsed .ca-nav__group + .ca-link {
+    margin-top: 8px;
+  }
+  .ca-collapsed .ca-link {
+    justify-content: center;
+    gap: 0;
+    padding: 8px 0;
+    font-size: 0;
+  }
+  .ca-collapsed .ca-link i {
+    font-size: 1.1rem;
+  }
+}
+
 @media (max-width: 1199.98px) {
   /* Kolom cari hanya muncul lewat tombol kaca pembesar supaya bilah atas tetap satu baris. */
   .ca-header .sn-search {
@@ -201,9 +237,6 @@
   }
   .ca-bar {
     padding: 0 12px;
-  }
-  .ca-menu-btn {
-    display: inline-flex;
   }
   .ca-shell {
     display: block;

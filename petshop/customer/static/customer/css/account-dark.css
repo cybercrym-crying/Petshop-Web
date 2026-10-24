@@ -1,0 +1,13 @@
+/* Dibuat otomatis oleh `python manage.py build_dark_css` dari account.css. Jangan diubah manual. */
+html[data-theme="dark"] .acc-stat { background: #211a2b; border: 1px solid #3a2f48; color: #f1ebf7; box-shadow: 0 2px 10px rgba(107, 33, 168, 0.08); }
+html[data-theme="dark"] .acc-stat:hover { border-color: #5b4775; color: #f1ebf7; }
+html[data-theme="dark"] .acc-stat strong { color: #d8b4fe; }
+html[data-theme="dark"] .acc-stat span { color: #b9adc7; }
+html[data-theme="dark"] .acc-card { background: #211a2b; border: 1px solid #3a2f48; box-shadow: 0 2px 10px rgba(107, 33, 168, 0.08); }
+html[data-theme="dark"] .acc-card h2 { color: #f1ebf7; }
+html[data-theme="dark"] .acc-card h2 i { color: #d8b4fe; }
+html[data-theme="dark"] .acc-static { color: #b9adc7; }
+html[data-theme="dark"] .acc-help { color: #b9adc7; }
+html[data-theme="dark"] .acc-error { color: #ed8d8d; }
+html[data-theme="dark"] .acc-field.has-error .form-control { border-color: #dc2626; }
+html[data-theme="dark"] .acc-card ul { color: #b9adc7; }

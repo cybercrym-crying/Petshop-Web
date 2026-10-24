@@ -2,120 +2,125 @@
 {% load i18n %}
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Kas & Shift" %}{% endblock %}
-{% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
-    <link href="{% static 'transaction/css/staff_orders.css' %}?v=ux2" rel="stylesheet" />
-    <link href="{% static 'transaction/css/pos_pages.css' %}?v=2" rel="stylesheet" />
-{% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <div class="mb-4">
-            <p class="eyebrow">{% translate "Kasir" %}</p>
-            <h1 class="page-title mb-1">{% translate "Kas & Shift" %}</h1>
-            <p class="text-muted mb-0">{% translate "Buka kasir dengan modal awal di laci. Saat tutup, hitung uang tunai di laci; sistem membandingkan dengan yang seharusnya ada." %}</p>
-        </div>
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 border-0 shadow-sm">{{ message }}</div>
-        {% endfor %}
-        <div class="row g-4">
-            <div class="col-xl-7">
+    <div class="sg sg-page">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Kasir" %}</p>
+                <h1>{% translate "Kas & Shift" %}</h1>
+                <p>{% translate "Buka kasir dengan modal awal di laci. Saat tutup, hitung uang tunai di laci; sistem membandingkan dengan yang seharusnya ada." %}</p>
+            </div>
+            <div class="sg-hd__actions">
                 {% if current %}
-                    <div class="card-custom so-card mb-4">
-                        <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
-                            <div>
-                                <span class="pos-pill pos-pill-ok">{% translate "Kasir buka" %}</span>
-                                <div class="small text-muted mt-1">
-                                    {% blocktranslate trimmed with since=current.opened_at|date:"d M Y, H:i" %}Dibuka {{ since }}{% endblocktranslate %}
-                                </div>
-                            </div>
-                            <a href="{% url 'transaction:make_transaction' %}" class="btn btn-primary rounded-pill px-4">{% translate "Ke layar kasir" %}</a>
-                        </div>
-                        <dl class="so-dl mb-3">
-                            <dt>{% translate "Transaksi" %}</dt>
-                            <dd>{{ summary.orders }}{% if summary.voided %} <span class="text-danger small">({% blocktranslate trimmed with n=summary.voided %}{{ n }} dibatalkan{% endblocktranslate %})</span>{% endif %}</dd>
-                            {% for label, code, amount in summary.by_method %}
-                                <dt>{{ label }}</dt>
-                                <dd>Rp {{ amount|rupiah }}</dd>
-                            {% endfor %}
-                            <dt>{% translate "Total diskon" %}</dt>
-                            <dd>Rp {{ summary.discount|rupiah }}</dd>
-                        </dl>
-                        <h2 class="h6 fw-bold mb-2">{% translate "Uang tunai di laci" %}</h2>
-                        <ul class="list-unstyled so-list mb-3">
+                    <button type="button" class="ui-btn" data-print><i class="bi bi-printer" aria-hidden="true"></i>{% translate "Cetak rekap" %}</button>
+                    <a href="{% url 'transaction:make_transaction' %}" class="ui-btn ui-btn--primary"><i class="bi bi-receipt" aria-hidden="true"></i>{% translate "Ke layar kasir" %}</a>
+                {% endif %}
+            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        <div class="sg-grid">
+            <section class="sg-card is-focus sg-s7" aria-labelledby="shift-now">
+                {% if current %}
+                    <div class="sg-row is-wrap">
+                        <h2 id="shift-now" class="sg-live"><i aria-hidden="true"></i>{% translate "Shift berjalan" %}</h2>
+                        <span class="sg-sp"></span>
+                        <span class="sg-chip">{% blocktranslate trimmed with since=current.opened_at|date:"d M Y, H.i" dur=current.opened_at|timesince %}Dibuka {{ since }} · {{ dur }}{% endblocktranslate %}</span>
+                    </div>
+                    <dl class="sg-met is-count">
+                        <div><dt>{% translate "Transaksi" %}</dt><dd>{{ summary.orders }}{% if summary.voided %} <small class="sg-xs" style="display:inline;color:var(--sg-bad)">−{{ summary.voided }}</small>{% endif %}</dd></div>
+                        {% for label, code, amount in summary.by_method %}
+                            <div><dt>{{ label }}</dt><dd>Rp {{ amount|rupiah }}</dd></div>
+                        {% endfor %}
+                    </dl>
+                    <div class="sg-sub sg-mt16">
+                        <h3 class="sg-h3 is-sm">{% translate "Uang tunai di laci" %}</h3>
+                        <ul class="sg-lines sg-mt8">
                             <li><span>{% translate "Modal awal" %}</span><b>Rp {{ current.opening_cash|rupiah }}</b></li>
                             <li><span>{% translate "+ Penjualan tunai" %}</span><b>Rp {{ summary.cash_sales|rupiah }}</b></li>
                             {% if summary.remitted %}<li><span>{% translate "+ Setoran COD kurir yang Anda terima" %}</span><b>Rp {{ summary.remitted|rupiah }}</b></li>{% endif %}
                             {% if summary.refunds %}<li><span>{% translate "- Uang retur dikembalikan" %}</span><b>Rp {{ summary.refunds|rupiah }}</b></li>{% endif %}
-                            <li class="fw-bold"><span>{% translate "Seharusnya ada" %}</span><b>Rp {{ summary.expected_cash|rupiah }}</b></li>
+                            {% if summary.discount %}<li><span>{% translate "Total diskon" %}</span><b>Rp {{ summary.discount|rupiah }}</b></li>{% endif %}
+                            <li class="is-tot"><span>{% translate "Seharusnya ada" %}</span><b>Rp {{ summary.expected_cash|rupiah }}</b></li>
                         </ul>
-                        <form method="post" class="row g-2 align-items-end">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="close">
-                            <div class="col-sm-4">
-                                <label class="form-label small fw-bold" for="closeAmount">{% translate "Uang dihitung (Rp)" %}</label>
-                                <input id="closeAmount" name="amount" class="form-control" inputmode="numeric" required>
-                            </div>
-                            <div class="col-sm-5">
-                                <label class="form-label small fw-bold" for="closeNote">{% translate "Catatan selisih" %}</label>
-                                <input id="closeNote" name="note" class="form-control" maxlength="255" placeholder="{% translate 'Wajib bila ada selisih' %}">
-                            </div>
-                            <div class="col-sm-3">
-                                <button type="submit" class="btn btn-danger fw-bold w-100" data-confirm="{% translate 'Tutup kasir sekarang? Transaksi baru perlu membuka kasir lagi.' %}">{% translate "Tutup kasir" %}</button>
-                            </div>
-                        </form>
                     </div>
+                    <form method="post" class="sg-sub sg-form sg-mt12" data-cash-diff data-expected="{{ summary.expected_cash }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="close">
+                        <h3 class="sg-h3 is-sm">{% translate "Tutup kasir" %}</h3>
+                        <div class="sg-grid is-tight sg-mt8">
+                            <div class="sg-s5">
+                                <label class="sg-lbl" for="closeAmount">{% translate "Uang dihitung (Rp)" %}</label>
+                                <input id="closeAmount" name="amount" data-cash-input inputmode="numeric" required autocomplete="off">
+                            </div>
+                            <div class="sg-s7">
+                                <label class="sg-lbl" for="closeNote">{% translate "Catatan selisih" %}</label>
+                                <input id="closeNote" name="note" data-cash-note maxlength="255" placeholder="{% translate 'Wajib bila ada selisih' %}">
+                            </div>
+                        </div>
+                        <p class="sg-alert is-gold sg-mt12" data-cash-result hidden><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span></span></p>
+                        <div class="sg-row sg-mt12">
+                            <span class="sg-sp"></span>
+                            <button type="submit" class="ui-btn ui-btn--bad" data-confirm="{% translate 'Tutup kasir sekarang? Transaksi baru perlu membuka kasir lagi.' %}"><i class="bi bi-lock" aria-hidden="true"></i>{% translate "Tutup kasir" %}</button>
+                        </div>
+                    </form>
                 {% else %}
-                    <div class="card-custom so-card mb-4">
-                        <h2 class="h5 fw-bold mb-2">{% translate "Buka kasir" %}</h2>
-                        <p class="text-muted small">{% translate "Hitung uang kembalian yang ada di laci sebelum mulai melayani." %}</p>
-                        <form method="post" class="row g-2 align-items-end">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="open">
-                            <div class="col-sm-6">
-                                <label class="form-label small fw-bold" for="openAmount">{% translate "Modal awal (Rp)" %}</label>
-                                <input id="openAmount" name="amount" class="form-control" inputmode="numeric" required placeholder="200000">
-                            </div>
-                            <div class="col-sm-6">
-                                <button type="submit" class="btn btn-primary fw-bold w-100">{% translate "Buka kasir" %}</button>
-                            </div>
-                        </form>
-                    </div>
+                    <h2 id="shift-now" class="sg-live"><i aria-hidden="true"></i>{% translate "Buka kasir" %}</h2>
+                    <p class="sg-muted sg-mt8">{% translate "Hitung uang kembalian yang ada di laci sebelum mulai melayani." %}</p>
+                    <form method="post" class="sg-sub sg-form sg-mt12">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="open">
+                        <label class="sg-lbl" for="openAmount">{% translate "Modal awal (Rp)" %}</label>
+                        <div class="sg-row is-wrap">
+                            <input id="openAmount" name="amount" inputmode="numeric" required placeholder="200000" style="flex:1 1 220px">
+                            <button type="submit" class="ui-btn ui-btn--primary"><i class="bi bi-unlock" aria-hidden="true"></i>{% translate "Buka kasir" %}</button>
+                        </div>
+                    </form>
                 {% endif %}
-            </div>
-            <div class="col-xl-5">
-                <div class="card-custom so-card">
-                    <h2 class="h6 fw-bold mb-3">{% translate "Riwayat shift Anda" %}</h2>
-                    <div class="table-responsive">
-                        <table data-stack class="table table-sm align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>{% translate "Dibuka" %}</th>
-                                    <th class="text-end">{% translate "Seharusnya" %}</th>
-                                    <th class="text-end">{% translate "Dihitung" %}</th>
-                                    <th class="text-end">{% translate "Selisih" %}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for s in history %}
-                                    <tr>
-                                        <td>
-                                            {{ s.opened_at|date:"d M, H:i" }}
-                                            {% if s.close_note %}<div class="small text-muted">{{ s.close_note }}</div>{% endif %}
-                                        </td>
-                                        <td class="text-end text-nowrap">Rp {{ s.expected_cash|rupiah }}</td>
-                                        <td class="text-end text-nowrap">Rp {{ s.counted_cash|rupiah }}</td>
-                                        <td class="text-end text-nowrap {% if s.difference < 0 %}text-danger{% elif s.difference > 0 %}text-warning{% else %}text-success{% endif %} fw-bold">
-                                            {% if s.difference < 0 %}-{% elif s.difference > 0 %}+{% endif %}Rp {{ s.difference|rupiah|cut:"-" }}
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr><td colspan="4" class="text-muted">{% translate "Belum ada shift yang ditutup." %}</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+            </section>
+            <section class="sg-card sg-s5" aria-labelledby="shift-history">
+                <div class="sg-card__head">
+                    <h2 id="shift-history" class="sg-h3">{% translate "Riwayat shift Anda" %}</h2>
+                    <span class="sg-sp"></span>
+                    <span class="sg-pill is-line">{% translate "14 shift terakhir" %}</span>
                 </div>
-            </div>
+                <div class="sg-tbl-box">
+                    <table class="sg-tbl is-stack">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Dibuka" %}</th>
+                                <th class="is-num">{% translate "Seharusnya" %}</th>
+                                <th class="is-num">{% translate "Dihitung" %}</th>
+                                <th class="is-num">{% translate "Selisih" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in history %}
+                                <tr>
+                                    <td>
+                                        <b>{{ s.opened_at|date:"d M" }}</b>
+                                        <div class="sg-xs sg-muted">{{ s.opened_at|time:"H.i" }}{% if s.closed_at %} – {{ s.closed_at|time:"H.i" }}{% endif %}</div>
+                                    </td>
+                                    <td class="is-num" data-label="{% translate 'Seharusnya' %}">Rp {{ s.expected_cash|rupiah }}</td>
+                                    <td class="is-num" data-label="{% translate 'Dihitung' %}">Rp {{ s.counted_cash|rupiah }}</td>
+                                    <td class="is-num" data-label="{% translate 'Selisih' %}">
+                                        {% if s.difference < 0 %}<span class="sg-pill is-bad">−{{ s.difference|rupiah|cut:"-" }}</span>
+                                        {% elif s.difference > 0 %}<span class="sg-pill is-gold">+{{ s.difference|rupiah }}</span>
+                                        {% else %}<span class="sg-pill is-ok">{% translate "Pas" %}</span>{% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4"><p class="sg-empty"><i class="bi bi-clock-history" aria-hidden="true"></i>{% translate "Belum ada shift yang ditutup." %}</p></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% for s in history %}
+                    {% if s.close_note %}
+                        <p class="sg-xs sg-muted sg-mt8 mb-0"><i class="bi bi-info-circle" aria-hidden="true"></i> {% blocktranslate trimmed with day=s.opened_at|date:"d M" note=s.close_note %}Catatan shift {{ day }}: “{{ note }}”{% endblocktranslate %}</p>
+                    {% endif %}
+                {% endfor %}
+            </section>
         </div>
     </div>
+    {% include "partials/_cash_diff_texts.html" %}
 {% endblock %}

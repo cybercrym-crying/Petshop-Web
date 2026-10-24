@@ -1,0 +1,169 @@
+/*
+ * Ciri khas Seelly untuk halaman staf (kasir, admin, kurir): krem, ungu, emas.
+ * Dimuat setelah css/ui.css, staff_sidebar.css dan courier/css/theme.css, lalu memetakan ulang
+ * token lama (--ui-*, --ss-*, --c-*, --t-*) ke palet ini. Mode gelap tetap memakai nilai gelap
+ * masing-masing file; di sini hanya token --sg-* versi gelap.
+ */
+:root {
+  --sg-bg: #fdf8f3;
+  --sg-card: #ffffff;
+  --sg-soft: #f3ecf9;
+  --sg-soft-2: #f3e8ff;
+  --sg-ink: #2a2140;
+  --sg-text-2: #4a4163;
+  --sg-muted: #5d5575;
+  --sg-line: #e6dcf1;
+  --sg-pri: #7c3aed;
+  --sg-pri-hover: #6d28d9;
+  --sg-pri-text: #6d28d9;
+  --sg-pri-ink: #ffffff;
+  --sg-gold: #f4b942;
+  --sg-gold-hover: #e5a41f;
+  --sg-gold-ink: #4a3200;
+  --sg-gold-soft: #fdf0d4;
+  --sg-gold-soft-ink: #6b4500;
+  --sg-gold-line: #f6e2b4;
+  --sg-ok: #1f7a4d;
+  --sg-ok-soft: #e4f4ea;
+  --sg-bad: #b42335;
+  --sg-bad-soft: #fde7ea;
+  --sg-warn: #a1520b;
+  --sg-sh-1: 0 1px 2px rgba(42, 33, 64, 0.05), 0 4px 14px rgba(42, 33, 64, 0.06);
+  --sg-sh-2: 0 2px 4px rgba(42, 33, 64, 0.05), 0 12px 30px rgba(42, 33, 64, 0.1);
+  --sg-sh-pri: 0 6px 16px rgba(124, 58, 237, 0.28);
+  --sg-r-lg: 24px;
+  --sg-r-md: 18px;
+  --sg-r-sm: 12px;
+  --sg-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --sg-focus: #f4b942;
+  --sg-focus-grad: linear-gradient(160deg, #f3e8ff 0%, #ffffff 58%);
+  --sg-pet-grad: linear-gradient(160deg, #fff7e6, #ffffff 60%);
+}
+:root[data-theme="dark"], :root[data-bs-theme="dark"] {
+  --sg-bg: #18121f;
+  --sg-card: #211a2b;
+  --sg-soft: #2b2139;
+  --sg-soft-2: #33264a;
+  --sg-ink: #f1ebf7;
+  --sg-text-2: #d4c9e0;
+  --sg-muted: #b9adc7;
+  --sg-line: #3a2f48;
+  --sg-pri-text: #d8b4fe;
+  --sg-gold-soft: #3b2a12;
+  --sg-gold-soft-ink: #fde68a;
+  --sg-gold-line: #5a4617;
+  --sg-ok: #86efac;
+  --sg-ok-soft: #173a2c;
+  --sg-bad: #fca5a5;
+  --sg-bad-soft: #44201f;
+  --sg-warn: #fcd34d;
+  --sg-sh-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+  --sg-sh-2: 0 2px 4px rgba(0, 0, 0, 0.3), 0 12px 30px rgba(0, 0, 0, 0.35);
+  --sg-sh-pri: 0 6px 16px rgba(0, 0, 0, 0.35);
+  --sg-focus-grad: linear-gradient(160deg, #33264a 0%, #211a2b 58%);
+  --sg-pet-grad: linear-gradient(160deg, #3a2c16, #211a2b 60%);
+}
+
+/* Token lama -> palet ciri khas (mode terang saja) */
+:root:not([data-theme="dark"]):not([data-bs-theme="dark"]) {
+  --ui-bg: var(--sg-bg);
+  --ui-card: var(--sg-card);
+  --ui-line: var(--sg-line);
+  --ui-line-soft: #f1eaf7;
+  --ui-ink: var(--sg-ink);
+  --ui-ink-2: var(--sg-text-2);
+  --ui-muted: var(--sg-muted);
+  --ui-accent: var(--sg-pri);
+  --ui-accent-hover: var(--sg-pri-hover);
+  --ui-accent-soft: var(--sg-soft);
+  --ui-accent-soft-ink: var(--sg-pri-text);
+  --ui-ok-bg: var(--sg-ok-soft); --ui-ok: var(--sg-ok);
+  --ui-warn-bg: var(--sg-gold-soft); --ui-warn: #8a4a00;
+  --ui-bad-bg: var(--sg-bad-soft); --ui-bad: var(--sg-bad);
+  --ui-run-bg: var(--sg-soft); --ui-run: var(--sg-pri-text);
+  --ui-radius: 20px;
+
+  --ss-bg: #ffffff; --ss-border: var(--sg-line); --ss-text: var(--sg-ink); --ss-muted: var(--sg-muted);
+  --ss-brand: var(--sg-pri); --ss-logo-bg: var(--sg-pri); --ss-hover: #faf6fd;
+  --ss-active: var(--sg-soft); --ss-active-ink: var(--sg-pri-text); --ss-outline: var(--sg-line);
+  --ss-badge: var(--sg-gold); --ss-badge-ink: var(--sg-gold-ink);
+
+  --c-bg: var(--sg-bg);
+  --c-surface: var(--sg-card);
+  --c-surface-2: #faf6fd;
+  --c-border: var(--sg-line);
+  --c-text: var(--sg-ink);
+  --c-text-2: var(--sg-text-2);
+  --c-text-3: var(--sg-ink);
+  --c-muted: var(--sg-muted);
+  --c-muted-2: var(--sg-muted);
+  --c-brand: var(--sg-pri);
+  --c-brand-dark: var(--sg-pri-hover);
+  --c-brand-soft: var(--sg-soft);
+  --c-brand-soft-border: var(--sg-line);
+  --c-brand-soft-text: var(--sg-pri-text);
+  --c-warn-bg: var(--sg-gold-soft);
+  --c-ok-bg: var(--sg-ok-soft);
+  --c-ok-text: var(--sg-ok);
+  --action: var(--sg-pri);
+  --action-hover: var(--sg-pri-hover);
+  --action-ring: rgba(124, 58, 237, 0.35);
+
+  --t-tx-2b3674: #2a2140;
+  --t-tx-2d3748: #2a2140;
+  --t-tx-4a5568: #4a4163;
+  --t-tx-718096: #5d5575;
+  --t-tx-64748b: #5d5575;
+  --t-bg-4318ff: #7c3aed;
+  --t-tx-5c418c: #6d28d9;
+  --t-bg-f4f7fe: #fdf8f3;
+  --t-bg-fafafc: #fdf8f3;
+  --t-bd-e2e8f0: #e6dcf1;
+  --t-bg-ff9000: #7c3aed;
+  --t-bg-ff7300: #6d28d9;
+  --t-bd-ff9000: #7c3aed;
+  --t-tx-ff9000: #6d28d9;
+  --t-bg-e69a2e: #7c3aed;
+}
+
+/* Dasar halaman */
+body:has(.staff-sidebar), body.pos-body { background: var(--ui-bg); }
+body:has(.ck-side) { background: var(--c-bg); }
+
+/* Kartu: sudut lebih bulat dan bayangan lembut */
+.ui-card, .pos-cart { border-radius: 20px; box-shadow: var(--sg-sh-1); }
+.ui-tile { border-radius: 16px; transition: border-color 0.18s var(--sg-ease), box-shadow 0.18s var(--sg-ease), transform 0.18s var(--sg-ease); }
+.ui-tile:hover { transform: translateY(-2px); box-shadow: var(--sg-sh-2); }
+
+/* Tombol */
+.ui-btn { border-radius: 14px; transition: background 0.18s var(--sg-ease), border-color 0.18s var(--sg-ease), color 0.18s var(--sg-ease), transform 0.18s var(--sg-ease), box-shadow 0.18s var(--sg-ease); }
+.ui-btn--primary { background: var(--sg-pri); border-color: var(--sg-pri); color: #ffffff; box-shadow: var(--sg-sh-pri); }
+.ui-btn--primary:hover { background: var(--sg-pri-hover); border-color: var(--sg-pri-hover); color: #ffffff; transform: translateY(-1px); }
+.ui-btn--gold { background: var(--sg-gold); border-color: var(--sg-gold); color: var(--sg-gold-ink); font-weight: 700; }
+.ui-btn--gold:hover { background: var(--sg-gold-hover); border-color: var(--sg-gold-hover); color: var(--sg-gold-ink); transform: translateY(-1px); }
+.ui-btn--sm { min-height: 38px; padding: 0 14px; font-size: 0.85rem; border-radius: 12px; }
+.ui-btn:focus-visible, .ui-link:focus-visible, .ui-task:focus-visible, .ui-tile:focus-visible { outline: 3px solid var(--sg-focus); outline-offset: 2px; }
+
+/* Menu samping staf */
+.staff-sidebar .staff-link { position: relative; min-height: 44px; border-radius: 13px; transition: background 0.15s var(--sg-ease), color 0.15s var(--sg-ease); }
+.staff-sidebar .staff-link.is-active::before { content: ""; position: absolute; left: -0.875rem; top: 10px; bottom: 10px; width: 4px; border-radius: 0 4px 4px 0; background: var(--sg-pri); }
+.staff-me { border: 0; padding: 6px 8px 10px; }
+.staff-avatar { background: linear-gradient(135deg, #c4b5fd, #7c3aed); }
+.staff-shift { border-radius: 12px; }
+.staff-bell__count { background: var(--sg-gold); color: var(--sg-gold-ink); }
+
+/* Pil status serbaguna */
+.sg-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+.sg-pill.is-pri { background: var(--sg-soft); color: var(--sg-pri-text); }
+.sg-pill.is-gold { background: var(--sg-gold-soft); color: var(--sg-gold-soft-ink); }
+.sg-pill.is-ok { background: var(--sg-ok-soft); color: var(--sg-ok); }
+.sg-pill.is-bad { background: var(--sg-bad-soft); color: var(--sg-bad); }
+.sg-pill.is-line { background: var(--sg-card); border: 1px solid var(--sg-line); color: var(--sg-muted); }
+.sg-live { display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sg-pri-text); }
+.sg-live > i { width: 9px; height: 9px; border-radius: 50%; background: var(--sg-pri); box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.18); }
+.sg-eyebrow { margin: 0; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sg-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn, .ui-tile, .staff-sidebar .staff-link { transition: none; }
+  .ui-btn:hover, .ui-tile:hover { transform: none; }
+}

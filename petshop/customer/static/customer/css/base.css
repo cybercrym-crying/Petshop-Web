@@ -351,3 +351,8 @@ h1, h2, h3 { line-height: 1.25; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Mode gelap: gambar pengganti produk (ungu muda) diredupkan supaya tidak silau. */
+html[data-theme="dark"] img[src$="product-placeholder.svg"] {
+  filter: brightness(0.62) saturate(1.1);
+}

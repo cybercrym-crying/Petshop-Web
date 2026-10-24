@@ -9,36 +9,52 @@
     </head>
     <body>
         {% include "courier/_nav.html" %}
-        <main class="container-fluid px-xl-5 px-3 py-4" style="max-width: 900px">
-            <p class="eyebrow"><i class="bi bi-cash-stack me-1"></i> {% translate "Setoran" %}</p>
-            <h1 class="page-title">{% translate "Uang COD yang harus disetor" %}</h1>
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-2" role="alert">{{ message }}</div>
-            {% endfor %}
-            <section class="next-card mb-4">
-                <div class="next-card__label">{% translate "Total dipegang" %}</div>
-                <h2>Rp {{ on_hand_total|rupiah }}</h2>
-                <p>{% blocktranslate trimmed with on_hand=on_hand|length %}{{ on_hand }} paket COD sudah diserahkan dan uangnya belum disetor ke kasir.{% endblocktranslate %}</p>
+        <main class="container-fluid px-xl-5 px-3 py-4 ck-page is-narrow sg">
+            {% translate "Setoran COD" as t_title %}{% translate "Uang yang harus disetor ke kasir" as t_lead %}
+            {% include "courier/_page_head.html" with title=t_title lead=t_lead %}
+            {% include "partials/_sg_messages.html" %}
+            <section class="sg-card is-focus">
+                <p class="sg-eyebrow">{% translate "Total dipegang" %}</p>
+                <p class="sg-big mb-1">Rp {{ on_hand_total|rupiah }}</p>
                 {% if on_hand %}
-                    <form method="post" data-confirm="{% blocktranslate trimmed with on_hand_total=on_hand_total|rupiah %}Setor Rp {{ on_hand_total }} ke kasir sekarang?{% endblocktranslate %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-route is-primary w-100"><i class="bi bi-box-arrow-in-down"></i> {% translate "Setor ke kasir" %}</button>
-                    </form>
-                    <ul class="stop-list">
+                    <p class="sg-sm sg-muted mb-0">{% blocktranslate trimmed with on_hand=on_hand|length %}{{ on_hand }} paket COD sudah diserahkan dan uangnya belum disetor ke kasir.{% endblocktranslate %}</p>
+                    <div class="sg-list sg-mt12">
                         {% for o in on_hand %}
-                            <li><a href="{% url 'courier:order_detail' o.pk %}"><span class="stop-num"><i class="bi bi-cash"></i></span><span>#{{ o.pk }} {{ o.customer.name }}<small>{{ o.delivered_at|date:"d M H:i" }} · Rp {{ o.cash_collected|rupiah }}</small></span></a></li>
+                            <a class="ck-pkg" href="{% url 'courier:order_detail' o.pk %}">
+                                <span class="sg-av"><i class="bi bi-cash" aria-hidden="true"></i></span>
+                                <span class="ck-pkg__body"><b>#{{ o.pk }} {{ o.customer.name }}</b><small>{% blocktranslate trimmed with t=o.delivered_at|date:"d M H.i" %}{{ t }} · ditagih tunai{% endblocktranslate %}</small></span>
+                                <b class="sg-price">Rp {{ o.cash_collected|rupiah }}</b>
+                            </a>
                         {% endfor %}
-                    </ul>
+                    </div>
+                    <form method="post" class="sg-mt16" data-confirm="{% blocktranslate trimmed with on_hand_total=on_hand_total|rupiah %}Setor Rp {{ on_hand_total }} ke kasir sekarang?{% endblocktranslate %}">
+                        {% csrf_token %}
+                        <button type="submit" class="ck-btn is-primary is-block"><i class="bi bi-wallet2" aria-hidden="true"></i> {% translate "Setor ke kasir" %}</button>
+                    </form>
+                {% else %}
+                    <p class="sg-sm sg-muted mb-0">{% translate "Tidak ada uang COD yang perlu disetor sekarang." %}</p>
                 {% endif %}
             </section>
-            <h2 class="h6 fw-bold">{% translate "Riwayat setoran" %}</h2>
-            <ul class="stop-list">
+            <div class="sg-sp sg-mt20">
+                <h2 class="sg-h3 mb-0">{% translate "Riwayat setoran" %}</h2>
+            </div>
+            <div class="sg-list sg-mt12">
                 {% for r in remittances %}
-                    <li><div class="stop-item"><span class="stop-num"><i class="bi {% if r.status == 'DITERIMA' %}bi-check2{% else %}bi-hourglass{% endif %}"></i></span><span>{% blocktranslate trimmed with r_pk=r.pk r_amount=r.amount|rupiah %}Setoran #{{ r_pk }} · Rp {{ r_amount }}{% endblocktranslate %}<small>{{ r.submitted_at|date:"d M Y H:i" }} · {{ r.get_status_display }}{% if r.received_by %} {% blocktranslate trimmed with r_received_by_name=r.received_by.name %}oleh {{ r_received_by_name }}{% endblocktranslate %}{% endif %}{% if r.difference %} {% blocktranslate trimmed with r_difference=r.difference|rupiah %}· selisih Rp {{ r_difference }}{% endblocktranslate %}{% endif %}{% if r.note %} · {{ r.note }}{% endif %}</small></span></div></li>
+                    <div class="ck-pkg">
+                        <span class="sg-av {% if r.status == 'DITERIMA' %}is-ok{% else %}is-gold{% endif %}"><i class="bi {% if r.status == 'DITERIMA' %}bi-check2{% else %}bi-hourglass-split{% endif %}" aria-hidden="true"></i></span>
+                        <span class="ck-pkg__body">
+                            <b>{% blocktranslate trimmed with r_pk=r.pk r_amount=r.amount|rupiah %}Setoran #{{ r_pk }} · Rp {{ r_amount }}{% endblocktranslate %}</b>
+                            <small>{{ r.submitted_at|date:"d M H.i" }} · {% if r.received_by %}{% blocktranslate trimmed with r_received_by_name=r.received_by.name %}diterima {{ r_received_by_name }}{% endblocktranslate %}{% else %}{{ r.get_status_display }}{% endif %}{% if r.note %} · {{ r.note }}{% endif %}</small>
+                        </span>
+                        {% if r.status != 'DITERIMA' %}<span class="sg-pill is-gold">{% translate "Menunggu" %}</span>
+                        {% elif r.difference < 0 %}<span class="sg-pill is-bad">−{{ r.difference|rupiah|cut:"-" }}</span>
+                        {% elif r.difference > 0 %}<span class="sg-pill is-gold">+{{ r.difference|rupiah }}</span>
+                        {% else %}<span class="sg-pill is-ok">{% translate "Pas" %}</span>{% endif %}
+                    </div>
                 {% empty %}
-                    <li class="text-muted small">{% translate "Belum pernah menyetor." %}</li>
+                    <p class="sg-card sg-empty"><i class="bi bi-wallet2" aria-hidden="true"></i>{% translate "Belum pernah menyetor." %}</p>
                 {% endfor %}
-            </ul>
+            </div>
         </main>
         <script src="{% static 'js/common.js' %}"></script>
         <script src="{% static 'js/layout.js' %}?v=1"></script>

@@ -3,8 +3,10 @@
 {% load static rupiah %}
 {% block title %}{% blocktranslate trimmed with order_pk=order.pk %}Bukti Transfer #{{ order_pk }} - Seelly Petshop{% endblocktranslate %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux3">
+    <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
+    <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'css/camera.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/camera-dark.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <section class="container section co-page co-proof">
