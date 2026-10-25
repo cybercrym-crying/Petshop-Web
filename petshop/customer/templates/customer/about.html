@@ -1,13 +1,16 @@
 {% extends "customer/base.html" %}
 {% load i18n %}
 {% load static %}
-{% block title %}{% translate "Tentang Kami - Seelly Petshop" %}{% endblock %}
+{% block title %}
+    {% translate "Tentang Kami - Seelly Petshop" %}
+{% endblock %}
 {% block body_class %}sx{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/home.css' %}?v=ux5">
     <link rel="stylesheet" href="{% static 'customer/css/home-dark.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'customer/css/about.css' %}?v=3">
-    <link rel="stylesheet" href="{% static 'customer/css/about-dark.css' %}?v=2">
+    <link rel="stylesheet"
+          href="{% static 'customer/css/about-dark.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'customer/css/type.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'customer/css/accent.css' %}?v=1">
 {% endblock %}
@@ -17,12 +20,15 @@
         <header class="container ab-hero">
             <div class="ab-hero__text">
                 <nav class="ab-crumb" aria-label="{% translate 'Breadcrumb' %}"><a href="{% url 'customer:home' %}">{% translate "Beranda" %}</a> / {% translate "Tentang Kami" %}</nav>
-                <span class="ab-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Tentang Seelly Petshop" %}</span>
+                <span class="ab-eyebrow"><i class="fas fa-paw"
+   aria-hidden="true"></i> {% translate "Tentang Seelly Petshop" %}</span>
                 <h1 class="ab-title">{% translate "Kisah Kami:" %} <span>{% translate "Perawatan yang Datang dari Hati" %}</span></h1>
                 <p class="ab-lead">{% translate "Di Seelly Petshop, setiap hewan peliharaan diperlakukan seperti keluarga. Tujuan kami sederhana: membantu menjaga hewan peliharaan tetap sehat dan bahagia." %}</p>
                 <div class="ab-actions">
-                    <a class="ab-btn ab-btn--pri" href="{% url 'customer:shop' %}"><i class="fas fa-store" aria-hidden="true"></i> {% translate "Belanja Sekarang" %}</a>
-                    <a class="ab-btn" href="{% url 'service:catalog' %}#booking"><i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Booking Grooming" %}</a>
+                    <a class="ab-btn ab-btn--pri"
+                       href="{% url 'customer:shop' %}"><i class="fas fa-store" aria-hidden="true"></i> {% translate "Belanja Sekarang" %}</a>
+                    <a class="ab-btn"
+                       href="{% url 'service:catalog' %}#booking"><i class="fas fa-scissors" aria-hidden="true"></i> {% translate "Booking Grooming" %}</a>
                 </div>
                 <dl class="ab-stats">
                     <div><dt>{% translate "Produk" %}</dt><dd>{{ stats.products|default:"-" }}</dd></div>
@@ -31,35 +37,42 @@
                 </dl>
             </div>
             <figure class="ab-hero__media">
-                <img src="{% static 'customer/img/about-hero.jpg' %}" alt="{% translate 'Hewan peliharaan di Seelly Petshop' %}">
+                <img src="{% static 'customer/img/about-hero.jpg' %}"
+                     alt="{% translate 'Hewan peliharaan di Seelly Petshop' %}">
                 <figcaption class="ab-badge">
                     <span class="ab-badge__ic"><i class="far fa-clock" aria-hidden="true"></i></span>
                     <span><b>{% translate "Buka setiap hari" %}</b>{{ store.hours_display }}</span>
                 </figcaption>
             </figure>
         </header>
-
         {# 2. Cerita #}
         <section class="container ab-sec" aria-labelledby="ab-story-h">
             <div class="ab-story">
                 <figure class="ab-story__media">
-                    <img src="{% static 'customer/img/about-collage.jpg' %}" alt="{% translate 'Kolase foto hewan' %}" loading="lazy">
+                    <img src="{% static 'customer/img/about-collage.jpg' %}"
+                         alt="{% translate 'Kolase foto hewan' %}"
+                         loading="lazy">
                 </figure>
                 <div class="ab-card ab-story__text">
-                    <span class="ab-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Siapa Kami" %}</span>
-                    <h2 class="ab-h2" id="ab-story-h">{% translate "Lebih dari Sekadar Toko Hewan, Kami Pecinta Hewan" %}</h2>
+                    <span class="ab-eyebrow"><i class="fas fa-paw"
+   aria-hidden="true"></i> {% translate "Siapa Kami" %}</span>
+                    <h2 class="ab-h2"
+                        id="ab-story-h">{% translate "Lebih dari Sekadar Toko Hewan, Kami Pecinta Hewan" %}</h2>
                     <p>{% translate "Seelly Petshop dimulai sebagai toko kecil yang dikelola oleh beberapa teman yang sekadar mencintai hewan. Apa yang membedakan kami adalah kami meluangkan waktu untuk mengenal setiap hewan peliharaan. Tim kami meluangkan waktu untuk mendengarkan, merekomendasikan apa yang benar-benar dibutuhkan hewan Anda, dan hanya menjanjikan apa yang bisa kami penuhi." %}</p>
                     <ul class="ab-ticks">
-                        <li><i class="fas fa-check" aria-hidden="true"></i> {% translate "Makanan, mainan, kesehatan, dan aksesori dalam satu tempat" %}</li>
-                        <li><i class="fas fa-check" aria-hidden="true"></i> {% translate "Grooming dengan foto tiap tahap pengerjaan" %}</li>
-                        <li><i class="fas fa-check" aria-hidden="true"></i> {% translate "Kurir toko mengantar pesanan dan menjemput hewan" %}</li>
+                        <li><i class="fas fa-check"
+   aria-hidden="true"></i> {% translate "Makanan, mainan, kesehatan, dan aksesori dalam satu tempat" %}</li>
+                        <li><i class="fas fa-check"
+   aria-hidden="true"></i> {% translate "Grooming dengan foto tiap tahap pengerjaan" %}</li>
+                        <li><i class="fas fa-check"
+   aria-hidden="true"></i> {% translate "Kurir toko mengantar pesanan dan menjemput hewan" %}</li>
                     </ul>
                 </div>
             </div>
         </section>
-
         {# 3. Visi & misi #}
-        <section class="container ab-sec ab-vm" aria-label="{% translate 'Visi dan misi' %}">
+        <section class="container ab-sec ab-vm"
+                 aria-label="{% translate 'Visi dan misi' %}">
             <article class="ab-card ab-vm__vision">
                 <span class="ab-ic is-light"><i class="fas fa-bullseye" aria-hidden="true"></i></span>
                 <h2 class="ab-h3">{% translate "Visi Kami" %}</h2>
@@ -77,17 +90,19 @@
                 </ol>
             </article>
         </section>
-
         {# 4. Nilai #}
         <section class="container ab-sec" aria-labelledby="ab-values-h">
             <div class="ab-head">
-                <span class="ab-eyebrow"><i class="fas fa-paw" aria-hidden="true"></i> {% translate "Nilai Kami" %}</span>
+                <span class="ab-eyebrow"><i class="fas fa-paw"
+   aria-hidden="true"></i> {% translate "Nilai Kami" %}</span>
                 <h2 class="ab-h2" id="ab-values-h">{% translate "Yang Kami Yakini" %}</h2>
                 <p>{% translate "Janji yang memandu semua yang kami lakukan, setiap hari." %}</p>
             </div>
             <div class="values-grid">
                 <article class="value-card">
-                    <img src="{% static 'customer/img/val-quality.jpg' %}" alt="" loading="lazy">
+                    <img src="{% static 'customer/img/about-quality.jpg' %}"
+                         alt=""
+                         loading="lazy">
                     <div class="value-card__body">
                         <span class="ab-ic"><i class="fas fa-shield-alt" aria-hidden="true"></i></span>
                         <h3>{% translate "Kualitas Terpercaya" %}</h3>
@@ -95,7 +110,9 @@
                     </div>
                 </article>
                 <article class="value-card">
-                    <img src="{% static 'customer/img/val-health.jpg' %}" alt="" loading="lazy">
+                    <img src="{% static 'customer/img/about-health.jpg' %}"
+                         alt=""
+                         loading="lazy">
                     <div class="value-card__body">
                         <span class="ab-ic"><i class="fas fa-user-md" aria-hidden="true"></i></span>
                         <h3>{% translate "Layanan Profesional" %}</h3>
@@ -103,7 +120,9 @@
                     </div>
                 </article>
                 <article class="value-card">
-                    <img src="{% static 'customer/img/val-order.jpg' %}" alt="" loading="lazy">
+                    <img src="{% static 'customer/img/about-order.jpg' %}"
+                         alt=""
+                         loading="lazy">
                     <div class="value-card__body">
                         <span class="ab-ic"><i class="fas fa-clock" aria-hidden="true"></i></span>
                         <h3>{% translate "Layanan Praktis" %}</h3>
@@ -111,7 +130,9 @@
                     </div>
                 </article>
                 <article class="value-card">
-                    <img src="{% static 'customer/img/val-care.jpg' %}" alt="" loading="lazy">
+                    <img src="{% static 'customer/img/about-happy.jpg' %}"
+                         alt=""
+                         loading="lazy">
                     <div class="value-card__body">
                         <span class="ab-ic"><i class="fas fa-heart" aria-hidden="true"></i></span>
                         <h3>{% translate "Hewan Bahagia" %}</h3>
@@ -120,12 +141,12 @@
                 </article>
             </div>
         </section>
-
         {# 5. Kunjungi / hubungi #}
         <section class="container ab-sec" aria-labelledby="ab-visit-h">
             <div class="ab-visit">
                 <div class="ab-card ab-visit__info">
-                    <span class="ab-eyebrow"><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Sapa Kami" %}</span>
+                    <span class="ab-eyebrow"><i class="fas fa-location-dot"
+   aria-hidden="true"></i> {% translate "Sapa Kami" %}</span>
                     <h2 class="ab-h2" id="ab-visit-h">{% translate "Kunjungi Kami atau Hubungi Kami" %}</h2>
                     <p>{% if store_address %}{{ store_address }}{% else %}{% translate "Kami siap melayani kebutuhan hewan Anda." %}{% endif %}</p>
                     <ul class="ab-contact">
@@ -135,8 +156,14 @@
                         {% if store.email %}<li><span class="ab-ic"><i class="far fa-envelope" aria-hidden="true"></i></span><span><b>{% translate "Email" %}</b><a href="mailto:{{ store.email }}">{{ store.email }}</a></span></li>{% endif %}
                     </ul>
                     <div class="ab-actions">
-                        <a href="{{ wa_link }}" target="_blank" rel="noopener" class="ab-btn ab-btn--pri"><i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Hubungi Kami" %}</a>
-                        <a href="https://www.google.com/maps/search/?api=1&amp;query={{ store.latitude|stringformat:'.6f' }},{{ store.longitude|stringformat:'.6f' }}" target="_blank" rel="noopener" class="ab-btn"><i class="fas fa-diamond-turn-right" aria-hidden="true"></i> {% translate "Petunjuk arah" %}</a>
+                        <a href="{{ wa_link }}"
+                           target="_blank"
+                           rel="noopener"
+                           class="ab-btn ab-btn--pri"><i class="fab fa-whatsapp" aria-hidden="true"></i> {% translate "Hubungi Kami" %}</a>
+                        <a href="https://www.google.com/maps/search/?api=1&amp;query={{ store.latitude|stringformat:'.6f' }},{{ store.longitude|stringformat:'.6f' }}"
+                           target="_blank"
+                           rel="noopener"
+                           class="ab-btn"><i class="fas fa-diamond-turn-right" aria-hidden="true"></i> {% translate "Petunjuk arah" %}</a>
                     </div>
                 </div>
                 <div class="ab-visit__map">
