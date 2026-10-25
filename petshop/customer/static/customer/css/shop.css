@@ -1240,57 +1240,11 @@ details.filter-group > summary:focus-visible {
 }
 
 /* Cari produk di panel filter (pengganti kolom cari di navbar) */
-.filter-search__label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-.filter-search__box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 4px 4px 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fff;
-}
-.filter-search__box:focus-within {
-  border-color: var(--purple-600);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
-}
-.filter-search__box i {
-  color: var(--purple-600);
-}
-.filter-search__box input {
-  flex: 1;
-  min-width: 0;
-  height: 38px;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.92rem;
-  outline: none;
-}
-.filter-search__box button {
-  flex: none;
-  height: 38px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 11px;
-  background: var(--purple-700);
-  color: #fff;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.filter-search__box button:hover {
-  background: var(--purple-600);
-}
-.filter-search__box button:focus-visible {
-  outline: 3px solid #f4b942;
-  outline-offset: 2px;
-}
+.filter-search__label { display: block; margin-bottom: 8px; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+.filter-search__box { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 14px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.filter-search__box:focus-within { border-color: var(--purple-600); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18); }
+.filter-search__box i { color: var(--purple-600); }
+.filter-search__box input { flex: 1; min-width: 0; height: 38px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 0.92rem; outline: none; }
+.filter-search__box button { flex: none; height: 38px; padding: 0 14px; border: 0; border-radius: 11px; background: var(--purple-700); color: #fff; font: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+.filter-search__box button:hover { background: var(--purple-600); }
+.filter-search__box button:focus-visible { outline: 3px solid #f4b942; outline-offset: 2px; }

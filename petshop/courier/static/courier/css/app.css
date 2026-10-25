@@ -2,6 +2,7 @@
 /* Menu bawah & menu samping: lihat nav.css */
 .gps-badge { padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; background: var(--c-ok-bg); color: var(--c-ok-text); border: 1px solid var(--c-ok-border); white-space: nowrap; }
 .gps-badge.is-off { background: var(--c-danger-bg); color: var(--c-danger-text); border-color: var(--c-danger-border); }
+.gps-badge.is-wait { background: var(--c-warn-bg, #fdf0d4); color: var(--c-warn-text, #6b4500); border-color: var(--c-warn-border, #f6e2b4); }
 
 .gps-lock { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; padding: 20px; background: rgba(15, 18, 32, 0.82); backdrop-filter: blur(4px); }
 .gps-lock[hidden] { display: none; }

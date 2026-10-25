@@ -1,0 +1,66 @@
+/*
+ * Aksen emas untuk halaman akun pelanggan (dasbor, pesanan, keranjang, checkout, favorit,
+ * lacak, akun, booking & hewan). Melanjutkan css/accent.css halaman publik: ungu tetap
+ * dominan, emas untuk penanda aktif, nomor, angka sorotan, ikon, dan garis judul.
+ * Dimuat di customer/base.html setelah CSS halaman. Mode gelap ditulis manual di sini.
+ */
+:root {
+  --gx-gold: #f4b942;
+  --gx-gold-hover: #e5a41f;
+  --gx-ink: #4a3200;
+  --gx-soft: #fff4dc;
+  --gx-line: #f3d590;
+  --gx-icon: #b7790b;
+  --gx-card: #ffffff;
+  --gx-bar: linear-gradient(90deg, #f4b942, #ffd884);
+}
+html[data-theme="dark"] {
+  --gx-soft: #3a2c16;
+  --gx-line: #6b5426;
+  --gx-icon: #f4b942;
+  --gx-card: #211a2b;
+}
+
+/* ---------- Menu samping: penanda halaman aktif ---------- */
+.ca-side .ca-link.is-active { box-shadow: inset 4px 0 0 var(--gx-gold); }
+.ca-side .ca-link.is-active i { color: var(--gx-icon); }
+
+/* ---------- Judul halaman: garis emas di bawah ---------- */
+#main :is(.page-title, .mo-title, .cx-title, .track-title, .wishlist-title, .svc-title) {
+  padding-bottom: 16px;
+  background: var(--gx-bar) no-repeat left bottom / 56px 6px;
+}
+#main :is(.track-title, .cx-card__title) > i:first-child { color: var(--gx-icon); }
+
+/* ---------- Tab filter: angka pada tab aktif ---------- */
+#main .mo-tab.is-on .mo-tab__n { background: var(--gx-gold); color: var(--gx-ink); }
+
+/* ---------- Dasbor ---------- */
+#main .dash-tile i { background: var(--gx-soft); color: var(--gx-icon); }
+#main .dash-card__head i { color: var(--gx-icon); }
+#main .dash-stat:last-child { background: var(--gx-gold); border-color: var(--gx-gold); }
+#main .dash-stat:last-child :is(strong, span) { color: var(--gx-ink); }
+#main .dash-stat:not(:last-child) { box-shadow: inset 0 -4px 0 var(--gx-gold); }
+
+/* ---------- Akun ---------- */
+#main .acc-stat { border-color: var(--gx-line); background: linear-gradient(160deg, var(--gx-soft), var(--gx-card) 70%); }
+#main .acc-stat:first-child { background: var(--gx-gold); border-color: var(--gx-gold); }
+#main .acc-stat:first-child * { color: var(--gx-ink); }
+#main .acc-card h2 i { color: var(--gx-icon); }
+
+/* ---------- Checkout: nomor langkah & cara bayar terpilih ---------- */
+#main .cx-num { background: var(--gx-gold); color: var(--gx-ink); }
+#main .cx-pay__opt:has(input:checked) { border-color: var(--gx-gold); box-shadow: 0 0 0 3px rgba(244, 185, 66, 0.35); }
+#main .cx-pay__opt:has(input:checked) .cx-pay__icon { background: var(--gx-gold); color: var(--gx-ink); }
+
+/* ---------- Keadaan kosong & QR ---------- */
+#main :is(.empty-state, .wishlist-state, .co-empty) > i:first-child,
+#main :is(.empty-state, .wishlist-state, .co-empty) .fa-2x,
+#main :is(.empty-state, .wishlist-state, .co-empty) .fs-1 { color: var(--gx-icon) !important; }
+#main .co-qr > summary i, #main .mo-card summary .fa-qrcode { color: var(--gx-icon); }
+
+/* ---------- Hewan Saya ---------- */
+#main .pet-add__icon { background: var(--gx-gold); color: var(--gx-ink); }
+/* Tombol Booking di kartu hewan: emas, sama dengan tombol Booking di beranda. */
+#main .pet-tile .groom-btn.btn-solid { background: var(--gx-gold); border-color: var(--gx-gold); color: var(--gx-ink); }
+#main .pet-tile .groom-btn.btn-solid:hover { background: var(--gx-gold-hover); color: var(--gx-ink); }

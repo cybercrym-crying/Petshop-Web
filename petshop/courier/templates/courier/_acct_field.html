@@ -1,0 +1,5 @@
+<div{% if wide %} class="is-wide"{% endif %}>
+    <label class="sg-lbl" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% for error in field.errors %}<p class="sg-xs mb-0" style="color:var(--sg-bad)">{{ error }}</p>{% endfor %}
+</div>

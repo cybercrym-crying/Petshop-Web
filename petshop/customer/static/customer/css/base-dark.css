@@ -37,7 +37,7 @@ html[data-theme="dark"] .site-footer { background: #34174d; color: #e9dcf5; }
 html[data-theme="dark"] .footer-brand { color: #fff; }
 html[data-theme="dark"] .footer-brand i { color: #f5cb84; }
 html[data-theme="dark"] .footer-about p { color: #cbb7dc; }
-html[data-theme="dark"] .footer-col h2 { color: #fff; }
+html[data-theme="dark"] .footer-col h2 { color: #f4b942; }
 html[data-theme="dark"] .footer-col > a { color: #e9dcf5; }
 html[data-theme="dark"] .footer-col > a:hover, html[data-theme="dark"] .footer-contact a:hover { color: #fff; }
 html[data-theme="dark"] .footer-contact a { color: #e9dcf5; }

@@ -1,0 +1,88 @@
+/*
+ * Tipografi halaman publik: Beranda, Tentang Kami, dan Belanja.
+ * Judul memakai Bricolage Grotesque (karakter hangat & tegas), teks isi tetap Plus Jakarta Sans.
+ * Hanya mengatur huruf, ukuran, dan jarak; warna tetap dari CSS halaman (aman untuk mode gelap).
+ * Font dimuat lokal lewat vendor/fonts/fonts.css.
+ */
+#main {
+  --tp-display: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
+  --tp-body: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+}
+
+/* ---------- Judul utama (hero) ---------- */
+#main :is(.hero-heading, .hero-title-light, .ab-title) {
+  font-family: var(--tp-display);
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  line-height: 1.02;
+  text-wrap: balance;
+  font-kerning: normal;
+}
+#main .hero-heading { font-size: clamp(2.6rem, 5.2vw, 4.5rem); margin-bottom: 22px; }
+#main .hero-title-light { font-size: clamp(2.5rem, 5.4vw, 4.6rem); margin-bottom: 18px; }
+#main .ab-title { font-size: clamp(2.3rem, 4.8vw, 3.9rem); }
+
+/* ---------- Judul bagian ---------- */
+#main :is(.sx-h2, .section-title, .ab-h2, .page-title, .shop-title) {
+  font-family: var(--tp-display);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+#main .sx-h2, #main .ab-h2 { font-size: clamp(1.9rem, 3.4vw, 2.75rem); }
+#main .section-title { font-size: clamp(1.6rem, 2.6vw, 2.1rem); }
+#main .page-title, #main .shop-title { font-size: clamp(2rem, 3.6vw, 2.8rem); }
+
+/* ---------- Subjudul & judul kartu ---------- */
+#main :is(h3, .ab-h3) {
+  font-family: var(--tp-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+#main .ab-h3 { font-size: clamp(1.3rem, 2vw, 1.55rem); }
+
+/* ---------- Label kecil di atas judul ---------- */
+#main :is(.sx-kicker, .ab-eyebrow, .shop-head__eyebrow) {
+  font-family: var(--tp-body);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+#main :is(.hero-chip, .hero-eyebrow-glass) {
+  font-family: var(--tp-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- Paragraf pembuka ---------- */
+#main :is(.hero-subtext, .hero-desc-light, .sx-lead, .ab-lead) {
+  font-size: clamp(1.02rem, 1.25vw, 1.14rem);
+  line-height: 1.7;
+  letter-spacing: -0.003em;
+  text-wrap: pretty;
+}
+
+/* ---------- Angka besar ---------- */
+#main :is(.ab-stats dd, .hero-floating-card strong) {
+  font-family: var(--tp-display);
+  letter-spacing: -0.03em;
+}
+#main .ab-stats dd { font-size: clamp(1.7rem, 2.6vw, 2.1rem); line-height: 1.1; }
+
+/* Tombol utama sedikit lebih rapat agar serasi dengan judul. */
+#main :is(.hero-btn-group, .hero-actions-center) :is(a, button) { letter-spacing: -0.01em; }
+
+@media (max-width: 575.98px) {
+  #main :is(.hero-heading, .hero-title-light, .ab-title) { line-height: 1.06; letter-spacing: -0.025em; }
+  #main .hero-heading, #main .hero-title-light { font-size: clamp(2.1rem, 9.6vw, 2.6rem); }
+  #main :is(.sx-kicker, .ab-eyebrow, .shop-head__eyebrow) { font-size: 0.7rem; letter-spacing: 0.12em; }
+  #main :is(.hero-chip, .hero-eyebrow-glass) { font-size: 0.7rem; letter-spacing: 0.05em; }
+}
+
+/* Label di dalam kartu tidak ikut melebar selebar kartu. */
+#main .ab-eyebrow { width: fit-content; }
