@@ -1,0 +1,136 @@
+/*
+ * Jenis Layanan (admin): kartu layanan, form tambah/ubah, dan penyunting tahapan.
+ * Warna hanya lewat token --sg-* (signature.css) supaya mode gelap ikut berubah.
+ */
+
+.svx-sec__no { flex: none; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: var(--sg-gold); color: var(--sg-gold-ink); }
+
+/* ---------- Saring & ringkasan ---------- */
+.svx-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+.svx-bar .sg-seg { flex: 0 1 auto; }
+.svx-bar__note { margin: 0 0 0 auto; display: inline-flex; gap: 8px; align-items: center; font-size: 0.85rem; font-weight: 700; color: var(--sg-muted); }
+.svx-bar__note i { color: var(--sg-pri-text); }
+@media (max-width: 575.98px) { .svx-bar__note { margin-left: 0; } }
+
+/* ---------- Kartu layanan ---------- */
+.svx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 16px; align-items: stretch; }
+.svx-card { display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 22px; background: var(--sg-card); border: 1px solid var(--sg-line); box-shadow: var(--sg-sh-1); min-width: 0; }
+.svx-card[hidden] { display: none; }
+.svx-card.is-off { background: var(--sg-bg); box-shadow: none; border-style: dashed; }
+.svx-card.is-off .svx-card__icon { background: var(--sg-soft); color: var(--sg-muted); }
+.svx-card__top { display: flex; gap: 14px; align-items: flex-start; }
+.svx-card__icon { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 1.2rem; background: var(--sg-soft-2); color: var(--sg-pri-text); }
+.svx-card__title { flex: 1; min-width: 0; }
+.svx-card__title h2 { margin: 0 0 8px; font-size: 1.08rem; font-weight: 800; color: var(--sg-ink); letter-spacing: -0.01em; }
+.svx-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.svx-card__price { flex: none; text-align: right; }
+.svx-card__price small { display: block; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sg-muted); }
+.svx-card__price b { display: block; font-size: 1.2rem; font-weight: 800; color: var(--sg-pri-text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.svx-card__desc { margin: 0; font-size: 0.86rem; line-height: 1.5; color: var(--sg-text-2); font-weight: 500; }
+@media (max-width: 479.98px) {
+  .svx-card__top { flex-wrap: wrap; }
+  .svx-card__price { width: 100%; text-align: left; padding-left: 60px; }
+}
+
+/* Tahapan di kartu */
+.svx-flow { padding: 14px; border-radius: 16px; background: var(--sg-soft); }
+.svx-flow__hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.svx-flow__hd b { font-size: 0.82rem; color: var(--sg-ink); }
+.svx-flow__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 4px; align-items: center; }
+.svx-flow__list li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; background: var(--sg-card); border: 1px solid var(--sg-line); font-size: 0.8rem; font-weight: 700; color: var(--sg-ink); max-width: 100%; }
+.svx-flow__list li + li::before { content: "\2192"; margin: 0 4px 0 -2px; color: var(--sg-muted); font-weight: 700; order: -1; display: none; }
+.svx-flow__no { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 0.7rem; font-weight: 800; background: var(--sg-gold); color: var(--sg-gold-ink); }
+.svx-flow__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.svx-flow__cam { color: var(--sg-pri-text); font-size: 0.8rem; }
+
+/* Kaki kartu */
+.svx-card__foot { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid var(--sg-line); }
+.svx-stats { display: flex; gap: 18px; margin: 0; flex: 1 1 auto; }
+.svx-stats dt { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sg-muted); }
+.svx-stats dd { margin: 2px 0 0; font-size: 1rem; font-weight: 800; color: var(--sg-ink); font-variant-numeric: tabular-nums; }
+.svx-stats dd .bi-star-fill { color: var(--sg-gold); }
+.svx-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.svx-actions .ui-btn { min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+@media (max-width: 479.98px) { .svx-actions { width: 100%; } .svx-actions .ui-btn { flex: 1; } }
+
+/* ---------- Modal tambah/ubah layanan ---------- */
+.svx-modal .modal-content { overflow: hidden; }
+/* Form membungkus kepala/isi/kaki modal: dibuat flex supaya isi bisa di-scroll (modal-dialog-scrollable). */
+.svx-modal .modal-content > form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; max-height: 100%; overflow: hidden; }
+.svx-modal .svx-modal__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.svx-modal__hd { padding: 22px 24px 14px; border-bottom: 1px solid var(--sg-line); align-items: flex-start; }
+.svx-modal__title { margin: 0 0 4px; font-size: 1.3rem; font-weight: 800; color: var(--sg-ink); }
+.svx-modal__body { padding: 8px 24px 4px; }
+.svx-modal__ft { padding: 14px 24px 20px; border-top: 1px solid var(--sg-line); gap: 8px; }
+.svx-modal__ft > * { margin: 0; }
+.svx-modal .btn-close { flex: none; }
+:root[data-theme="dark"] .svx-modal .btn-close { filter: invert(1) grayscale(1) brightness(1.6); }
+.svx-sec { margin: 0; padding: 18px 0; border: 0; border-bottom: 1px solid var(--sg-line); min-width: 0; }
+.svx-sec:last-child { border-bottom: 0; }
+.svx-sec legend { float: none; width: auto; display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 0; font-size: 0.98rem; font-weight: 800; color: var(--sg-ink); }
+.svx-sec__no { width: 26px; height: 26px; font-size: 0.78rem; }
+.svx-hint { margin: 6px 0 0; font-size: 0.78rem; line-height: 1.4; color: var(--sg-muted); font-weight: 500; }
+.svx-affix { display: flex; align-items: stretch; border: 1px solid var(--sg-line); border-radius: 13px; background: var(--sg-card); overflow: hidden; }
+.svx-affix:focus-within { border-color: var(--sg-pri); box-shadow: 0 0 0 4px var(--sg-soft); }
+.svx-affix > span { display: grid; place-items: center; padding: 0 14px; background: var(--sg-soft); color: var(--sg-muted); font-weight: 800; font-size: 0.85rem; }
+.sg-form .svx-affix input { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; flex: 1; min-width: 0; }
+
+/* Saklar tampil di situs */
+.svx-switch { display: flex; gap: 14px; align-items: flex-start; cursor: pointer; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--sg-line); background: var(--sg-card); margin: 0; }
+.svx-switch:has(input:checked) { border-color: var(--sg-ok); background: var(--sg-ok-soft); }
+.svx-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.svx-switch__track { flex: none; position: relative; width: 46px; height: 26px; border-radius: 99px; background: var(--sg-line); transition: background 0.18s var(--sg-ease); margin-top: 1px; }
+.svx-switch__track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.18s var(--sg-ease); }
+.svx-switch input:checked + .svx-switch__track { background: var(--sg-ok); }
+.svx-switch input:checked + .svx-switch__track::after { transform: translateX(20px); }
+.svx-switch input:focus-visible + .svx-switch__track { outline: 3px solid var(--sg-focus); outline-offset: 2px; }
+.svx-switch b { display: block; font-size: 0.9rem; color: var(--sg-ink); }
+.svx-switch small { display: block; margin-top: 2px; font-size: 0.8rem; color: var(--sg-muted); font-weight: 500; }
+
+/* ---------- Penyunting tahapan ---------- */
+.svx-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.svx-step { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 16px; border: 1px solid var(--sg-line); background: var(--sg-card); }
+.svx-step__no { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; background: var(--sg-gold); color: var(--sg-gold-ink); }
+.svx-step.is-blank { border-style: dashed; background: transparent; }
+.svx-step.is-blank .svx-step__no { background: var(--sg-soft); color: var(--sg-muted); }
+.svx-step.is-del { background: var(--sg-bad-soft); border-color: transparent; }
+.svx-step.is-del .svx-step__no { background: var(--sg-card); color: var(--sg-bad); }
+.svx-step.is-del [data-name] { text-decoration: line-through; opacity: 0.7; }
+.svx-step__main { min-width: 0; }
+.svx-step__del-note { display: none; margin: 4px 0 0; font-size: 0.75rem; font-weight: 700; color: var(--sg-bad); }
+.svx-step.is-del .svx-step__del-note { display: block; }
+.svx-err { margin: 4px 0 0; font-size: 0.78rem; font-weight: 700; color: var(--sg-bad); }
+.svx-photo { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--sg-line); background: var(--sg-card); font-size: 0.8rem; font-weight: 700; color: var(--sg-muted); cursor: pointer; margin: 0; white-space: nowrap; }
+.svx-photo input { width: 18px; height: 18px; accent-color: var(--sg-pri); margin: 0; }
+.svx-photo:has(input:checked) { background: var(--sg-soft); border-color: var(--sg-pri); color: var(--sg-pri-text); }
+.svx-photo:has(input:focus-visible) { outline: 3px solid var(--sg-focus); outline-offset: 2px; }
+.svx-step__tools { display: flex; gap: 4px; }
+.svx-icon { flex: none; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--sg-line); background: var(--sg-card); color: var(--sg-muted); display: grid; place-items: center; cursor: pointer; margin: 0; padding: 0; }
+.svx-icon:hover { border-color: var(--sg-pri); color: var(--sg-pri-text); }
+.svx-icon.is-bad:hover, .svx-icon.is-bad:has(input:checked) { border-color: var(--sg-bad); color: var(--sg-bad); background: var(--sg-bad-soft); }
+.svx-icon:has(input:focus-visible), .svx-icon:focus-visible { outline: 3px solid var(--sg-focus); outline-offset: 2px; }
+.svx-step:first-child [data-move="-1"], .svx-step:last-child [data-move="1"] { opacity: 0.35; pointer-events: none; }
+.svx-add { width: 100%; margin-top: 10px; min-height: 48px; border-radius: 16px; border: 2px dashed var(--sg-line); background: transparent; color: var(--sg-pri-text); font-weight: 800; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.svx-add:hover { border-color: var(--sg-pri); background: var(--sg-soft); }
+.svx-form-ft { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--sg-line); }
+.svx-side .sg-step .svx-flow__cam { margin-left: auto; }
+.svx-rules ul { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.svx-rules li { display: flex; gap: 10px; font-size: 0.84rem; line-height: 1.45; color: var(--sg-text-2); font-weight: 500; }
+.svx-rules li i { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--sg-gold-soft); color: var(--sg-gold-soft-ink); font-size: 0.85rem; }
+
+/* Kontrol yang butuh JavaScript disembunyikan bila JS mati, dan sebaliknya. */
+html:not(.svx-js) .svx-js-only { display: none !important; }
+html.svx-js .svx-nojs { display: none; }
+
+@media (max-width: 575.98px) {
+  .svx-step { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "no main main" "photo photo tools"; row-gap: 8px; }
+  .svx-step__no { grid-area: no; }
+  .svx-step__main { grid-area: main; }
+  .svx-photo { grid-area: photo; justify-self: start; }
+  .svx .sg-card.sg-s8 { padding: 16px 12px; }
+  .svx-step__tools { grid-area: tools; justify-content: flex-end; }
+  .svx-step { column-gap: 8px; padding: 10px; }
+  .svx-icon { width: 38px; height: 38px; }
+  .svx-photo { padding: 0 10px; }
+  .svx-form-ft > * { flex: 1; }
+}

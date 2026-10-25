@@ -2,7 +2,7 @@ import json
 
 from django.utils.translation import gettext as _
 from django.contrib import messages
-from django.db.models import Count, F, Q
+from django.db.models import Count, F
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
@@ -85,24 +85,21 @@ UNANSWERED_LIMIT = 30
 
 @roleRequired(Role.ADMIN)
 def manage_faq(request):
-    faqs = FaqEntry.objects.all()
+    faqs = list(FaqEntry.objects.all())
     unanswered = (
         ChatLog.objects.filter(matched__isnull=True, intent="")
         .values("message")
         .annotate(total=Count("pk"))
         .order_by("-total", "message")[:UNANSWERED_LIMIT]
     )
-    stats = ChatLog.objects.aggregate(
-        total=Count("pk"),
-        answered=Count("pk", filter=Q(matched__isnull=False) | ~Q(intent="")),
-    )
     return render(
         request,
         "chatbot/manage_faq.html",
         {
             "faqs": faqs,
+            "count_quick": sum(1 for f in faqs if f.is_quick and f.is_active),
+            "count_off": sum(1 for f in faqs if not f.is_active),
             "unanswered": list(unanswered),
-            "stats": stats,
             "form": FaqForm(initial={"question": request.GET.get("dari", "")}),
             "prefill": request.GET.get("dari", ""),
         },

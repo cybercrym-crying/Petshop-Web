@@ -1,0 +1,94 @@
+/*
+ * FAQ Chatbot (admin): ringkasan, daftar FAQ berbentuk kartu, panel samping, dan form modal.
+ * Warna hanya lewat token --sg-* (signature.css) supaya mode gelap ikut berubah.
+ */
+
+/* ---------- Saring & cari ---------- */
+.fq-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
+.fq-search { flex: 1 1 220px; max-width: none; margin: 0; }
+.fq-search input { background: var(--sg-card) !important; }
+
+/* ---------- Daftar FAQ ---------- */
+.fq-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.fq-item { display: flex; gap: 16px; padding: 18px 20px; border-radius: 20px; background: var(--sg-card); border: 1px solid var(--sg-line); box-shadow: var(--sg-sh-1); }
+.fq-item[hidden] { display: none; }
+.fq-item.is-off { background: var(--sg-bg); border-style: dashed; box-shadow: none; }
+.fq-item.is-off .fq-item__q, .fq-item.is-off .fq-item__a { opacity: 0.7; }
+.fq-item__body { flex: 1; min-width: 0; }
+.fq-item__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.fq-item__tags:empty { display: none; }
+.fq-link { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.fq-item__q { margin: 0; font-size: 1rem; font-weight: 800; color: var(--sg-ink); line-height: 1.35; }
+.fq-item__a { margin: 6px 0 0; font-size: 0.86rem; line-height: 1.5; color: var(--sg-text-2); font-weight: 500; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fq-kws { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+.fq-kws__lbl { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--sg-muted); margin-right: 2px; }
+.fq-kw { padding: 3px 9px; border-radius: 8px; background: var(--sg-soft); color: var(--sg-pri-text); font-size: 0.75rem; font-weight: 700; }
+.fq-kw.is-more { background: transparent; border: 1px dashed var(--sg-line); color: var(--sg-muted); }
+.fq-kws__none { display: flex; gap: 6px; align-items: center; margin: 10px 0 0; font-size: 0.78rem; font-weight: 700; color: var(--sg-warn); }
+.fq-item__side { flex: none; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.fq-hits { text-align: right; }
+.fq-hits b { display: block; font-size: 1.3rem; font-weight: 800; color: var(--sg-ink); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fq-hits small { font-size: 0.72rem; font-weight: 700; color: var(--sg-muted); white-space: nowrap; }
+.fq-item__side .ui-btn { min-height: 40px; padding: 0 14px; font-size: 0.85rem; }
+@media (max-width: 575.98px) {
+  .fq-item { flex-direction: column; gap: 12px; padding: 16px; }
+  .fq-item__side { flex-direction: row; align-items: center; padding-top: 12px; border-top: 1px solid var(--sg-line); }
+  .fq-hits { display: flex; align-items: baseline; gap: 6px; text-align: left; }
+  .fq-hits b { font-size: 1.05rem; }
+}
+
+/* ---------- Panel samping ---------- */
+.fq-side .sg-h3 i { color: var(--sg-pri-text); }
+.fq-unans { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; }
+.fq-unans li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--sg-line); }
+.fq-unans li:first-child { border-top: 0; }
+.fq-unans__q { font-size: 0.88rem; font-weight: 600; color: var(--sg-ink); overflow-wrap: anywhere; }
+.fq-unans .ui-btn { flex: none; }
+.fq-clear { margin: 12px 0 0; }
+
+/* ---------- Modal tambah/ubah FAQ ---------- */
+.fq-modal .modal-content { overflow: hidden; }
+/* Form membungkus kepala/isi/kaki modal: dibuat flex supaya isi bisa di-scroll (modal-dialog-scrollable). */
+.fq-modal .modal-content > form:not([hidden]) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; max-height: 100%; overflow: hidden; }
+.fq-modal__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 24px 4px; }
+.fq-modal__hd { padding: 22px 24px 14px; border-bottom: 1px solid var(--sg-line); align-items: flex-start; }
+.fq-modal__title { margin: 0 0 4px; font-size: 1.3rem; font-weight: 800; color: var(--sg-ink); }
+.fq-modal__ft { padding: 14px 24px 20px; border-top: 1px solid var(--sg-line); gap: 8px; }
+.fq-modal__ft > * { margin: 0; }
+.fq-modal .btn-close { flex: none; }
+:root[data-theme="dark"] .fq-modal .btn-close { filter: invert(1) grayscale(1) brightness(1.6); }
+.fq-sec { margin: 0; padding: 18px 0; border: 0; border-bottom: 1px solid var(--sg-line); min-width: 0; }
+.fq-sec:last-child { border-bottom: 0; }
+.fq-sec legend { float: none; width: auto; display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 0; font-size: 0.98rem; font-weight: 800; color: var(--sg-ink); }
+.fq-sec__no { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 0.78rem; background: var(--sg-gold); color: var(--sg-gold-ink); }
+.fq-hint { margin: 6px 0 0; font-size: 0.78rem; line-height: 1.4; color: var(--sg-muted); font-weight: 500; }
+.fq-insert { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.fq-insert > span { font-size: 0.78rem; font-weight: 700; color: var(--sg-muted); }
+.fq-insert .sg-chip { cursor: pointer; }
+.fq-insert .sg-chip:hover { border-color: var(--sg-pri); color: var(--sg-pri-text); }
+.fq-switches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 575.98px) { .fq-switches { grid-template-columns: minmax(0, 1fr); } }
+.fq-switch { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--sg-line); background: var(--sg-card); margin: 0; position: relative; }
+.fq-switch:has(input:checked) { border-color: var(--sg-ok); background: var(--sg-ok-soft); }
+.fq-switch.is-gold:has(input:checked) { border-color: var(--sg-gold-line); background: var(--sg-gold-soft); }
+.fq-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.fq-switch__track { flex: none; position: relative; width: 46px; height: 26px; border-radius: 99px; background: var(--sg-line); transition: background 0.18s var(--sg-ease); margin-top: 1px; }
+.fq-switch__track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.18s var(--sg-ease); }
+.fq-switch input:checked + .fq-switch__track { background: var(--sg-ok); }
+.fq-switch.is-gold input:checked + .fq-switch__track { background: var(--sg-gold); }
+.fq-switch input:checked + .fq-switch__track::after { transform: translateX(20px); }
+.fq-switch input:focus-visible + .fq-switch__track { outline: 3px solid var(--sg-focus); outline-offset: 2px; }
+.fq-switch b { display: block; font-size: 0.9rem; color: var(--sg-ink); }
+.fq-switch small { display: block; margin-top: 2px; font-size: 0.78rem; color: var(--sg-muted); font-weight: 500; }
+.fq-switch.is-gold:has(input:checked) small { color: var(--sg-gold-soft-ink); }
+.fq-order { margin-top: 14px; max-width: 220px; }
+@media (max-width: 575.98px) {
+  .fq-modal__hd, .fq-modal__body, .fq-modal__ft { padding-left: 16px; padding-right: 16px; }
+  .fq-modal__ft { flex-wrap: wrap; }
+  .fq-modal__ft > .ui-btn { flex: 1 1 auto; }
+}
+
+/* Layar sempit: pertanyaan belum terjawab tampil di atas daftar karena perlu ditindaklanjuti. */
+@media (max-width: 1199.98px) {
+  .fq-side { order: -1; grid-column: 1 / -1 !important; }
+}

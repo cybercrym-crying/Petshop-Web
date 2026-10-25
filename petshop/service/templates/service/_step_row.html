@@ -1,0 +1,29 @@
+{% load i18n %}
+<li class="svx-step{% if f.DELETE.value %} is-del{% endif %}" data-step{% if f.instance.pk %} data-saved{% endif %}>
+    {{ f.id }}
+    <input type="hidden" name="{{ f.position.html_name }}" value="{{ f.position.value|default_if_none:'' }}" data-pos data-initial="{{ f.position.value|default_if_none:'' }}">
+    <span class="svx-step__no" data-no aria-hidden="true">{{ f.position.value|default_if_none:'' }}</span>
+    <div class="svx-step__main">
+        <label class="visually-hidden" for="{{ f.name.id_for_label }}">{% translate "Nama tahap" %}</label>
+        <input type="text" id="{{ f.name.id_for_label }}" name="{{ f.name.html_name }}" value="{{ f.name.value|default:'' }}" maxlength="80" placeholder="{% translate 'Nama tahap, mis. Mandi' %}" data-name>
+        {% for field in f %}{% for error in field.errors %}<p class="svx-err">{{ field.label }}: {{ error }}</p>{% endfor %}{% endfor %}
+        {% for error in f.non_field_errors %}<p class="svx-err">{{ error }}</p>{% endfor %}
+        <p class="svx-step__del-note">{% translate "Tahap ini akan dihapus saat disimpan." %}</p>
+    </div>
+    <label class="svx-photo" title="{% translate 'Groomer wajib memotret tahap ini' %}">
+        <input type="checkbox" name="{{ f.needs_photo.html_name }}" {% if f.needs_photo.value %}checked{% endif %} data-photo>
+        <i class="bi bi-camera-fill" aria-hidden="true"></i><span>{% translate "Wajib foto" %}</span>
+    </label>
+    <div class="svx-step__tools">
+        <button type="button" class="svx-icon svx-js-only" data-move="-1" aria-label="{% translate 'Naikkan' %}"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
+        <button type="button" class="svx-icon svx-js-only" data-move="1" aria-label="{% translate 'Turunkan' %}"><i class="bi bi-arrow-down" aria-hidden="true"></i></button>
+        {% if f.instance.pk %}
+            <label class="svx-icon is-bad" title="{% translate 'Hapus tahap' %}">
+                <input type="checkbox" class="visually-hidden" name="{{ f.DELETE.html_name }}" {% if f.DELETE.value %}checked{% endif %} data-del>
+                <i class="bi bi-trash3" aria-hidden="true"></i><span class="visually-hidden">{% translate "Hapus tahap" %}</span>
+            </label>
+        {% else %}
+            <button type="button" class="svx-icon is-bad svx-js-only" data-clear aria-label="{% translate 'Kosongkan baris' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        {% endif %}
+    </div>
+</li>
