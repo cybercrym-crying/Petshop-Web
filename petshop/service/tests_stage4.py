@@ -164,6 +164,25 @@ class StepTemplateTests(Stage4Fixtures, TestCase):
         self.assertEqual(list(self.service.steps.values_list("position", flat=True)), [1, 2])
 
 
+    def test_new_service_goes_to_steps_and_list_shows_steps(self):
+        self.client.force_login(self.admin)
+        r = self.client.post(reverse("service:add_service"), {
+            "name": "Layanan Baru", "pet_type": "SEMUA", "price": "40000", "duration_minutes": "45",
+            "description": "", "is_active": "on",
+        })
+        service = Service.objects.get(name="Layanan Baru")
+        self.assertRedirects(r, reverse("service:service_steps", args=[service.pk]))
+        r = self.client.post(reverse("service:edit_service", args=[service.pk]), {
+            "name": "Layanan Baru", "pet_type": "SEMUA", "price": "45000", "duration_minutes": "45",
+        })
+        self.assertRedirects(r, reverse("service:manage_services"))
+        service.refresh_from_db()
+        self.assertFalse(service.is_active)
+        r = self.client.get(reverse("service:manage_services"))
+        self.assertContains(r, "Memakai tahapan bawaan")
+        self.assertContains(r, "Mandi")
+
+
 class PetTransportTests(Stage4Fixtures, TestCase):
     def setUp(self):
         self.make_people()

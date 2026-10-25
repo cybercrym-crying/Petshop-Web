@@ -4,82 +4,107 @@
 {% block title %}{% translate "Seelly - Jenis Layanan" %}{% endblock %}
 {% block extra_head %}
     <link href="{% static 'account/css/manage_account.css' %}?v=dm1" rel="stylesheet" />
-    <link href="{% static 'service/css/staff.css' %}?v=ux2" rel="stylesheet" />
+    <link href="{% static 'service/css/staff_sg.css' %}?v=4" rel="stylesheet" />
+    <link href="{% static 'service/css/services_admin.css' %}?v=2" rel="stylesheet" />
 {% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4 animate-fade-up">
-            <div>
-                <p class="eyebrow">{% translate "Layanan" %}</p>
-                <h1 class="page-title mb-1">{% translate "Jenis Layanan" %}</h1>
-                <p class="text-muted fw-medium mb-0">{% translate "Daftar jasa yang bisa dibooking pelanggan. Atur tahapan kerja tiap layanan: groomer wajib menyelesaikannya berurutan dengan foto. Layanan nonaktif tidak tampil di situs." %}</p>
+    <div class="sg sg-page svx">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Layanan" %}</p>
+                <h1>{% translate "Jenis Layanan" %}</h1>
+                <p>{% translate "Jasa yang bisa dibooking pelanggan, lengkap dengan harga, durasi, dan tahapan kerja groomer." %}</p>
             </div>
-            <button class="btn-orange" data-bs-toggle="modal" data-bs-target="#serviceModalNew">
-                <i class="bi bi-plus-lg me-2"></i> {% translate "Tambah Layanan" %}
-            </button>
+            <div class="sg-hd__actions">
+                <button type="button" class="ui-btn ui-btn--primary" data-bs-toggle="modal" data-bs-target="#serviceModalNew"><i class="bi bi-plus-lg" aria-hidden="true"></i>{% translate "Tambah Layanan" %}</button>
+            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+
+        <div class="svx-bar">
+            <nav class="sg-seg" aria-label="{% translate 'Saring layanan' %}" data-svx-filter>
+                <button type="button" class="is-on" data-show="all" aria-pressed="true">{% translate "Semua" %} <span class="sg-c">{{ services|length }}</span></button>
+                <button type="button" data-show="on" aria-pressed="false">{% translate "Tampil di situs" %} <span class="sg-c">{{ count_active }}</span></button>
+                <button type="button" data-show="off" aria-pressed="false">{% translate "Disembunyikan" %} <span class="sg-c">{{ count_hidden }}</span></button>
+            </nav>
+            <p class="svx-bar__note"><i class="bi bi-calendar-check" aria-hidden="true"></i>{% blocktranslate trimmed with n=count_running %}{{ n }} booking sedang berjalan{% endblocktranslate %}</p>
         </div>
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{% translate 'Tutup' %}"></button>
-                    </div>
+
+        {% if services %}
+            <div class="svx-grid">
+                {% for s in services %}
+                    {% with steps=s.steps.all %}
+                        <article class="svx-card{% if not s.is_active %} is-off{% endif %}" data-state="{% if s.is_active %}on{% else %}off{% endif %}">
+                            <header class="svx-card__top">
+                                <span class="svx-card__icon" aria-hidden="true"><i class="bi {% if s.pet_type == 'KUCING' %}bi-heart{% elif s.pet_type == 'ANJING' %}bi-scissors{% else %}bi-stars{% endif %}"></i></span>
+                                <div class="svx-card__title">
+                                    <h2>{{ s.name }}</h2>
+                                    <div class="svx-tags">
+                                        {% if s.is_active %}
+                                            <span class="sg-pill is-ok"><i class="bi bi-eye" aria-hidden="true"></i>{% translate "Tampil di situs" %}</span>
+                                        {% else %}
+                                            <span class="sg-pill is-line"><i class="bi bi-eye-slash" aria-hidden="true"></i>{% translate "Disembunyikan" %}</span>
+                                        {% endif %}
+                                        <span class="sg-chip"><i class="bi bi-tag" aria-hidden="true"></i>{{ s.get_pet_type_display }}</span>
+                                        <span class="sg-chip"><i class="bi bi-clock" aria-hidden="true"></i>{% blocktranslate trimmed with m=s.duration_minutes %}{{ m }} menit{% endblocktranslate %}</span>
+                                    </div>
+                                </div>
+                                <div class="svx-card__price">
+                                    <small>{% translate "Harga" %}</small>
+                                    <b>Rp {{ s.price|rupiah }}</b>
+                                </div>
+                            </header>
+                            {% if s.description %}<p class="svx-card__desc">{{ s.description }}</p>{% endif %}
+
+                            <div class="svx-flow">
+                                <div class="svx-flow__hd">
+                                    <b>{% translate "Tahapan kerja groomer" %}</b>
+                                    {% if steps %}
+                                        <span class="sg-xs sg-muted">{% blocktranslate trimmed count n=steps|length %}{{ n }} tahap{% plural %}{{ n }} tahap{% endblocktranslate %}</span>
+                                    {% else %}
+                                        <span class="sg-pill is-gold">{% translate "Memakai tahapan bawaan" %}</span>
+                                    {% endif %}
+                                </div>
+                                <ol class="svx-flow__list">
+                                    {% if steps %}
+                                        {% for st in steps %}
+                                            <li><span class="svx-flow__no">{{ forloop.counter }}</span><span class="svx-flow__name">{{ st.name }}</span>{% if st.needs_photo %}<i class="bi bi-camera-fill svx-flow__cam" title="{% translate 'Wajib foto' %}" aria-label="{% translate 'Wajib foto' %}"></i>{% endif %}</li>
+                                        {% endfor %}
+                                    {% else %}
+                                        {% for name in default_steps %}
+                                            <li><span class="svx-flow__no">{{ forloop.counter }}</span><span class="svx-flow__name">{{ name }}</span></li>
+                                        {% endfor %}
+                                    {% endif %}
+                                </ol>
+                            </div>
+
+                            <footer class="svx-card__foot">
+                                <dl class="svx-stats">
+                                    <div><dt>{% translate "Total booking" %}</dt><dd>{{ s.total_bookings }}</dd></div>
+                                    <div><dt>{% translate "Berjalan" %}</dt><dd>{{ s.open_bookings }}</dd></div>
+                                    <div><dt>{% translate "Rating" %}</dt><dd>{% if s.avg_rating %}<i class="bi bi-star-fill" aria-hidden="true"></i> {{ s.avg_rating|floatformat:1 }}{% else %}<span class="sg-muted">–</span>{% endif %}</dd></div>
+                                </dl>
+                                <div class="svx-actions">
+                                    <a class="ui-btn" href="{% url 'service:service_steps' s.pk %}"><i class="bi bi-list-ol" aria-hidden="true"></i>{% translate "Atur tahapan" %}</a>
+                                    <button type="button" class="ui-btn ui-btn--primary" data-bs-toggle="modal" data-bs-target="#serviceModal{{ s.pk }}"><i class="bi bi-pencil" aria-hidden="true"></i>{% translate "Ubah" %}</button>
+                                </div>
+                            </footer>
+                        </article>
+                    {% endwith %}
                 {% endfor %}
             </div>
-        {% endif %}
-        <div class="card-custom animate-fade-up anim-d1">
-            <div class="table-responsive">
-                <table data-stack class="table table-custom align-middle">
-                    <thead>
-                        <tr>
-                            <th>{% translate "Layanan" %}</th>
-                            <th>{% translate "Untuk" %}</th>
-                            <th>{% translate "Durasi" %}</th>
-                            <th>{% translate "Tahapan" %}</th>
-                            <th>{% translate "Booking" %}</th>
-                            <th>{% translate "Status" %}</th>
-                            <th class="text-end">{% translate "Harga" %}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for s in services %}
-                            <tr class="{% if not s.is_active %}svc-inactive{% endif %}">
-                                <td>
-                                    <div class="fw-bold text-dark">{{ s.name }}</div>
-                                    {% if s.description %}<div class="svc-muted">{{ s.description|truncatechars:90 }}</div>{% endif %}
-                                </td>
-                                <td>{{ s.get_pet_type_display }}</td>
-                                <td>{% blocktranslate trimmed with s_duration_minutes=s.duration_minutes %}{{ s_duration_minutes }} menit{% endblocktranslate %}</td>
-                                <td class="svc-muted">{{ s.step_names|join:" → " }}</td>
-                                <td>{{ s.total_bookings }} <span class="svc-muted">{% blocktranslate trimmed with s_open_bookings=s.open_bookings %}({{ s_open_bookings }} berjalan){% endblocktranslate %}{% if s.avg_rating %} · <i class="bi bi-star-fill text-warning"></i> {{ s.avg_rating|floatformat:1 }}{% endif %}</span></td>
-                                <td>{% if s.is_active %}<span class="bk-status bk-selesai">{% translate "Aktif" %}</span>{% else %}<span class="bk-status bk-pending">{% translate "Nonaktif" %}</span>{% endif %}</td>
-                                <td class="text-end svc-price">Rp {{ s.price|rupiah }}</td>
-                                <td class="text-end">
-                                    <div class="d-flex gap-1 justify-content-end flex-wrap">
-                                        <a class="btn-sm-action" href="{% url 'service:service_steps' s.pk %}"><i class="bi bi-list-ol"></i> {% translate "Tahapan" %}</a>
-                                        <button type="button" class="btn-sm-action" data-bs-toggle="modal" data-bs-target="#serviceModal{{ s.pk }}">
-                                            <i class="bi bi-pencil"></i> {% translate "Ubah" %}
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="8" class="text-center py-5">
-                                    <i class="bi bi-scissors text-muted opacity-50 icon-xl"></i>
-                                    <h5 class="fw-bold mt-3 text-dark">{% translate "Belum ada layanan" %}</h5>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <p class="sg-empty svx-none" hidden><i class="bi bi-funnel" aria-hidden="true"></i>{% translate "Tidak ada layanan di kelompok ini." %}</p>
+        {% else %}
+            <div class="sg-card">
+                <p class="sg-empty"><i class="bi bi-scissors" aria-hidden="true"></i>{% translate "Belum ada layanan. Tambahkan layanan pertama agar pelanggan bisa booking." %}</p>
             </div>
-        </div>
+        {% endif %}
     </div>
     {% include "service/_service_modal.html" with s=None %}
     {% for s in services %}
         {% include "service/_service_modal.html" with s=s %}
     {% endfor %}
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'service/js/services_admin.js' %}?v=1"></script>
 {% endblock %}

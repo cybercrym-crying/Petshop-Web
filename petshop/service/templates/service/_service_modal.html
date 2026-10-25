@@ -1,59 +1,87 @@
 {% load i18n %}
-<div class="modal fade"
-     id="serviceModal{% if s %}{{ s.pk }}{% else %}New{% endif %}"
+{% with mid=s.pk|default:"New" %}
+<div class="modal fade svx-modal"
+     id="serviceModal{{ mid }}"
      tabindex="-1"
+     aria-labelledby="serviceModalTitle{{ mid }}"
      aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content p-2">
-            <div class="modal-body p-4">
-                <div class="d-flex justify-content-between align-items-start mb-2">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <form method="post"
+                  class="sg-form"
+                  action="{% if s %}{% url 'service:edit_service' s.pk %}{% else %}{% url 'service:add_service' %}{% endif %}">
+                {% csrf_token %}
+                <div class="modal-header svx-modal__hd">
                     <div>
-                        <h2 class="modal-title-custom">{% if s %}{% translate "Ubah Layanan" %}{% else %}{% translate "Tambah Layanan" %}{% endif %}</h2>
-                        <p class="modal-sub">{% if s %}{{ s.name }}{% else %}{% translate "Jasa baru yang bisa dibooking pelanggan" %}{% endif %}</p>
+                        <h2 class="svx-modal__title" id="serviceModalTitle{{ mid }}">{% if s %}{% translate "Ubah Layanan" %}{% else %}{% translate "Tambah Layanan" %}{% endif %}</h2>
+                        <p class="sg-sm sg-muted mb-0">{% if s %}{{ s.name }}{% else %}{% translate "Jasa baru yang bisa dibooking pelanggan. Tahapan kerja diatur setelah layanan disimpan." %}{% endif %}</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Tutup' %}"></button>
                 </div>
-                <form method="post"
-                      action="{% if s %}{% url 'service:edit_service' s.pk %}{% else %}{% url 'service:add_service' %}{% endif %}">
-                    {% csrf_token %}
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-8">
-                            <label class="form-label-custom">{% translate "Nama Layanan" %}</label>
-                            <input type="text" name="name" maxlength="120" class="dark-input" value="{{ s.name|default:'' }}" required />
+                <div class="modal-body svx-modal__body">
+                    <fieldset class="svx-sec">
+                        <legend><span class="svx-sec__no">1</span>{% translate "Info layanan" %}</legend>
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <label class="sg-lbl" for="svc-name-{{ mid }}">{% translate "Nama layanan" %}</label>
+                                <input id="svc-name-{{ mid }}" type="text" name="name" maxlength="120" value="{{ s.name|default:'' }}" placeholder="{% translate 'mis. Grooming Lengkap Kucing' %}" required />
+                            </div>
+                            <div class="col-md-5">
+                                <label class="sg-lbl" for="svc-pet-{{ mid }}">{% translate "Untuk hewan" %}</label>
+                                <select id="svc-pet-{{ mid }}" name="pet_type">
+                                    {% for code, label in pet_types %}
+                                        <option value="{{ code }}" {% if s and s.pet_type == code %}selected{% elif not s and code == "SEMUA" %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="sg-lbl" for="svc-desc-{{ mid }}">{% translate "Deskripsi" %} <span class="sg-muted sg-xs">{% translate "(opsional)" %}</span></label>
+                                <textarea id="svc-desc-{{ mid }}" name="description" rows="3" placeholder="{% translate 'Apa saja yang didapat pelanggan, mis. mandi, potong kuku, bersihkan telinga.' %}">{{ s.description|default:'' }}</textarea>
+                                <p class="svx-hint">{% translate "Tampil di kartu layanan pada halaman booking pelanggan." %}</p>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label-custom">{% translate "Untuk Hewan" %}</label>
-                            <select name="pet_type" class="dark-input">
-                                {% for code, label in pet_types %}
-                                    <option value="{{ code }}" {% if s and s.pet_type == code %}selected{% elif not s and code == "SEMUA" %}selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
+                    </fieldset>
+
+                    <fieldset class="svx-sec">
+                        <legend><span class="svx-sec__no">2</span>{% translate "Harga & waktu" %}</legend>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="sg-lbl" for="svc-price-{{ mid }}">{% translate "Harga" %}</label>
+                                <div class="svx-affix">
+                                    <span aria-hidden="true">Rp</span>
+                                    <input id="svc-price-{{ mid }}" type="number" name="price" min="0" step="500" inputmode="numeric" value="{{ s.price|default:'' }}" placeholder="0" required />
+                                </div>
+                                <p class="svx-hint">{% translate "Belum termasuk biaya antar-jemput hewan." %}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="sg-lbl" for="svc-dur-{{ mid }}">{% translate "Durasi pengerjaan" %}</label>
+                                <div class="svx-affix is-end">
+                                    <input id="svc-dur-{{ mid }}" type="number" name="duration_minutes" min="5" step="5" inputmode="numeric" value="{% if s %}{{ s.duration_minutes }}{% else %}60{% endif %}" required />
+                                    <span aria-hidden="true">{% translate "menit" %}</span>
+                                </div>
+                                <p class="svx-hint">{% translate "Dipakai untuk mengecek jadwal: makin lama, makin sedikit booking yang muat per jam." %}</p>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label-custom">{% translate "Harga (Rp)" %}</label>
-                            <input type="number" name="price" min="0" step="500" class="dark-input" value="{{ s.price|default:'' }}" required />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label-custom">{% translate "Durasi (menit)" %}</label>
-                            <input type="number" name="duration_minutes" min="5" step="5" class="dark-input" value="{% if s %}{{ s.duration_minutes }}{% else %}60{% endif %}" required />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label-custom">{% translate "Deskripsi" %}</label>
-                            <textarea name="description" rows="3" class="dark-input">{{ s.description|default:'' }}</textarea>
-                        </div>
-                        <div class="col-12">
-                            <label class="d-inline-flex align-items-center gap-2 fw-semibold">
-                                <input type="checkbox" name="is_active" class="form-check-input m-0" {% if not s or s.is_active %}checked{% endif %} />
-                                {% translate "Aktif (tampil di situs &amp; bisa dibooking)" %}
-                            </label>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2 justify-content-end border-top pt-4">
-                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
-                        <button type="submit" class="btn-orange px-5">{% translate "Simpan" %}</button>
-                    </div>
-                </form>
-            </div>
+                    </fieldset>
+
+                    <fieldset class="svx-sec">
+                        <legend><span class="svx-sec__no">3</span>{% translate "Tampil di situs" %}</legend>
+                        <label class="svx-switch">
+                            <input type="checkbox" role="switch" name="is_active" {% if not s or s.is_active %}checked{% endif %} />
+                            <span class="svx-switch__track" aria-hidden="true"></span>
+                            <span>
+                                <b>{% translate "Pelanggan bisa melihat dan booking layanan ini" %}</b>
+                                <small>{% translate "Matikan untuk menyembunyikan. Booking yang sudah ada dan riwayatnya tetap tersimpan." %}</small>
+                            </span>
+                        </label>
+                    </fieldset>
+                </div>
+                <div class="modal-footer svx-modal__ft">
+                    <button type="button" class="ui-btn" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                    <button type="submit" class="ui-btn ui-btn--primary">{% if s %}{% translate "Simpan perubahan" %}{% else %}{% translate "Simpan layanan" %}{% endif %}</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endwith %}

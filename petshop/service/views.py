@@ -34,6 +34,7 @@ from .forms import (
     StepForm,
 )
 from .models import (
+    DEFAULT_STEPS,
     OPEN_BOOKING_STATUSES,
     WORK_DONE_STATUSES,
     BookingStatus,
@@ -696,10 +697,20 @@ def manage_services(request):
         ),
         avg_rating=Avg("bookings__rating"),
     ).prefetch_related("steps").order_by("-is_active", "name")
+    services = list(services)
+    active = sum(1 for s in services if s.is_active)
     return render(
         request,
         "service/manage_services.html",
-        {"services": services, "form": ServiceForm(), "pet_types": PetType.choices},
+        {
+            "services": services,
+            "form": ServiceForm(),
+            "pet_types": PetType.choices,
+            "default_steps": DEFAULT_STEPS,
+            "count_active": active,
+            "count_hidden": len(services) - active,
+            "count_running": sum(s.open_bookings for s in services),
+        },
     )
 
 
@@ -710,9 +721,16 @@ def save_service(request, pk=None):
         form = ServiceForm(request.POST, instance=instance)
         if form.is_valid():
             service = form.save()
+            if instance is None:
+                # Layanan baru langsung diarahkan ke pengaturan tahapan kerjanya.
+                messages.success(
+                    request,
+                    _("Layanan '%(name)s' ditambahkan. Sekarang atur tahapan kerjanya.") % {"name": service.name},
+                )
+                return redirect("service:service_steps", service.pk)
             messages.success(
                 request,
-                f"Layanan '{service.name}' {'diperbarui' if instance else 'ditambahkan'}.",
+                f"Layanan '{service.name}' diperbarui.",
             )
         else:
             _flash_errors(request, form)
@@ -739,7 +757,10 @@ def service_steps(request, pk):
                            detail=" → ".join(service.step_names()))
         messages.success(request, f"Tahapan '{service.name}' disimpan.")
         return redirect("service:manage_services")
-    return render(request, "service/service_steps.html", {"service": service, "formset": formset})
+    return render(
+        request, "service/service_steps.html",
+        {"service": service, "formset": formset, "default_steps": DEFAULT_STEPS},
+    )
 
 
 # ---------------------------------------------------------------------------
