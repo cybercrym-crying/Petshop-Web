@@ -1,0 +1,217 @@
+/*
+ * Aksen emas (porsi ~30%) di halaman publik: Beranda, Belanja, Tentang Kami.
+ * Bahasanya sama dengan kartu "Layanan terpilih" di halaman booking: ungu tetap dominan,
+ * emas dipakai untuk cincin, nomor, label, dan tombol aksi kedua. Teks di atas emas
+ * memakai coklat tua (#4a3200) agar kontrasnya cukup.
+ * Mode gelap ditulis manual di bawah (file ini sengaja tidak lewat build_dark_css,
+ * supaya emas tetap cerah di atas latar gelap).
+ */
+#main {
+  --gx-gold: #f4b942;
+  --gx-gold-hover: #e5a41f;
+  --gx-ink: #4a3200;
+  --gx-soft: #fff4dc;
+  --gx-line: #f3d590;
+  --gx-icon: #b7790b;
+  --gx-card: #ffffff;
+  --gx-ring:
+    0 0 0 3px var(--gx-gold), 0 22px 40px -10px rgba(124, 58, 237, 0.35);
+}
+html[data-theme="dark"] #main {
+  --gx-soft: #3a2c16;
+  --gx-line: #6b5426;
+  --gx-icon: #f4b942;
+  --gx-card: #211a2b;
+}
+
+/* ---------- Label, ikon & garis judul ---------- */
+#main :is(.hero-chip, .hero-eyebrow-glass) {
+  background: var(--gx-gold);
+  border-color: var(--gx-gold);
+  color: var(--gx-ink);
+}
+#main :is(.hero-chip, .hero-eyebrow-glass) i {
+  color: var(--gx-ink);
+}
+#main :is(.sx-kicker, .shop-head__eyebrow) i {
+  color: var(--gx-icon);
+}
+#main .sx-kicker.light i {
+  color: var(--gx-gold);
+}
+#main .ab-eyebrow {
+  background: var(--gx-soft);
+  color: var(--gx-ink);
+}
+html[data-theme="dark"] #main .ab-eyebrow {
+  color: var(--gx-gold);
+}
+#main :is(.sx-h2, .section-title):not(.sx-cta h2)::after {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 6px;
+  margin-top: 12px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--gx-gold), #ffd884);
+}
+#main .text-center :is(.sx-h2, .section-title)::after {
+  margin-left: auto;
+  margin-right: auto;
+}
+#main :is(.sx-perk > i, .sx-visit i, .step-icon) {
+  background: var(--gx-soft) !important;
+  color: var(--gx-icon) !important;
+}
+#main :is(.sx-service__meta i, .about-points i) {
+  color: var(--gx-icon);
+}
+
+/* ---------- Tombol aksi kedua ---------- */
+#main
+  :is(
+    .btn-hero-secondary,
+    .btn-solid-light,
+    .sx-cta .sx-btn-light,
+    .sx-service .sx-btn-solid,
+    .ab-btn:not(.ab-btn--pri)
+  ) {
+  background: var(--gx-gold);
+  border-color: var(--gx-gold);
+  color: var(--gx-ink) !important;
+}
+#main
+  :is(
+    .btn-hero-secondary,
+    .btn-solid-light,
+    .sx-cta .sx-btn-light,
+    .sx-service .sx-btn-solid,
+    .ab-btn:not(.ab-btn--pri)
+  )
+  * {
+  color: var(--gx-ink) !important;
+}
+#main
+  :is(
+    .btn-hero-secondary,
+    .btn-solid-light,
+    .sx-cta .sx-btn-light,
+    .sx-service .sx-btn-solid,
+    .ab-btn:not(.ab-btn--pri)
+  ):hover {
+  background: var(--gx-gold-hover);
+  border-color: var(--gx-gold-hover);
+}
+#main .sx-service .sx-btn-solid {
+  border: 0;
+}
+
+/* ---------- Hero ---------- */
+#main .hero-image-wrapper {
+  border-radius: 32px;
+}
+#main .hero-floating-card {
+  box-shadow:
+    0 0 0 3px var(--gx-gold),
+    0 18px 34px rgba(30, 10, 60, 0.3);
+}
+#main .hero-floating-card i {
+  color: #c98a12;
+}
+#main .hero-title-light span {
+  color: var(--gx-gold);
+}
+
+/* ---------- Langkah & kartu ---------- */
+#main .sx-steps__no {
+  background: var(--gx-gold);
+  color: var(--gx-ink);
+}
+@media (min-width: 768px) {
+  #main .sx-steps li:first-child {
+    border-color: var(--gx-line);
+    background: linear-gradient(160deg, var(--gx-soft), var(--gx-card) 60%);
+  }
+}
+#main .about-card {
+  box-shadow: inset 6px 0 0 var(--gx-gold);
+}
+#main :is(.sx-card, .sx-service, .product-card) {
+  transition:
+    box-shadow 0.22s ease,
+    background-color 0.22s ease,
+    transform 0.22s ease;
+}
+#main :is(.sx-card, .product-card):is(:hover, :focus-within) {
+  box-shadow: var(--gx-ring);
+  border-color: transparent;
+}
+
+/* Kartu layanan saat diarahkan: sama dengan kartu "Layanan terpilih" di halaman booking. */
+#main .sx-service:focus-within {
+  box-shadow: var(--gx-ring);
+}
+@media (hover: hover) {
+  #main .sx-service:hover {
+    background: #7c3aed;
+    border-color: transparent;
+    box-shadow:
+      0 0 0 4px var(--gx-gold),
+      0 28px 48px -8px rgba(124, 58, 237, 0.5);
+  }
+  #main .sx-service:hover *:not(.sx-btn-solid) {
+    color: #ffffff;
+  }
+  #main .sx-service:hover p {
+    color: #ede4fe;
+  }
+  #main .sx-service:hover i {
+    color: var(--gx-gold);
+  }
+}
+
+/* ---------- Banner ajakan ---------- */
+#main .sx-cta {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 4px var(--gx-gold);
+}
+#main .sx-cta::before {
+  content: "";
+  position: absolute;
+  right: -60px;
+  top: -80px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(244, 185, 66, 0.45),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+#main .sx-cta > * {
+  position: relative;
+}
+
+/* ---------- Angka Tentang Kami ---------- */
+#main .ab-stats > div {
+  border-color: var(--gx-line);
+  background: linear-gradient(160deg, var(--gx-soft), var(--gx-card) 70%);
+}
+#main .ab-stats > div:first-child {
+  background: var(--gx-gold);
+  border-color: var(--gx-gold);
+}
+#main .ab-stats > div:first-child :is(dt, dd) {
+  color: var(--gx-ink);
+}
+
+/* Kata sorotan di judul hero: gradien emas (juga di mode gelap). */
+#main .hero-heading span {
+  background: linear-gradient(120deg, #ffd884, #f4b942 60%, #e5a41f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

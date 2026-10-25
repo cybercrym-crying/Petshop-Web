@@ -1,0 +1,38 @@
+/*
+ * Aksen emas untuk halaman staf (admin, kasir, kurir, groomer), sejalan dengan halaman
+ * pelanggan: ungu tetap dominan, emas untuk penanda menu aktif, garis judul, angka tab
+ * aktif, nomor urut, dan kartu yang sedang dikerjakan (gaya kartu booking terpilih).
+ * Memakai token --sg-gold* (signature.css) yang sudah punya versi gelap.
+ */
+:root {
+  --ax-gold: var(--sg-gold, #f4b942);
+  --ax-ink: var(--sg-gold-ink, #4a3200);
+  --ax-bar: linear-gradient(90deg, #f4b942, #ffd884);
+  --ax-ring: 0 0 0 3px rgba(244, 185, 66, 0.9), 0 18px 34px -12px rgba(124, 58, 237, 0.35);
+}
+
+/* ---------- Menu aktif ---------- */
+.staff-sidebar .staff-link.is-active::before { background: var(--ax-gold); }
+.ck-link.is-active { box-shadow: inset 4px 0 0 var(--ax-gold); }
+.ck-link.is-active i { color: var(--sg-gold-soft-ink, #8a5a00); }
+
+/* ---------- Judul halaman: garis emas di bawah ---------- */
+:is(h1.page-title, .sg-hd h1, .ck-pghd h1, h1.gd-title) {
+  padding-bottom: 14px;
+  background: var(--ax-bar) no-repeat left bottom / 48px 5px;
+}
+
+/* ---------- Angka pada tab aktif ---------- */
+.sg-seg > .is-on .sg-c,
+.nav-link.active .tab-badge { background: var(--ax-gold); color: var(--ax-ink); }
+
+/* ---------- Kotak ringkasan yang dipilih ---------- */
+.stat-tile.active { border-color: var(--ax-gold) !important; box-shadow: var(--ax-ring); }
+
+/* ---------- Kurir: paket yang sedang diantar ---------- */
+.ck-dcard.is-first { border-color: var(--ax-gold); box-shadow: var(--ax-ring); }
+.ck-dcard .ck-dcard__top > .sg-qno { background: var(--ax-gold); color: var(--ax-ink); }
+
+/* ---------- Groomer: tahap yang sedang dikerjakan ---------- */
+.gd-steps .is-now { border-color: var(--ax-gold) !important; box-shadow: var(--ax-ring); }
+.gd-steps .is-now .gd-steps__no { background: var(--ax-gold) !important; color: var(--ax-ink) !important; }

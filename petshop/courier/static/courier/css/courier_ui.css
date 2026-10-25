@@ -248,14 +248,47 @@ a.ck-pkg:hover, a.hist-row:hover { border-color: var(--sg-pri); color: var(--sg-
 .ck-flow .scan-status.is-error { color: var(--sg-bad); }
 .ck-flow .cam { border-radius: 16px; }
 
-/* Akun kurir */
+/* Akun kurir: HP satu kolom; desktop profil di kiri, formulir di kanan. */
 .ck-btn.is-block { width: 100%; }
+.ck-acct { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.ck-acct__form { display: contents; }
+.ck-acct__title { display: flex; align-items: center; gap: 10px; margin: 0; }
+.ck-acct .sg-av.is-sm { width: 34px; height: 34px; border-radius: 11px; font-size: 1rem; }
+.ck-acct__group { margin: 18px 0 8px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sg-muted); }
+.ck-acct__note { margin-top: 18px; font-weight: 600; font-size: 0.82rem; }
+.ck-acct__actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+.ck-acct__actions .ck-btn { min-width: 200px; }
+.ck-acct__pass > summary { gap: 10px; }
+@media (max-width: 575.98px) { .ck-acct__actions .ck-btn { width: 100%; } }
+@media (min-width: 992px) {
+  .ck-acct { grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: 20px 24px; }
+  .ck-hero { grid-column: 1; grid-row: 1; align-self: stretch; padding: 28px 24px; }
+  .ck-acct__out { grid-column: 1; grid-row: 2; }
+  .ck-acct__data { grid-column: 2; grid-row: 1; align-self: stretch; display: flex; flex-direction: column; padding: 24px 28px; }
+  .ck-acct__data .ck-acct__actions { margin-top: auto; padding-top: 16px; }
+  .ck-acct__pass { grid-column: 2; grid-row: 2; }
+  .ck-acct__pass > summary { padding: 18px 28px; }
+  .ck-acct__pass .ck-fold__body { padding: 0 28px 24px; }
+  .ck-acct .ck-hero .ck-avatar--lg { width: 128px; height: 128px; font-size: 2.5rem; }
+}
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .ck-acct { grid-template-columns: minmax(280px, 320px) minmax(0, 1fr); }
+}
+@media (min-width: 1400px) {
+  .ck-acct { grid-template-columns: 380px minmax(0, 1fr); }
+}
 .ck-hero { text-align: center; }
 .ck-hero .ck-avatar--lg { width: 112px; height: 112px; font-size: 2.2rem; margin: 0 auto; }
 .ck-hero__name { margin: 12px 0 0; font-size: 1.45rem; font-weight: 800; letter-spacing: -0.01em; color: var(--sg-ink); }
 .ck-hero__pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
+.ck-hero__kv { margin-top: 16px; text-align: left; }
+.ck-hero__kv .is-wide { grid-column: 1 / -1; }
+.ck-hero__kv .ck-star { color: #e0a420; }
+.ck-hero__photo-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; margin-top: 16px; }
 .ck-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .ck-fields .is-wide { grid-column: 1 / -1; }
+.ck-fields.is-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 767.98px) { .ck-fields.is-three { grid-template-columns: 1fr; } }
 @media (max-width: 420px) { .ck-fields { grid-template-columns: 1fr; } }
 .ck-fold { padding: 0; }
 .ck-fold > summary { list-style: none; display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer; font-weight: 800; font-size: 1.05rem; color: var(--sg-ink); }

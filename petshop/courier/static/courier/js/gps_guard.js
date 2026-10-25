@@ -1,6 +1,18 @@
-function tr(text, vars) {
-  return window.petT ? window.petT(text, vars) : text;
-}
+/*
+ * GPS wajib menyala untuk semua fitur kurir.
+ * - watchPosition() berjalan otomatis di setiap halaman kurir; posisi dikirim ke
+ *   server tiap ±15 detik (lebih cepat bila bergerak > 25 m) untuk peta pelanggan & rute.
+ * - Bila izin lokasi ditolak, GPS mati, atau posisi tidak diperbarui lebih dari
+ *   batas Pengaturan Toko, layar dikunci ([data-gps-lock]) sampai GPS kembali hidup.
+ * - Input [data-gps-lat]/[data-gps-lng] di form diisi posisi terbaru (dicatat saat serah terima).
+ * - Event "gps:update" (detail: {lat, lng, accuracy}) dipakai peta rute.
+ * - Posisi terakhir disimpan di localStorage, jadi saat pindah halaman layar TIDAK dikunci
+ *   selama posisi itu masih segar; kunci baru muncul bila izin ditolak atau posisi basi.
+ * - Galat sementara (timeout / sinyal lemah sesaat) tidak langsung mengunci layar.
+ * Server tetap memeriksa lokasi terakhir sebelum menerima scan ambil/serah paket.
+ */
+/* Terjemahan teks JS (lihat static/js/i18n.js). */
+function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
 
 (function () {
   "use strict";
@@ -17,7 +29,7 @@ function tr(text, vars) {
   var badge = document.querySelector("[data-gps-badge]");
 
   var SEND_EVERY = 15000;
-  var GRACE = 12000; // waktu tunggu posisi pertama sebelum layar dikunci
+  var GRACE = 12000;  // waktu tunggu posisi pertama sebelum layar dikunci
   var KEY = "courierGpsFix";
   var startedAt = Date.now();
   var denied = false;
@@ -32,32 +44,17 @@ function tr(text, vars) {
 
   function saveFix(c) {
     try {
-      localStorage.setItem(
-        KEY,
-        JSON.stringify({
-          lat: c.latitude,
-          lng: c.longitude,
-          acc: c.accuracy || 0,
-          at: Date.now(),
-        }),
-      );
-    } catch (e) {
-      /* mode privat: abaikan */
-    }
+      localStorage.setItem(KEY, JSON.stringify({ lat: c.latitude, lng: c.longitude, acc: c.accuracy || 0, at: Date.now() }));
+    } catch (e) { /* mode privat: abaikan */ }
   }
   function loadFix() {
     try {
       var v = JSON.parse(localStorage.getItem(KEY));
-      if (v && typeof v.lat === "number" && Date.now() - v.at < staleMs)
-        return v;
-    } catch (e) {
-      /* abaikan */
-    }
+      if (v && typeof v.lat === "number" && Date.now() - v.at < staleMs) return v;
+    } catch (e) { /* abaikan */ }
     return null;
   }
-  function fresh() {
-    return lastFixAt && Date.now() - lastFixAt < staleMs;
-  }
+  function fresh() { return lastFixAt && Date.now() - lastFixAt < staleMs; }
 
   function setLocked(locked, text) {
     document.documentElement.classList.toggle("gps-locked", locked);
@@ -75,16 +72,10 @@ function tr(text, vars) {
   }
 
   function meters(a, b) {
-    var R = 6371000,
-      r = Math.PI / 180;
-    var dLat = (b.latitude - a.latitude) * r,
-      dLng = (b.longitude - a.longitude) * r;
-    var h =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(a.latitude * r) *
-        Math.cos(b.latitude * r) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
+    var R = 6371000, r = Math.PI / 180;
+    var dLat = (b.latitude - a.latitude) * r, dLng = (b.longitude - a.longitude) * r;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(a.latitude * r) * Math.cos(b.latitude * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
     return 2 * R * Math.asin(Math.sqrt(h));
   }
 
@@ -96,25 +87,15 @@ function tr(text, vars) {
     lastSentAt = Date.now();
     lastSent = pos.coords;
     fetch(url, {
-      method: "POST",
-      body: body,
-      credentials: "same-origin",
+      method: "POST", body: body, credentials: "same-origin",
       headers: { "X-CSRFToken": csrf, "X-Requested-With": "XMLHttpRequest" },
     }).catch(function () {});
   }
 
   function fill(lat, lng, accuracy) {
-    document.querySelectorAll("[data-gps-lat]").forEach(function (el) {
-      el.value = lat.toFixed(6);
-    });
-    document.querySelectorAll("[data-gps-lng]").forEach(function (el) {
-      el.value = lng.toFixed(6);
-    });
-    document.dispatchEvent(
-      new CustomEvent("gps:update", {
-        detail: { lat: lat, lng: lng, accuracy: accuracy },
-      }),
-    );
+    document.querySelectorAll("[data-gps-lat]").forEach(function (el) { el.value = lat.toFixed(6); });
+    document.querySelectorAll("[data-gps-lng]").forEach(function (el) { el.value = lng.toFixed(6); });
+    document.dispatchEvent(new CustomEvent("gps:update", { detail: { lat: lat, lng: lng, accuracy: accuracy } }));
   }
 
   function onPosition(pos) {
@@ -126,78 +107,40 @@ function tr(text, vars) {
     fill(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
     var now = Date.now();
     var moved = lastSent ? meters(lastSent, pos.coords) : Infinity;
-    if (
-      now - lastSentAt >= SEND_EVERY ||
-      (moved >= MIN_MOVE && now - lastSentAt >= MIN_GAP)
-    )
-      send(pos);
+    if (now - lastSentAt >= SEND_EVERY || (moved >= MIN_MOVE && now - lastSentAt >= MIN_GAP)) send(pos);
   }
 
   function lockDenied() {
     denied = true;
-    try {
-      localStorage.removeItem(KEY);
-    } catch (e) {
-      /* abaikan */
-    }
-    setLocked(
-      true,
-      tr(
-        "Izin lokasi ditolak. Buka pengaturan browser > Izin situs > Lokasi, pilih Izinkan, lalu tekan Coba lagi.",
-      ),
-    );
+    try { localStorage.removeItem(KEY); } catch (e) { /* abaikan */ }
+    setLocked(true, tr("Izin lokasi ditolak. Buka pengaturan browser > Izin situs > Lokasi, pilih Izinkan, lalu tekan Coba lagi."));
   }
 
   function onError(err) {
-    if (err.code === 1) {
-      lockDenied();
-      return;
-    }
+    if (err.code === 1) { lockDenied(); return; }
     // Timeout / sinyal lemah sesaat: selama posisi terakhir masih segar atau masa tunggu
     // awal belum habis, jangan kunci layar. Pemeriksaan berkala di bawah yang memutuskan.
     if (fresh() || Date.now() - startedAt < GRACE) return;
-    setLocked(
-      true,
-      tr(
-        "GPS belum mendapat posisi. Nyalakan Lokasi/GPS di HP lalu tunggu beberapa detik.",
-      ),
-    );
+    setLocked(true, tr("GPS belum mendapat posisi. Nyalakan Lokasi/GPS di HP lalu tunggu beberapa detik."));
   }
 
   function start() {
     if (!("geolocation" in navigator)) {
-      setLocked(
-        true,
-        tr(
-          "Browser ini tidak mendukung GPS. Gunakan Chrome atau Safari terbaru.",
-        ),
-      );
+      setLocked(true, tr("Browser ini tidak mendukung GPS. Gunakan Chrome atau Safari terbaru."));
       return;
     }
     if (!window.isSecureContext) {
-      setLocked(
-        true,
-        tr(
-          "GPS hanya bisa dipakai lewat HTTPS. Buka situs dengan alamat https://.",
-        ),
-      );
+      setLocked(true, tr("GPS hanya bisa dipakai lewat HTTPS. Buka situs dengan alamat https://."));
       return;
     }
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     watchId = navigator.geolocation.watchPosition(onPosition, onError, {
       // maximumAge: posisi yang baru diambil halaman sebelumnya boleh dipakai lagi,
       // jadi pindah halaman langsung dapat posisi tanpa menunggu satelit.
-      enableHighAccuracy: true,
-      maximumAge: 30000,
-      timeout: 30000,
+      enableHighAccuracy: true, maximumAge: 30000, timeout: 30000,
     });
     if ("wakeLock" in navigator) {
-      navigator.wakeLock
-        .request("screen")
-        .then(function (l) {
-          wakeLock = l;
-        })
-        .catch(function () {});
+      navigator.wakeLock.request("screen").then(function (l) { wakeLock = l; }).catch(function () {});
     }
   }
 
@@ -205,20 +148,9 @@ function tr(text, vars) {
   window.setInterval(function () {
     if (denied) return;
     if (lastFixAt && Date.now() - lastFixAt > staleMs) {
-      setLocked(
-        true,
-        tr(
-          "Sinyal GPS hilang lebih dari {n} detik. Pastikan Lokasi HP menyala.",
-          { n: Math.round(staleMs / 1000) },
-        ),
-      );
+      setLocked(true, tr("Sinyal GPS hilang lebih dari {n} detik. Pastikan Lokasi HP menyala.", { n: Math.round(staleMs / 1000) }));
     } else if (!lastFixAt && Date.now() - startedAt > GRACE) {
-      setLocked(
-        true,
-        tr(
-          "GPS belum mendapat posisi. Nyalakan Lokasi/GPS di HP lalu tunggu beberapa detik.",
-        ),
-      );
+      setLocked(true, tr("GPS belum mendapat posisi. Nyalakan Lokasi/GPS di HP lalu tunggu beberapa detik."));
     }
     if (lastPos && Date.now() - lastSentAt >= SEND_EVERY) send(lastPos);
   }, 5000);
@@ -241,16 +173,10 @@ function tr(text, vars) {
   }
   // Izin sudah ditolak: kunci langsung tanpa menunggu.
   if (navigator.permissions && navigator.permissions.query) {
-    navigator.permissions
-      .query({ name: "geolocation" })
-      .then(function (st) {
-        if (st.state === "denied") lockDenied();
-        st.onchange = function () {
-          if (st.state === "denied") lockDenied();
-          else start();
-        };
-      })
-      .catch(function () {});
+    navigator.permissions.query({ name: "geolocation" }).then(function (st) {
+      if (st.state === "denied") lockDenied();
+      st.onchange = function () { if (st.state === "denied") lockDenied(); else start(); };
+    }).catch(function () {});
   }
   start();
 })();

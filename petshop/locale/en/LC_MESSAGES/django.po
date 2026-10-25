@@ -6751,3 +6751,18 @@ msgstr "Out for delivery"
 
 msgid "Paket di tangan kurir"
 msgstr "Parcels with couriers"
+
+msgid "Kelola profil, kendaraan, dan keamanan akun kurir Anda."
+msgstr "Manage your courier profile, vehicle, and account security."
+
+msgid "Paket terkirim"
+msgstr "Parcels delivered"
+
+msgid "Rating"
+msgstr "Rating"
+
+msgid "Data diri"
+msgstr "Personal details"
+
+msgid "Kendaraan"
+msgstr "Vehicle"
