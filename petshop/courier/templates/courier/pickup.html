@@ -48,11 +48,12 @@
                     <div class="sg-row"><h2 id="pk-ready" class="sg-h3">{% translate "Siap diambil di toko" %}</h2><span class="sg-sp"></span><span class="sg-pill is-gold">{{ ready|length }}</span></div>
                     <div class="sg-mt12">
                         {% for o in ready %}
-                            <a href="{% url 'courier:order_detail' o.pk %}" class="ck-pkg">
+                            {# Detail paket hanya bisa dibuka kurir yang ditugaskan; paket lain cukup ditampilkan. #}
+                            {% if o.courier_id == request.user.pk %}<a href="{% url 'courier:order_detail' o.pk %}" class="ck-pkg">{% else %}<div class="ck-pkg">{% endif %}
                                 <span class="sg-qno">{{ o.packing_label }}</span>
                                 <span class="ck-pkg__body"><b>#{{ o.pk }} {{ o.customer.name }}</b><small>{{ o.delivery_address|default:o.tracking_number }}</small><small>{% if o.packed_at %}{% translate "sudah dikemas" %}{% else %}{% translate "belum dikemas" %}{% endif %}{% if o.courier %} {% translate "· ditugaskan ke Anda" %}{% endif %}</small></span>
                                 {% if o.payment_method == "TUNAI" %}<span class="sg-pill is-gold">COD</span>{% else %}<span class="sg-pill is-ok">{% translate "Lunas" %}</span>{% endif %}
-                            </a>
+                            {% if o.courier_id == request.user.pk %}</a>{% else %}</div>{% endif %}
                         {% empty %}
                             <p class="sg-card sg-empty"><i class="bi bi-box2" aria-hidden="true"></i>{% translate "Tidak ada paket yang menunggu kurir." %}</p>
                         {% endfor %}

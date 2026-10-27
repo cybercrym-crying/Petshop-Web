@@ -383,6 +383,31 @@ class Order(models.Model):
         """Isi QR serah-terima di HP pelanggan (beda dengan resi di label paket)."""
         return f"PSH:{self.tracking_number}:{self.handover_code}"
 
+    # Kunci tautan lacak yang membuka QR serah-terima untuk pembeli tanpa login
+    # (pesanan manual lewat kasir). Dikirim lewat WhatsApp, tidak dicetak di label.
+    HANDOVER_SALT = "order-handover"
+
+    @property
+    def handover_key(self):
+        from django.core import signing
+
+        return signing.dumps(self.pk, salt=self.HANDOVER_SALT)
+
+    def check_handover_key(self, key):
+        from django.core import signing
+
+        try:
+            return signing.loads(key or "", salt=self.HANDOVER_SALT) == self.pk
+        except signing.BadSignature:
+            return False
+
+    @property
+    def shows_handover_qr(self):
+        """QR serah-terima hanya berguna selama paket belum diterima."""
+        return self.fulfillment == Fulfillment.DELIVERY and self.order_status in (
+            OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.ON_DELIVERY
+        )
+
     @property
     def has_delivery_proof(self):
         return bool(self.delivery_photo)
@@ -545,6 +570,13 @@ class Order(models.Model):
         if self.is_walk_in:
             return self.buyer_name or _("Pelanggan umum")
         return self.customer.name
+
+    @property
+    def phone_last4(self):
+        """4 digit terakhir nomor WA pemesan, untuk verifikasi halaman lacak tanpa login."""
+        phone = self.buyer_phone if self.is_walk_in else self.customer.phone_number
+        digits = "".join(ch for ch in (phone or "") if ch.isdigit())
+        return digits[-4:] if len(digits) >= 4 else ""
 
     @property
     def buyer_whatsapp_url(self):

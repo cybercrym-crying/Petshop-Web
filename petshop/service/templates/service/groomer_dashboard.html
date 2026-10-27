@@ -115,7 +115,7 @@
             <a class="is-done{% if tab == 'selesai' %} is-active{% endif %}" href="?status=selesai#daftar"><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Selesai" %}<span class="gd-tabbar__count">{{ counts.selesai }}</span></a>
             <a href="{% url 'store:notifications' %}"><i class="bi bi-bell" aria-hidden="true"></i>{% translate "Notifikasi" %}{% if unread_notifications %}<span class="gd-tabbar__count is-alert">{{ unread_notifications }}</span>{% endif %}</a>
         </nav>
-        <script src="{% static 'js/camera.js' %}?v=1"></script>
+        <script src="{% static 'js/camera.js' %}?v=2"></script>
         <script src="{% static 'service/js/groomer.js' %}?v=1"></script>
         <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>

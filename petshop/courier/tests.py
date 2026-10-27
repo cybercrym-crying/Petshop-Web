@@ -142,6 +142,8 @@ class LiveLocationTests(TestCase):
 
         self.client.logout()
         url = reverse("customer:track_location", args=[order.tracking_number])
+        self.assertEqual(self.client.get(url).status_code, 403)  # belum verifikasi 4 digit WA
+        self.client.post(reverse("customer:track_detail", args=[order.tracking_number]), {"wa4": order.phone_last4})
         data = self.client.get(url).json()
         self.assertTrue(data["live"])
         self.assertAlmostEqual(data["last"]["lat"], -1.2654)
@@ -243,7 +245,9 @@ class CourierAccountTests(TestCase):
             self.post_profile(photo=make_photo("wajah.jpg"))
             order = make_order(self.courier, OrderStatus.ON_DELIVERY)
             self.client.logout()
-            html = self.client.get(reverse("customer:track_detail", args=[order.tracking_number])).content.decode()
+            url = reverse("customer:track_detail", args=[order.tracking_number])
+            self.client.post(url, {"wa4": order.phone_last4})
+            html = self.client.get(url).content.decode()
         self.assertIn('class="track-courier__photo"', html)
 
     def test_customer_cannot_open_courier_account(self):

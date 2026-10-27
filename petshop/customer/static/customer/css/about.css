@@ -72,7 +72,7 @@
 }
 .ab-ic.is-light {
   background: rgb(243, 236, 249);
-  color: #6c28d6;
+  color: #6d28d9;
 }
 
 /* Tombol */
@@ -308,7 +308,7 @@
   color: #ffffff;
 }
 .ab-vm__vision .ab-h3 {
-  color: #2a2140;
+  color: #261a33;
 }
 .ab-vm__vision p {
   position: relative;
@@ -316,7 +316,7 @@
   margin: 0;
   font-size: 1.05rem;
   line-height: 1.7;
-  color: #5d5575;
+  color: #645c7b;
 }
 .ab-vm__paw {
   position: absolute;

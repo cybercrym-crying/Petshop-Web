@@ -1,0 +1,34 @@
+{% load i18n %}
+{% comment %}
+Modal "Pelanggan baru" untuk kasir (layar kasir & Buat Booking). Disimpan lewat fetch; pelanggan baru
+langsung ditambahkan & dipilih di <select name="customer"> halaman. Tombol pembuka: [data-qc-open]
+(opsional data-qc-return="#idModal" untuk membuka lagi modal asalnya).
+Butuh leaflet, css/address_pin.css, css/quick_customer.css, store/js/map_picker.js, js/quick_customer.js.
+{% endcomment %}
+<div class="modal fade qc-modal" id="quickCustomerModal" tabindex="-1" aria-hidden="true" aria-labelledby="qcTitle">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <form method="post" action="{% url 'transaction:quick_customer' %}" class="modal-content qc" data-qc novalidate>
+            {% csrf_token %}
+            <header class="qc__hd">
+                <span class="qc__ic" aria-hidden="true"><i class="bi bi-person-plus"></i></span>
+                <div>
+                    <h2 id="qcTitle">{% translate "Pelanggan baru" %}</h2>
+                    <p>{% translate "Data untuk pengantaran & kirim QR ke WhatsApp. Tanpa akun login." %}</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Tutup' %}"></button>
+            </header>
+            <div class="modal-body qc__body">
+                <p class="qc__err" data-qc-error hidden role="alert"></p>
+                <label class="qc__lbl" for="qc-name">{% translate "Nama" %}</label>
+                <input id="qc-name" name="name" maxlength="255" class="qc__in" required autocomplete="off" placeholder="{% translate 'mis. Budi Santoso' %}">
+                <label class="qc__lbl" for="qc-phone">{% translate "Nomor WhatsApp" %}</label>
+                <input id="qc-phone" name="phone_number" type="tel" inputmode="tel" maxlength="20" class="qc__in" required autocomplete="off" placeholder="08xxxxxxxxxx">
+                {% include "partials/_address_pin.html" with uid="qc" input_class="qc__in" required=True label=_("Alamat") %}
+            </div>
+            <footer class="qc__ft">
+                <button type="button" class="ui-btn" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                <button type="submit" class="ui-btn ui-btn--primary" data-qc-save><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Simpan & pilih" %}</button>
+            </footer>
+        </form>
+    </div>
+</div>

@@ -69,6 +69,14 @@ class CourierFlowTests(TestCase):
     def pickup(self, order):
         return self.client.post(reverse("courier:pickup"), {"code": order.tracking_number}, follow=True)
 
+    def test_pickup_list_links_only_own_orders(self):
+        mine, other = self.order(), self.order()
+        mine.assign_courier(self.courier)
+        r = self.client.get(reverse("courier:pickup"))
+        self.assertContains(r, reverse("courier:order_detail", args=[mine.pk]))
+        self.assertNotContains(r, reverse("courier:order_detail", args=[other.pk]))
+        self.assertContains(r, f"#{other.pk} ")
+
     def test_pickup_requires_fresh_gps(self):
         order = self.order()
         r = self.pickup(order)

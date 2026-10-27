@@ -5,7 +5,7 @@
 {% block extra_head %}
     <link href="{% static 'css/camera.css' %}?v=1" rel="stylesheet" />
     <link href="{% static 'service/css/staff.css' %}?v=ux2" rel="stylesheet" />
-    <link href="{% static 'service/css/staff_sg.css' %}?v=4" rel="stylesheet" />
+    <link href="{% static 'service/css/staff_sg.css' %}?v=7" rel="stylesheet" />
 {% endblock %}
 {% block content %}
     <div class="sg sg-page ci">
@@ -169,8 +169,14 @@
                                 <b>{{ b.pet_name }}</b>
                                 <small>{{ b.customer.name }} · {% if b.status == "DIANTAR" %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name %}diantar {{ b_pet_courier_display_name }}{% endblocktranslate %}{% elif b.return_requested %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name|default:"(belum ditugaskan)" %}menunggu kurir {{ b_pet_courier_display_name }}{% endblocktranslate %}{% else %}{% translate "diambil di toko" %}{% endif %} · Rp {{ b.total_price|rupiah }}</small>
                             </span>
-                            {% if b.status == "SIAP" and not b.is_paid %}
-                                <a class="sg-pill is-gold" href="{% url 'transaction:make_transaction' %}?tab=layanan" title="{% translate 'Scan QR booking di Kasir untuk menerima pembayaran' %}">{% translate "Tunggu lunas" %}</a>
+                            {% if b.status == "SIAP" and not b.is_paid and b.is_cod and b.return_requested %}
+                                <span class="sg-pill is-gold">{% translate "COD ke kurir" %}</span>
+                            {% elif b.status == "SIAP" and not b.is_paid %}
+                                <form method="post" action="{% url 'transaction:pos_add_booking' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="booking" value="{{ b.pk }}">
+                                    <button type="submit" class="ui-btn ui-btn--sm ui-btn--gold">{% translate "Bayar di kasir" %}</button>
+                                </form>
                             {% elif b.status == "SIAP" %}
                                 <form method="post" action="{% url 'service:booking_action' b.pk %}">
                                     {% csrf_token %}
@@ -191,6 +197,6 @@
 {% block extra_script %}
     <script src="{% static 'vendor/jsqr/jsQR.js' %}"></script>
     <script src="{% static 'js/qr_scanner.js' %}?v=1"></script>
-    <script src="{% static 'js/camera.js' %}?v=1"></script>
+    <script src="{% static 'js/camera.js' %}?v=2"></script>
     <script src="{% static 'service/js/queue_board.js' %}?v=1"></script>
 {% endblock %}

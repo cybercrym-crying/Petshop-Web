@@ -114,7 +114,7 @@ class RemittanceStatus(models.TextChoices):
 
 
 # Setoran uang COD dari kurir ke toko. Satu setoran mencakup beberapa order
-# tunai yang sudah diserahkan (Order.remittance menunjuk ke sini).
+# tunai yang sudah diserahkan dan booking hewan COD (Order.remittance / ServiceBooking.remittance).
 class CashRemittance(models.Model):
     courier = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="remittances"
@@ -151,17 +151,26 @@ class CashRemittance(models.Model):
         from django.db import transaction
 
         from common.exceptions import PetshopError
+        from service.models import ServiceBooking
         from transaction.models import Order
 
         with transaction.atomic():
             orders = list(Order.cash_on_hand(courier).select_for_update())
-            if not orders:
+            bookings = list(ServiceBooking.cash_on_hand(courier).select_for_update())
+            if not orders and not bookings:
                 raise PetshopError("Tidak ada uang COD yang perlu disetor.")
             remittance = cls.objects.create(
-                courier=courier, amount=sum(o.cash_collected for o in orders)
+                courier=courier,
+                amount=sum(o.cash_collected for o in orders) + sum(b.cash_collected for b in bookings),
             )
             Order.objects.filter(pk__in=[o.pk for o in orders]).update(remittance=remittance)
+            ServiceBooking.objects.filter(pk__in=[b.pk for b in bookings]).update(remittance=remittance)
         return remittance
+
+    @property
+    def item_count(self):
+        """Jumlah paket + booking hewan yang uangnya ada di setoran ini."""
+        return self.orders.count() + self.bookings.count()
 
     def receive(self, cashier, received_amount, note=""):
         from common.exceptions import PetshopError

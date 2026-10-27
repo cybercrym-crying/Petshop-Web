@@ -14,6 +14,8 @@ OPEN_HOUR = time(8, 0)
 CLOSE_HOUR = time(20, 0)
 MAX_DAYS_AHEAD = 60
 DATETIME_LOCAL = "%Y-%m-%dT%H:%M"
+# Kasir boleh mencatat pelanggan yang baru saja datang (jadwal sedikit lewat dari sekarang).
+WALK_IN_GRACE = timedelta(minutes=15)
 
 PET_CHOICES = [(code, label) for code, label in PetType.choices if code != PetType.ALL]
 
@@ -53,7 +55,9 @@ class BookingForm(forms.Form):
     )
 
     payment_choice = forms.ChoiceField(
-        choices=BookingPayChoice.choices, initial=BookingPayChoice.LATER,
+        # COD hanya untuk booking manual kasir (lihat StaffBookingForm).
+        choices=[(BookingPayChoice.LATER, BookingPayChoice.LATER.label), (BookingPayChoice.TRANSFER, BookingPayChoice.TRANSFER.label)],
+        initial=BookingPayChoice.LATER,
         widget=forms.RadioSelect, label=_("Cara bayar"), required=False,
     )
 
@@ -69,6 +73,14 @@ class BookingForm(forms.Form):
 
     def __init__(self, *args, customer=None, **kwargs):
         super().__init__(*args, **kwargs)
+        # Kalender di browser tidak menawarkan waktu yang sudah lewat atau terlalu jauh.
+        # min dibulatkan ke 15 menit berikutnya karena browser memakai min sebagai titik awal step.
+        now = timezone.localtime().replace(second=0, microsecond=0)
+        start = now + timedelta(minutes=-now.minute % 15)
+        self.fields["schedule"].widget.attrs.update(
+            min=start.strftime(DATETIME_LOCAL),
+            max=(now + timedelta(days=MAX_DAYS_AHEAD)).strftime(DATETIME_LOCAL),
+        )
         if customer is not None and "pet" in self.fields:
             self.fields["pet"].queryset = Pet.objects.filter(owner=customer, is_active=True)
         if "pet" in self.fields and not self.fields["pet"].queryset.exists():
@@ -90,6 +102,8 @@ class BookingForm(forms.Form):
             raise forms.ValidationError(_("Jadwal harus setelah waktu sekarang."))
         if self.allow_past and local.date() < now.date():
             raise forms.ValidationError(_("Jadwal tidak boleh di hari yang sudah lewat."))
+        if self.allow_past and schedule < now - WALK_IN_GRACE:
+            raise forms.ValidationError(_("Jam itu sudah lewat. Pilih jam yang belum lewat."))
         if schedule > now + timedelta(days=MAX_DAYS_AHEAD):
             raise forms.ValidationError(
                 f"Booking paling lambat {MAX_DAYS_AHEAD} hari dari sekarang."
@@ -155,9 +169,19 @@ class StaffBookingForm(BookingForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Booking dari meja kasir: hewan diantar sendiri, tanpa pin peta, bayar di kasir.
-        for name in ("pet", "pickup", "return_trip", "address", "latitude", "longitude", "payment_choice"):
-            self.fields.pop(name)
+        # Booking lewat telepon/datang langsung: boleh antar-jemput (pin peta) dan bayar di kasir
+        # atau tunai ke kurir saat diantar pulang. Transfer dengan unggah bukti hanya lewat akun pelanggan.
+        self.fields.pop("pet")
+        self.fields["payment_choice"].choices = [
+            (BookingPayChoice.LATER, _("Bayar di kasir")),
+            (BookingPayChoice.COD, _("Tunai ke kurir saat diantar pulang (COD)")),
+        ]
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("payment_choice") == BookingPayChoice.COD and not cleaned.get("return_trip"):
+            self.add_error("payment_choice", _("COD hanya bisa bila hewan diantar pulang kurir."))
+        return cleaned
 
 
 class ServiceForm(forms.ModelForm):

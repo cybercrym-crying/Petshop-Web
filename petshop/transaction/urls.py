@@ -10,6 +10,7 @@ urlpatterns = [
     path("staff/admin/kasir/scan/", views_pos.scan, name="pos_scan"),
     path("staff/admin/kasir/booking/", views_pos.add_booking, name="pos_add_booking"),
     path("staff/admin/kasir/booking/<int:pk>/hapus/", views_pos.remove_booking, name="pos_remove_booking"),
+    path("staff/admin/kasir/pelanggan/", views_pos.quick_customer, name="quick_customer"),
     path("staff/admin/kasir/parkir/", views_pos.hold_sale, name="pos_hold"),
     path("staff/admin/kasir/parkir/<int:pk>/", views_pos.resume_sale, name="pos_resume"),
     path("staff/kasir/", views_pos.cashier_home, name="cashier_home"),

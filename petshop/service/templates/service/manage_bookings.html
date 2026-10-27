@@ -1,10 +1,13 @@
 {% extends "account/staff_base.html" %}
-{% load i18n %}
+{% load i18n l10n %}
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Booking Layanan" %}{% endblock %}
 {% block extra_head %}
     <link href="{% static 'service/css/staff.css' %}?v=ux2" rel="stylesheet" />
-    <link href="{% static 'service/css/staff_sg.css' %}?v=4" rel="stylesheet" />
+    <link href="{% static 'service/css/staff_sg.css' %}?v=7" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/address_pin.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/quick_customer.css' %}?v=1">
 {% endblock %}
 {% block content %}
     {% url 'service:manage_bookings' as here %}
@@ -105,81 +108,141 @@
         </div>
     </div>
     <!-- MODAL: BUAT BOOKING -->
-    <div class="modal fade" id="addBookingModal" tabindex="-1" aria-hidden="true" aria-labelledby="addBookingTitle">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content p-2">
-                <div class="modal-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h2 class="modal-title-custom" id="addBookingTitle">{% translate "Buat Booking Layanan" %}</h2>
-                            <p class="modal-sub">{% translate "Untuk pelanggan yang datang langsung atau menelepon" %}</p>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Tutup' %}"></button>
+    <div class="modal fade bk-modal" id="addBookingModal" tabindex="-1" aria-hidden="true" aria-labelledby="addBookingTitle">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <form method="post" action="{% url 'service:create_booking' %}" class="modal-content bk-new" data-bk-new
+                  data-now="{{ slot_now }}" data-open="{{ slot_open }}" data-close="{{ slot_close }}">
+                {% csrf_token %}
+                <header class="bk-new__hd">
+                    <span class="bk-new__ic" aria-hidden="true"><i class="bi bi-calendar2-plus"></i></span>
+                    <div class="bk-new__ttl">
+                        <h2 id="addBookingTitle">{% translate "Buat Booking Layanan" %}</h2>
+                        <p>{% translate "Untuk pelanggan yang datang langsung atau menelepon" %}</p>
                     </div>
-                    <form method="post" action="{% url 'service:create_booking' %}">
-                        {% csrf_token %}
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-customer">{% translate "Pelanggan" %}</label>
-                                <select id="bk-customer" name="customer" class="dark-input" required>
-                                    <option value="">{% translate "Pilih pelanggan" %}</option>
-                                    {% for c in form.fields.customer.queryset %}
-                                        <option value="{{ c.pk }}">{{ c.name }} ({{ c.phone_number }})</option>
-                                    {% endfor %}
-                                </select>
-                                {% if request.user.is_admin_level %}
-                                    <small class="svc-muted">{% translate "Belum terdaftar?" %} <a href="{% url 'manage_account' %}?tab=customer">{% translate "Tambah di Kelola Akun" %}</a></small>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-service">{% translate "Layanan" %}</label>
-                                <select id="bk-service" name="service" class="dark-input" required>
-                                    <option value="">{% translate "Pilih layanan" %}</option>
-                                    {% for s in form.fields.service.queryset %}
-                                        <option value="{{ s.pk }}">{{ s.name }} · Rp {{ s.price|rupiah }}{% if s.pet_type != "SEMUA" %} ({{ s.get_pet_type_display }}){% endif %}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-pet">{% translate "Nama Hewan" %}</label>
-                                <input id="bk-pet" type="text" name="pet_name" maxlength="60" class="dark-input" required />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-type">{% translate "Jenis Hewan" %}</label>
-                                <select id="bk-type" name="pet_type" class="dark-input" required>
-                                    {% for code, label in form.fields.pet_type.choices %}
-                                        <option value="{{ code }}">{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-schedule">{% translate "Jadwal" %}</label>
-                                <input id="bk-schedule" type="datetime-local" name="schedule" step="900" class="dark-input" required />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label-custom" for="bk-groomer">{% translate "Groomer (opsional)" %}</label>
-                                <select id="bk-groomer" name="groomer" class="dark-input">
-                                    <option value="">{% translate "Belum ditentukan" %}</option>
-                                    {% for g in groomers %}
-                                        <option value="{{ g.pk }}">{{ g.display_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label-custom" for="bk-note">{% translate "Catatan" %}</label>
-                                <textarea id="bk-note" name="note" rows="2" maxlength="255" class="dark-input" placeholder="Opsional"></textarea>
-                            </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Tutup' %}"></button>
+                </header>
+                <div class="modal-body bk-new__body">
+                    <fieldset class="bk-sec">
+                        <legend class="bk-sec__t"><span class="bk-no" aria-hidden="true">1</span>{% translate "Pilih layanan" %}</legend>
+                        <div class="bk-svc-list" data-bk-services>
+                            {% for s in form.fields.service.queryset %}
+                                <label class="bk-svc-opt" data-bk-svc data-pet="{{ s.pet_type }}" data-price="{{ s.price }}" data-duration="{{ s.duration_minutes }}">
+                                    <input type="radio" name="service" value="{{ s.pk }}" required>
+                                    <span class="bk-svc-opt__ic" aria-hidden="true"><i class="bi bi-scissors"></i></span>
+                                    <span class="bk-svc-opt__b">
+                                        <b>{{ s.name }}</b>
+                                        <small><i class="bi bi-clock" aria-hidden="true"></i> {% blocktranslate trimmed with m=s.duration_minutes %}± {{ m }} mnt{% endblocktranslate %}{% if s.pet_type != "SEMUA" %} · {{ s.get_pet_type_display }}{% endif %}</small>
+                                    </span>
+                                    <span class="bk-svc-opt__p">Rp {{ s.price|rupiah }}</span>
+                                </label>
+                            {% empty %}
+                                <p class="bk-muted mb-0">{% translate "Belum ada layanan aktif." %}</p>
+                            {% endfor %}
                         </div>
-                        <div class="d-flex gap-2 justify-content-end border-top pt-4">
-                            <button type="button" class="ui-btn" data-bs-dismiss="modal">{% translate "Batal" %}</button>
-                            <button type="submit" class="ui-btn ui-btn--primary">{% translate "Simpan Booking" %}</button>
+                        <button type="button" class="ui-btn ui-btn--sm bk-new__change" data-bk-change hidden><i class="bi bi-arrow-left-right" aria-hidden="true"></i>{% translate "Ganti layanan" %}</button>
+                    </fieldset>
+                    <div class="bk-new__rest" data-bk-rest>
+                        <fieldset class="bk-sec">
+                            <legend class="bk-sec__t"><span class="bk-no" aria-hidden="true">2</span>{% translate "Pilih groomer" %}</legend>
+                            <div class="bk-groomer-list">
+                                <label class="bk-groomer-opt">
+                                    <input type="radio" name="groomer" value="" checked>
+                                    <span class="sg-av" aria-hidden="true"><i class="bi bi-question-lg"></i></span>
+                                    <span class="bk-groomer-opt__b"><b>{% translate "Belum ditentukan" %}</b><small>{% translate "Tentukan nanti" %}</small></span>
+                                </label>
+                                {% for g in groomers %}
+                                    <label class="bk-groomer-opt">
+                                        <input type="radio" name="groomer" value="{{ g.pk }}">
+                                        <span class="sg-av" aria-hidden="true">{{ g.initials }}</span>
+                                        <span class="bk-groomer-opt__b"><b>{{ g.display_name }}</b><small>{% blocktranslate trimmed with n=g.today_load %}{{ n }} booking aktif hari ini{% endblocktranslate %}</small></span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+                        <fieldset class="bk-sec">
+                            <legend class="bk-sec__t"><span class="bk-no" aria-hidden="true">3</span>{% translate "Pelanggan & hewan" %}</legend>
+                            <div class="bk-fields">
+                                <div class="bk-field is-wide">
+                                    <label for="bk-customer">{% translate "Pelanggan" %}</label>
+                                    <select id="bk-customer" name="customer" class="bk-input" required>
+                                        <option value="">{% translate "Pilih pelanggan" %}</option>
+                                        {% for c in form.fields.customer.queryset %}
+                                            <option value="{{ c.pk }}" data-lat="{{ c.latitude|default_if_none:''|unlocalize }}" data-lng="{{ c.longitude|default_if_none:''|unlocalize }}" data-address="{{ c.address }}">{{ c.name }} ({{ c.phone_number }})</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="button" class="qc-open" data-qc-open data-qc-return="#addBookingModal" data-qc-target="#bk-customer"><i class="bi bi-person-plus" aria-hidden="true"></i>{% translate "Pelanggan baru" %}</button>
+                                </div>
+                                <div class="bk-field">
+                                    <label for="bk-pet">{% translate "Nama Hewan" %}</label>
+                                    <input id="bk-pet" type="text" name="pet_name" maxlength="60" class="bk-input" placeholder="{% translate 'mis. Mochi' %}" required />
+                                </div>
+                                <div class="bk-field">
+                                    <label for="bk-type">{% translate "Jenis Hewan" %}</label>
+                                    <select id="bk-type" name="pet_type" class="bk-input" required data-bk-type>
+                                        {% for code, label in form.fields.pet_type.choices %}
+                                            <option value="{{ code }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="bk-sec">
+                            <legend class="bk-sec__t"><span class="bk-no" aria-hidden="true">4</span>{% translate "Jadwal" %}</legend>
+                            <div class="bk-fields">
+                                <div class="bk-field">
+                                    <label for="bk-date">{% translate "Tanggal" %}</label>
+                                    <input id="bk-date" type="date" class="bk-input" min="{{ today|date:'Y-m-d' }}" max="{{ slot_max_day }}" value="{{ today|date:'Y-m-d' }}" required data-bk-date>
+                                </div>
+                                <div class="bk-field is-wide">
+                                    <span class="bk-field__lbl" id="bk-slot-lbl">{% blocktranslate trimmed with open=slot_open close=slot_close %}Jam datang ({{ open }}–{{ close }} WITA){% endblocktranslate %}</span>
+                                    <div class="bk-slots" role="radiogroup" aria-labelledby="bk-slot-lbl" data-bk-slots></div>
+                                    <p class="bk-muted mb-0" data-bk-slot-empty hidden>{% translate "Tidak ada jam tersisa di tanggal ini. Pilih tanggal lain." %}</p>
+                                    <p class="bk-error" data-bk-slot-error hidden>{% translate "Pilih jam datang." %}</p>
+                                </div>
+                            </div>
+                            <input type="hidden" name="schedule" data-bk-schedule>
+                        </fieldset>
+                        <fieldset class="bk-sec">
+                            <legend class="bk-sec__t"><span class="bk-no" aria-hidden="true">5</span>{% translate "Antar-jemput hewan" %} <small>{% translate "(opsional)" %}</small></legend>
+                            <div class="bk-toggles">
+                                <label class="bk-toggle"><input type="checkbox" name="pickup" value="on" data-bk-trip> <span><b>{% translate "Jemput di rumah" %}</b><small>{% translate "Kurir hewan menjemput ke alamat pelanggan" %}</small></span></label>
+                                <label class="bk-toggle"><input type="checkbox" name="return_trip" value="on" data-bk-trip data-bk-return> <span><b>{% translate "Antar pulang" %}</b><small>{% translate "Kurir mengantar hewan setelah selesai" %}</small></span></label>
+                            </div>
+                            <div class="bk-trip" data-bk-trip-box>
+                                <p class="bk-muted">{% blocktranslate trimmed with km=store.max_delivery_km %}Ongkos antar-jemput dihitung otomatis dari jarak titik rumah ke toko (maks. {{ km }} km) dan ditambahkan ke total booking.{% endblocktranslate %}</p>
+                                {% include "partials/_address_pin.html" with uid="bk-new" input_class="bk-input" label=_("Alamat jemput/antar") %}
+                            </div>
+                        </fieldset>
+                        <fieldset class="bk-sec">
+                            <legend class="bk-sec__t"><span class="bk-no" aria-hidden="true">6</span>{% translate "Pembayaran" %}</legend>
+                            <div class="bk-toggles">
+                                <label class="bk-toggle"><input type="radio" name="payment_choice" value="NANTI" checked> <span><b>{% translate "Bayar di kasir" %}</b><small>{% translate "Tunai, transfer, atau QRIS dicatat kasir setelah hewan check-in" %}</small></span></label>
+                                <label class="bk-toggle" data-bk-cod><input type="radio" name="payment_choice" value="COD" disabled> <span><b>{% translate "COD ke kurir" %}</b><small>{% translate "Kurir menagih tunai saat mengantar hewan pulang." %} <em data-bk-cod-hint>{% translate "Centang Antar pulang dulu." %}</em></small></span></label>
+                            </div>
+                        </fieldset>
+                        <div class="bk-sec">
+                            <label class="bk-sec__t" for="bk-note"><span class="bk-no" aria-hidden="true"><i class="bi bi-chat-left-text"></i></span>{% translate "Catatan" %} <small>{% translate "(opsional)" %}</small></label>
+                            <textarea id="bk-note" name="note" rows="2" maxlength="255" class="bk-input" placeholder="{% translate 'mis. kulit sensitif, galak saat potong kuku' %}"></textarea>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+                <footer class="bk-new__ft">
+                    <div class="bk-sum" aria-live="polite">
+                        <span>{% translate "Total" %}</span>
+                        <b data-bk-sum>—</b>
+                        <small data-bk-sum-note hidden>{% translate "+ ongkos antar-jemput (dihitung dari jarak)" %}</small>
+                    </div>
+                    <button type="button" class="ui-btn" data-bs-dismiss="modal">{% translate "Batal" %}</button>
+                    <button type="submit" class="ui-btn ui-btn--primary"><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Simpan Booking" %}</button>
+                </footer>
+            </form>
         </div>
     </div>
+    {% include "partials/_quick_customer.html" %}
 {% endblock %}
 {% block extra_script %}
-    <script src="{% static 'service/js/booking_list.js' %}?v=1"></script>
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
+    <script src="{% static 'service/js/booking_list.js' %}?v=5"></script>
+    <script src="{% static 'js/quick_customer.js' %}?v=1"></script>
 {% endblock %}

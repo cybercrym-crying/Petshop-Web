@@ -67,11 +67,12 @@
 .sg-met { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 16px 0 0; }
 .sg-met.is-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .sg-met.is-count { grid-template-columns: minmax(0, 0.7fr) repeat(3, minmax(0, 1.1fr)); }
-.sg-met > div { background: var(--sg-card); border: 1px solid var(--sg-line); border-radius: 16px; padding: 12px 14px; min-width: 0; }
+.sg-met > div { container-type: inline-size; background: var(--sg-card); border: 1px solid var(--sg-line); border-radius: 16px; padding: 12px 14px; min-width: 0; }
 .sg-met dt, .sg-met small { display: block; font-size: 0.8rem; color: var(--sg-muted); font-weight: 700; }
-.sg-met dd, .sg-met b { display: block; margin: 4px 0 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.01em; color: var(--sg-ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
-@media (max-width: 1399.98px) { .sg-met dd, .sg-met b { font-size: 1.12rem; } }
-@media (max-width: 767.98px) { .sg-met, .sg-met.is-3, .sg-met.is-count { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sg-met dd, .sg-met b { font-size: 1.1rem; } }
+/* Angka mengecil mengikuti lebar kotaknya (cqi) supaya rupiah besar tidak keluar kotak. */
+.sg-met dd, .sg-met b { display: block; margin: 4px 0 0; font-size: clamp(0.95rem, 10cqi, 1.3rem); font-weight: 800; letter-spacing: -0.01em; color: var(--sg-ink); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+@media (max-width: 1399.98px) { .sg-met dd, .sg-met b { font-size: clamp(0.95rem, 10cqi, 1.12rem); } }
+@media (max-width: 767.98px) { .sg-met, .sg-met.is-3, .sg-met.is-count { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sg-met dd, .sg-met b { font-size: clamp(0.95rem, 10cqi, 1.1rem); } }
 
 /* Baris rincian */
 .sg-lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }

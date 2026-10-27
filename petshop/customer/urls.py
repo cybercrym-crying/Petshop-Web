@@ -16,6 +16,7 @@ urlpatterns = [
     path("lacak/<str:resi>/", views.track_order, name="track_detail"),
     path("lacak/<str:resi>/lokasi/", views.track_location, name="track_location"),
     path("lacak/<str:resi>/qr.svg", views.tracking_qr, name="tracking_qr"),
+    path("lacak/<str:resi>/serah-terima.svg", views.track_handover_qr, name="track_handover_qr"),
     path("cart", views.cart_page, name="cart"),
     path("keranjang/cek/", views.cart_check, name="cart_check"),
     path("checkout", views.checkout_page, name="checkout"),

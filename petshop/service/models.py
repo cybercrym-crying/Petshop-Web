@@ -60,6 +60,8 @@ DEFAULT_STEPS = ["Pemeriksaan awal", "Pengerjaan layanan", "Pemeriksaan akhir"]
 class BookingPayChoice(models.TextChoices):
     LATER = "NANTI", _("Bayar nanti di kasir")
     TRANSFER = "TRANSFER", _("Transfer / QRIS sekarang")
+    # Hanya dari booking manual kasir yang diantar pulang: kurir menagih tunai saat serah terima.
+    COD = "COD", _("Tunai ke kurir saat diantar pulang (COD)")
 
 
 class InvalidBookingTransition(PetshopError):
@@ -242,6 +244,11 @@ class ServiceBooking(TimeStampedModel):
         _("Cara bayar"), max_length=10, choices=BookingPayChoice.choices, default=BookingPayChoice.LATER,
     )
     payment_due_at = models.DateTimeField(null=True, blank=True)
+    # COD: uang yang dipegang kurir hewan sampai disetor ke kasir (lihat courier.CashRemittance).
+    cash_collected = models.PositiveBigIntegerField(default=0)
+    remittance = models.ForeignKey(
+        "courier.CashRemittance", on_delete=models.SET_NULL, null=True, blank=True, related_name="bookings"
+    )
     # QR di HP pelanggan: dipindai kasir saat check-in dan kurir saat jemput/antar hewan.
     checkin_code = models.CharField(max_length=8, default=new_checkin_code, editable=False)
     checked_in_at = models.DateTimeField(null=True, blank=True)
@@ -351,6 +358,8 @@ class ServiceBooking(TimeStampedModel):
                 "Jadwal tersebut sudah penuh. Silakan pilih jam lain."
             )
         transport = {}
+        if payment_choice == BookingPayChoice.COD and not return_trip:
+            raise InvalidBookingTransition("COD hanya untuk hewan yang diantar pulang kurir.")
         if pickup or return_trip:
             if not location:
                 raise InvalidBookingTransition("Tandai lokasi jemput/antar di peta.")
@@ -534,6 +543,84 @@ class ServiceBooking(TimeStampedModel):
             amount=amount,
         )
         OrderPayment.objects.create(order=order, method=PaymentMethod.TRANSFER, amount=amount)
+        return order
+
+    SHARE_SALT = "booking-share"
+
+    @property
+    def share_key(self):
+        """Kunci tautan QR booking yang dikirim kasir ke WhatsApp pelanggan (tanpa perlu login)."""
+        from django.core import signing
+
+        return signing.dumps(self.pk, salt=self.SHARE_SALT)
+
+    def check_share_key(self, key):
+        from django.core import signing
+
+        try:
+            return signing.loads(key or "", salt=self.SHARE_SALT) == self.pk
+        except signing.BadSignature:
+            return False
+
+    @property
+    def shows_share_qr(self):
+        """QR hanya berguna selama hewan belum kembali ke pemilik."""
+        return self.status not in (BookingStatus.DONE, BookingStatus.CANCELLED, BookingStatus.NO_SHOW)
+
+    @property
+    def is_cod(self):
+        return self.payment_choice == BookingPayChoice.COD
+
+    @property
+    def cod_due(self):
+        """Kurir masih harus menagih tunai saat serah terima."""
+        return self.is_cod and self.total_price > 0 and not self.is_paid
+
+    @property
+    def can_pay_at_cashier(self):
+        """Sudah check-in, belum lunas, dan tidak ada bukti transfer yang menunggu dicek."""
+        from transaction.pos import PAYABLE_BOOKING_STATUSES
+
+        return self.status in PAYABLE_BOOKING_STATUSES and not self.is_paid and not self.awaiting_payment_check
+
+    @classmethod
+    def cash_on_hand(cls, courier):
+        """Booking COD yang uangnya masih dipegang kurir (belum disetor)."""
+        return cls.objects.filter(pet_courier=courier, cash_collected__gt=0, remittance__isnull=True)
+
+    def _record_cod(self, courier):
+        """Tunai diterima kurir di rumah pelanggan: dicatat sebagai struk tunai (tanpa baris kas kasir,
+        uangnya masuk laci lewat setoran COD)."""
+        from transaction.models import (
+            Fulfillment, Order, OrderChannel, OrderServiceLine, OrderStatus, PaymentMethod, PaymentStatus,
+        )
+        from transaction.pos import _new_receipt_no, _new_receipt_token
+
+        now = timezone.now()
+        amount = self.total_price
+        order = Order.objects.create(
+            admin=courier,
+            customer=self.customer,
+            channel=OrderChannel.STORE,
+            fulfillment=Fulfillment.TAKE_AWAY,
+            order_status=OrderStatus.DELIVERED,
+            delivered_at=now,
+            payment_method=PaymentMethod.CASH,
+            payment_status=PaymentStatus.PAID,
+            payment_verified_by=courier,
+            payment_verified_at=now,
+            confirmed_at=now,
+            total_payment=amount,
+            receipt_no=_new_receipt_no(),
+            receipt_token=_new_receipt_token(),
+        )
+        OrderServiceLine.objects.create(
+            order=order, booking=self,
+            description=f"{self.service.name} · {self.pet_name} (booking #{self.pk}) · COD"[:160],
+            amount=amount,
+        )
+        self.cash_collected = amount
+        self.save(update_fields=["cash_collected", "updated_at"])
         return order
 
     def reject_transfer(self, staff, note):
@@ -911,7 +998,7 @@ class ServiceBooking(TimeStampedModel):
         self._check_pet_courier(courier)
         if not self.return_requested:
             raise InvalidBookingTransition(f"Booking #{self.pk} tidak meminta diantar pulang.")
-        if not self.is_paid:
+        if not self.is_paid and not self.is_cod:
             raise InvalidBookingTransition(
                 f"Booking #{self.pk} belum lunas. Hewan diantar pulang setelah pelanggan membayar transfer."
             )
@@ -923,8 +1010,12 @@ class ServiceBooking(TimeStampedModel):
         self.save(update_fields=["status", "transport_started_at", "updated_at"])
         return photo
 
-    def deliver_pet(self, courier, code, photo):
-        """Hewan diserahkan ke pemilik: QR/kode cocok + foto -> Selesai."""
+    def deliver_pet(self, courier, code, photo, cash_received=False):
+        """Hewan diserahkan ke pemilik: QR/kode cocok + foto -> Selesai.
+
+        Booking COD yang belum lunas: kurir wajib menyatakan uang tunai sudah diterima;
+        tagihannya jadi struk tunai dan uangnya dipegang kurir sampai disetor ke kasir.
+        """
         self._check_pet_courier(courier)
         if self.status != BookingStatus.RETURNING:
             raise InvalidBookingTransition(f"Booking #{self.pk} tidak sedang diantar pulang.")
@@ -932,6 +1023,12 @@ class ServiceBooking(TimeStampedModel):
             raise InvalidBookingTransition("QR / kode booking tidak cocok.")
         if photo is None:
             raise InvalidBookingTransition("Foto hewan saat diserahkan wajib diambil.")
+        if self.cod_due:
+            if not cash_received:
+                raise InvalidBookingTransition(
+                    f"Pastikan uang tunai Rp {self.total_price:,} sudah diterima.".replace(",", ".")
+                )
+            self._record_cod(courier)
         self._move_to(BookingStatus.DONE)
         self.return_photo = photo
         self.closed_at = timezone.now()

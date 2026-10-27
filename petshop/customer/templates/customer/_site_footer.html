@@ -28,10 +28,12 @@
         </nav>
         <div class="footer-col footer-contact">
             <h2>{% translate "Hubungi Kami" %}</h2>
-            <p>
-                <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                <a href="{{ wa_link }}" target="_blank" rel="noopener">{{ wa_display }}</a>
-            </p>
+            {% if store.whatsapp %}
+                <p>
+                    <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                    <a href="{{ store.whatsapp_link }}" target="_blank" rel="noopener">{{ store.whatsapp_display }}</a>
+                </p>
+            {% endif %}
             <p>
                 <i class="fas fa-envelope" aria-hidden="true"></i>
                 <a href="mailto:SeellyPetshop@outlook.com">{% translate "SeellyPetshop@outlook.com" %}</a>

@@ -4,7 +4,7 @@ import csv
 from urllib.parse import quote as urlquote
 
 from django.contrib import messages
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 
 from account.dashboard import Period, parse_range
 from account.decorators import roleRequired
+from account.form import QuickCustomerForm
 from account.models import ADMIN_ROLES, POS_ROLES, Customer, Role, User
 from common.exceptions import PetshopError
 from product.models import Category, InsufficientStock, Product
@@ -30,6 +31,7 @@ from .models import (
     Order,
     OrderStatus,
     PaymentMethod,
+    PaymentStatus,
     ReturnRequest,
     ReturnStatus,
 )
@@ -51,34 +53,26 @@ def _cart(user):
     return cart
 
 
-def _payable_bookings():
-    from service.models import ServiceBooking
-
-    candidates = (
-        ServiceBooking.objects.filter(status__in=pos.PAYABLE_BOOKING_STATUSES)
-        .exclude(payment_lines__order__order_status__in=[s for s in OrderStatus.values if s != OrderStatus.CANCELLED])
-        .select_related("service", "customer")
-        .prefetch_related("steps", "service__steps")
-        .order_by("-schedule")[:40]
-    )
-    return list(candidates)
-
-
-def _with_step_rows(bookings):
-    """Tahapan layanan untuk kartu di tab Layanan grooming: centang = sudah dikerjakan groomer."""
-    from service.models import DEFAULT_STEPS
-
-    for b in bookings:
-        done = list(b.steps.all())
-        if done:
-            b.step_rows = [(s.name, s.done_at) for s in done]
-        else:
-            names = [s.name for s in b.service.steps.all()] or list(DEFAULT_STEPS)
-            b.step_rows = [(name, None) for name in names]
-        b.steps_done = sum(1 for _name, at in b.step_rows if at)
-    # Yang sudah siap diambil di atas, lalu yang sedang dikerjakan, lalu antrean.
-    order = {"SIAP": 0, "PROSES": 1, "ANTRE": 2}
-    return sorted(bookings, key=lambda b: order.get(b.status, 3))
+@roleRequired(*POS_ROLES)
+@require_POST
+def quick_customer(request):
+    """Kasir mendaftarkan pelanggan baru (nama, WA, alamat, titik peta) tanpa menunggu admin, lalu
+    pelanggan itu langsung terpilih di layar kasir atau form Buat Booking."""
+    form = QuickCustomerForm(request.POST)
+    if not form.is_valid():
+        errors = {field: [str(e) for e in errs] for field, errs in form.errors.items()}
+        return JsonResponse({"errors": errors}, status=400)
+    customer = form.save()
+    ActivityLog.record(customer, "Pelanggan baru dari kasir", actor=request.user, detail=customer.phone_number)
+    fee = pos.auto_shipping_fees([customer], StoreSettings.current())[customer.pk]
+    return JsonResponse({
+        "pk": customer.pk,
+        "label": f"{customer.name} ({customer.phone_number})",
+        "address": customer.address,
+        "lat": "" if customer.latitude is None else str(customer.latitude),
+        "lng": "" if customer.longitude is None else str(customer.longitude),
+        "ship": fee,
+    })
 
 
 @roleRequired(*POS_ROLES)
@@ -96,8 +90,11 @@ def make_transaction(request):
         products = products.filter(category_id=int(cat))
     store = StoreSettings.current()
     cart_services = list(cart.services.select_related("booking__service", "booking__customer"))
-    in_cart = {row.booking_id for row in cart_services}
     cart_items = list(cart.items.select_related("product"))
+    customers = list(Customer.objects.order_by("first_name", "last_name"))
+    fees = pos.auto_shipping_fees(customers, store)
+    for c in customers:
+        c.auto_ship = fees[c.pk]
     return render(
         request,
         "transaction/make_transaction.html",
@@ -111,13 +108,10 @@ def make_transaction(request):
             "cart_services": cart_services,
             "numbers": pos.quote(cart, store=store),
             "cart_empty": cart.is_empty,
-            "customers": Customer.objects.order_by("first_name", "last_name"),
+            "customers": customers,
             "couriers": User.couriers().filter(is_active=True),
             "shift": CashierShift.current(request.user),
             "held_sales": HeldSale.objects.filter(cashier=request.user),
-            "payable_bookings": _with_step_rows([b for b in _payable_bookings() if b.pk not in in_cart]),
-            "tab": "layanan" if request.GET.get("tab") == "layanan" else "produk",
-            "product_total": Product.objects.sellable().count(),
             "store": store,
             "fulfillments": Fulfillment.choices,
         },
@@ -201,12 +195,18 @@ def submit_transaction(request):
             note=post.get("note", ""),
             discount_reason=post.get("discount_reason", ""),
             noncash_confirmed=bool(post.get("noncash_confirmed")),
+            pay_on_delivery=bool(post.get("pay_on_delivery")),
             **numbers,
         )
     except PetshopError as e:
         messages.error(request, str(e))
         return redirect("transaction:make_transaction")
-    messages.success(request, _("Transaksi %(no)s lunas.") % {"no": order.receipt_no})
+    if order.payment_status == PaymentStatus.PAID:
+        messages.success(request, _("Transaksi %(no)s lunas.") % {"no": order.receipt_no})
+    else:
+        messages.success(
+            request, _("Pesanan %(no)s disimpan. Kurir menagih tunai saat barang sampai.") % {"no": order.receipt_no}
+        )
     return redirect(reverse("transaction:receipt", args=[order.pk]) + "?print=1")
 
 
@@ -329,6 +329,27 @@ def _receipt_context(request, order):
     }
 
 
+def _handover_share(request, order):
+    """Tautan lacak berkunci berisi QR serah-terima, untuk dikirim ke WhatsApp pembeli."""
+    link = request.build_absolute_uri(
+        reverse("customer:track_detail", args=[order.tracking_number]) + "?k=" + order.handover_key
+    )
+    cod = order.payment_method == PaymentMethod.CASH and order.payment_status != PaymentStatus.PAID
+    text = _(
+        "Halo %(name)s, pesanan %(store)s %(no)s akan diantar kurir. Total Rp %(total)s%(cod)s. "
+        "Saat paket tiba, buka tautan ini dan tunjukkan QR-nya ke kurir: %(url)s"
+    ) % {
+        "name": order.buyer_display, "store": StoreSettings.current().name, "no": order.receipt_no,
+        "total": f"{order.total_payment:,}".replace(",", "."),
+        "cod": _(", dibayar tunai ke kurir") if cod else "", "url": link,
+    }
+    wa = order.buyer_whatsapp_url
+    return {
+        "handover_link": link,
+        "handover_wa_url": f"{wa}?text={urlquote(text)}" if wa else "",
+    }
+
+
 @roleRequired(*POS_ROLES)
 def receipt(request, pk):
     order = get_object_or_404(Order.objects.select_related("customer", "admin", "voided_by"), pk=pk)
@@ -344,6 +365,8 @@ def receipt(request, pk):
         staff_view=True,
         log=ActivityLog.for_object(order),
     )
+    if order.shows_handover_qr:
+        context.update(_handover_share(request, order))
     return render(request, "transaction/receipt_staff.html", context)
 
 

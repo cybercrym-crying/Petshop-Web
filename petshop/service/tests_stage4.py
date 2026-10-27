@@ -266,6 +266,78 @@ class PetTransportTests(Stage4Fixtures, TestCase):
         self.assertTrue(b.return_photo)
         self.assertTrue(Notification.objects.filter(user=self.customer, title__contains="sampai di rumah").exists())
 
+    def test_kasir_books_pickup_with_cod_and_courier_collects_cash(self):
+        """Booking manual lewat telepon: jemput + antar pulang, bayar tunai ke kurir (COD), lalu disetor."""
+        from courier.models import CashRemittance
+
+        self.client.force_login(self.kasir)
+        data = {
+            "customer": self.customer.pk, "service": self.service.pk, "pet_name": "Kopi", "pet_type": "KUCING",
+            "schedule": tomorrow_at(10).strftime("%Y-%m-%dT%H:%M"), "pickup": "on", "return_trip": "on",
+            "latitude": str(HOME[0]), "longitude": str(HOME[1]), "address": "Jl. Mawar 1", "payment_choice": "COD",
+        }
+        # COD tanpa antar pulang ditolak.
+        self.client.post(reverse("service:create_booking"), {**data, "return_trip": ""})
+        self.assertFalse(ServiceBooking.objects.exists())
+        r = self.client.post(reverse("service:create_booking"), data)
+        b = ServiceBooking.objects.get()
+        self.assertRedirects(r, reverse("service:manage_bookings") + f"?day={tomorrow_at(10).date()}&id={b.pk}",
+                             fetch_redirect_response=False)
+        self.assertEqual((b.status, b.payment_choice, b.pickup_requested, b.return_requested),
+                         (BookingStatus.SCHEDULED, "COD", True, True))
+        self.assertGreater(b.transport_fee, 0)
+        b.assign_pet_courier(self.kurir)
+        # Panel kasir: tautan QR berkunci + pesan WhatsApp siap kirim.
+        panel = self.client.get(reverse("service:manage_bookings") + f"?day={tomorrow_at(10).date()}&id={b.pk}")
+        link = panel.context["share_link"]
+        self.assertIn("?k=", link)
+        self.assertIn("wa.me/", panel.context["share_wa_url"])
+        path = link.split("testserver", 1)[1]
+        self.client.logout()
+        public = self.client.get(path)
+        self.assertContains(public, b.checkin_code)
+        self.assertContains(public, "COD")
+        self.assertEqual(self.client.get(path.split("?")[0] + "?k=salah").status_code, 404)
+        self.assertEqual(self.client.get(reverse("service:booking_share_qr", args=[b.pk]) + "?k=salah").status_code, 404)
+        # Jemput, kerjakan, lalu antar pulang tanpa menunggu lunas.
+        self.gps()
+        self.client.force_login(self.kurir)
+        trip = reverse("service:courier_pet_trip", args=[b.pk])
+        self.client.post(trip, {"action": "start_pickup"})
+        self.client.post(trip, {"action": "collect", "code": b.checkin_payload, "photo": tiny_photo()})
+        b.refresh_from_db()
+        b.check_in(self.kasir)
+        b.start(self.groomer)
+        self.finish_all(b, self.groomer)
+        self.assertEqual(self.client.get(trip).context["step"], "start_return")
+        self.client.post(trip, {"action": "start_return", "photo": tiny_photo()})
+        b.refresh_from_db()
+        self.assertEqual(b.status, BookingStatus.RETURNING)
+        self.assertContains(self.client.get(trip), 'name="cash_received"')
+        # Tanpa centang uang diterima: belum selesai.
+        self.client.post(trip, {"action": "deliver", "code": b.checkin_code, "photo": tiny_photo()})
+        b.refresh_from_db()
+        self.assertEqual(b.status, BookingStatus.RETURNING)
+        self.client.post(trip, {"action": "deliver", "code": b.checkin_code, "photo": tiny_photo(), "cash_received": "1"})
+        b.refresh_from_db()
+        self.assertEqual(b.status, BookingStatus.DONE)
+        self.assertTrue(b.is_paid)
+        self.assertEqual(b.cash_collected, b.total_price)
+        receipt = b.payment_line.order
+        self.assertEqual((receipt.total_payment, receipt.payment_method), (b.total_price, "TUNAI"))
+        self.assertFalse(receipt.payments.exists())  # uang masuk laci lewat setoran, bukan kas kasir
+        # Uang muncul di Setoran COD kurir lalu disetor ke kasir.
+        cash = self.client.get(reverse("courier:cash"))
+        self.assertEqual(cash.context["on_hand_total"], b.total_price)
+        self.client.post(reverse("courier:cash"))
+        remittance = CashRemittance.objects.get()
+        self.assertEqual((remittance.amount, remittance.item_count), (b.total_price, 1))
+        b.refresh_from_db()
+        self.assertEqual(b.remittance, remittance)
+        self.client.force_login(self.kasir)
+        page = self.client.get(reverse("transaction:remittances"))
+        self.assertContains(page, f"Booking #{b.pk}")
+
     def test_pickup_records_condition_and_arrival_photo_for_cashier(self):
         b = self.transport_booking()
         self.client.force_login(self.kurir)

@@ -14,9 +14,9 @@
 .kh-shift__top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .kh-shift__top h2 { margin: 0; }
 .kh-facts { margin: 18px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.kh-facts > div { padding: 14px 14px 12px; border: 1px solid var(--sg-line); border-radius: 16px; background: var(--sg-card); min-width: 0; }
+.kh-facts > div { container-type: inline-size; padding: 14px 14px 12px; border: 1px solid var(--sg-line); border-radius: 16px; background: var(--sg-card); min-width: 0; }
 .kh-facts dt { font-size: 0.82rem; font-weight: 600; color: var(--sg-muted); }
-.kh-facts dd { margin: 6px 0 0; font-size: 1.2rem; white-space: nowrap; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--sg-ink); }
+.kh-facts dd { margin: 6px 0 0; font-size: clamp(0.95rem, 10cqi, 1.2rem); overflow-wrap: anywhere; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--sg-ink); }
 @media (max-width: 767.98px) { .kh-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .kh-held { margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; padding: 12px 14px; border: 1px dashed var(--sg-line); border-radius: 16px; background: color-mix(in srgb, var(--sg-card) 70%, transparent); }
 .kh-held__icon { font-size: 1.15rem; color: var(--sg-ink); }

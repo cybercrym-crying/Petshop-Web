@@ -33,7 +33,7 @@ def cashier_report(period):
     methods = {m: 0 for m in (*COUNTER_PAYMENT_METHODS,)}
     for row in OrderPayment.objects.filter(order__in=store).values("method").annotate(t=Sum("amount")):
         methods[row["method"]] = methods.get(row["method"], 0) + (row["t"] or 0)
-    # Transaksi toko lama (sebelum ada baris pembayaran) & pesanan online: pakai metode order.
+    # Transaksi toko lama (sebelum ada baris pembayaran), COD dari kasir, & pesanan online: pakai metode order.
     legacy = store.filter(payments__isnull=True)
     for qs in (legacy, online):
         for row in qs.values("payment_method").annotate(t=Sum("total_payment")):

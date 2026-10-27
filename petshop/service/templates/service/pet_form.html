@@ -3,7 +3,7 @@
 {% load static %}
 {% block title %}{% if pet %}{{ pet.name }}{% else %}{% translate "Tambah Hewan" %}{% endif %} - Seelly Petshop{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2-lay1">
     <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/camera.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/camera-dark.css' %}?v=1">
@@ -65,5 +65,5 @@
     </section>
 {% endblock %}
 {% block extra_js %}
-    <script src="{% static 'js/camera.js' %}?v=1"></script>
+    <script src="{% static 'js/camera.js' %}?v=2"></script>
 {% endblock %}

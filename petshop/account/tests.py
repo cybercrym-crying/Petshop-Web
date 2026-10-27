@@ -117,6 +117,31 @@ class CustomerLinksAndManageTests(TestCase):
         self.assertRedirects(r, "/staff/admin/manage_account?tab=customer", fetch_redirect_response=False)
         self.assertEqual(Customer.objects.get().phone_number, "081234567890")
 
+    def test_add_customer_with_map_pin_and_detail_address(self):
+        from decimal import Decimal
+        from .models import Customer
+        page = self.client.get("/staff/admin/manage_account?tab=customer")
+        self.assertContains(page, "data-map-picker")
+        self.assertContains(page, 'name="latitude"')
+        self.client.post("/staff/admin/customer/add/", {
+            "name": "Sari", "phone_number": "081234567890", "address": "Jl. Mawar 3, pagar hijau",
+            "latitude": "-0.502106", "longitude": "117.153709",
+        })
+        c = Customer.objects.get()
+        self.assertEqual((c.latitude, c.longitude), (Decimal("-0.502106"), Decimal("117.153709")))
+        self.assertIn("-0.502106,117.153709", c.maps_url)
+        # Tanpa titik tetap boleh; titik setengah (hanya lat) ditolak.
+        self.client.post(f"/staff/admin/customer/{c.pk}/edit/", {
+            "name": "Sari", "phone_number": "081234567890", "address": "Jl. Mawar 3", "latitude": "-0.5",
+        })
+        c.refresh_from_db()
+        self.assertEqual(c.latitude, Decimal("-0.502106"))
+        self.client.post(f"/staff/admin/customer/{c.pk}/edit/", {
+            "name": "Sari", "phone_number": "081234567890", "address": "Jl. Mawar 3", "latitude": "", "longitude": "",
+        })
+        c.refresh_from_db()
+        self.assertFalse(c.has_pin)
+
     def test_add_duplicate_customer_shows_error(self):
         from .models import Customer
         Customer.objects.create(name="A", phone_number="081234567890", address="x")

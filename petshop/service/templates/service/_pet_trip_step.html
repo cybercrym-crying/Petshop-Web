@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n rupiah %}
 {% comment %}Isi langkah antar-jemput yang sedang berjalan (dipakai courier_pet_trip.html).{% endcomment %}
 {% if step == "start_pickup" %}
     <form method="post" class="pt-panel">
@@ -52,6 +52,12 @@
                     {% for c in conditions %}<label><input type="checkbox" name="condition" value="{{ c }}"><span>{{ c }}</span></label>{% endfor %}
                 </div>
             {% endif %}
+            {% if step == "deliver" and booking.cod_due %}
+                <label class="sg-alert is-gold sg-mt12" style="cursor:pointer">
+                    <input type="checkbox" name="cash_received" value="1" class="form-check-input m-0" required>
+                    <span>{% blocktranslate trimmed with total=booking.total_price|rupiah %}Uang tunai Rp {{ total }} sudah saya terima{% endblocktranslate %} {% translate "(COD, disetor ke kasir lewat Setoran COD)" %}</span>
+                </label>
+            {% endif %}
             <div class="sg-form sg-mt12">
                 <input name="note" maxlength="255" aria-label="{% translate 'Catatan (opsional)' %}" placeholder="{% if step == 'collect' %}{% translate 'Catatan, mis. hewan agak gelisah' %}{% else %}{% translate 'Catatan, mis. diterima suami pemilik' %}{% endif %}">
             </div>
@@ -83,6 +89,9 @@
     <form method="post" enctype="multipart/form-data" class="pt-panel">
         {% csrf_token %}
         <input type="hidden" name="action" value="start_return">
+        {% if booking.cod_due %}
+            <div class="sg-alert is-gold mb-3"><i class="bi bi-cash-coin" aria-hidden="true"></i><span>{% blocktranslate trimmed with total=booking.total_price|rupiah %}Belum dibayar: tagih tunai Rp {{ total }} saat hewan diserahkan (COD).{% endblocktranslate %}</span></div>
+        {% endif %}
         {% include "partials/_camera.html" with btn="ck-btn is-primary" btn2="ck-btn" hint="Foto hewan di kandang/boks sebelum berangkat dari toko." %}
         <input type="hidden" name="latitude" data-gps-lat>
         <input type="hidden" name="longitude" data-gps-lng>

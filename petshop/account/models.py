@@ -260,6 +260,9 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=Role.choices, null=False)
     phone_number = models.CharField(max_length=20)
     address = models.CharField(max_length=255, blank=True, default="")
+    # Titik rumah dari peta (opsional): dipakai untuk ongkir & rute kurir.
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     # Staf yang mendaftar sendiri baru aktif setelah disetujui admin.
     approval = models.CharField(
         "Status persetujuan",
@@ -436,7 +439,13 @@ class User(AbstractUser):
         return f"https://wa.me/{number}"
 
     @property
+    def has_pin(self):
+        return self.latitude is not None and self.longitude is not None
+
+    @property
     def maps_url(self):
+        if self.has_pin:
+            return f"https://www.google.com/maps/search/?api=1&query={self.latitude},{self.longitude}"
         if not self.address:
             return ""
         return f"https://www.google.com/maps/search/?api=1&query={quote(self.address)}"

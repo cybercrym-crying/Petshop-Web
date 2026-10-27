@@ -58,6 +58,9 @@
                         <tr><td>{% translate "Ongkir" %}</td><td class="num">{{ order.shipping_fee|rupiah }}</td></tr>
                     {% endif %}
                     <tr class="receipt-total"><td>{% translate "TOTAL" %}</td><td class="num">{{ order.total_payment|rupiah }}</td></tr>
+                    {% if not payments and order.payment_method == "TUNAI" %}
+                        <tr><td>{% translate "Tunai saat barang sampai (COD)" %}{% if order.payment_status != "LUNAS" %}<br><small>{% translate "Belum dibayar, ditagih kurir" %}</small>{% endif %}</td><td class="num">{{ order.total_payment|rupiah }}</td></tr>
+                    {% endif %}
                     {% for p in payments %}
                         <tr><td>{{ p.get_method_display }}</td><td class="num">{% if p.method == "TUNAI" and order.cash_received %}{{ order.cash_received|rupiah }}{% else %}{{ p.amount|rupiah }}{% endif %}</td></tr>
                     {% endfor %}

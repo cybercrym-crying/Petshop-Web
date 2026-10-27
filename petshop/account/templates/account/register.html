@@ -90,18 +90,6 @@
                                    required />
                             {% for e in form.phone_number.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
                         </div>
-                        <div class="input-group-custom span-2">
-                            <label for="id_address" class="form-label-custom">{% translate "Alamat" %}</label>
-                            <textarea name="address"
-                                      id="id_address"
-                                      rows="2"
-                                      class="modern-input{% if form.address.errors %} is-invalid{% endif %}"
-                                      placeholder="Alamat lengkap untuk pengiriman"
-                                      autocomplete="street-address"
-                                      maxlength="255"
-                                      required>{{ form.address.value|default:'' }}</textarea>
-                            {% for e in form.address.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
-                        </div>
                         <div class="input-group-custom">
                             <label for="id_password1" class="form-label-custom">{% translate "Kata Sandi" %}</label>
                             <input type="password"

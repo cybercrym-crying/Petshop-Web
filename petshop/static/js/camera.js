@@ -85,7 +85,11 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
       return;
     }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      this.fallback(tr("Browser ini tidak bisa membuka kamera langsung."));
+      // Kamera langsung butuh HTTPS. Tanpa itu, langsung buka kamera bawaan HP di ketukan yang sama
+      // (atribut capture), bukan meminta kurir menekan tombol dua kali.
+      this.openNative(window.isSecureContext === false
+        ? tr("Situs belum memakai HTTPS, jadi kamera bawaan HP yang dibuka.")
+        : tr("Browser ini tidak bisa membuka kamera langsung, jadi kamera bawaan HP yang dibuka."));
       return;
     }
     this.say(tr("Membuka kamera…"));
@@ -105,8 +109,17 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
       .catch(function (err) {
         var denied = err && (err.name === "NotAllowedError" || err.name === "SecurityError");
         self.fallback(denied ? tr("Izin kamera ditolak. Izinkan kamera di pengaturan browser.") : tr("Kamera tidak bisa dibuka."));
+        // Masih dalam ketukan yang sama (bila browser mengizinkan): coba kamera bawaan HP.
+        if (!denied) self.openNative();
       });
     this.readLocation();
+  };
+
+  Camera.prototype.openNative = function (reason) {
+    this.useNative = true;
+    this.input.setAttribute("capture", "environment");
+    if (reason) this.say(reason);
+    try { this.input.click(); } catch (e) { /* tombol kamera tetap bisa ditekan lagi */ }
   };
 
   Camera.prototype.fallback = function (reason) {

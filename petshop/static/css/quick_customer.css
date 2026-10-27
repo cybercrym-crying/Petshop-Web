@@ -1,0 +1,22 @@
+/* Modal "Pelanggan baru" (kasir & Buat Booking). Warna dari token ui.css, jadi ikut mode gelap. */
+.qc { border: 1px solid var(--ui-line); border-radius: 22px; background: var(--ui-card); color: var(--ui-ink); overflow: hidden; }
+.qc__hd { display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid var(--ui-line); }
+.qc__hd h2 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.qc__hd p { margin: 2px 0 0; font-size: 0.82rem; color: var(--ui-muted); }
+.qc__hd .btn-close { margin: 2px 0 0 auto; }
+.qc__ic { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--ui-accent-soft); color: var(--ui-accent-soft-ink); font-size: 1.15rem; }
+.qc__body { padding: 16px 20px; }
+.qc__lbl, .qc .ap-label { display: block; margin: 12px 0 6px; font-size: 0.82rem; font-weight: 700; }
+.qc__lbl:first-of-type { margin-top: 0; }
+.qc__in { display: block; width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-card); color: var(--ui-ink); font: inherit; font-size: 0.92rem; }
+textarea.qc__in { min-height: 64px; resize: vertical; }
+.qc__in:focus { outline: none; border-color: var(--ui-accent); box-shadow: 0 0 0 3px var(--ui-accent-soft); }
+.qc__in.is-invalid { border-color: var(--ui-bad); }
+.qc .ap { margin-top: 14px; }
+.qc__err { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background: var(--ui-bad-bg); color: var(--ui-bad); font-size: 0.85rem; font-weight: 600; }
+.qc__ft { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--ui-line); }
+.qc-open { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 0; border: 0; background: none; color: var(--ui-accent); font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.qc-open:hover { text-decoration: underline; }
+@media (max-width: 575.98px) {
+  .qc__ft .ui-btn { flex: 1; }
+}

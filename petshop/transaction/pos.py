@@ -83,6 +83,32 @@ def ensure_booking_payable(booking):
         )
 
 
+def delivery_pin(customer):
+    """Titik rumah di data pelanggan; bila belum ada, titik pesanan terakhirnya (atau None)."""
+    if customer.has_pin:
+        return customer.latitude, customer.longitude
+    return (
+        Order.objects.filter(customer=customer, delivery_latitude__isnull=False)
+        .order_by("-date").values_list("delivery_latitude", "delivery_longitude").first()
+    )
+
+
+def auto_shipping_fees(customers, store):
+    """Ongkir otomatis per pelanggan (sama dengan hitungan checkout), untuk ditampilkan di layar kasir
+    sebelum Bayar. Pelanggan tanpa titik rumah tidak punya ongkir otomatis (0)."""
+    last_pins = {}
+    for cid, lat, lng in (
+        Order.objects.filter(delivery_latitude__isnull=False)
+        .order_by("customer_id", "-date").values_list("customer_id", "delivery_latitude", "delivery_longitude")
+    ):
+        last_pins.setdefault(cid, (lat, lng))
+    fees = {}
+    for c in customers:
+        pin = (c.latitude, c.longitude) if c.has_pin else last_pins.get(c.pk)
+        fees[c.pk] = store.shipping_fee(store.distance_km(*pin)) if pin else 0
+    return fees
+
+
 def find_booking(code):
     """Cari booking dari isi QR ('PSB:<id>:<kode>') atau '#123'."""
     from service.models import ServiceBooking
@@ -183,12 +209,15 @@ def checkout(
     pay_qris=0,
     cash_received=0,
     noncash_confirmed=False,
+    pay_on_delivery=False,
     note="",
 ):
     """Bayar transaksi kasir. Mengembalikan Order yang langsung lunas.
 
     Pembayaran: transfer dan/atau QRIS (nominal diisi kasir setelah dicek masuk),
     sisanya tunai. Tunai: uang diterima >= sisa, kembalian dihitung otomatis.
+    pay_on_delivery: pesanan manual (telepon/chat) yang diantar dan dibayar tunai
+    ke kurir saat barang sampai (COD); order belum lunas sampai serah terima.
     """
     store = StoreSettings.current()
     shift = require_shift(cashier)
@@ -212,10 +241,7 @@ def checkout(
             raise PosError(f"Alamat {customer.name} kosong. Lengkapi dulu di Kelola Akun.")
         if courier is not None and courier.role != "KURIR":
             courier = None
-        last = (
-            Order.objects.filter(customer=customer, delivery_latitude__isnull=False)
-            .order_by("-date").values_list("delivery_latitude", "delivery_longitude").first()
-        )
+        last = delivery_pin(customer)
         if last:
             distance = store.distance_km(*last)
             pin = {"delivery_latitude": last[0], "delivery_longitude": last[1],
@@ -224,6 +250,11 @@ def checkout(
                 shipping_fee = store.shipping_fee(distance)
     else:
         courier, shipping_fee = None, 0
+    if pay_on_delivery:
+        if fulfillment != Fulfillment.DELIVERY:
+            raise PosError("Bayar saat barang sampai (COD) hanya untuk pesanan yang diantar.")
+        if service_rows:
+            raise PosError("Biaya layanan grooming dibayar di kasir; pisahkan dari pesanan COD.")
 
     numbers = quote(cart, discount, shipping_fee, store)
     discount = int(discount or 0)
@@ -238,6 +269,9 @@ def checkout(
         )
 
     total = numbers["total"]
+    if pay_on_delivery:
+        # Uang belum diterima toko: kurir menagih total saat serah terima.
+        pay_transfer = pay_qris = cash_received = 0
     pay_transfer, pay_qris = int(pay_transfer or 0), int(pay_qris or 0)
     if pay_transfer < 0 or pay_qris < 0:
         raise PosError("Nominal pembayaran tidak valid.")
@@ -246,7 +280,7 @@ def checkout(
         raise PosError("Nominal transfer/QRIS melebihi total yang harus dibayar.")
     if noncash and not noncash_confirmed:
         raise PosError("Pastikan dana transfer/QRIS sudah masuk ke rekening toko, lalu centang konfirmasinya.")
-    cash_due = total - noncash
+    cash_due = 0 if pay_on_delivery else total - noncash
     cash_received = int(cash_received or 0)
     if cash_due and cash_received < cash_due:
         raise PosError(f"Uang tunai kurang: harus Rp {cash_due:,}.".replace(",", "."))
@@ -255,9 +289,13 @@ def checkout(
     parts = [(m, a) for m, a in (
         (PaymentMethod.CASH, cash_due), (PaymentMethod.TRANSFER, pay_transfer), (PaymentMethod.QRIS, pay_qris)
     ) if a > 0]
-    if not parts:
-        parts = [(PaymentMethod.CASH, 0)]  # transaksi Rp 0 (mis. diskon penuh) tetap tercatat tunai
-    method = parts[0][0] if len(parts) == 1 else PaymentMethod.MIXED
+    if pay_on_delivery:
+        # Tanpa baris pembayaran kasir: uangnya masuk ke toko lewat setoran COD kurir.
+        parts, method = [], PaymentMethod.CASH
+    else:
+        if not parts:
+            parts = [(PaymentMethod.CASH, 0)]  # transaksi Rp 0 (mis. diskon penuh) tetap tercatat tunai
+        method = parts[0][0] if len(parts) == 1 else PaymentMethod.MIXED
 
     now = timezone.now()
     take_away = fulfillment == Fulfillment.TAKE_AWAY
@@ -269,9 +307,9 @@ def checkout(
         order_status=OrderStatus.DELIVERED if take_away else OrderStatus.CONFIRMED,
         delivered_at=now if take_away else None,
         payment_method=method,
-        payment_status=PaymentStatus.PAID,
-        payment_verified_by=cashier,
-        payment_verified_at=now,
+        payment_status=PaymentStatus.PENDING if pay_on_delivery else PaymentStatus.PAID,
+        payment_verified_by=None if pay_on_delivery else cashier,
+        payment_verified_at=None if pay_on_delivery else now,
         confirmed_at=now,
         courier=courier,
         shipping_address=customer.address if not take_away else "",
@@ -317,7 +355,10 @@ def checkout(
     cart.delete()
     ActivityLog.record(
         order, "Transaksi kasir", actor=cashier,
-        detail=f"{order.receipt_no} · {Fulfillment(fulfillment).label} · Rp {total:,}".replace(",", "."),
+        detail=(
+            f"{order.receipt_no} · {Fulfillment(fulfillment).label}"
+            + (" · COD" if pay_on_delivery else "") + f" · Rp {total:,}"
+        ).replace(",", "."),
     )
     if discount:
         ActivityLog.record(order, "Diskon", actor=cashier, detail=f"Rp {discount:,} · {discount_reason}".replace(",", "."))
