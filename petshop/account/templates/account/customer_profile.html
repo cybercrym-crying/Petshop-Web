@@ -4,6 +4,8 @@
 {% block title %}Seelly - {{ customer.name }}{% endblock %}
 {% block extra_head %}
     <link href="{% static 'account/css/customer_profile.css' %}?v=dm1" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/address_pin.css' %}?v=1">
 {% endblock %}
 {% block content %}
         <div class="container-fluid px-xl-4 px-3 py-4">
@@ -102,9 +104,7 @@
                                        required />
                             </div>
                             <div class="mb-5">
-                                <label class="form-label-custom" for="address">{% translate "Alamat Pengiriman" %}</label>
-                                <textarea id="address" name="address" rows="4" class="dark-input" required>
-{{ customer.address }}</textarea>
+                                {% include "partials/_address_pin.html" with uid="profile" lat=customer.latitude lng=customer.longitude address=customer.address input_class="dark-input" required=True %}
                             </div>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
@@ -224,4 +224,8 @@
                 </div>
             </div>
         </div>
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
 {% endblock %}

@@ -30,10 +30,17 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
   }
   function row(name, show) { var el = form.querySelector('[data-row="' + name + '"]'); if (el) el.hidden = !show; }
 
+  // Ongkir otomatis dari titik rumah pelanggan (dihitung server, sama seperti saat Bayar);
+  // kasir tetap bisa menimpanya dengan mengisi kolom ongkir.
+  function autoShipping() {
+    var select = form.querySelector('select[name="customer"]');
+    var opt = select && select.options[select.selectedIndex];
+    return opt ? parseInt(opt.getAttribute("data-ship"), 10) || 0 : 0;
+  }
   function total() {
     var discount = Math.min(money("discount"), subtotal);
     var tax = Math.round((subtotal - discount) * taxPct / 100);
-    var shipping = isDelivery() ? money("shipping") : 0;
+    var shipping = isDelivery() ? (money("shipping") || autoShipping()) : 0;
     return { discount: discount, tax: tax, shipping: shipping, total: subtotal - discount + tax + shipping };
   }
 
@@ -41,12 +48,31 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
     var t = total();
     var delivery = isDelivery();
     form.querySelectorAll("[data-delivery-fields]").forEach(function (el) { el.hidden = !delivery; });
+    // COD (bayar saat sampai) hanya untuk pesanan diantar; kolom bayar sekarang disembunyikan.
+    var codPicked = form.querySelector('[data-cod][value="1"]:checked');
+    form.querySelectorAll("[data-cod]").forEach(function (el) { el.disabled = !delivery; });
+    var cod = delivery && !!codPicked;
+    var codHint = form.querySelector("[data-cod-hint]");
+    if (codHint) codHint.hidden = !cod;
+    var payNow = form.querySelector("[data-pay-now]");
+    if (payNow) payNow.hidden = cod;
+    var label = form.querySelector("[data-pay-label]");
+    if (label) {
+      if (!label.hasAttribute("data-pay-text")) label.setAttribute("data-pay-text", label.textContent);
+      label.textContent = cod ? label.getAttribute("data-cod-label") : label.getAttribute("data-pay-text");
+    }
     var customer = form.querySelector('[name="customer"]');
     form.querySelectorAll("[data-walkin-fields]").forEach(function (el) { el.hidden = !!(customer && customer.value); });
 
     row("discount", t.discount > 0);
     if (out("discount")) out("discount").textContent = "- " + rp(t.discount);
     if (out("tax")) out("tax").textContent = rp(t.tax);
+    var shipField = field("shipping");
+    if (shipField) {
+      if (!shipField.hasAttribute("data-placeholder")) shipField.setAttribute("data-placeholder", shipField.placeholder);
+      var auto = autoShipping();
+      shipField.placeholder = auto ? tr("Ongkir otomatis {n}", { n: rp(auto) }) : shipField.getAttribute("data-placeholder");
+    }
     row("shipping", delivery && t.shipping > 0);
     if (out("shipping")) out("shipping").textContent = rp(t.shipping);
     out("total").textContent = rp(t.total) + (delivery && !t.shipping ? " + " + tr("ongkir") : "");
@@ -65,6 +91,7 @@ function tr(text, vars) { return window.petT ? window.petT(text, vars) : text; }
     var cashDue = t.total - noncash;
     var change = money("cash") - Math.max(cashDue, 0);
     var changeRow = form.querySelector("[data-change-row]");
+    changeRow.hidden = cod;
     var short = change < 0 || cashDue < 0;
     changeRow.classList.toggle("is-short", short);
     if (cashDue < 0) {

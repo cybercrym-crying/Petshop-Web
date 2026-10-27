@@ -402,12 +402,31 @@ def remittances(request):
                               f"Rp {amount:,}".replace(",", "."), reverse("courier:cash"))
             messages.success(request, f"Setoran #{remittance.pk} dari {remittance.courier.name} diterima.")
         return redirect("transaction:remittances")
-    pending = CashRemittance.objects.filter(status=RemittanceStatus.SUBMITTED).select_related("courier").prefetch_related("orders__customer")
-    on_hand = (
-        Order.objects.filter(cash_collected__gt=0, remittance__isnull=True)
-        .values("courier__first_name", "courier__last_name", "courier__username")
-        .annotate(total=Sum("cash_collected"), n=Count("pk"))
-        .order_by("-total")
+    from service.models import ServiceBooking
+
+    pending = (
+        CashRemittance.objects.filter(status=RemittanceStatus.SUBMITTED)
+        .select_related("courier").prefetch_related("orders__customer", "bookings__customer")
     )
+    # Uang COD yang masih dipegang kurir: paket + booking hewan, dijumlah per kurir.
+    held = {}
+    for qs, field in (
+        (Order.objects.filter(cash_collected__gt=0, remittance__isnull=True), "courier"),
+        (ServiceBooking.objects.filter(cash_collected__gt=0, remittance__isnull=True), "pet_courier"),
+    ):
+        rows = qs.values(f"{field}_id", f"{field}__first_name", f"{field}__last_name", f"{field}__username").annotate(
+            total=Sum("cash_collected"), n=Count("pk")
+        )
+        for row in rows:
+            key = row[f"{field}_id"]
+            entry = held.setdefault(key, {
+                "courier__first_name": row[f"{field}__first_name"],
+                "courier__last_name": row[f"{field}__last_name"],
+                "courier__username": row[f"{field}__username"],
+                "total": 0, "n": 0,
+            })
+            entry["total"] += row["total"]
+            entry["n"] += row["n"]
+    on_hand = sorted(held.values(), key=lambda r: -r["total"])
     done = CashRemittance.objects.filter(status=RemittanceStatus.RECEIVED).select_related("courier", "received_by")[:20]
     return render(request, "transaction/remittances.html", {"pending": pending, "on_hand": on_hand, "done": done})

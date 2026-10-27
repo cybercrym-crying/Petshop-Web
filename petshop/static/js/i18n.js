@@ -29,6 +29,8 @@
     "Toko": "Store",
     "Ambil foto dulu sebelum mengirim.": "Take a photo before sending.",
     "Browser ini tidak bisa membuka kamera langsung.": "This browser cannot open the camera directly.",
+    "Situs belum memakai HTTPS, jadi kamera bawaan HP yang dibuka.": "This site is not on HTTPS yet, so the phone's camera app is opened.",
+    "Browser ini tidak bisa membuka kamera langsung, jadi kamera bawaan HP yang dibuka.": "This browser cannot open the camera directly, so the phone's camera app is opened.",
     "Membuka kamera…": "Opening camera…",
     "Arahkan kamera lalu tekan Ambil foto.": "Point the camera, then press Take Photo.",
     "Izin kamera ditolak. Izinkan kamera di pengaturan browser.": "Camera permission denied. Allow the camera in the browser settings.",
@@ -87,6 +89,9 @@
     "Gagal mengecek, periksa sinyal lalu coba lagi.": "Check failed, check your signal and try again.",
     "QR terbaca.": "QR read.",
     "ongkir": "shipping",
+    "Ongkir otomatis {n}": "Auto shipping {n}",
+    "Gagal menyimpan. Coba lagi.": "Could not save. Please try again.",
+    "Isi nama, nomor WhatsApp, dan alamat.": "Fill in the name, WhatsApp number, and address.",
     "Non-tunai lebih": "Non-cash over by",
     "Kurang": "Short",
     "Kembalian": "Change"

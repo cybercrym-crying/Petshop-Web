@@ -16,8 +16,8 @@
             <section class="sg-card is-focus">
                 <p class="sg-eyebrow">{% translate "Total dipegang" %}</p>
                 <p class="sg-big mb-1">Rp {{ on_hand_total|rupiah }}</p>
-                {% if on_hand %}
-                    <p class="sg-sm sg-muted mb-0">{% blocktranslate trimmed with on_hand=on_hand|length %}{{ on_hand }} paket COD sudah diserahkan dan uangnya belum disetor ke kasir.{% endblocktranslate %}</p>
+                {% if on_hand_count %}
+                    <p class="sg-sm sg-muted mb-0">{% blocktranslate trimmed with n=on_hand_count %}{{ n }} tagihan COD sudah diterima dan uangnya belum disetor ke kasir.{% endblocktranslate %}</p>
                     <div class="sg-list sg-mt12">
                         {% for o in on_hand %}
                             <a class="ck-pkg" href="{% url 'courier:order_detail' o.pk %}">
@@ -25,6 +25,13 @@
                                 <span class="ck-pkg__body"><b>#{{ o.pk }} {{ o.customer.name }}</b><small>{% blocktranslate trimmed with t=o.delivered_at|date:"d M H.i" %}{{ t }} · ditagih tunai{% endblocktranslate %}</small></span>
                                 <b class="sg-price">Rp {{ o.cash_collected|rupiah }}</b>
                             </a>
+                        {% endfor %}
+                        {% for b in pets_on_hand %}
+                            <div class="ck-pkg">
+                                <span class="sg-av"><i class="bi bi-heart" aria-hidden="true"></i></span>
+                                <span class="ck-pkg__body"><b>{% blocktranslate trimmed with pk=b.pk pet=b.pet_name %}Booking #{{ pk }} · {{ pet }}{% endblocktranslate %}</b><small>{% blocktranslate trimmed with t=b.closed_at|date:"d M H.i" name=b.customer.name %}{{ t }} · {{ name }} · ditagih tunai{% endblocktranslate %}</small></span>
+                                <b class="sg-price">Rp {{ b.cash_collected|rupiah }}</b>
+                            </div>
                         {% endfor %}
                     </div>
                     <form method="post" class="sg-mt16" data-confirm="{% blocktranslate trimmed with on_hand_total=on_hand_total|rupiah %}Setor Rp {{ on_hand_total }} ke kasir sekarang?{% endblocktranslate %}">

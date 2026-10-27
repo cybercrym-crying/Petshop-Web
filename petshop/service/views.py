@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
 from django.db import transaction
 from django.db.models import Avg, Count, Exists, OuterRef, Q
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -24,6 +24,9 @@ from transaction.models import Order, OrderStatus
 from transaction.qr import qr_response
 
 from .forms import (
+    CLOSE_HOUR,
+    MAX_DAYS_AHEAD,
+    OPEN_HOUR,
     BookingForm,
     CheckInForm,
     PetForm,
@@ -220,6 +223,53 @@ def booking_qr(request, pk):
     """QR check-in / serah terima hewan (hanya pemilik booking)."""
     booking = get_object_or_404(ServiceBooking, pk=pk, customer=request.user)
     return qr_response(booking.checkin_payload)
+
+
+def _booking_share(request, booking):
+    """Tautan QR booking berkunci + pesan WhatsApp siap kirim, untuk pelanggan yang dilayani kasir."""
+    if not (booking.needs_transport and booking.shows_share_qr):
+        return {}
+    link = request.build_absolute_uri(
+        reverse("service:booking_share", args=[booking.pk]) + "?k=" + booking.share_key
+    )
+    when = timezone.localtime(booking.schedule)
+    text = _(
+        "Halo %(name)s, booking %(store)s #%(pk)s untuk %(pet)s (%(service)s) pada %(when)s. "
+        "Total Rp %(total)s%(cod)s. Tunjukkan QR di tautan ini ke kurir saat menjemput/mengantar hewan: %(url)s"
+    ) % {
+        "name": booking.customer.display_name, "store": StoreSettings.current().name, "pk": booking.pk,
+        "pet": booking.pet_name, "service": booking.service.name, "when": f"{when:%d/%m %H.%M}",
+        "total": f"{booking.total_price:,}".replace(",", "."),
+        "cod": _(", dibayar tunai ke kurir saat hewan diantar pulang") if booking.cod_due else "",
+        "url": link,
+    }
+    wa = booking.customer.whatsapp_url
+    return {"share_link": link, "share_wa_url": f"{wa}?text={quote(text)}" if wa else ""}
+
+
+def _shared_booking(request, pk):
+    booking = get_object_or_404(_with_booking(ServiceBooking.objects.all()), pk=pk)
+    if not booking.check_share_key(request.GET.get("k")):
+        raise Http404
+    return booking
+
+
+def booking_share(request, pk):
+    """Halaman QR booking lewat tautan berkunci dari WhatsApp (pelanggan booking manual tanpa login)."""
+    booking = _shared_booking(request, pk)
+    response = render(request, "service/booking_share.html", {"booking": booking, "key": request.GET["k"]})
+    response["Cache-Control"] = "private, no-store"
+    response["X-Robots-Tag"] = "noindex"
+    return response
+
+
+def booking_share_qr(request, pk):
+    booking = _shared_booking(request, pk)
+    if not booking.shows_share_qr:
+        raise Http404
+    response = qr_response(booking.checkin_payload)
+    response["Cache-Control"] = "private, no-store"
+    return response
 
 
 @roleRequired(Role.CUSTOMER)
@@ -452,9 +502,14 @@ def manage_bookings(request):
                 schedule__date=timezone.localtime(selected.schedule).date(), status__in=OPEN_BOOKING_STATUSES
             ).exclude(pk=selected.pk).values_list("groomer").annotate(n=Count("pk"))
         )
+    today_load = dict(
+        ServiceBooking.objects.filter(schedule__date=today, status__in=OPEN_BOOKING_STATUSES)
+        .values_list("groomer").annotate(n=Count("pk"))
+    )
     groomers = list(User.groomers().order_by("first_name", "username"))
     for g in groomers:
         g.load = groomer_load.get(g.pk, 0)
+        g.today_load = today_load.get(g.pk, 0)
     keep = {"day": "" if all_dates or day == today else day.isoformat(), "q": q, "status": status, "g": group}
 
     return render(
@@ -483,10 +538,16 @@ def manage_bookings(request):
             "keep_no_group": urlencode({k: v for k, v in keep.items() if v and k != "g"}),
             "pending_all": ServiceBooking.objects.filter(status=BookingStatus.PENDING).count(),
             "form": StaffBookingForm(),
+            # Jadwal booking baru: tanggal mulai hari ini, jam per 30 menit dalam jam layanan (lihat booking_list.js).
+            "slot_now": timezone.localtime().strftime("%Y-%m-%dT%H:%M"),
+            "slot_open": f"{OPEN_HOUR:%H:%M}",
+            "slot_close": f"{CLOSE_HOUR:%H:%M}",
+            "slot_max_day": (today + timedelta(days=MAX_DAYS_AHEAD)).isoformat(),
             "groomers": groomers,
             "pet_couriers": list(User.pet_couriers().order_by("first_name", "username")),
             "limit": MANAGE_LIMIT,
             "proofs_waiting": list(_booking_proofs_waiting()[:20]),
+            **(_booking_share(request, selected) if selected else {}),
         },
     )
 
@@ -508,12 +569,25 @@ def create_booking(request):
                     created_by=request.user,
                     groomer=data["groomer"],
                     confirmed=True,
+                    pickup=data["pickup"],
+                    return_trip=data["return_trip"],
+                    location=form.location,
+                    address=data["address"],
+                    payment_choice=data["payment_choice"],
                 )
             except InvalidBookingTransition as e:
                 messages.error(request, str(e))
             else:
-                booking_event(booking, "Booking dibuat kasir", actor=request.user)
-                messages.success(request, f"Booking #{booking.pk} dibuat (Terjadwal).")
+                booking_event(booking, "Booking dibuat kasir", actor=request.user,
+                              detail="COD" if booking.is_cod else "")
+                if booking.needs_transport:
+                    messages.success(request, _(
+                        "Booking #%(pk)s dibuat. Tugaskan kurir hewan, lalu kirim QR booking ke WhatsApp pelanggan."
+                    ) % {"pk": booking.pk})
+                else:
+                    messages.success(request, f"Booking #{booking.pk} dibuat (Terjadwal).")
+                day = timezone.localtime(booking.schedule).date().isoformat()
+                return redirect(f"{reverse('service:manage_bookings')}?day={day}&id={booking.pk}")
         else:
             _flash_errors(request, form)
     return redirect("service:manage_bookings")
@@ -944,7 +1018,9 @@ def groomer_update_status(request, pk):
                     next_tab = "selesai"
                     title = f"{booking.pet_name} selesai & siap " + ("diantar pulang" if booking.return_requested else "diambil")
                     body = booking.groomer_note or "Lihat foto hasilnya di Booking Saya."
-                    if not booking.is_paid:
+                    if booking.cod_due and booking.return_requested:
+                        body += f" Siapkan uang tunai Rp {booking.total_price:,} untuk kurir saat hewan tiba.".replace(",", ".")
+                    elif not booking.is_paid:
                         body += (" Selesaikan pembayaran transfer di Booking Saya supaya kurir bisa mengantar pulang."
                                  if booking.return_requested else " Pembayaran di kasir saat mengambil hewan.")
                     booking_event(booking, "Siap diambil", actor=request.user, customer_title=title,
@@ -953,7 +1029,7 @@ def groomer_update_status(request, pk):
                         POS_ROLES, f"Booking #{booking.pk} siap" + (" diantar kurir" if booking.return_requested else " diambil"),
                         booking.pet_name, reverse("service:check_in"),
                     )
-                    if booking.return_requested and booking.pet_courier_id and booking.is_paid:
+                    if booking.return_requested and booking.pet_courier_id and (booking.is_paid or booking.is_cod):
                         Notification.send(booking.pet_courier, f"{booking.pet_name} siap diantar pulang",
                                           booking.transport_address, reverse("service:courier_pets"))
                     messages.success(request, f"Semua tahap selesai. Booking #{booking.pk} siap.")
@@ -1031,6 +1107,14 @@ def _trip_steps(booking):
         paid = booking.is_paid or returning
         ready = booking.status in (BookingStatus.READY, BookingStatus.RETURNING, BookingStatus.DONE)
         rows.append((_("Hewan selesai dan siap diantar"), "done" if ready else "now", booking.finished_at))
+        if booking.cod_due:
+            # COD: tidak menunggu lunas; uang ditagih saat hewan diserahkan.
+            rows.append((_("Foto hewan, berangkat antar pulang"),
+                         "done" if returning else ("now" if ready else "todo"), None))
+            rows.append((_("Scan QR di HP pemilik, tagih tunai Rp %(total)s (COD), foto saat diserahkan")
+                         % {"total": f"{booking.total_price:,}".replace(",", ".")},
+                         "now" if returning else "todo", None))
+            return rows
         rows.append((_("Pembayaran lunas"), "done" if paid else ("now" if ready else "todo"), None))
         rows.append((_("Foto hewan, berangkat antar pulang"),
                      "done" if returning else ("now" if ready and paid else "todo"), None))
@@ -1104,8 +1188,13 @@ def courier_pet_trip(request, pk):
                                       customer_body="Pantau posisi kurir di Booking Saya. Siapkan QR booking.")
                         messages.success(request, _("Status: mengantar pulang."))
                     elif action == "deliver":
-                        booking.deliver_pet(request.user, request.POST.get("code"), data["photo"])
-                        booking_event(booking, "Diserahkan ke pemilik", actor=request.user, detail=data["note"],
+                        cod = booking.cod_due
+                        booking.deliver_pet(request.user, request.POST.get("code"), data["photo"],
+                                            cash_received=request.POST.get("cash_received") == "1")
+                        detail = data["note"]
+                        if cod:
+                            detail = " · ".join(filter(None, [f"Tunai Rp {booking.cash_collected:,}".replace(",", "."), detail]))
+                        booking_event(booking, "Diserahkan ke pemilik", actor=request.user, detail=detail,
                                       photo=booking.return_photo, lat=lat, lng=lng,
                                       customer_title=f"{booking.pet_name} sudah sampai di rumah",
                                       customer_body="Terima kasih! Beri ulasan untuk layanan kami.")
@@ -1126,7 +1215,7 @@ def courier_pet_trip(request, pk):
     elif booking.status == BookingStatus.PICKUP and not booking.pet_collected_at:
         step = "collect"
     elif booking.status == BookingStatus.READY and booking.return_requested:
-        step = "start_return" if booking.is_paid else "wait_payment"
+        step = "start_return" if booking.is_paid or booking.is_cod else "wait_payment"
     elif booking.status == BookingStatus.RETURNING:
         step = "deliver"
     log = list(ActivityLog.for_object(booking))

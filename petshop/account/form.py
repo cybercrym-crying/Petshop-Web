@@ -22,7 +22,20 @@ def _phone_taken_by_other_customer(phone, instance):
     return others.exists()
 
 
-class CustomerForm(forms.ModelForm):
+class PinMixin:
+    """Titik peta (lat/lng) opsional di form pelanggan: diisi berdua atau dikosongkan berdua."""
+
+    def clean(self):
+        cleaned = super().clean()
+        lat, lng = cleaned.get("latitude"), cleaned.get("longitude")
+        if (lat is None) != (lng is None):
+            self.add_error("latitude", "Titik peta tidak lengkap. Klik ulang lokasi di peta.")
+        elif lat is not None and not (-90 <= lat <= 90 and -180 <= lng <= 180):
+            self.add_error("latitude", "Titik peta tidak valid.")
+        return cleaned
+
+
+class CustomerForm(PinMixin, forms.ModelForm):
     """Data pelanggan (User role CUSTOMER) yang diisi admin.
 
     Nama pengguna & kata sandi opsional: kalau kosong, nama pengguna dibuat dari
@@ -39,7 +52,7 @@ class CustomerForm(forms.ModelForm):
 
     class Meta:
         model = Customer
-        fields = ["phone_number", "address"]
+        fields = ["phone_number", "address", "latitude", "longitude"]
 
     def clean_phone_number(self):
         phone = _clean_phone(self.cleaned_data["phone_number"])
@@ -74,6 +87,17 @@ class CustomerForm(forms.ModelForm):
         if commit:
             customer.save()
         return customer
+
+
+class QuickCustomerForm(CustomerForm):
+    """Pelanggan baru dari layar kasir / Buat Booking: tanpa akun login (nama pengguna dibuat dari
+    nomor HP). Pelanggan bisa membuat kata sandi sendiri nanti lewat daftar di situs."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.fields["username"]
+        del self.fields["password"]
+        self.fields["phone_number"].label = "Nomor WhatsApp"
 
 
 class EmployeeForm(forms.ModelForm):
@@ -128,21 +152,23 @@ class EmployeeForm(forms.ModelForm):
 
 
 class RegisterForm(forms.ModelForm):
-    """Pendaftaran akun pelanggan dari situs (role otomatis CUSTOMER)."""
+    """Pendaftaran akun pelanggan dari situs (role otomatis CUSTOMER).
+
+    Alamat tidak diminta di sini: baru diisi (dengan titik peta) saat pelanggan memesan.
+    """
 
     name = forms.CharField(max_length=255, label="Nama lengkap")
     phone_number = forms.CharField(max_length=20, label="Nomor telepon")
-    address = forms.CharField(max_length=255, label="Alamat")
     password1 = forms.CharField(widget=forms.PasswordInput, label="Kata sandi")
     password2 = forms.CharField(
         widget=forms.PasswordInput, label="Ulangi kata sandi"
     )
 
-    field_order = ["name", "username", "phone_number", "address", "password1", "password2"]
+    field_order = ["name", "username", "phone_number", "password1", "password2"]
 
     class Meta:
         model = Customer
-        fields = ["username", "phone_number", "address"]
+        fields = ["username", "phone_number"]
         labels = {"username": "Nama pengguna"}
 
     def clean_phone_number(self):
@@ -180,13 +206,14 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput, label="Kata sandi")
 
 
-class ProfileForm(forms.ModelForm):
+class ProfileForm(PinMixin, forms.ModelForm):
     """Pelanggan mengubah data akunnya sendiri (nama pengguna & peran tidak bisa diubah)."""
 
     name = forms.CharField(max_length=255, label="Nama lengkap")
     phone_number = forms.CharField(max_length=20, label="Nomor WhatsApp")
     address = forms.CharField(
         max_length=255,
+        required=False,
         label="Alamat utama",
         widget=forms.Textarea(attrs={"rows": 3}),
         help_text="Dipakai sebagai isian awal saat checkout.",
@@ -194,7 +221,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Customer
-        fields = ["email", "phone_number", "address"]
+        fields = ["email", "phone_number", "address", "latitude", "longitude"]
         labels = {"email": "Email (opsional)"}
 
     def __init__(self, *args, **kwargs):

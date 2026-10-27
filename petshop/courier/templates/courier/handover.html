@@ -18,7 +18,7 @@
                 {% csrf_token %}
                 <section class="ck-flow__step" data-step-scan>
                     <div class="ck-flow__title"><span class="ck-flow__no">1</span> {% translate "Scan QR di HP penerima" %}</div>
-                    <p class="sg-xs sg-muted">{% translate "Minta penerima membuka Dasbor / Pesanan Saya lalu menampilkan QR serah-terima. Bila tidak bisa, minta penerima membacakan kode 8 huruf." %}</p>
+                    <p class="sg-xs sg-muted">{% translate "Minta penerima menampilkan QR serah-terima dari Pesanan Saya atau dari tautan lacak yang dikirim toko lewat WhatsApp. Bila tidak bisa, minta penerima membacakan kode 8 huruf." %}</p>
                     <div class="ck-scan" data-qr-scanner data-target="#handover-code" data-autostart>
                         <video data-qr-video playsinline muted hidden></video>
                         <div class="ck-scan__frame" aria-hidden="true"><span></span></div>
@@ -55,7 +55,7 @@
         </main>
         <script src="{% static 'vendor/jsqr/jsQR.js' %}"></script>
         <script src="{% static 'js/qr_scanner.js' %}?v=1"></script>
-        <script src="{% static 'js/camera.js' %}?v=1"></script>
+        <script src="{% static 'js/camera.js' %}?v=2"></script>
         <script src="{% static 'courier/js/handover.js' %}?v=1"></script>
         <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>

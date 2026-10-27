@@ -1,0 +1,60 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% blocktranslate trimmed with pk=booking.pk %}Booking #{{ pk }} - Seelly Petshop{% endblocktranslate %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=7">
+    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=2">
+{% endblock %}
+{% block content %}
+    <section class="container section track-page">
+        <header class="track-head">
+            <h1 class="track-title">
+                <i class="fas fa-paw" aria-hidden="true"></i> {% translate "Booking Layanan" %}
+            </h1>
+            <p class="muted">{% translate "Tautan ini dikirim toko lewat WhatsApp. Jangan dibagikan ke orang lain." %}</p>
+        </header>
+        <article class="track-card">
+            <div class="track-card__top">
+                <div>
+                    <div class="track-label">{% blocktranslate trimmed with pk=booking.pk %}Booking #{{ pk }}{% endblocktranslate %}</div>
+                    <div class="track-share__pet">{{ booking.pet_name }}</div>
+                </div>
+                <span class="track-badge">{{ booking.get_status_display }}</span>
+            </div>
+            <dl class="track-share">
+                <dt>{% translate "Layanan" %}</dt>
+                <dd>{{ booking.service.name }}</dd>
+                <dt>{% translate "Jadwal" %}</dt>
+                <dd>{{ booking.schedule|date:"l, j F Y · H.i" }}</dd>
+                {% if booking.needs_transport %}
+                    <dt>{% translate "Antar-jemput" %}</dt>
+                    <dd>
+                        {% if booking.pickup_requested and booking.return_requested %}{% translate "Dijemput dan diantar pulang kurir" %}{% elif booking.pickup_requested %}{% translate "Dijemput kurir" %}{% else %}{% translate "Diantar pulang kurir" %}{% endif %}
+                        {% if booking.transport_address %}<small>{{ booking.transport_address }}</small>{% endif %}
+                    </dd>
+                {% endif %}
+                <dt>{% translate "Total" %}</dt>
+                <dd>
+                    <b>Rp {{ booking.total_price|rupiah }}</b>
+                    {% if booking.transport_fee %}<small>{% blocktranslate trimmed with fee=booking.transport_fee|rupiah %}termasuk antar-jemput Rp {{ fee }}{% endblocktranslate %}</small>{% endif %}
+                </dd>
+                <dt>{% translate "Pembayaran" %}</dt>
+                <dd>
+                    {% if booking.is_paid %}{% translate "Lunas" %}{% elif booking.is_cod %}{% translate "Bayar tunai ke kurir saat hewan diantar pulang (COD)" %}{% else %}{% translate "Bayar di kasir toko" %}{% endif %}
+                </dd>
+            </dl>
+            {% if booking.shows_share_qr %}
+                <section class="track-proof track-handover" aria-labelledby="share-qr-title">
+                    <h2 id="share-qr-title">
+                        <i class="fas fa-qrcode" aria-hidden="true"></i> {% translate "QR booking (tunjukkan ke kurir / kasir)" %}
+                    </h2>
+                    <div class="track-handover__body">
+                        <img src="{% url 'service:booking_share_qr' booking.pk %}?k={{ key|urlencode }}" alt="{% blocktranslate trimmed with pk=booking.pk %}QR booking #{{ pk }}{% endblocktranslate %}" width="180" height="180">
+                        <p class="track-note">{% translate "Kurir memindai QR ini saat menjemput dan saat mengantar pulang hewan Anda. Bila kamera kurir bermasalah, bacakan kode cadangan:" %} <b class="track-resi">{{ booking.checkin_code }}</b></p>
+                    </div>
+                </section>
+            {% endif %}
+        </article>
+    </section>
+{% endblock %}

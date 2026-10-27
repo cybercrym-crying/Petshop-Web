@@ -3,8 +3,8 @@
 {% load static rupiah %}
 {% block title %}{% translate "Lacak Pesanan - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=4">
-    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=7">
+    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=2">
     {% if order.order_status == "MENUNGGU" or order.order_status == "DIKONFIRMASI" or order.order_status == "DALAM_PENGIRIMAN" %}
         <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
     {% endif %}
@@ -37,6 +37,29 @@
                 <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> {{ error }}
             </div>
         {% endif %}
+        {% if locked %}
+            <article class="track-card track-verify">
+                <div class="track-card__top">
+                    <div>
+                        <div class="track-label">{% translate "Nomor resi" %}</div>
+                        <div class="track-resi">{{ locked }}</div>
+                    </div>
+                    <span class="track-badge"><i class="fas fa-lock" aria-hidden="true"></i> {% translate "Perlu verifikasi" %}</span>
+                </div>
+                <form method="post" action="{% url 'customer:track_detail' locked %}" class="track-verify__form">
+                    {% csrf_token %}
+                    <label for="wa4" class="track-verify__label">{% translate "Masukkan 4 digit terakhir nomor WhatsApp pemesan" %}</label>
+                    <p class="track-note">{% translate "Untuk menjaga privasi, detail pesanan hanya ditampilkan ke pemesan. Contoh: nomor 0812-3456-7890 berarti 7890." %}</p>
+                    <div class="track-verify__row">
+                        <input id="wa4" name="wa4" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required
+                               placeholder="••••" aria-describedby="wa4-error"{% if verify_error %} aria-invalid="true"{% endif %}>
+                        <button type="submit" class="btn-primary-seelly"><i class="fas fa-unlock" aria-hidden="true"></i> {% translate "Lihat pesanan" %}</button>
+                    </div>
+                    {% if verify_error %}<p class="track-verify__error" id="wa4-error" role="alert">{{ verify_error }}</p>{% endif %}
+                    <p class="track-note">{% blocktranslate trimmed with url=login_url %}Punya akun? <a href="{{ url }}">Masuk</a> untuk melihat semua pesanan tanpa verifikasi.{% endblocktranslate %}</p>
+                </form>
+            </article>
+        {% endif %}
         {% if order %}
             <article class="track-card">
                 <div class="track-card__top">
@@ -65,6 +88,17 @@
                             </li>
                         {% endfor %}
                     </ol>
+                {% endif %}
+                {% if handover_qr_url %}
+                    <section class="track-proof track-handover" aria-labelledby="handover-title">
+                        <h2 id="handover-title">
+                            <i class="fas fa-qrcode" aria-hidden="true"></i> {% translate "QR serah-terima (tunjukkan ke kurir)" %}
+                        </h2>
+                        <div class="track-handover__body">
+                            <img src="{{ handover_qr_url }}" alt="{% blocktranslate trimmed with order_pk=order.pk %}QR serah-terima pesanan #{{ order_pk }}{% endblocktranslate %}" width="180" height="180">
+                            <p class="track-note">{% translate "Saat paket tiba, kurir memindai QR ini lalu memotret paket di tangan Anda. Jangan bagikan QR ini sebelum paket benar-benar diterima. Kode cadangan:" %} <b class="track-resi">{{ order.handover_code }}</b></p>
+                        </div>
+                    </section>
                 {% endif %}
                 {% if order.order_status == "MENUNGGU" or order.order_status == "DIKONFIRMASI" or order.order_status == "DALAM_PENGIRIMAN" %}
                     <section class="track-live"

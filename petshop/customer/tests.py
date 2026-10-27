@@ -569,6 +569,29 @@ class TrackOrderTests(TestCase):
             payment_method="TUNAI",
             total_payment=45000,
         )
+        # Pengunjung tanpa login: verifikasi 4 digit terakhir nomor WA pemesan dulu.
+        self.client.post(reverse("customer:track_detail", args=[self.order.tracking_number]), {"wa4": "1111"})
+
+    def test_stranger_must_verify_last_4_wa_digits(self):
+        from django.core.cache import cache
+
+        cache.clear()
+        stranger = self.client_class()
+        url = reverse("customer:track_detail", args=[self.order.tracking_number])
+        locked = stranger.get(url)
+        self.assertContains(locked, "4 digit terakhir nomor WhatsApp")
+        self.assertNotContains(locked, "Pesanan dikonfirmasi")
+        self.assertNotContains(locked, "Budi S****")
+        self.assertEqual(stranger.get(reverse("customer:track_location", args=[self.order.tracking_number])).status_code, 403)
+        self.assertContains(stranger.post(url, {"wa4": "9999"}), "tidak cocok")
+        self.assertRedirects(stranger.post(url, {"wa4": "1111"}), url)
+        self.assertContains(stranger.get(url), "Pesanan dikonfirmasi")
+        # Tebakan beruntun dikunci 15 menit.
+        other = self.client_class()
+        for _ in range(5):
+            other.post(url, {"wa4": "0000"})
+        self.assertContains(other.post(url, {"wa4": "1111"}), "Terlalu banyak percobaan")
+        cache.clear()
 
     def test_empty_form_page_renders(self):
         response = self.client.get(reverse("customer:track"))
@@ -756,7 +779,10 @@ class ProductTrackingMapTests(TestCase):
         self.assertIn("destination", data)  # pemilik melihat titik rumahnya
 
     def test_strangers_see_the_store_but_not_the_address(self):
-        data = self.client.get(reverse("customer:track_location", args=[self.order.tracking_number])).json()
+        url = reverse("customer:track_location", args=[self.order.tracking_number])
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.post(reverse("customer:track_detail", args=[self.order.tracking_number]), {"wa4": "0001"})
+        data = self.client.get(url).json()
         self.assertIn("store", data)
         self.assertNotIn("destination", data)
 

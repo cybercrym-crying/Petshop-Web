@@ -5,6 +5,8 @@
 {% block extra_head %}
     <link href="{% static 'account/css/manage_account.css' %}?v=dm3"
           rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/address_pin.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <div class="container-fluid px-xl-4 px-3 py-4">
@@ -318,12 +320,7 @@
                                    required />
                         </div>
                         <div class="mb-4">
-                            <label class="form-label-custom">{% translate "Alamat" %}</label>
-                            <textarea name="address"
-                                      class="dark-input"
-                                      rows="3"
-                                      placeholder="Alamat lengkap pengiriman"
-                                      required></textarea>
+                            {% include "partials/_address_pin.html" with uid="new" input_class="dark-input" required=True %}
                         </div>
                         <p class="modal-sub mb-3">{% translate "Akun login (opsional). Kosongkan bila pelanggan tidak perlu login; nama pengguna otomatis memakai nomor HP." %}</p>
                         <div class="row g-4 mb-2">
@@ -391,21 +388,10 @@
                                 </div>
                             </div>
                             <div class="mb-4">
-                                <label class="form-label-custom">{% translate "Alamat" %}</label>
-                                <div class="d-flex gap-2 align-items-start">
-                                    <textarea name="address"
-                                              class="dark-input"
-                                              rows="3"
-                                              required>{{ cust.address }}</textarea>
-                                    <a href="{{ cust.maps_url }}"
-                                       target="_blank"
-                                       rel="noopener"
-                                       class="btn-cancel px-3 h-100"
-                                       style="text-decoration:none;
-                                              padding-top: 15px;
-                                              padding-bottom: 15px"
-                                       title="{% translate 'Buka Maps' %}"><i class="bi bi-geo-alt text-primary"></i></a>
-                                </div>
+                                {% include "partials/_address_pin.html" with uid=cust.pk lat=cust.latitude lng=cust.longitude address=cust.address input_class="dark-input" required=True %}
+                                {% if cust.address or cust.has_pin %}
+                                    <a href="{{ cust.maps_url }}" target="_blank" rel="noopener" class="ap-btn mt-2" style="text-decoration:none"><i class="bi bi-geo-alt" aria-hidden="true"></i> {% translate "Buka Maps" %}</a>
+                                {% endif %}
                             </div>
                             <div class="d-flex flex-wrap gap-2 justify-content-end mt-5 border-top pt-4">
                                 <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
@@ -426,4 +412,8 @@
             </div>
         </div>
     {% endfor %}
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
 {% endblock %}

@@ -35,7 +35,7 @@
             </section>
             <div class="sg-s7 no-print">
                 <section class="sg-card is-focus">
-                    <p class="sg-live mb-0"><i aria-hidden="true"></i>{% if order.is_voided %}{% translate "Dibatalkan" %}{% else %}{{ order.get_payment_status_display }}{% for p in payments %} · {{ p.get_method_display }}{% endfor %}{% endif %}</p>
+                    <p class="sg-live mb-0"><i aria-hidden="true"></i>{% if order.is_voided %}{% translate "Dibatalkan" %}{% else %}{{ order.get_payment_status_display }}{% if not payments and order.payment_method == "TUNAI" %} · {% translate "Bayar saat sampai (COD)" %}{% endif %}{% for p in payments %} · {{ p.get_method_display }}{% endfor %}{% endif %}</p>
                     <div class="sg-row is-wrap sg-mt8">
                         <span class="sg-big" style="font-size:2.2rem">Rp {{ order.total_payment|rupiah }}</span>
                         <span class="sg-sp"></span>
@@ -48,6 +48,20 @@
                         <div><dt>{% translate "Struk digital" %}</dt><dd><a class="sg-link" href="{{ public_url }}" target="_blank" rel="noopener">{% translate "Buka tautan" %}</a></dd></div>
                     </dl>
                 </section>
+                {% if handover_link %}
+                    <section class="sg-card sg-mt16" aria-labelledby="rcp-handover">
+                        <h2 id="rcp-handover" class="sg-h3"><i class="bi bi-qr-code" aria-hidden="true"></i> {% translate "QR serah-terima untuk pembeli" %}</h2>
+                        <p class="sg-sm sg-muted">{% translate "Kirim tautan ini ke WhatsApp pembeli. Isinya status pengiriman dan QR yang dipindai kurir saat paket diserahkan. Jangan cetak atau tempel QR ini di paket." %}</p>
+                        <div class="sg-row is-wrap sg-mt8">
+                            {% if handover_wa_url %}
+                                <a href="{{ handover_wa_url }}" target="_blank" rel="noopener" class="ui-btn ui-btn--primary"><i class="bi bi-whatsapp" aria-hidden="true"></i>{% translate "Kirim ke WA pembeli" %}</a>
+                            {% else %}
+                                <span class="sg-pill is-gold">{% translate "Nomor WA pembeli belum ada" %}</span>
+                            {% endif %}
+                            <a href="{{ handover_link }}" target="_blank" rel="noopener" class="ui-btn"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>{% translate "Buka tautan" %}</a>
+                        </div>
+                    </section>
+                {% endif %}
                 {% if log or returns %}
                     <section class="sg-card sg-mt16" aria-labelledby="rcp-log">
                         <h2 id="rcp-log" class="sg-h3">{% translate "Riwayat struk ini" %}</h2>

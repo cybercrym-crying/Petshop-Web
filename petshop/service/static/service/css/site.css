@@ -103,13 +103,21 @@
 }
 
 /* ---------- Layout ---------- */
+/* Lebar diukur dari area isi (container query), bukan layar: di halaman pelanggan yang
+   punya menu samping, layar 1024 px hanya menyisakan ~730 px untuk isi. */
+.svc-page {
+  container: svcpage / inline-size;
+}
+.svc-services {
+  container: svcgrid / inline-size;
+}
 .svc-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 48px;
   align-items: start;
 }
-@media (min-width: 992px) {
+@container svcpage (min-width: 900px) {
   .svc-layout {
     grid-template-columns: minmax(0, 1fr) 424px;
   }
@@ -160,7 +168,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
-@media (min-width: 640px) {
+@container svcgrid (min-width: 560px) {
   .groom-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

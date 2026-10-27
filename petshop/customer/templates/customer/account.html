@@ -5,6 +5,8 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/account.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'customer/css/account-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/address_pin.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <section class="container acc-page">
@@ -38,12 +40,20 @@
                     <span class="acc-static">{{ user.username }}</span>
                 </div>
                 {% for field in profile_form %}
+                    {% if field.name == "address" %}
+                        <div class="acc-field{% if field.errors or profile_form.latitude.errors %} has-error{% endif %}">
+                            {% include "partials/_address_pin.html" with uid="acc" fa=True input_class="form-control" lat=profile_form.latitude.value lng=profile_form.longitude.value address=field.value label=field.label errors=field.errors|add:profile_form.latitude.errors %}
+                            {% if field.help_text %}<small class="acc-help">{{ field.help_text }}</small>{% endif %}
+                        </div>
+                    {% elif field.name == "latitude" or field.name == "longitude" %}
+                    {% else %}
                     <div class="acc-field{% if field.errors %} has-error{% endif %}">
                         <label for="{{ field.id_for_label }}" class="acc-label">{{ field.label }}</label>
                         {{ field }}
                         {% if field.help_text %}<small class="acc-help">{{ field.help_text }}</small>{% endif %}
                         {% for error in field.errors %}<small class="acc-error">{{ error }}</small>{% endfor %}
                     </div>
+                    {% endif %}
                 {% endfor %}
                 <button type="submit" class="btn-primary-seelly">{% translate "Simpan Profil" %}</button>
             </form>
@@ -63,4 +73,8 @@
             </form>
         </div>
     </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
 {% endblock %}

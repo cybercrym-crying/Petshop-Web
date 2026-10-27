@@ -1,0 +1,26 @@
+/* Alamat pelanggan: peta titik rumah + detail alamat (partials/_address_pin.html). */
+.ap { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ap-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.ap-title { font-size: 0.85rem; font-weight: 700; color: inherit; }
+.ap-title small { font-weight: 500; opacity: 0.7; }
+.ap-btn, .ap-clear { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid #d9cdf3; border-radius: 999px; background: #ffffff; color: #6d28d9; font: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.ap-btn:hover, .ap-clear:hover { border-color: #7c3aed; }
+.ap-btn[hidden], .ap-clear[hidden] { display: none; }
+.ap-map { height: 220px; border-radius: 14px; border: 1px solid #e4dcf5; background: #f3eefc; overflow: hidden; z-index: 0; }
+.ap-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; font-size: 0.8rem; line-height: 1.4; color: #6b6280; }
+.ap-status i { margin-right: 2px; }
+.ap-status__on { display: none; color: #15803d; font-weight: 700; }
+.ap-status.is-set .ap-status__off { display: none; }
+.ap-status.is-set .ap-status__on { display: inline; }
+.ap-clear { min-height: 28px; padding: 0 10px; color: #b42318; border-color: #f2c4c0; }
+.ap-label { margin-top: 4px; font-size: 0.85rem; font-weight: 700; }
+.ap textarea { width: 100%; }
+@media (max-width: 575.98px) { .ap-map { height: 200px; } }
+
+html[data-theme="dark"] .ap-btn { background: #211a2b; border-color: #4a3d5c; color: #d8b4fe; }
+html[data-theme="dark"] .ap-map { background: #18121f; border-color: #3a2f48; }
+html[data-theme="dark"] .ap-status { color: #b9adc7; }
+html[data-theme="dark"] .ap-status__on { color: #6ee7a0; }
+html[data-theme="dark"] .ap-clear { background: #211a2b; border-color: #6b2a2a; color: #f19999; }
+.ap .field-error { margin: 0; color: #b42318; font-size: 0.8rem; font-weight: 600; }
+html[data-theme="dark"] .ap .field-error { color: #f19999; }

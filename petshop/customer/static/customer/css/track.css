@@ -154,3 +154,26 @@
 /* Foto kurir (diunggah kurir di Akun Saya) */
 .track-courier { display: flex; align-items: center; gap: 10px; }
 .track-courier__photo { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--purple-200); }
+
+/* QR serah-terima (pembeli dari tautan kasir atau pemilik yang login) */
+.track-handover__body { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.track-handover__body img { flex: none; width: 180px; height: 180px; padding: 6px; border-radius: 12px; background: #ffffff; }
+.track-handover__body .track-note { flex: 1 1 220px; margin: 0; }
+.track-handover .track-resi { font-size: 1.05rem; letter-spacing: 0.08em; }
+
+/* Verifikasi 4 digit nomor WA (pengunjung tanpa login) */
+.track-verify__form { display: flex; flex-direction: column; gap: 8px; }
+.track-verify__label { font-weight: 700; color: var(--ink); }
+.track-verify__form .track-note { margin: 0; }
+.track-verify__row { display: flex; flex-wrap: wrap; gap: 10px; }
+.track-verify__row input { flex: 0 1 160px; min-width: 0; min-height: 48px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--white); color: var(--ink); font-size: 1.3rem; font-weight: 700; letter-spacing: 0.4em; text-align: center; }
+.track-verify__row input:focus { outline: 3px solid var(--purple-300); outline-offset: 1px; }
+.track-verify__row .btn-primary-seelly { flex: 1 1 160px; justify-content: center; }
+.track-verify__error { margin: 0; color: var(--danger); font-weight: 700; font-size: 0.9rem; }
+
+/* Halaman QR booking dari tautan WhatsApp */
+.track-share__pet { font-size: 1.3rem; font-weight: 800; color: var(--ink, #2a2140); overflow-wrap: anywhere; }
+.track-share { display: grid; grid-template-columns: minmax(90px, auto) minmax(0, 1fr); gap: 10px 16px; margin: 0 0 6px; }
+.track-share dt { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.track-share dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.track-share dd small { display: block; color: var(--muted); font-size: 0.82rem; }

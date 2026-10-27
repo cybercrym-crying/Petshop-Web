@@ -240,6 +240,14 @@ class NotificationTests(TestCase):
         r = self.client.get(reverse("store:notifications"))
         self.assertTemplateUsed(r, "store/notifications_staff.html")
 
+    def test_groomer_page_uses_groomer_layout_without_cashier_links(self):
+        make_user("grm", Role.GROOMER)
+        self.client.login(username="grm", password="Pass12345!x")
+        r = self.client.get(reverse("store:notifications"))
+        self.assertTemplateUsed(r, "store/_notifications_groomer_page.html")
+        self.assertNotContains(r, reverse("transaction:cashier_home"))
+        self.assertContains(r, reverse("service:groomer_dashboard"))
+
 
 class CustomerDashboardTests(TestCase):
     def test_customer_lands_on_dashboard(self):

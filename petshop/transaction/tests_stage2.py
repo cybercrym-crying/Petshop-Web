@@ -185,5 +185,6 @@ class PackingAndLabelTests(TestCase):
 
     def test_track_location_hides_destination_from_strangers(self):
         order = self.cod()
+        self.client.post(reverse("customer:track_detail", args=[order.tracking_number]), {"wa4": order.phone_last4})
         r = self.client.get(reverse("customer:track_location", args=[order.tracking_number]))
         self.assertNotIn("destination", r.json())

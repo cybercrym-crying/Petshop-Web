@@ -237,24 +237,20 @@ class StaffAndCustomerPagesTests(Fixtures, TestCase):
         self.assertEqual(self.client.get("/staff/admin/manage_account").status_code, 403)
         self.assertEqual(self.client.get("/staff/admin/layanan/").status_code, 403)
 
-    def test_pos_service_tab_shows_steps_done_by_groomer(self):
-        from common.tests_helpers import tiny_photo
-
-        ServiceStep.objects.create(service=self.service, position=1, name="Potong kuku")
-        ServiceStep.objects.create(service=self.service, position=2, name="Mandi")
+    def test_booking_is_paid_from_booking_panel_not_a_pos_tab(self):
+        """Kasir tidak lagi punya tab Layanan: tagihan booking dimasukkan dari panel Booking Layanan
+        (atau scan QR booking di kasir)."""
         b = self.queued()
-        b.start(self.groomer)
-        b.complete_step(self.groomer, tiny_photo())
         self.client.login(username="ksr", password="x")
-        r = self.client.get("/staff/admin/make_transaction/?tab=layanan")
-        self.assertEqual(r.context["tab"], "layanan")
-        card = r.context["payable_bookings"][0]
-        self.assertEqual(card, b)
-        self.assertEqual([at is not None for _name, at in card.step_rows], [True, False])
-        self.assertContains(r, "Tahapan layanan (2)")
-        self.assertContains(r, f'name="booking" value="{b.pk}"')
-        # Tab Produk tidak memuat kartu layanan.
-        self.assertNotContains(self.client.get("/staff/admin/make_transaction/"), "Tahapan layanan")
+        pos_page = self.client.get("/staff/admin/make_transaction/")
+        self.assertNotContains(pos_page, "tab=layanan")
+        self.assertNotContains(pos_page, "Tahapan layanan")
+        panel = self.client.get(reverse("service:manage_bookings") + f"?id={b.pk}")
+        self.assertContains(panel, reverse("transaction:pos_add_booking"))
+        self.assertContains(panel, f'name="booking" value="{b.pk}"')
+        r = self.client.post(reverse("transaction:pos_add_booking"), {"booking": b.pk})
+        self.assertRedirects(r, reverse("transaction:make_transaction"), fetch_redirect_response=False)
+        self.assertContains(self.client.get("/staff/admin/make_transaction/"), f"#{b.pk}")
 
     def test_kasir_creates_walk_in_booking(self):
         self.client.login(username="ksr", password="x")
@@ -271,6 +267,35 @@ class StaffAndCustomerPagesTests(Fixtures, TestCase):
         )
         b = ServiceBooking.objects.get()
         self.assertEqual((b.pet_name, b.groomer, b.created_by), ("Kopi", self.groomer, self.kasir))
+
+    def test_staff_booking_rejects_time_already_passed(self):
+        """Jadwal yang sudah lewat (lebih dari 15 menit) ditolak; form pelanggan memberi batas min di kalender."""
+        self.client.login(username="ksr", password="x")
+        past = timezone.localtime() - timedelta(hours=1)
+        self.client.post(reverse("service:create_booking"), {
+            "customer": self.customer.pk, "service": self.service.pk, "pet_name": "Kopi", "pet_type": "ANJING",
+            "schedule": past.strftime("%Y-%m-%dT%H:%M"),
+        })
+        self.assertFalse(ServiceBooking.objects.exists())
+        page = self.client.get(reverse("service:manage_bookings"))
+        self.assertContains(page, f'min="{timezone.localdate():%Y-%m-%d}"')
+        from .forms import BookingForm
+
+        attrs = BookingForm().fields["schedule"].widget.attrs
+        self.assertGreaterEqual(attrs["min"], timezone.localtime().strftime("%Y-%m-%dT%H:%M"))
+        self.assertEqual(int(attrs["min"][-2:]) % 15, 0)
+
+    def test_new_booking_modal_lists_services_then_groomers(self):
+        """Form buat booking: layanan berupa pilihan kartu, groomer dipilih sesudahnya (beban hari ini terlihat)."""
+        self.queued(schedule=timezone.now()).assign_groomer(self.groomer)
+        self.client.login(username="ksr", password="x")
+        r = self.client.get(reverse("service:manage_bookings"))
+        html = r.content.decode()
+        self.assertIn(f'name="service" value="{self.service.pk}"', html)
+        self.assertIn(f'name="groomer" value="{self.groomer.pk}"', html)
+        self.assertLess(html.index('name="service" value='), html.index('name="groomer" value='))
+        loads = {g.pk: g.today_load for g in r.context["groomers"]}
+        self.assertEqual((loads[self.groomer.pk], loads[self.groomer2.pk]), (1, 0))
 
     def test_customer_books_online_and_sees_status(self):
         self.customer.set_password("rahasia-123")

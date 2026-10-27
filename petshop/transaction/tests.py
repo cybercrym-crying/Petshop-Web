@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.test import TestCase
 from account.models import User, Customer, Role
 from django.test import SimpleTestCase
@@ -332,10 +333,12 @@ class CustomerSelectionTests(TestCase):
         self.submit(customer=9999)
         self.assertEqual(Order.objects.count(), 0)
 
-    def test_page_has_no_inline_new_customer_fields_but_links_to_manage_account(self):
+    def test_new_customer_is_added_from_separate_modal_not_the_pay_form(self):
+        # Pelanggan baru dibuat lewat modal "Pelanggan baru" (form sendiri), bukan isian di form Bayar.
         r = self.client.get("/staff/admin/make_transaction/")
         self.assertNotContains(r, "new_phone")
-        self.assertContains(r, "manage_account?tab=customer")
+        self.assertContains(r, "data-qc-open")
+        self.assertContains(r, f'action="{reverse("transaction:quick_customer")}"')
 
 
 class BoardViewTests(TestCase):

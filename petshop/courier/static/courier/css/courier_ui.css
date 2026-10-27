@@ -93,7 +93,8 @@
 .ck-cod { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--sg-gold-soft); color: var(--sg-gold-soft-ink); font-weight: 800; }
 .ck-cod span { margin-left: auto; font-size: 0.75rem; }
 .ck-next > .ck-btn.is-lg { margin-top: 6px; }
-.ck-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ck-row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ck-row2 > .ck-btn { min-width: 0; padding: 0 12px; }
 .ck-foot { margin: 2px 0 0; font-size: 0.8rem; font-weight: 600; color: var(--c-muted); }
 .ck-empty { align-items: flex-start; }
 .ck-empty__icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--sg-card); color: var(--sg-pri-text); font-size: 1.4rem; box-shadow: var(--sg-sh-1); }

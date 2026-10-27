@@ -6,7 +6,7 @@
 {% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux7">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux7-lay1">
     <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
 {% endblock %}
 {% block content %}
@@ -320,7 +320,7 @@
     <script src="{% static 'service/js/catalog_filter.js' %}?v=1"></script>
     {% if is_customer %}
         <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
-        <script src="{% static 'store/js/map_picker.js' %}?v=1"></script>
+        <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
         <script src="{% static 'service/js/booking_form.js' %}?v=1"></script>
     {% endif %}
 {% endblock %}

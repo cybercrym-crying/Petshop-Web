@@ -141,6 +141,27 @@ class CustomerAccountPageTests(TestCase):
         self.assertEqual(self.customer.phone_number, "081300000002")
         self.assertEqual(self.customer.address, "Jl. Melati 2")
 
+    def test_profile_picks_home_on_map_and_register_skips_address(self):
+        page = self.client.get(reverse("customer:account"))
+        self.assertContains(page, "data-map-picker")
+        self.client.post(reverse("customer:account"), {
+            "form": "profile", "name": "Siti", "phone_number": "081300000001", "email": "",
+            "address": "Jl. Mawar 5", "latitude": "-0.5", "longitude": "117.15",
+        })
+        self.customer.refresh_from_db()
+        self.assertTrue(self.customer.has_pin)
+        self.client.logout()
+        # Daftar tanpa alamat: alamat & titik peta baru diisi saat memesan.
+        reg = self.client.get(reverse("register"))
+        self.assertNotContains(reg, 'name="address"')
+        self.client.post(reverse("register"), {
+            "name": "Baru", "username": "baru1", "phone_number": "081399999999",
+            "password1": "SandiKuat#2026", "password2": "SandiKuat#2026",
+        })
+        baru = Customer.objects.get(username="baru1")
+        self.assertEqual(baru.address, "")
+        self.assertFalse(baru.has_pin)
+
     def test_phone_used_by_other_customer_is_rejected(self):
         Customer.objects.create(name="Lain", phone_number="081300000009", address="x")
         r = self.client.post(
