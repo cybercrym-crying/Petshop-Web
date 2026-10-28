@@ -3,6 +3,7 @@ html[data-theme="dark"] .acc-stat { background: #211a2b; border: 1px solid #3a2f
 html[data-theme="dark"] .acc-stat:hover { border-color: #5b4775; color: #f1ebf7; }
 html[data-theme="dark"] .acc-stat strong { color: #d8b4fe; }
 html[data-theme="dark"] .acc-stat span { color: #b9adc7; }
+html[data-theme="dark"] .acc-photo__av { background: #7e2fb8; color: #fff; box-shadow: 0 0 0 4px #2b2139; }
 html[data-theme="dark"] .acc-card { background: #211a2b; border: 1px solid #3a2f48; box-shadow: 0 2px 10px rgba(107, 33, 168, 0.08); }
 html[data-theme="dark"] .acc-card h2 { color: #f1ebf7; }
 html[data-theme="dark"] .acc-card h2 i { color: #d8b4fe; }

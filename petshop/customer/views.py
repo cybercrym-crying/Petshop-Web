@@ -49,7 +49,7 @@ def _site_context(**extra):
         "wa_link": store.whatsapp_link,
         "wa_display": store.whatsapp_display,
         "bank_accounts": store.bank_accounts(),
-        "store_qris": store.qris_image or None,
+        "store_qris": store.qris,
         **extra,
     }
 
@@ -721,12 +721,24 @@ def account(request):
     from django.contrib.auth import update_session_auth_hash
     from django.contrib.auth.forms import PasswordChangeForm
 
-    from account.form import ProfileForm
+    from account.form import ProfilePhotoForm, ProfileForm
 
     user = Customer.objects.get(pk=request.user.pk)
     profile_form = ProfileForm(instance=user)
     password_form = PasswordChangeForm(request.user)
+    photo_form = ProfilePhotoForm()
     if request.method == "POST":
+        if request.POST.get("form") == "photo":
+            photo_form = ProfilePhotoForm(request.POST, request.FILES)
+            if photo_form.is_valid():
+                photo_form.save(user)
+                messages.success(
+                    request, _("Foto profil dihapus.") if not user.photo else _("Foto profil diperbarui.")
+                )
+                return redirect("customer:account")
+            for error in photo_form.errors.values():
+                messages.error(request, " ".join(error))
+            return redirect("customer:account")
         if request.POST.get("form") == "password":
             password_form = PasswordChangeForm(request.user, request.POST)
             if password_form.is_valid():

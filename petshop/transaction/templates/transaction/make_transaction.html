@@ -284,10 +284,10 @@
                                 <button type="button" class="pos-chip" data-pay-exact="qris">{% translate "Semua QRIS" %}</button>
                             </div>
                             <div class="pos-noncash" data-noncash hidden>
-                                {% if store.qris_image %}
+                                {% if store.qris %}
                                     <details data-qris-box>
                                         <summary>{% translate "Tampilkan QRIS toko untuk pembeli" %}</summary>
-                                        <img src="{{ store.qris_image.url }}" alt="{% translate 'QRIS toko' %}" class="pos-qris-img">
+                                        <img src="{{ store.qris.url }}" alt="{% translate 'QRIS toko' %}" class="pos-qris-img">
                                     </details>
                                 {% endif %}
                                 {% for a in store.bank_accounts %}

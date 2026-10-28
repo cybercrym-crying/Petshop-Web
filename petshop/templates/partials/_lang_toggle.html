@@ -1,7 +1,7 @@
 {% load i18n static %}
 {# Tombol ganti bahasa ID/EN. Pilihan disimpan di cookie oleh view set_language bawaan Django. #}
 <link rel="stylesheet" href="{% static 'css/lang_toggle.css' %}?v=1">
-<script src="{% static 'js/i18n.js' %}?v=7"></script>
+<script src="{% static 'js/i18n.js' %}?v=8"></script>
 <form class="lang-toggle{% if extra %} {{ extra }}{% endif %}" action="{% url 'set_language' %}" method="post" aria-label="{% translate 'Bahasa' %}">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ request.get_full_path }}">

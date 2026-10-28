@@ -1,15 +1,16 @@
 {% extends "customer/base.html" %}
 {% load i18n %}
-{% load static %}
+{% load static l10n %}
 {% block title %}{% translate "Checkout - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/checkout.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'customer/css/checkout-dark.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'customer/css/checkout_ux.css' %}?v=2">
-    <link rel="stylesheet" href="{% static 'customer/css/checkout_ux-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/checkout_ux.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'customer/css/checkout_ux-dark.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
 {% endblock %}
 {% block content %}
-    <section class="container section cx-page" data-guest-checkout data-wa-number="{{ wa_number }}">
+    <section class="container section cx-page" data-guest-checkout data-wa-number="{{ wa_number }}" data-quote-url="{% url 'customer:shipping_quote' %}">
         {% include "customer/_checkout_steps.html" with guest=True %}
         <header class="cx-head">
             <h1 class="cx-title">{% translate "Checkout" %}</h1>
@@ -49,6 +50,17 @@
                             <textarea id="co-guest-address" name="alamat" autocomplete="street-address" rows="3" required placeholder="{% translate 'Jalan, RT/RW, kelurahan, kecamatan, kota' %}"></textarea>
                             <p class="cx-hint">{% translate "Contoh: Jl. Merdeka No. 123, RT 001/RW 002, Kel. Sukamaju, Kec. Samarinda Ulu, Kota Samarinda, 75124" %}</p>
                         </div>
+                        <div class="cx-field mb-0 cx-map-field">
+                            <div class="cx-map-head">
+                                <label>{% translate "Titik lokasi di peta" %} <span class="co-req">{% translate "wajib" %}</span></label>
+                                <button type="button" class="cx-chip-btn" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
+                            </div>
+                            <div class="co-map cx-map" data-map-picker data-default-lat="{{ store.latitude|unlocalize }}" data-default-lng="{{ store.longitude|unlocalize }}" role="application" aria-label="{% translate 'Peta titik pengiriman' %}"></div>
+                            <input type="hidden" id="co-lat" name="latitude" data-map-lat>
+                            <input type="hidden" id="co-lng" name="longitude" data-map-lng>
+                            <p class="cx-hint cx-hint--info" data-guest-ship-info>{% translate 'Klik peta atau tekan "Pakai lokasi saya" untuk menandai rumah Anda. Titik ini dikirim ke admin sebagai link Google Maps.' %}</p>
+                            <a class="cx-gmaps" href="#" target="_blank" rel="noopener" data-guest-gmaps hidden><i class="fas fa-map-location-dot" aria-hidden="true"></i> {% translate "Cek titik di Google Maps" %}</a>
+                        </div>
                     </section>
                 </form>
                 <section class="cx-card payment-section" aria-labelledby="cx-pay">
@@ -82,7 +94,7 @@
                     <a href="{% url 'customer:products' %}" class="btn-primary-seelly">{% translate "Mulai Belanja" %}</a>
                 </div>
                 <div class="cx-rows total-section">
-                    <div class="cx-row"><span>{% translate "Ongkir" %}</span><span class="cx-muted">{% translate "Diinfokan admin" %}</span></div>
+                    <div class="cx-row"><span>{% translate "Ongkir (perkiraan)" %} <small data-guest-distance></small></span><span class="cx-muted" data-guest-ship>{% translate "Pilih titik di peta" %}</span></div>
                     <div class="cx-row cx-row--total">
                         <span>{% translate "Total barang" %}</span>
                         <strong id="total-price">Rp 0</strong>
@@ -112,6 +124,7 @@
                 <h3><i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Dikirim ke" %}</h3>
                 <p class="cx-dialog__who"><strong id="confirm-name"></strong> · <span id="confirm-phone"></span></p>
                 <p class="cx-dialog__addr" id="confirm-address"></p>
+                <p class="cx-dialog__addr"><a href="#" target="_blank" rel="noopener" id="confirm-gmaps"><i class="fas fa-map-location-dot" aria-hidden="true"></i> {% translate "Titik di Google Maps" %}</a></p>
             </section>
             <section class="cx-dialog__block">
                 <h3><i class="fas fa-wallet" aria-hidden="true"></i> {% translate "Cara bayar" %}</h3>
@@ -121,7 +134,7 @@
                 <h3><i class="fas fa-box" aria-hidden="true"></i> {% translate "Barang" %}</h3>
                 <ul class="confirm-items cx-items" id="confirm-items"></ul>
                 <div class="cx-rows">
-                    <div class="cx-row"><span>{% translate "Ongkir" %}</span><span class="cx-muted">{% translate "Diinfokan admin" %}</span></div>
+                    <div class="cx-row"><span>{% translate "Ongkir (perkiraan)" %}</span><span class="cx-muted" id="confirm-ship"></span></div>
                     <div class="cx-row cx-row--total"><span>{% translate "Total barang" %}</span><strong id="confirm-total"></strong></div>
                 </div>
             </section>
@@ -139,5 +152,7 @@
     </dialog>
 {% endblock %}
 {% block extra_js %}
-    <script src="{% static 'customer/js/checkout.js' %}?v=ux2"></script>
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
+    <script src="{% static 'customer/js/checkout.js' %}?v=ux3"></script>
 {% endblock %}
