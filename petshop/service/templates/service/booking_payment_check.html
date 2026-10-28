@@ -37,7 +37,7 @@
                     <dl class="so-dl">
                         <dt>{% translate "Harus diterima" %}</dt><dd class="so-amount">Rp {{ booking.total_price|rupiah }}</dd>
                         {% if booking.transport_fee %}<dt>{% translate "Rincian" %}</dt><dd>{% blocktranslate trimmed with price=booking.price|rupiah fee=booking.transport_fee|rupiah %}Layanan Rp {{ price }} + antar-jemput Rp {{ fee }}{% endblocktranslate %}</dd>{% endif %}
-                        <dt>{% translate "Pelanggan" %}</dt><dd>{{ booking.customer.name }}{% if booking.customer.phone_number %} · <a href="{{ booking.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {{ booking.customer.phone_number }}</a>{% endif %}</dd>
+                        <dt>{% translate "Pelanggan" %}</dt><dd>{{ booking.owner_name }}{% if booking.owner_phone %} · <a href="{{ booking.owner_whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {{ booking.owner_phone }}</a>{% endif %}</dd>
                         <dt>{% translate "Layanan" %}</dt><dd>{{ booking.service.name }} · {{ booking.pet_name }}</dd>
                         <dt>{% translate "Jadwal" %}</dt><dd>{{ booking.schedule|date:"d M Y, H:i" }} · {{ booking.get_status_display }}</dd>
                     </dl>
@@ -63,7 +63,7 @@
                         <h2 class="h6 fw-bold mb-2">{% translate "Bukti lain yang menunggu" %}</h2>
                         <ul class="list-unstyled mb-0 so-list">
                             {% for b in waiting %}
-                                <li><a href="{% url 'service:booking_payment_check' b.pk %}">#{{ b.pk }} · {{ b.customer.name }}</a> <span class="text-muted">Rp {{ b.total_price|rupiah }}</span></li>
+                                <li><a href="{% url 'service:booking_payment_check' b.pk %}">#{{ b.pk }} · {{ b.owner_name }}</a> <span class="text-muted">Rp {{ b.total_price|rupiah }}</span></li>
                             {% endfor %}
                         </ul>
                     </div>

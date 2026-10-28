@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
 from django.db.models import Count, F, Q, Sum
+from common.cancel import MissingCancelReason, read_cancel_reason
 from common.exceptions import PetshopError
 from product.models import Product, InsufficientStock
 from account.models import POS_ROLES, Customer, User, Role, person_search
@@ -357,10 +358,11 @@ def update_status(request, pk):
                     raise InvalidTransition(
                         f"Order #{order.pk} adalah transaksi kasir: batalkan lewat halaman struk (admin, dengan alasan)."
                     )
-                order.cancel()
+                reason = read_cancel_reason(request.POST)
+                order.cancel(reason=reason, by=request.user)
                 order_event(
-                    order, "Dibatalkan toko", request.user,
-                    customer_title=f"Pesanan #{order.pk} dibatalkan toko",
+                    order, "Dibatalkan toko", request.user, detail=reason,
+                    customer_title=f"Pesanan #{order.pk} dibatalkan toko", customer_body=reason,
                 )
                 messages.success(
                     request, f"Order #{order.pk} dibatalkan, stok dikembalikan."
@@ -371,7 +373,7 @@ def update_status(request, pk):
                     )
             else:
                 messages.error(request, _("Aksi tidak dikenal."))
-    except InvalidTransition as e:
+    except (InvalidTransition, MissingCancelReason) as e:
         messages.error(request, str(e))
     if request.POST.get("next") == "packing":
         return redirect("transaction:packing_queue")

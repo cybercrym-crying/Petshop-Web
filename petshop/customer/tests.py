@@ -604,7 +604,7 @@ class TrackOrderTests(TestCase):
 
     def test_garbage_resi_shows_error_not_crash(self):
         response = self.client.get(reverse("customer:track"), {"resi": "<script>x</script>"})
-        self.assertContains(response, "Resi tidak ditemukan")
+        self.assertContains(response, "Resi atau kode booking tidak ditemukan")
         self.assertNotContains(response, "<script>x</script>")
 
     def test_lookup_by_query_and_by_link(self):

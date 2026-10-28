@@ -223,6 +223,12 @@ class ServiceBooking(TimeStampedModel):
     pet_type = models.CharField(_("Jenis hewan"), max_length=20, choices=PetType.choices)
     schedule = models.DateTimeField("Jadwal")
     customer_note = models.CharField("Catatan pelanggan", max_length=255, blank=True, default="")
+    # Booking tamu tanpa akun (customer = akun "Pelanggan umum"), seperti pembeli umum di Order.
+    guest_name = models.CharField("Nama tamu", max_length=80, blank=True, default="")
+    guest_phone = models.CharField("WA tamu", max_length=20, blank=True, default="")
+    guest_address = models.CharField("Alamat tamu", max_length=255, blank=True, default="")
+    guest_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    guest_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     # Harga disalin saat booking supaya perubahan harga layanan tidak mengubah riwayat.
     price = models.PositiveBigIntegerField("Harga")
     status = models.CharField(
@@ -267,6 +273,10 @@ class ServiceBooking(TimeStampedModel):
     groomer_note = models.CharField("Catatan groomer", max_length=255, blank=True, default="")
     closed_at = models.DateTimeField(null=True, blank=True)  # hewan sudah kembali ke pemilik
     cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancel_reason = models.CharField("Alasan pembatalan", max_length=255, blank=True, default="")
+    cancelled_by = models.ForeignKey(
+        "account.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
     # Antar-jemput hewan oleh kurir yang bisa membawa hewan.
     pickup_requested = models.BooleanField("Minta dijemput", default=False)
     return_requested = models.BooleanField("Minta diantar pulang", default=False)
@@ -336,6 +346,9 @@ class ServiceBooking(TimeStampedModel):
         address="",
         confirmed=False,
         payment_choice=BookingPayChoice.LATER,
+        guest_name="",
+        guest_phone="",
+        guest_location=None,
     ):
         """Satu pintu membuat booking baru (dari situs pelanggan atau kasir).
 
@@ -390,6 +403,11 @@ class ServiceBooking(TimeStampedModel):
             pet_type=pet_type,
             schedule=schedule,
             customer_note=(note or "").strip()[:255],
+            guest_name=(guest_name or "").strip()[:80],
+            guest_phone=(guest_phone or "").strip()[:20],
+            guest_address=(address or "").strip()[:255] if guest_name else "",
+            guest_latitude=guest_location[0] if guest_location else None,
+            guest_longitude=guest_location[1] if guest_location else None,
             created_by=created_by,
             groomer=groomer,
             price=service.price,
@@ -563,6 +581,36 @@ class ServiceBooking(TimeStampedModel):
             return signing.loads(key or "", salt=self.SHARE_SALT) == self.pk
         except signing.BadSignature:
             return False
+
+    @property
+    def is_guest(self):
+        return bool(getattr(self.customer, "is_walk_in", False))
+
+    @property
+    def owner_name(self):
+        """Nama pemilik hewan: nama tamu untuk booking tanpa akun, selain itu nama akun."""
+        if self.is_guest:
+            return self.guest_name or "Pelanggan umum"
+        return self.customer.name
+
+    @property
+    def owner_phone(self):
+        return self.guest_phone if self.is_guest else self.customer.phone_number
+
+    @property
+    def owner_whatsapp_url(self):
+        if not self.is_guest:
+            return self.customer.whatsapp_url
+        number = "".join(ch for ch in self.guest_phone if ch.isdigit())
+        if not number:
+            return ""
+        return "https://wa.me/" + ("62" + number[1:] if number.startswith("0") else number)
+
+    @property
+    def phone_last4(self):
+        """4 digit terakhir nomor WA pemilik, untuk verifikasi halaman lacak booking tanpa login."""
+        digits = "".join(ch for ch in (self.owner_phone or "") if ch.isdigit())
+        return digits[-4:] if len(digits) >= 4 else ""
 
     @property
     def shows_share_qr(self):
@@ -806,7 +854,7 @@ class ServiceBooking(TimeStampedModel):
             if booking.is_paid:
                 continue
             try:
-                booking.cancel()
+                booking.cancel(reason="Lewat batas waktu pembayaran")
             except InvalidBookingTransition:
                 continue
             ActivityLog.record(booking, "Dibatalkan otomatis", detail="Lewat batas waktu pembayaran")
@@ -819,17 +867,25 @@ class ServiceBooking(TimeStampedModel):
             count += 1
         return count
 
-    def cancel(self):
-        """Batalkan booking yang belum dikerjakan (oleh pelanggan atau admin/kasir)."""
+    def cancel(self, reason="", by=None):
+        """Batalkan booking yang belum dikerjakan (oleh pelanggan atau admin/kasir; `by` kosong = otomatis)."""
         if self.status == BookingStatus.PICKUP and self.pet_collected_at:
             raise InvalidBookingTransition(
                 f"Booking #{self.pk}: hewan sudah dibawa kurir, check-in dulu lalu hubungi pemilik."
             )
         self._move_to(BookingStatus.CANCELLED)
         self.cancelled_at = timezone.now()
-        self.save(update_fields=["status", "cancelled_at", "updated_at"])
+        self.cancel_reason = (reason or "").strip()[:255]
+        self.cancelled_by = by
+        self.save(update_fields=["status", "cancelled_at", "cancel_reason", "cancelled_by", "updated_at"])
 
-    def cancel_by_customer(self, customer):
+    @property
+    def cancelled_by_label(self):
+        from transaction.models import _cancelled_by_label
+
+        return _cancelled_by_label(self.cancelled_by_id, self.cancelled_by, self.customer_id)
+
+    def cancel_by_customer(self, customer, reason=""):
         if self.customer_id != customer.pk:
             raise InvalidBookingTransition("Booking ini bukan milik Anda.")
         if not self.can_cancel:
@@ -840,7 +896,7 @@ class ServiceBooking(TimeStampedModel):
             raise InvalidBookingTransition(
                 f"Booking #{self.pk} sudah dibayar transfer. Hubungi admin untuk pembatalan & pengembalian dana."
             )
-        self.cancel()
+        self.cancel(reason=reason, by=customer)
 
     def mark_no_show(self):
         if self.schedule > timezone.now():

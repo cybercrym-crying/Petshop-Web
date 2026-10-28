@@ -196,7 +196,7 @@
                                 <td><a class="order-link" href="{% url 'service:manage_bookings' %}?q={{ b.pk }}">#{{ b.pk }}</a></td>
                                 <td class="fw-bold">{{ b.pet_name }}</td>
                                 <td>{{ b.service.name }}</td>
-                                <td>{{ b.customer.name }}</td>
+                                <td>{{ b.owner_name }}</td>
                                 <td><span class="s-{{ b.status|lower }}">{{ b.get_status_display }}</span></td>
                                 <td class="text-muted fw-semibold">{{ b.schedule|date:"d M Y, H:i" }}</td>
                             </tr>

@@ -17,6 +17,7 @@ from django.views.decorators.http import require_POST
 from account.decorators import roleRequired
 from account.models import POS_ROLES, Role, User, person_search
 from common.photos import CameraPhotoForm
+from common.cancel import MissingCancelReason, read_cancel_reason
 from customer.views import _site_context
 from product.models import PetType
 from store.models import ActivityLog, Notification, StoreSettings
@@ -29,6 +30,7 @@ from .forms import (
     OPEN_HOUR,
     BookingForm,
     CheckInForm,
+    GuestBookingForm,
     PetForm,
     RatingForm,
     ServiceForm,
@@ -58,6 +60,7 @@ def _search(bookings, q):
         return bookings
     bookings, cond = person_search(bookings, q, prefix="customer__")
     cond |= Q(pet_name__icontains=q) | Q(service__name__icontains=q)
+    cond |= Q(guest_name__icontains=q) | Q(guest_phone__icontains=q)
     digits = q.lstrip("#")
     if digits.isdigit() and len(digits) <= 9:
         cond |= Q(pk=int(digits))
@@ -88,10 +91,61 @@ def _safe_back(request, default):
 # ---------------------------------------------------------------------------
 
 
+def _guest_booking_whatsapp(request, form):
+    """Booking tamu tanpa akun dikirim sebagai pesan WhatsApp ke admin (tidak langsung masuk jadwal).
+
+    Admin mengecek pesannya lalu membuat booking lewat kasir; tautan pantau + QR dikirim balik
+    ke nomor tamu. Dengan begitu form publik tidak bisa dipakai membanjiri jadwal.
+    Mengembalikan redirect ke wa.me, atau None bila ada galat di form.
+    """
+    data = form.cleaned_data
+    store = StoreSettings.current()
+    if not store.whatsapp:
+        form.add_error(None, _("Nomor WhatsApp toko belum diatur. Hubungi toko langsung untuk booking."))
+        return None
+    if not ServiceBooking.slot_available(data["schedule"], data["service"].duration_minutes):
+        form.add_error("schedule", _("Jadwal tersebut sudah penuh. Silakan pilih jam lain."))
+        return None
+    when = timezone.localtime(data["schedule"])
+    lat, lng = form.location
+    if data["pickup"] and data["return_trip"]:
+        transport = "Dijemput dan diantar pulang kurir"
+    elif data["pickup"]:
+        transport = "Dijemput kurir, diambil sendiri di toko"
+    elif data["return_trip"]:
+        transport = "Diantar sendiri, diantar pulang kurir"
+    else:
+        transport = "Datang dan ambil sendiri di toko"
+    pay = "Tunai ke kurir saat diantar pulang (COD)" if data["payment_choice"] == "COD" else "Bayar di kasir"
+    pet_label = dict(form.fields["pet_type"].choices).get(data["pet_type"], data["pet_type"])
+    lines = [
+        f"Halo admin {store.name}, saya mau booking grooming:",
+        "",
+        f"Nama: {data['guest_name']}",
+        f"No. WhatsApp: {data['guest_phone']}",
+        f"Hewan: {data['pet_name'].strip()} ({pet_label})",
+        f"Layanan: {data['service'].name} (Rp {data['service'].price:,})".replace(",", "."),
+        f"Jadwal: {when:%d/%m/%Y} jam {when:%H.%M}",
+        f"Antar-jemput: {transport}",
+        f"Alamat: {data['address']}",
+        f"Titik peta: https://www.google.com/maps/search/?api=1&query={lat},{lng}",
+        f"Pembayaran: {pay}",
+    ]
+    if data["note"].strip():
+        lines.append(f"Catatan: {data['note'].strip()}")
+    lines += ["", "Mohon dikonfirmasi dan dikirimi tautan pantau booking-nya. Terima kasih."]
+    return redirect(f"{store.whatsapp_link}?text={quote(chr(10).join(lines))}")
+
+
 def catalog(request):
-    """Daftar jasa layanan hewan + form booking (wajib login sebagai customer)."""
+    """Daftar jasa layanan hewan + form booking.
+
+    Customer yang login langsung membuat booking; tamu tanpa akun mengisi form yang sama
+    lalu diteruskan ke WhatsApp admin dengan pesan booking siap kirim.
+    """
     user = request.user
     is_customer = user.is_authenticated and user.role == Role.CUSTOMER
+    is_guest = not user.is_authenticated
     customer = user if is_customer else None
     initial = {}
     if request.GET.get("layanan", "").isdigit():
@@ -100,15 +154,18 @@ def catalog(request):
         initial["address"] = user.address
         if request.GET.get("hewan", "").isdigit():
             initial["pet"] = int(request.GET["hewan"])
+    form_class = GuestBookingForm if is_guest else BookingForm
 
     if request.method == "POST":
-        if not user.is_authenticated:
-            return redirect_to_login(reverse("service:catalog"))
-        if not is_customer:
+        if not (is_customer or is_guest):
             messages.error(request, _("Booking online hanya untuk akun customer."))
             return redirect("service:catalog")
-        form = BookingForm(request.POST, customer=customer)
-        if form.is_valid():
+        form = form_class(request.POST, customer=customer)
+        if form.is_valid() and is_guest:
+            done = _guest_booking_whatsapp(request, form)
+            if done:
+                return done
+        elif form.is_valid():
             data = form.cleaned_data
             try:
                 booking = ServiceBooking.book(
@@ -143,7 +200,7 @@ def catalog(request):
                 )
                 return redirect("service:my_bookings")
     else:
-        form = BookingForm(initial=initial, customer=customer)
+        form = form_class(initial=initial, customer=customer)
 
     return render(
         request,
@@ -153,6 +210,9 @@ def catalog(request):
             services=Service.objects.active().prefetch_related("steps"),
             form=form,
             is_customer=is_customer,
+            is_guest=is_guest,
+            login_next=reverse("login_form") + "?next=" + reverse("service:catalog"),
+            register_next=reverse("register") + "?next=" + reverse("service:catalog"),
             store=StoreSettings.current(),
         ),
     )
@@ -168,11 +228,16 @@ def cancel_my_booking(request, pk):
                     pk=pk,
                     customer=request.user,
                 )
-                booking.cancel_by_customer(request.user)
-        except InvalidBookingTransition as e:
+                reason = read_cancel_reason(request.POST)
+                booking.cancel_by_customer(request.user, reason=reason)
+        except (InvalidBookingTransition, MissingCancelReason) as e:
             messages.error(request, str(e))
         else:
-            booking_event(booking, "Dibatalkan pelanggan", actor=request.user)
+            booking_event(booking, "Dibatalkan pelanggan", actor=request.user, detail=reason)
+            Notification.to_staff(
+                POS_ROLES, f"Booking #{booking.pk} dibatalkan pelanggan", reason,
+                reverse("service:manage_bookings") + f"?id={booking.pk}",
+            )
             messages.success(request, f"Booking #{booking.pk} dibatalkan.")
     return redirect("service:my_bookings")
 
@@ -226,25 +291,41 @@ def booking_qr(request, pk):
 
 
 def _booking_share(request, booking):
-    """Tautan QR booking berkunci + pesan WhatsApp siap kirim, untuk pelanggan yang dilayani kasir."""
-    if not (booking.needs_transport and booking.shows_share_qr):
+    """Tautan QR booking berkunci + pesan WhatsApp siap kirim (semua booking yang masih berjalan).
+
+    QR yang sama dipakai kasir untuk check-in saat hewan datang, dan kurir saat antar-jemput.
+    """
+    if not booking.shows_share_qr:
         return {}
     link = request.build_absolute_uri(
         reverse("service:booking_share", args=[booking.pk]) + "?k=" + booking.share_key
     )
     when = timezone.localtime(booking.schedule)
+    if booking.needs_transport:
+        usage = _("Tunjukkan QR di tautan ini ke kurir saat menjemput/mengantar hewan, dan pantau proses grooming di sana: %(url)s")
+    else:
+        usage = _("Tunjukkan QR di tautan ini ke kasir saat datang untuk check-in, dan pantau proses grooming di sana: %(url)s")
     text = _(
         "Halo %(name)s, booking %(store)s #%(pk)s untuk %(pet)s (%(service)s) pada %(when)s. "
-        "Total Rp %(total)s%(cod)s. Tunjukkan QR di tautan ini ke kurir saat menjemput/mengantar hewan: %(url)s"
+        "Total Rp %(total)s%(cod)s."
     ) % {
-        "name": booking.customer.display_name, "store": StoreSettings.current().name, "pk": booking.pk,
+        "name": booking.owner_name, "store": StoreSettings.current().name, "pk": booking.pk,
         "pet": booking.pet_name, "service": booking.service.name, "when": f"{when:%d/%m %H.%M}",
         "total": f"{booking.total_price:,}".replace(",", "."),
         "cod": _(", dibayar tunai ke kurir saat hewan diantar pulang") if booking.cod_due else "",
-        "url": link,
-    }
-    wa = booking.customer.whatsapp_url
-    return {"share_link": link, "share_wa_url": f"{wa}?text={quote(text)}" if wa else ""}
+    } + " " + usage % {"url": link}
+    wa = booking.owner_whatsapp_url
+    context = {"share_link": link, "share_wa_url": f"{wa}?text={quote(text)}" if wa else ""}
+    if wa and booking.status == BookingStatus.READY:
+        if booking.return_requested:
+            ready = _("Halo %(name)s, %(pet)s sudah selesai %(service)s dan segera diantar pulang kurir. Foto hasilnya: %(url)s")
+        else:
+            ready = _("Halo %(name)s, %(pet)s sudah selesai %(service)s dan siap diambil di toko. Foto hasilnya: %(url)s")
+        ready = ready % {
+            "name": booking.owner_name, "pet": booking.pet_name, "service": booking.service.name, "url": link,
+        }
+        context["ready_wa_url"] = f"{wa}?text={quote(ready)}"
+    return context
 
 
 def _shared_booking(request, pk):
@@ -254,10 +335,56 @@ def _shared_booking(request, pk):
     return booking
 
 
+BOOKING_TRACK_SESSION_KEY = "track_ok_booking"
+
+
+def _booking_track_allowed(request, booking):
+    """Tautan booking terbuka untuk pemilik yang login, staf, atau pengunjung yang sudah verifikasi 4 digit WA."""
+    user = request.user
+    if user.is_authenticated and (booking.customer_id == user.pk or user.role != Role.CUSTOMER):
+        return True
+    if not booking.phone_last4:
+        return True  # pelanggan tanpa nomor WA tidak bisa verifikasi: tautan berkunci dari kasir cukup
+    return booking.pk in request.session.get(BOOKING_TRACK_SESSION_KEY, [])
+
+
 def booking_share(request, pk):
-    """Halaman QR booking lewat tautan berkunci dari WhatsApp (pelanggan booking manual tanpa login)."""
+    """Halaman pantau booking lewat tautan berkunci dari WhatsApp (pelanggan booking manual tanpa login).
+
+    Tautan bisa diteruskan ke orang lain, jadi pengunjung tanpa login wajib memasukkan
+    4 digit terakhir nomor WhatsApp pemilik sebelum detail booking ditampilkan.
+    """
+    from customer.views import check_wa4
+
     booking = _shared_booking(request, pk)
-    response = render(request, "service/booking_share.html", {"booking": booking, "key": request.GET["k"]})
+    key = request.GET["k"]
+    if not _booking_track_allowed(request, booking):
+        verify_error = ""
+        if request.method == "POST":
+            verify_error = check_wa4(request, f"bk{booking.pk}", booking.phone_last4)
+            if not verify_error:
+                granted = [p for p in request.session.get(BOOKING_TRACK_SESSION_KEY, []) if p != booking.pk]
+                request.session[BOOKING_TRACK_SESSION_KEY] = (granted + [booking.pk])[-20:]
+                return redirect(request.path + "?k=" + quote(key))
+        here = request.path + "?k=" + quote(key)
+        response = render(request, "customer/track.html", _site_context(
+            active_page="track", locked=booking.pk, locked_booking=True,
+            verify_action=here, verify_error=verify_error,
+            login_url=reverse("login_form") + "?next=" + quote(here),
+        ))
+        response["Cache-Control"] = "private, no-store"
+        response["X-Robots-Tag"] = "noindex"
+        return response
+    # Halaman pantau untuk pelanggan tanpa akun: antrean, tahap + foto, siap diambil (sama dengan Booking Saya).
+    booking.queue_ahead = booking.queue_position()
+    booking.queue_eta = booking.queue_eta_minutes()
+    booking.step_list = list(booking.steps.all())
+    booking.steps_done = sum(1 for s in booking.step_list if s.done_at)
+    live = booking.status not in (BookingStatus.DONE, BookingStatus.CANCELLED, BookingStatus.NO_SHOW)
+    # Satu halaman dengan Lacak Pesanan: kolom pencarian di atas, kartu booking di bawahnya.
+    response = render(request, "customer/track.html", _site_context(
+        active_page="track", booking=booking, key=key, live=live, raw=booking.checkin_code,
+    ))
     response["Cache-Control"] = "private, no-store"
     response["X-Robots-Tag"] = "noindex"
     return response
@@ -265,11 +392,27 @@ def booking_share(request, pk):
 
 def booking_share_qr(request, pk):
     booking = _shared_booking(request, pk)
-    if not booking.shows_share_qr:
+    if not (booking.shows_share_qr and _booking_track_allowed(request, booking)):
         raise Http404
     response = qr_response(booking.checkin_payload)
     response["Cache-Control"] = "private, no-store"
     return response
+
+
+@roleRequired(*POS_ROLES)
+def booking_ticket(request, pk):
+    """Tiket booking ber-QR (seperti struk): dicetak/dikirim ke pelanggan, dipindai kasir saat check-in."""
+    booking = get_object_or_404(_with_booking(ServiceBooking.objects.all()), pk=pk)
+    context = {
+        "booking": booking,
+        "store": StoreSettings.current(),
+        "auto_print": request.GET.get("print") == "1",
+        "track_url": request.build_absolute_uri(reverse("customer:track")),
+        **_booking_share(request, booking),
+    }
+    if booking.shows_share_qr:
+        context["qr_url"] = reverse("service:booking_share_qr", args=[booking.pk]) + "?k=" + quote(booking.share_key)
+    return render(request, "service/booking_ticket.html", context)
 
 
 @roleRequired(Role.CUSTOMER)
@@ -585,9 +728,10 @@ def create_booking(request):
                         "Booking #%(pk)s dibuat. Tugaskan kurir hewan, lalu kirim QR booking ke WhatsApp pelanggan."
                     ) % {"pk": booking.pk})
                 else:
-                    messages.success(request, f"Booking #{booking.pk} dibuat (Terjadwal).")
-                day = timezone.localtime(booking.schedule).date().isoformat()
-                return redirect(f"{reverse('service:manage_bookings')}?day={day}&id={booking.pk}")
+                    messages.success(request, _(
+                        "Booking #%(pk)s dibuat (Terjadwal). Kirim QR ke WhatsApp pelanggan atau cetak tiketnya untuk check-in."
+                    ) % {"pk": booking.pk})
+                return redirect("service:booking_ticket", pk=booking.pk)
         else:
             _flash_errors(request, form)
     return redirect("service:manage_bookings")
@@ -626,14 +770,15 @@ def cancel_booking(request, pk):
                 booking = get_object_or_404(
                     ServiceBooking.objects.select_for_update(), pk=pk
                 )
-                booking.cancel()
-        except InvalidBookingTransition as e:
+                reason = read_cancel_reason(request.POST)
+                booking.cancel(reason=reason, by=request.user)
+        except (InvalidBookingTransition, MissingCancelReason) as e:
             messages.error(request, str(e))
         else:
             booking_event(
-                booking, "Dibatalkan toko", actor=request.user,
+                booking, "Dibatalkan toko", actor=request.user, detail=reason,
                 customer_title=f"Booking #{booking.pk} dibatalkan toko",
-                customer_body="Hubungi admin lewat WhatsApp bila ada pertanyaan.",
+                customer_body=reason,
             )
             messages.success(request, f"Booking #{booking.pk} dibatalkan.")
     return redirect(_safe_back(request, reverse("service:manage_bookings")))

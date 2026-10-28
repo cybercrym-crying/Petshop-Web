@@ -34,7 +34,7 @@
                             <span class="sg-av" style="width:52px;height:52px;font-size:1.5rem">{% include "partials/_paw.html" %}</span>
                             <div style="min-width:0">
                                 <p class="sg-h3 mb-0" style="font-size:1.5rem">{{ booking.pet_name }} · {{ booking.get_pet_type_display }}</p>
-                                <p class="sg-sm sg-muted mb-0">{{ booking.service.name }} · {{ booking.customer.name }} · {% blocktranslate trimmed with t=booking.schedule|date:"d M, H.i" %}jadwal {{ t }}{% endblocktranslate %}{% if booking.is_late %} <span style="color:var(--sg-bad)">{% translate "· lewat" %}</span>{% endif %}</p>
+                                <p class="sg-sm sg-muted mb-0">{{ booking.service.name }} · {{ booking.owner_name }} · {% blocktranslate trimmed with t=booking.schedule|date:"d M, H.i" %}jadwal {{ t }}{% endblocktranslate %}{% if booking.is_late %} <span style="color:var(--sg-bad)">{% translate "· lewat" %}</span>{% endif %}</p>
                                 <div class="sg-row is-wrap sg-mt8" style="gap:6px">
                                     <span class="sg-pill is-pri">{{ booking.get_status_display }}</span>
                                     {% if booking.pickup_requested %}<span class="sg-pill is-pri"><i class="bi bi-scooter" aria-hidden="true"></i>{% blocktranslate trimmed with c=booking.pet_courier.display_name|default:"-" %}Dibawa kurir {{ c }}{% endblocktranslate %}</span>{% endif %}
@@ -111,7 +111,7 @@
                                 <span class="sg-qno" style="background:var(--sg-gold-soft);color:var(--sg-gold-soft-ink)">{{ b.schedule|date:"H.i" }}</span>
                                 <span class="sg-item__body">
                                     <b>{{ b.pet_name }} · {{ b.service.name }}</b>
-                                    <small>{{ b.customer.name }} · {% if b.status == "DIJEMPUT" %}{% translate "dijemput kurir" %}{% elif b.pickup_requested %}{% translate "akan dijemput kurir" %}{% else %}{% translate "datang sendiri" %}{% endif %}{% if b.is_late %} · <span style="color:var(--sg-bad)">{% translate "lewat" %}</span>{% endif %}</small>
+                                    <small>{{ b.owner_name }} · {% if b.status == "DIJEMPUT" %}{% translate "dijemput kurir" %}{% elif b.pickup_requested %}{% translate "akan dijemput kurir" %}{% else %}{% translate "datang sendiri" %}{% endif %}{% if b.is_late %} · <span style="color:var(--sg-bad)">{% translate "lewat" %}</span>{% endif %}</small>
                                 </span>
                                 {% if b.can_check_in %}<a class="ui-btn ui-btn--sm{% if forloop.first %} ui-btn--primary{% endif %}" href="?booking={{ b.pk }}">{% translate "Check-in" %}</a>{% else %}<span class="sg-pill is-pri">{{ b.get_status_display }}</span>{% endif %}
                             </div>
@@ -168,7 +168,7 @@
                             <span class="sg-qno" style="background:var(--sg-ok-soft);color:var(--sg-ok)">{{ b.queue_label|default:"-" }}</span>
                             <span class="sg-item__body">
                                 <b>{{ b.pet_name }}</b>
-                                <small>{{ b.customer.name }} · {% if b.status == "DIANTAR" %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name %}diantar {{ b_pet_courier_display_name }}{% endblocktranslate %}{% elif b.return_requested %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name|default:"(belum ditugaskan)" %}menunggu kurir {{ b_pet_courier_display_name }}{% endblocktranslate %}{% else %}{% translate "diambil di toko" %}{% endif %} · Rp {{ b.total_price|rupiah }}</small>
+                                <small>{{ b.owner_name }} · {% if b.status == "DIANTAR" %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name %}diantar {{ b_pet_courier_display_name }}{% endblocktranslate %}{% elif b.return_requested %}{% blocktranslate trimmed with b_pet_courier_display_name=b.pet_courier.display_name|default:"(belum ditugaskan)" %}menunggu kurir {{ b_pet_courier_display_name }}{% endblocktranslate %}{% else %}{% translate "diambil di toko" %}{% endif %} · Rp {{ b.total_price|rupiah }}</small>
                             </span>
                             {% if b.status == "SIAP" and not b.is_paid and b.is_cod and b.return_requested %}
                                 <span class="sg-pill is-gold">{% translate "COD ke kurir" %}</span>

@@ -1,0 +1,24 @@
+/* Form alasan pembatalan (partials/_cancel_reason.html): dipakai di situs pelanggan & halaman staf. */
+.cxr { min-width: 0; }
+.cxr > summary { list-style: none; }
+.cxr > summary::-webkit-details-marker { display: none; }
+.cxr__open { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 1px solid #f2c4c0; border-radius: 999px; background: #fff; color: #b42318; font-size: 0.85rem; font-weight: 700; cursor: pointer; user-select: none; }
+.cxr__open:hover { border-color: #b42318; }
+.cxr[open] .cxr__open { background: #fef3f2; }
+.cxr__form { display: grid; gap: 8px; margin-top: 10px; padding: 12px; border: 1px solid #f2c4c0; border-radius: 14px; background: #fffbfa; max-width: 420px; }
+.cxr__label { margin: 0; font-size: 0.82rem; font-weight: 700; color: #3b2f4a; }
+.cxr__req { font-weight: 600; color: #b42318; font-size: 0.75rem; }
+.cxr__select, .cxr__note { width: 100%; min-height: 40px; padding: 8px 12px; border: 1px solid #e4dcf5; border-radius: 10px; background: #fff; color: inherit; font: inherit; font-size: 0.88rem; }
+.cxr__select:focus, .cxr__note:focus { outline: 2px solid #7c3aed; outline-offset: 1px; }
+.cxr__go { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 16px; border: 0; border-radius: 10px; background: #b42318; color: #fff; font: inherit; font-size: 0.88rem; font-weight: 700; cursor: pointer; }
+.cxr__go:hover { background: #912018; }
+.cxr-note { margin: 6px 0 0; font-size: 0.85rem; line-height: 1.45; color: #6b6280; overflow-wrap: anywhere; }
+.cxr-note b { color: #b42318; }
+
+html[data-theme="dark"] .cxr__open { background: #211a2b; border-color: #6b2a2a; color: #f19999; }
+html[data-theme="dark"] .cxr[open] .cxr__open { background: #2a1a1f; }
+html[data-theme="dark"] .cxr__form { background: #1d1620; border-color: #5a2a2e; }
+html[data-theme="dark"] .cxr__label { color: #e9e3f2; }
+html[data-theme="dark"] .cxr__req, html[data-theme="dark"] .cxr-note b { color: #f19999; }
+html[data-theme="dark"] .cxr__select, html[data-theme="dark"] .cxr__note { background: #18121f; border-color: #3a2f48; color: #e9e3f2; }
+html[data-theme="dark"] .cxr-note { color: #b9adc7; }

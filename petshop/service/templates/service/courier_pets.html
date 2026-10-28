@@ -27,7 +27,7 @@
                             <span class="sg-pill is-line">{% if b.transport_distance_km %}{{ b.transport_distance_km|floatformat:1 }} km{% else %}{{ b.get_status_display }}{% endif %}</span>
                         </div>
                         <h2 class="pt-card__name">{{ b.pet_name }} · {{ b.get_pet_type_display }}</h2>
-                        <p class="pt-card__sub">{{ b.customer.name }} · {{ b.transport_address|default:"-" }}</p>
+                        <p class="pt-card__sub">{{ b.owner_name }} · {{ b.transport_address|default:"-" }}</p>
                         <p class="pt-card__sub sg-xs">{{ b.service.name }} · {{ b.get_status_display }}</p>
                         {% if b.pet.notes %}<div class="sg-alert is-bad"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span>{{ b.pet.notes }}</span></div>{% endif %}
                         {% if b.is_return_leg %}
@@ -60,7 +60,7 @@
                     <h2 class="sg-h3">{% translate "Selesai terakhir" %}</h2>
                     <div class="sg-list sg-mt12">
                         {% for b in done %}
-                            <a class="sg-item" href="{% url 'service:courier_pet_trip' b.pk %}"><span class="sg-av is-ok"><i class="bi bi-check2" aria-hidden="true"></i></span><span class="sg-item__body"><b>{{ b.pet_name }} · {{ b.customer.name }}</b><small>{{ b.closed_at|date:"d M H.i" }}</small></span><i class="bi bi-chevron-right sg-muted" aria-hidden="true"></i></a>
+                            <a class="sg-item" href="{% url 'service:courier_pet_trip' b.pk %}"><span class="sg-av is-ok"><i class="bi bi-check2" aria-hidden="true"></i></span><span class="sg-item__body"><b>{{ b.pet_name }} · {{ b.owner_name }}</b><small>{{ b.closed_at|date:"d M H.i" }}</small></span><i class="bi bi-chevron-right sg-muted" aria-hidden="true"></i></a>
                         {% endfor %}
                     </div>
                 </section>

@@ -1,6 +1,6 @@
 {% extends "customer/base.html" %}
 {% load i18n %}
-{% load static rupiah %}
+{% load static rupiah cancel_reason %}
 {% block title %}
     {% translate "Booking Saya - Seelly Petshop" %}
 {% endblock %}
@@ -10,10 +10,11 @@
     <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
     <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux7-lay1">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux8">
     <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'customer/css/my_orders.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'customer/css/my_orders-dark.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <section class="container section svc-page svc-mine mo-page">
@@ -58,6 +59,7 @@
                                 Dibatalkan {{ b_cancelled_at }}
                             {% endblocktranslate %}
                         </p>
+                        <div class="svc-wide">{% include "partials/_cancel_note.html" with obj=b %}</div>
                     {% elif b.status == "TIDAK_DATANG" %}
                         <p class="muted mb-0 svc-wide">{% translate "Hewan tidak datang sesuai jadwal. Silakan booking ulang." %}</p>
                     {% else %}
@@ -274,10 +276,10 @@
                     {% if b.can_cancel or b.status != "PENDING" and b.status != "BATAL" %}
                         <div class="mo-links">
                             {% if b.can_cancel and not b.awaiting_payment_check and not b.is_paid %}
-                                <form method="post" action="{% url 'service:cancel_my_booking' b.pk %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="co-cancel" data-confirm="{% blocktranslate trimmed with b_pk=b.pk b_pet_name=b.pet_name %}Batalkan booking #{{ b_pk }} untuk {{ b_pet_name }}?{% endblocktranslate %}">{% translate "Batalkan booking" %}</button>
-                                </form>
+                                {% url 'service:cancel_my_booking' b.pk as cancel_url %}
+                                {% translate "Batalkan booking" as cancel_label %}
+                                {% blocktranslate trimmed with b_pk=b.pk b_pet_name=b.pet_name asvar cancel_confirm %}Batalkan booking #{{ b_pk }} untuk {{ b_pet_name }}?{% endblocktranslate %}
+                                {% cancel_form "customer_booking" cancel_url cancel_label b.pk confirm=cancel_confirm %}
                             {% endif %}
                             {% if b.status != "PENDING" and b.status != "BATAL" %}
                                 <a href="{% url 'store:complaints' %}?booking={{ b.pk }}"><i class="far fa-flag" aria-hidden="true"></i> {% translate "Ada masalah? Ajukan komplain" %}</a>

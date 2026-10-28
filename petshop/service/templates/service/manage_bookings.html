@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
     <link rel="stylesheet" href="{% static 'css/address_pin.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/quick_customer.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=1">
 {% endblock %}
 {% block content %}
     {% url 'service:manage_bookings' as here %}
@@ -33,7 +34,7 @@
                     <a class="sg-alert is-gold" href="{{ here }}?status=PENDING"><i class="bi bi-hourglass-split" aria-hidden="true"></i><span>{% blocktranslate trimmed with n=pending_all %}{{ n }} booking online menunggu konfirmasi (semua tanggal){% endblocktranslate %}</span><b>{% translate "Tinjau" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></b></a>
                 {% endif %}
                 {% for b in proofs_waiting %}
-                    <a class="sg-alert is-pri" href="{% url 'service:booking_payment_check' b.pk %}" id="{% if forloop.first %}bayar-cek{% endif %}"><i class="bi bi-receipt" aria-hidden="true"></i><span>{% blocktranslate trimmed with pk=b.pk name=b.customer.name total=b.total_price|rupiah %}Bukti transfer #{{ pk }} · {{ name }} · Rp {{ total }} menunggu dicek{% endblocktranslate %}</span><b>{% translate "Cek" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></b></a>
+                    <a class="sg-alert is-pri" href="{% url 'service:booking_payment_check' b.pk %}" id="{% if forloop.first %}bayar-cek{% endif %}"><i class="bi bi-receipt" aria-hidden="true"></i><span>{% blocktranslate trimmed with pk=b.pk name=b.owner_name total=b.total_price|rupiah %}Bukti transfer #{{ pk }} · {{ name }} · Rp {{ total }} menunggu dicek{% endblocktranslate %}</span><b>{% translate "Cek" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></b></a>
                 {% endfor %}
             </div>
         {% endif %}
@@ -82,7 +83,7 @@
                         <span class="sg-av bk-av" aria-hidden="true">{% include "partials/_paw.html" %}</span>
                         <span class="bk-row__b">
                             <b>{{ b.pet_name }} <span>· {{ b.get_pet_type_display }}</span></b>
-                            <small>{{ b.service.name }} · {{ b.customer.name }}</small>
+                            <small>{{ b.service.name }} · {{ b.owner_name }}</small>
                         </span>
                         <span class="bk-row__ic">
                             {% if b.needs_transport %}<i class="bi bi-truck" title="{% translate 'Antar-jemput' %}" aria-label="{% translate 'Antar-jemput' %}"></i>{% endif %}

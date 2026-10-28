@@ -16,7 +16,7 @@
     <dl class="gd-facts">
         <div><dt>{% translate "Berat / kondisi" %}</dt><dd>{% if working.checkin_weight_kg %}{{ working.checkin_weight_kg }} kg{% if working.checkin_condition %} · {% endif %}{% endif %}{{ working.checkin_condition|default:"-" }}</dd></div>
         <div><dt>{% translate "Profil hewan" %}</dt><dd>{% if working.pet %}{% if working.pet.breed %}{{ working.pet.breed }} · {% endif %}{% if working.pet.age_display %}{{ working.pet.age_display }} · {% endif %}{{ working.pet.get_sex_display }}{% else %}-{% endif %}</dd></div>
-        <div><dt>{% translate "Pemilik" %}</dt><dd>{{ working.customer.name }}{% if working.customer.whatsapp_url %} <a class="gd-wa" href="{{ working.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> WA</a>{% endif %}</dd></div>
+        <div><dt>{% translate "Pemilik" %}</dt><dd>{{ working.owner_name }}{% if working.owner_whatsapp_url %} <a class="gd-wa" href="{{ working.owner_whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> WA</a>{% endif %}</dd></div>
         <div><dt>{% translate "Check-in" %}</dt><dd>{% if working.checked_in_at %}{% blocktranslate trimmed with t=working.checked_in_at|time:"H.i" by=working.checked_in_by.display_name|default:"-" %}{{ t }} oleh {{ by }}{% endblocktranslate %}{% else %}-{% endif %}</dd></div>
     </dl>
     {% if working.pet.notes or working.customer_note %}

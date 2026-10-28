@@ -184,6 +184,54 @@ class StaffBookingForm(BookingForm):
         return cleaned
 
 
+class GuestBookingForm(BookingForm):
+    """Booking dari situs tanpa akun: nama, nomor WA, dan lokasi wajib diisi (seperti checkout tamu)."""
+
+    guest_name = forms.CharField(max_length=80, label=_("Nama lengkap"),
+                                 widget=forms.TextInput(attrs={"autocomplete": "name", "placeholder": _("Masukkan nama lengkap")}))
+    guest_phone = forms.CharField(max_length=20, label=_("Nomor WhatsApp"),
+                                  widget=forms.TextInput(attrs={"type": "tel", "inputmode": "tel", "autocomplete": "tel", "placeholder": "081234567890"}))
+
+    field_order = ["guest_name", "guest_phone", "address"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields.pop("pet")
+        self.fields["address"].required = True
+        self.fields["address"].label = _("Alamat lengkap")
+        self.fields["address"].widget.attrs.update(placeholder=_("Jalan, RT/RW, kelurahan, kecamatan, kota"))
+        # Tanpa akun tidak bisa unggah bukti transfer: bayar di kasir, atau tunai ke kurir bila diantar pulang.
+        self.fields["payment_choice"].choices = [
+            (BookingPayChoice.LATER, _("Bayar di kasir")),
+            (BookingPayChoice.COD, _("Tunai ke kurir saat diantar pulang (COD)")),
+        ]
+
+    def clean_guest_name(self):
+        name = " ".join(self.cleaned_data["guest_name"].split())
+        if len(name) < 2:
+            raise forms.ValidationError(_("Isi nama lengkap."))
+        return name
+
+    def clean_guest_phone(self):
+        from account.phone import normalize_phone
+
+        try:
+            return normalize_phone(self.cleaned_data["guest_phone"])
+        except ValueError as e:
+            raise forms.ValidationError(str(e))
+
+    def clean(self):
+        cleaned = super().clean()
+        if self.location is None:
+            self.add_error("address", _("Tandai lokasi Anda di peta."))
+        if cleaned.get("payment_choice") == BookingPayChoice.COD and not cleaned.get("return_trip"):
+            self.add_error("payment_choice", _("COD hanya bisa bila hewan diantar pulang kurir."))
+        elif cleaned.get("return_trip") and cleaned.get("payment_choice") != BookingPayChoice.COD:
+            # Tamu tidak bisa transfer lewat akun dan tidak datang ke kasir: kurir menagih tunai saat antar pulang.
+            self.add_error("payment_choice", _("Hewan diantar pulang kurir: pilih bayar tunai ke kurir (COD)."))
+        return cleaned
+
+
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service

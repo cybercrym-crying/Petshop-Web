@@ -1,5 +1,6 @@
 import json
 import secrets
+from urllib.parse import quote
 from datetime import timedelta
 
 from django.utils.translation import gettext as _
@@ -17,10 +18,10 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from product.models import PetType, Product, ProductCondition
 from account.decorators import roleRequired
-from account.models import Customer, Role
+from account.models import POS_ROLES, Customer, Role
 from common.exceptions import PetshopError
 from courier.models import CourierLocation
-from store.models import StoreSettings
+from store.models import Notification, StoreSettings
 from transaction.models import (
     ONLINE_PAYMENT_METHODS,
     Order,
@@ -890,6 +891,8 @@ def track_handover_qr(request, resi):
     order = get_object_or_404(Order, tracking_number=normalize_tracking_number(resi) or "-")
     if not (order.shows_handover_qr and order.check_handover_key(request.GET.get("k"))):
         raise Http404
+    if order.phone_last4 and not _track_allowed(request, order):
+        raise Http404  # tautan diteruskan ke orang lain: QR baru tampil setelah verifikasi 4 digit WA
     response = qr_response(order.handover_payload)
     response["Cache-Control"] = "private, no-store"
     return response
@@ -908,6 +911,8 @@ def tracking_qr(request, resi):
 @roleRequired(Role.CUSTOMER)
 @require_POST
 def cancel_my_order(request, pk):
+    from common.cancel import read_cancel_reason
+
     try:
         with transaction.atomic():
             # Kunci baris dulu: status dicek ulang setelah admin mungkin baru
@@ -915,10 +920,18 @@ def cancel_my_order(request, pk):
             order = get_object_or_404(
                 Order.objects.select_for_update(), pk=pk, customer=request.user
             )
-            order.cancel_by_customer(request.user)
+            reason = read_cancel_reason(request.POST)
+            order.cancel_by_customer(request.user, reason=reason)
     except PetshopError as error:
         messages.error(request, str(error))
     else:
+        from transaction.notify import order_event
+
+        order_event(order, "Dibatalkan pelanggan", request.user, detail=reason)
+        Notification.to_staff(
+            POS_ROLES, f"Pesanan #{order.pk} dibatalkan pelanggan", reason,
+            reverse("transaction:manage_transaction") + f"?q={order.pk}",
+        )
         messages.success(request, f"Pesanan #{order.pk} dibatalkan.")
     return redirect("customer:my_orders")
 
@@ -1004,22 +1017,56 @@ def _track_grant(request, order):
     request.session[TRACK_SESSION_KEY] = (granted + [order.pk])[-20:]
 
 
-def _track_verify(request, order):
-    """Pengunjung tanpa login mengetik 4 digit terakhir nomor WA pemesan. Mengembalikan pesan galat."""
+def check_wa4(request, throttle_key, expected):
+    """Cocokkan 4 digit terakhir nomor WA (isian `wa4`) dengan batas percobaan. Mengembalikan pesan galat."""
     from django.core.cache import cache
 
-    throttle = f"track-fail:{order.pk}:{request.META.get('REMOTE_ADDR', '')}"
+    throttle = f"track-fail:{throttle_key}:{request.META.get('REMOTE_ADDR', '')}"
     failures = cache.get(throttle, 0)
     if failures >= TRACK_MAX_FAILURES:
         return _("Terlalu banyak percobaan. Coba lagi dalam 15 menit atau hubungi toko.")
     digits = "".join(ch for ch in request.POST.get("wa4", "") if ch.isdigit())
-    expected = order.phone_last4
     if len(digits) == 4 and expected and secrets.compare_digest(digits, expected):
         cache.delete(throttle)
-        _track_grant(request, order)
         return ""
     cache.set(throttle, failures + 1, TRACK_LOCK_SECONDS)
     return _("4 digit nomor WhatsApp tidak cocok dengan data pemesan.")
+
+
+def _track_verify(request, order):
+    """Pengunjung tanpa login mengetik 4 digit terakhir nomor WA pemesan. Mengembalikan pesan galat."""
+    error = check_wa4(request, order.pk, order.phone_last4)
+    if not error:
+        _track_grant(request, order)
+    return error
+
+
+BOOKING_CODE_MAX_FAILURES = 10
+
+
+def _find_booking_by_code(request, raw):
+    """Kode booking 8 huruf (kode cadangan di tiket/WA) -> halaman lacak booking berkunci.
+
+    Kode ini rahasia seperti QR, jadi tebakan salah dibatasi per alamat IP.
+    Mengembalikan (redirect, pesan galat).
+    """
+    from django.core.cache import cache
+    from service.models import ServiceBooking
+
+    throttle = f"track-booking-fail:{request.META.get('REMOTE_ADDR', '')}"
+    failures = cache.get(throttle, 0)
+    if failures >= BOOKING_CODE_MAX_FAILURES:
+        return None, _("Terlalu banyak percobaan. Coba lagi dalam 15 menit atau hubungi toko.")
+    text = "".join(ch for ch in raw.upper() if ch.isalnum())
+    if text.startswith("PSB") and ":" in raw:
+        booking = ServiceBooking.find_by_code(raw)  # isi QR booking (PSB:<id>:<kode>)
+    else:
+        booking = ServiceBooking.objects.filter(checkin_code=text).first() if len(text) == 8 else None
+    if booking is None:
+        cache.set(throttle, failures + 1, TRACK_LOCK_SECONDS)
+        return None, _("Resi atau kode booking tidak ditemukan. Contoh resi: PS-261022-K7M2QX; kode booking ada di tiket atau pesan WhatsApp dari toko.")
+    cache.delete(throttle)
+    return redirect(reverse("service:booking_share", args=[booking.pk]) + "?k=" + booking.share_key), ""
 
 
 def track_order(request, resi=None):
@@ -1040,19 +1087,29 @@ def track_order(request, resi=None):
                 .filter(tracking_number=code)
                 .first()
             )
-        if order is None:
+        if order is None and not code:
+            booking_redirect, error = _find_booking_by_code(request, raw)
+            if booking_redirect:
+                return booking_redirect
+        elif order is None:
             error = "Resi tidak ditemukan. Periksa kembali nomor resi Anda (contoh: PS-261022-K7M2QX)."
     context = {"raw": raw, "error": error, "order": None}
-    if order is not None and order.check_handover_key(request.GET.get("k", "")):
-        _track_grant(request, order)  # tautan dari kasir ke WA pembeli sudah terverifikasi
+    if order is not None and not order.phone_last4 and order.check_handover_key(request.GET.get("k", "")):
+        # Pembeli tanpa nomor WA tidak bisa verifikasi 4 digit: tautan berkunci dari kasir cukup.
+        _track_grant(request, order)
     if order is not None and not _track_allowed(request, order):
         verify_error = ""
         if request.method == "POST":
             verify_error = _track_verify(request, order)
             if not verify_error:
-                return redirect("customer:track_detail", resi=order.tracking_number)
+                url = reverse("customer:track_detail", args=[order.tracking_number])
+                key = request.GET.get("k", "")
+                return redirect(url + ("?k=" + quote(key) if key else ""))
+        key = request.GET.get("k", "")
+        verify_action = reverse("customer:track_detail", args=[order.tracking_number])
         context.update(
             locked=order.tracking_number, verify_error=verify_error,
+            verify_action=verify_action + ("?k=" + quote(key) if key else ""),
             login_url=reverse("login_form") + "?next=" + reverse("customer:track_detail", args=[order.tracking_number]),
         )
         order = None

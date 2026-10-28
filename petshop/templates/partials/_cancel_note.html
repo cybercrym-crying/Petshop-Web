@@ -1,0 +1,1 @@
+{% load i18n stored_i18n %}{% if obj.cancel_reason %}<p class="cxr-note"><b>{% translate "Alasan pembatalan" %}:</b> {{ obj.cancel_reason|tr }} <span>· {% blocktranslate trimmed with who=obj.cancelled_by_label %}oleh {{ who }}{% endblocktranslate %}</span></p>{% endif %}

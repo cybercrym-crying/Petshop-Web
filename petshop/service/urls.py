@@ -37,6 +37,7 @@ urlpatterns = [
     ),
     path("staff/layanan/booking/<int:pk>/aksi/", views.booking_action, name="booking_action"),
     path("staff/layanan/booking/<int:pk>/pembayaran/", views.booking_payment_check, name="booking_payment_check"),
+    path("staff/layanan/booking/<int:pk>/tiket/", views.booking_ticket, name="booking_ticket"),
     path("staff/layanan/check-in/", views.check_in, name="check_in"),
     path("staff/admin/layanan/<int:pk>/tahapan/", views.service_steps, name="service_steps"),
     path("staff/admin/layanan/", views.manage_services, name="manage_services"),

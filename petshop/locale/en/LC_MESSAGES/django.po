@@ -8882,3 +8882,231 @@ msgstr "Highest price"
 
 msgid "Nama A–Z"
 msgstr "Name A–Z"
+
+msgid "Tunjukkan QR di tautan ini ke kurir saat menjemput/mengantar hewan: %(url)s"
+msgstr "Show the QR at this link to the courier at pick-up/drop-off: %(url)s"
+
+msgid "Tunjukkan QR di tautan ini ke kasir saat datang untuk check-in: %(url)s"
+msgstr "Show the QR at this link to the cashier when you arrive to check in: %(url)s"
+
+msgid "Halo %(name)s, booking %(store)s #%(pk)s untuk %(pet)s (%(service)s) pada %(when)s. Total Rp %(total)s%(cod)s."
+msgstr "Hi %(name)s, %(store)s booking #%(pk)s for %(pet)s (%(service)s) on %(when)s. Total Rp %(total)s%(cod)s."
+
+msgid "Booking #%(pk)s dibuat (Terjadwal). Kirim QR ke WhatsApp pelanggan atau cetak tiketnya untuk check-in."
+msgstr "Booking #%(pk)s created (Scheduled). Send the QR to the customer's WhatsApp or print the ticket for check-in."
+
+msgid "Booking ini sudah selesai atau dibatalkan, jadi QR-nya tidak berlaku lagi."
+msgstr "This booking is finished or cancelled, so its QR is no longer valid."
+
+msgid "Booking sudah %(status)s. QR tidak berlaku lagi."
+msgstr "Booking is %(status)s. The QR is no longer valid."
+
+msgid "Buka tautan pelanggan"
+msgstr "Open customer link"
+
+msgid "Kasir memindai QR ini saat pelanggan datang untuk check-in. Kirim ke WhatsApp atau cetak tiketnya."
+msgstr "The cashier scans this QR when the customer arrives to check in. Send it via WhatsApp or print the ticket."
+
+msgid "Kirim ke WA pelanggan"
+msgstr "Send to customer's WhatsApp"
+
+msgid "Kirim tautan QR ke WhatsApp pelanggan, atau cetak tiket ini. Saat pelanggan datang, pindai QR-nya di halaman Check-in (atau ketik kode cadangan), sama seperti struk belanja."
+msgstr "Send the QR link to the customer's WhatsApp, or print this ticket. When the customer arrives, scan the QR on the Check-in page (or type the backup code), just like a shopping receipt."
+
+msgid "Kode cadangan"
+msgstr "Backup code"
+
+msgid "Kurir memindai QR ini di HP pelanggan saat menjemput dan mengantar pulang, dan kasir memindainya saat check-in."
+msgstr "The courier scans this QR on the customer's phone at pick-up and drop-off, and the cashier scans it at check-in."
+
+msgid "Nomor WA pelanggan belum ada, cetak tiketnya"
+msgstr "No customer WhatsApp number yet, print the ticket"
+
+msgid "TIKET BOOKING #%(pk)s"
+msgstr "BOOKING TICKET #%(pk)s"
+
+msgid "Tiket & QR"
+msgstr "Ticket & QR"
+
+msgid "Tiket Booking #%(pk)s"
+msgstr "Booking Ticket #%(pk)s"
+
+msgid "Tunjukkan QR ini ke kasir saat datang untuk check-in."
+msgstr "Show this QR to the cashier when you arrive to check in."
+
+msgid "Tunjukkan QR ini ke kasir saat datang untuk check-in. Bila QR tidak terbaca, bacakan kode cadangan:"
+msgstr "Show this QR to the cashier when you arrive to check in. If the QR can't be read, say the backup code:"
+
+msgid "Tunjukkan QR ini ke kurir saat dijemput/diantar dan ke kasir saat check-in."
+msgstr "Show this QR to the courier at pick-up/drop-off and to the cashier at check-in."
+
+msgid "Jenis layanan"
+msgstr "Service"
+
+msgid "Tunjukkan QR di tautan ini ke kurir saat menjemput/mengantar hewan, dan pantau proses grooming di sana: %(url)s"
+msgstr "Show the QR at this link to the courier at pick-up/drop-off, and follow the grooming progress there: %(url)s"
+
+msgid "Tunjukkan QR di tautan ini ke kasir saat datang untuk check-in, dan pantau proses grooming di sana: %(url)s"
+msgstr "Show the QR at this link to the cashier when you arrive to check in, and follow the grooming progress there: %(url)s"
+
+msgid "Halo %(name)s, %(pet)s sudah selesai %(service)s dan segera diantar pulang kurir. Foto hasilnya: %(url)s"
+msgstr "Hi %(name)s, %(pet)s has finished %(service)s and will be taken home by our courier shortly. See the photos: %(url)s"
+
+msgid "Halo %(name)s, %(pet)s sudah selesai %(service)s dan siap diambil di toko. Foto hasilnya: %(url)s"
+msgstr "Hi %(name)s, %(pet)s has finished %(service)s and is ready for pick-up at the store. See the photos: %(url)s"
+
+msgid "%(b_pet_name)s sudah selesai dan akan diantar pulang kurir."
+msgstr "%(b_pet_name)s is done and will be taken home by our courier."
+
+msgid "Layanan untuk %(b_pet_name)s sudah selesai. Terima kasih!"
+msgstr "%(b_pet_name)s's service is complete. Thank you!"
+
+msgid "Halaman ini diperbarui otomatis setiap menit."
+msgstr "This page refreshes automatically every minute."
+
+msgid "Kabari sudah selesai"
+msgstr "Notify: finished"
+
+msgid "Pantau proses grooming: %(url)s (masukkan kode booking)"
+msgstr "Follow the grooming progress: %(url)s (enter the booking code)"
+
+msgid "Tunjukkan QR ini ke kasir saat datang untuk check-in. Bila QR tidak terbaca, bacakan kode booking:"
+msgstr "Show this QR to the cashier when you arrive to check in. If the QR can't be read, say the booking code:"
+
+msgid "Masukkan nomor resi pesanan atau kode booking grooming yang dikirim toko lewat WhatsApp."
+msgstr "Enter your order tracking number or grooming booking code sent by the store on WhatsApp."
+
+msgid "Nomor resi atau kode booking"
+msgstr "Tracking number or booking code"
+
+msgid "PS-261022-K7M2QX atau kode booking"
+msgstr "PS-261022-K7M2QX or booking code"
+
+msgid "Resi atau kode booking tidak ditemukan. Contoh resi: PS-261022-K7M2QX; kode booking ada di tiket atau pesan WhatsApp dari toko."
+msgstr "Tracking number or booking code not found. Example tracking number: PS-261022-K7M2QX; the booking code is on your ticket or in the store's WhatsApp message."
+
+msgid "Lihat booking"
+msgstr "View booking"
+
+msgid "Masukkan 4 digit terakhir nomor WhatsApp pemilik hewan"
+msgstr "Enter the last 4 digits of the pet owner's WhatsApp number"
+
+msgid "Untuk menjaga privasi, detail booking dan foto hewan hanya ditampilkan ke pemilik. Contoh: nomor 0812-3456-7890 berarti 7890."
+msgstr "To protect privacy, booking details and pet photos are only shown to the owner. Example: 0812-3456-7890 means 7890."
+
+msgid "Isi nama lengkap."
+msgstr "Enter your full name."
+
+msgid "Tandai lokasi Anda di peta."
+msgstr "Mark your location on the map."
+
+msgid "Belum punya akun? Isi form ini lalu kirim lewat WhatsApp ke admin. Admin mengecek jadwal, membuat booking, dan mengirim tautan pantau + QR ke nomor Anda. Punya akun? <a href=\"%(login)s\">Masuk</a> atau <a href=\"%(register)s\">daftar</a> untuk booking langsung dan menyimpan riwayat hewan."
+msgstr "No account? Fill in this form and send it to the admin on WhatsApp. The admin checks the schedule, creates the booking, and sends a tracking link + QR to your number. Have an account? <a href=\"%(login)s\">Sign in</a> or <a href=\"%(register)s\">sign up</a> to book directly and keep your pet's history."
+
+msgid "Data pemesan"
+msgstr "Your details"
+
+msgid "Konfirmasi booking dan tautan pantau grooming dikirim ke nomor ini. 4 digit terakhirnya dipakai untuk membuka halaman pantau."
+msgstr "The booking confirmation and grooming tracking link are sent to this number. Its last 4 digits unlock the tracking page."
+
+msgid "Peta lokasi Anda"
+msgstr "Map of your location"
+
+msgid "Kurir dengan kandang khusus hewan menjemput/mengantar ke titik lokasi di atas. Tarif Rp %(store_pickup_base_fee)s untuk %(store_pickup_base_km)s km pertama + Rp %(store_pickup_per_km)s/km, per perjalanan, dibayar bersama biaya layanan (di kasir, atau tunai ke kurir saat hewan diantar pulang)."
+msgstr "A courier with a pet carrier picks up/drops off at the location above. Rp %(store_pickup_base_fee)s for the first %(store_pickup_base_km)s km + Rp %(store_pickup_per_km)s/km, per trip, paid with the service fee (at the cashier, or cash to the courier when your pet is brought home)."
+
+msgid "Wajib bila hewan diantar pulang kurir. Siapkan uang tunai saat hewan sampai."
+msgstr "Required when the courier brings your pet home. Have cash ready when your pet arrives."
+
+msgid "Tamu tanpa akun"
+msgstr "Guest without an account"
+
+msgid "Peta"
+msgstr "Map"
+
+msgid "Salah pilih produk atau jumlah"
+msgstr "Wrong product or quantity"
+
+msgid "Ingin ganti alamat atau cara bayar"
+msgstr "Want to change address or payment method"
+
+msgid "Barang sudah tidak dibutuhkan"
+msgstr "No longer need the items"
+
+msgid "Waktu pengiriman terlalu lama"
+msgstr "Delivery takes too long"
+
+msgid "Jadwal bentrok atau berhalangan"
+msgstr "Schedule conflict or unavailable"
+
+msgid "Hewan sedang sakit"
+msgstr "Pet is sick"
+
+msgid "Ingin ganti layanan atau jadwal"
+msgstr "Want to change service or schedule"
+
+msgid "Sudah tidak membutuhkan layanan"
+msgstr "No longer need the service"
+
+msgid "Pelanggan minta dibatalkan"
+msgstr "Customer asked to cancel"
+
+msgid "Pembayaran tidak diterima"
+msgstr "Payment not received"
+
+msgid "Alamat di luar jangkauan antar"
+msgstr "Address outside delivery range"
+
+msgid "Groomer tidak tersedia"
+msgstr "No groomer available"
+
+msgid "Jadwal penuh atau toko tutup"
+msgstr "Fully booked or store closed"
+
+msgid "Pelanggan tidak bisa dihubungi"
+msgstr "Customer cannot be reached"
+
+msgid "Pilih atau tulis alasan pembatalan."
+msgstr "Choose or write a cancellation reason."
+
+msgid "Sistem (otomatis)"
+msgstr "System (automatic)"
+
+msgid "Pilih alasan"
+msgstr "Choose a reason"
+
+msgid "Alasan lain (tulis di bawah)"
+msgstr "Other reason (write below)"
+
+msgid "Keterangan tambahan"
+msgstr "Additional details"
+
+msgid "Ya, batalkan"
+msgstr "Yes, cancel"
+
+msgid "Batalkan order"
+msgstr "Cancel order"
+
+msgid "oleh %(who)s"
+msgstr "by %(who)s"
+
+msgid "Booking #%(booking_pk)s dibatalkan pelanggan"
+msgstr "Booking #%(booking_pk)s cancelled by customer"
+
+msgid "Pesanan #%(order_pk)s dibatalkan pelanggan"
+msgstr "Order #%(order_pk)s cancelled by customer"
+
+msgid "Keterangan"
+msgstr "Details"
+
+msgid "Hewan diantar pulang kurir: pilih bayar tunai ke kurir (COD)."
+msgstr "Your pet is brought home by courier: choose cash to the courier (COD)."
+
+msgid "Untuk hewan yang diambil sendiri di toko. Bayar tunai, transfer, atau QRIS di kasir."
+msgstr "For pets picked up at the store. Pay cash, transfer, or QRIS at the cashier."
+
+msgid "Nomor WhatsApp toko belum diatur. Hubungi toko langsung untuk booking."
+msgstr "The store's WhatsApp number is not set. Contact the store directly to book."
+
+msgid "Kirim booking lewat WhatsApp"
+msgstr "Send booking via WhatsApp"

@@ -443,8 +443,10 @@ def void(order, admin, reason):
     order.voided_at = timezone.now()
     order.voided_by = admin
     order.void_reason = reason[:255]
+    order.cancel_reason, order.cancelled_at, order.cancelled_by = reason[:255], order.voided_at, admin
     order.route_position = None
-    order.save(update_fields=["order_status", "voided_at", "voided_by", "void_reason", "route_position"])
+    order.save(update_fields=["order_status", "voided_at", "voided_by", "void_reason", "route_position",
+                              "cancel_reason", "cancelled_at", "cancelled_by"])
     for detail in order.details.select_related("product"):
         detail.product.apply_mutation(
             MutationType.IN, detail.quantity, user=admin,

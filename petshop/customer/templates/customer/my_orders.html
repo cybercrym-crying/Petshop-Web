@@ -1,12 +1,13 @@
 {% extends "customer/base.html" %}
 {% load i18n %}
-{% load static rupiah %}
+{% load static rupiah cancel_reason %}
 {% block title %}{% translate "Pesanan Saya - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
     <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'customer/css/my_orders.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'customer/css/my_orders-dark.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux2-lay1">
     <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
 {% endblock %}
@@ -49,6 +50,7 @@
                         <span class="co-status mo-status co-status--{{ order.order_status|lower }}">{{ order.status_display }}</span>
                     </div>
                     <p class="mo-resi"><span>{% translate "Resi" %}</span> <b class="co-resi">{{ order.tracking_number }}</b></p>
+                    {% if order.order_status == "DIBATALKAN" %}{% include "partials/_cancel_note.html" with obj=order %}{% endif %}
                     {% if order.payment_method == "TRANSFER" and order.payment_status == "MENUNGGU" and order.order_status != "DIBATALKAN" %}
                         <div class="mo-attn{% if order.awaiting_payment_check %} is-check{% endif %}">
                             <i class="fas {% if order.awaiting_payment_check %}fa-hourglass-half{% else %}fa-money-bill-transfer{% endif %}" aria-hidden="true"></i>
@@ -120,10 +122,10 @@
                     {% if order.order_status == "MENUNGGU" or order.order_status != "DIBATALKAN" %}
                         <div class="mo-links">
                             {% if order.order_status == "MENUNGGU" %}
-                                <form method="post" action="{% url 'customer:cancel_my_order' order.pk %}" class="co-cancel-form" data-confirm="{% blocktranslate trimmed with order_pk=order.pk %}Batalkan pesanan #{{ order_pk }}?{% endblocktranslate %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="co-cancel">{% translate "Batalkan pesanan" %}</button>
-                                </form>
+                                {% url 'customer:cancel_my_order' order.pk as cancel_url %}
+                                {% translate "Batalkan pesanan" as cancel_label %}
+                                {% blocktranslate trimmed with order_pk=order.pk asvar cancel_confirm %}Batalkan pesanan #{{ order_pk }}?{% endblocktranslate %}
+                                {% cancel_form "customer_order" cancel_url cancel_label order.pk confirm=cancel_confirm %}
                             {% else %}
                                 <a href="{% url 'store:complaints' %}?pesanan={{ order.pk }}"><i class="far fa-flag" aria-hidden="true"></i> {% translate "Ada masalah? Ajukan komplain" %}</a>
                             {% endif %}

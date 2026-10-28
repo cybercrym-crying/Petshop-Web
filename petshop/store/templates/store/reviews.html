@@ -67,7 +67,7 @@
                 <div class="sg-card__head"><h2 id="rv-bookings" class="sg-h3">{% translate "Ulasan layanan terbaru" %}</h2></div>
                 <ul class="sg-rows">
                     {% for b in bookings %}
-                        <li><span style="flex:1;min-width:0"><b class="sg-sm">#{{ b.pk }} {{ b.pet_name }} · {{ b.service.name }}</b>{% if b.review %} <span class="sg-sm">“{{ b.review }}”</span>{% endif %}<br><small class="sg-xs sg-muted">{{ b.customer.name }} · {{ b.rated_at|date:"d M Y" }}{% if b.groomer %} · {{ b.groomer.display_name }}{% endif %}</small></span><span class="sg-stars" aria-label="{% blocktranslate trimmed with b_rating=b.rating %}{{ b_rating }} bintang{% endblocktranslate %}">{% for _ in "12345" %}{% if forloop.counter <= b.rating %}★{% else %}<span style="color:var(--sg-line)">★</span>{% endif %}{% endfor %}</span></li>
+                        <li><span style="flex:1;min-width:0"><b class="sg-sm">#{{ b.pk }} {{ b.pet_name }} · {{ b.service.name }}</b>{% if b.review %} <span class="sg-sm">“{{ b.review }}”</span>{% endif %}<br><small class="sg-xs sg-muted">{{ b.owner_name }} · {{ b.rated_at|date:"d M Y" }}{% if b.groomer %} · {{ b.groomer.display_name }}{% endif %}</small></span><span class="sg-stars" aria-label="{% blocktranslate trimmed with b_rating=b.rating %}{{ b_rating }} bintang{% endblocktranslate %}">{% for _ in "12345" %}{% if forloop.counter <= b.rating %}★{% else %}<span style="color:var(--sg-line)">★</span>{% endif %}{% endfor %}</span></li>
                     {% empty %}
                         <li class="sg-sm sg-muted">{% translate "Belum ada ulasan layanan." %}</li>
                     {% endfor %}

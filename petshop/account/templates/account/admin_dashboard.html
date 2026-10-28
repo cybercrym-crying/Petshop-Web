@@ -187,7 +187,7 @@
                                         <span class="ad-time">{{ booking.schedule|time:"H.i" }}</span>
                                         <span class="ad-grow ad-two">
                                             <b>{{ booking.pet_name }} · {{ booking.service.name }}</b>
-                                            <small>{{ booking.customer.name }} · {% if booking.groomer %}{{ booking.groomer.display_name }}{% else %}<span class="ad-alert-text">{% translate "belum ada groomer" %}</span>{% endif %}</small>
+                                            <small>{{ booking.owner_name }} · {% if booking.groomer %}{{ booking.groomer.display_name }}{% else %}<span class="ad-alert-text">{% translate "belum ada groomer" %}</span>{% endif %}</small>
                                         </span>
                                         <span class="ui-pill tone-{{ booking.tone }}">{{ booking.get_status_display }}</span>
                                     </li>

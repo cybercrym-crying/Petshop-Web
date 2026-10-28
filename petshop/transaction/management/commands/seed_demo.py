@@ -665,7 +665,7 @@ class Command(BaseCommand):
             if status == "scheduled_pickup":
                 continue  # dijalankan di seed_pet_trip supaya jejak GPS kurir konsisten
             if status == "cancelled":
-                booking.cancel()
+                booking.cancel(reason=self.rng.choice(["Jadwal bentrok atau berhalangan", "Hewan sedang sakit", "Ingin ganti layanan atau jadwal"]), by=booking.customer)
                 ServiceBooking.objects.filter(pk=booking.pk).update(cancelled_at=schedule - timedelta(hours=self.rng.randint(2, 24)))
                 continue
             if status == "no_show":
@@ -771,7 +771,7 @@ class Command(BaseCommand):
                 order.mark_delivered(note="Diterima langsung oleh pemesan.")
 
         cancelled = self.feature_order(customer, C)
-        cancelled.cancel_by_customer(customer)
+        cancelled.cancel_by_customer(customer, reason="Salah pilih produk atau jumlah")
         self.backdate(cancelled, now - timedelta(days=15))
 
         rated = self.feature_order(customer, T)
@@ -838,7 +838,7 @@ class Command(BaseCommand):
         if status in ("pending", "scheduled"):
             return booking
         if status == "cancelled":
-            booking.cancel()
+            booking.cancel(reason="Pelanggan tidak bisa dihubungi", by=cashier)
             return booking
         booking.check_in(cashier, pet.weight_kg, "Sehat")
         checked = schedule + timedelta(minutes=5)
@@ -1281,13 +1281,13 @@ class Command(BaseCommand):
             return  # masih menunggu konfirmasi toko
         if order.is_online and order.order_status == "MENUNGGU":
             if status == "cancelled" and self.rng.random() < 0.5:
-                order.cancel_by_customer(order.customer)
+                order.cancel_by_customer(order.customer, reason=self.rng.choice(["Ingin ganti alamat atau cara bayar", "Barang sudah tidak dibutuhkan"]))
                 return
             order.confirm(admin)
         if status == "cancelled":
             if transfer and self.rng.random() < 0.3:
                 order.mark_paid()
-            order.cancel()
+            order.cancel(reason=self.rng.choice(["Stok habis", "Pembayaran tidak diterima"]), by=order.admin)
             return
         if status in ("pending", "confirmed"):
             if transfer and self.rng.random() < 0.5:

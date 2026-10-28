@@ -197,7 +197,13 @@ class CheckoutRuleTests(PosTestCase):
         # Resi saja (tertera di label paket) tidak membuka QR serah-terima.
         self.assertNotContains(self.client.get(track), order.handover_code)
         self.assertEqual(self.client.get(qr + "?k=salah").status_code, 404)
+        # Tautan dari kasir bisa diteruskan ke orang lain: tetap minta 4 digit WA pembeli.
         r = self.client.get(link)
+        self.assertNotContains(r, order.handover_code)
+        self.assertContains(r, 'name="wa4"')
+        self.assertEqual(self.client.get(qr + "?k=" + order.handover_key).status_code, 404)
+        self.assertContains(self.client.post(link, {"wa4": "1111"}), "tidak cocok")
+        r = self.client.post(link, {"wa4": "2222"}, follow=True)
         self.assertContains(r, order.handover_code)
         self.assertEqual(self.client.get(qr + "?k=" + order.handover_key).status_code, 200)
         # Bawa langsung: tidak ada QR serah-terima.

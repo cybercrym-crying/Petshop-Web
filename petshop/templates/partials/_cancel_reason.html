@@ -1,0 +1,19 @@
+{% load i18n %}
+<details class="cxr{% if staff %} is-staff{% endif %}">
+    <summary class="cxr__open">{{ label }}</summary>
+    <form method="post" action="{{ action }}" class="cxr__form"{% if confirm %} data-confirm="{{ confirm }}"{% endif %}>
+        {% csrf_token %}
+        {% if back %}<input type="hidden" name="back" value="{{ back }}">{% endif %}
+        {% if order_action %}<input type="hidden" name="action" value="cancel">{% endif %}
+        <label class="cxr__label" for="cxr-{{ uid }}">{% translate "Alasan pembatalan" %} <span class="cxr__req">{% translate "wajib" %}</span></label>
+        <select id="cxr-{{ uid }}" name="reason_choice" class="cxr__select" required>
+            <option value="">{% translate "Pilih alasan" %}</option>
+            {% for r in reasons %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+            <option value="{{ other }}">{% translate "Alasan lain (tulis di bawah)" %}</option>
+        </select>
+        <label class="visually-hidden" for="cxr-note-{{ uid }}">{% translate "Keterangan" %}</label>
+        <input id="cxr-note-{{ uid }}" name="reason_note" class="cxr__note" maxlength="200" autocomplete="off"
+               placeholder="{% translate 'Keterangan tambahan' %}">
+        <button type="submit" class="cxr__go">{% translate "Ya, batalkan" %}</button>
+    </form>
+</details>

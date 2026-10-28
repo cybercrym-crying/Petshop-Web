@@ -5,7 +5,7 @@
 {% block title %}{% blocktranslate trimmed with no=order.receipt_no %}Struk {{ no }}{% endblocktranslate %}{% endblock %}
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'transaction/css/receipt.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'transaction/css/receipt_staff.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'transaction/css/receipt_staff.css' %}?v=2">
 {% endblock %}
 {% block content %}
     <div class="sg sg-page rcp receipt-{{ size }}"{% if auto_print %} data-auto-print{% endif %}>
