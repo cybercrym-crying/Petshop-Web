@@ -331,10 +331,13 @@ class StaffAndCustomerPagesTests(Fixtures, TestCase):
         )
         self.assertFalse(ServiceBooking.objects.exists())
 
-    def test_anonymous_booking_redirects_to_login(self):
+    def test_anonymous_booking_needs_name_phone_and_location(self):
+        # Tamu tanpa akun boleh booking, tapi nama, nomor WA, dan lokasi wajib diisi.
         r = self.client.post(reverse("service:catalog"), {})
-        self.assertEqual(r.status_code, 302)
-        self.assertIn("/login", r["Location"])
+        self.assertEqual(r.status_code, 200)
+        for field in ("guest_name", "guest_phone", "address"):
+            self.assertIn(field, r.context["form"].errors)
+        self.assertFalse(ServiceBooking.objects.exists())
         self.assertEqual(self.client.get(reverse("service:catalog")).status_code, 200)
 
     def test_register_creates_customer_and_logs_in(self):

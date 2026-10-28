@@ -1,10 +1,18 @@
 {% extends "customer/base.html" %}
 {% load i18n %}
 {% load static rupiah %}
-{% block title %}{% translate "Lacak Pesanan - Seelly Petshop" %}{% endblock %}
+{% block title %}{% if booking %}{% blocktranslate trimmed with pk=booking.pk %}Booking #{{ pk }} - Seelly Petshop{% endblocktranslate %}{% else %}{% translate "Lacak Pesanan - Seelly Petshop" %}{% endif %}{% endblock %}
 {% block extra_css %}
+    {% if live %}<meta http-equiv="refresh" content="60">{% endif %}
     <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=7">
     <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=1">
+    {% if booking %}
+        <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux8">
+        <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
+        <link rel="stylesheet" href="{% static 'customer/css/my_orders.css' %}?v=3">
+        <link rel="stylesheet" href="{% static 'customer/css/my_orders-dark.css' %}?v=2">
+    {% endif %}
     {% if order.order_status == "MENUNGGU" or order.order_status == "DIKONFIRMASI" or order.order_status == "DALAM_PENGIRIMAN" %}
         <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
     {% endif %}
@@ -15,15 +23,15 @@
             <h1 class="track-title">
                 <i class="fas fa-location-dot" aria-hidden="true"></i> {% translate "Lacak Pesanan" %}
             </h1>
-            <p class="muted">{% translate "Masukkan nomor resi yang dikirim admin lewat WhatsApp." %}</p>
+            <p class="muted">{% translate "Masukkan nomor resi pesanan atau kode booking grooming yang dikirim toko lewat WhatsApp." %}</p>
         </header>
         <form class="track-form" method="get" action="{% url 'customer:track' %}" role="search">
-            <label class="visually-hidden" for="resi">{% translate "Nomor resi" %}</label>
+            <label class="visually-hidden" for="resi">{% translate "Nomor resi atau kode booking" %}</label>
             <input id="resi"
                    type="text"
                    name="resi"
                    value="{{ raw }}"
-                   placeholder="{% translate 'PS-261022-K7M2QX' %}"
+                   placeholder="{% translate 'PS-261022-K7M2QX atau kode booking' %}"
                    autocomplete="off"
                    autocapitalize="characters"
                    spellcheck="false"
@@ -41,24 +49,28 @@
             <article class="track-card track-verify">
                 <div class="track-card__top">
                     <div>
-                        <div class="track-label">{% translate "Nomor resi" %}</div>
-                        <div class="track-resi">{{ locked }}</div>
+                        <div class="track-label">{% if locked_booking %}{% translate "Booking grooming" %}{% else %}{% translate "Nomor resi" %}{% endif %}</div>
+                        <div class="track-resi">{% if locked_booking %}#{% endif %}{{ locked }}</div>
                     </div>
                     <span class="track-badge"><i class="fas fa-lock" aria-hidden="true"></i> {% translate "Perlu verifikasi" %}</span>
                 </div>
-                <form method="post" action="{% url 'customer:track_detail' locked %}" class="track-verify__form">
+                <form method="post" action="{{ verify_action }}" class="track-verify__form">
                     {% csrf_token %}
-                    <label for="wa4" class="track-verify__label">{% translate "Masukkan 4 digit terakhir nomor WhatsApp pemesan" %}</label>
-                    <p class="track-note">{% translate "Untuk menjaga privasi, detail pesanan hanya ditampilkan ke pemesan. Contoh: nomor 0812-3456-7890 berarti 7890." %}</p>
+                    <label for="wa4" class="track-verify__label">{% if locked_booking %}{% translate "Masukkan 4 digit terakhir nomor WhatsApp pemilik hewan" %}{% else %}{% translate "Masukkan 4 digit terakhir nomor WhatsApp pemesan" %}{% endif %}</label>
+                    <p class="track-note">{% if locked_booking %}{% translate "Untuk menjaga privasi, detail booking dan foto hewan hanya ditampilkan ke pemilik. Contoh: nomor 0812-3456-7890 berarti 7890." %}{% else %}{% translate "Untuk menjaga privasi, detail pesanan hanya ditampilkan ke pemesan. Contoh: nomor 0812-3456-7890 berarti 7890." %}{% endif %}</p>
                     <div class="track-verify__row">
                         <input id="wa4" name="wa4" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required
                                placeholder="••••" aria-describedby="wa4-error"{% if verify_error %} aria-invalid="true"{% endif %}>
-                        <button type="submit" class="btn-primary-seelly"><i class="fas fa-unlock" aria-hidden="true"></i> {% translate "Lihat pesanan" %}</button>
+                        <button type="submit" class="btn-primary-seelly"><i class="fas fa-unlock" aria-hidden="true"></i> {% if locked_booking %}{% translate "Lihat booking" %}{% else %}{% translate "Lihat pesanan" %}{% endif %}</button>
                     </div>
                     {% if verify_error %}<p class="track-verify__error" id="wa4-error" role="alert">{{ verify_error }}</p>{% endif %}
                     <p class="track-note">{% blocktranslate trimmed with url=login_url %}Punya akun? <a href="{{ url }}">Masuk</a> untuk melihat semua pesanan tanpa verifikasi.{% endblocktranslate %}</p>
                 </form>
             </article>
+        {% endif %}
+        {% if booking %}
+            {% include "service/_site_messages.html" %}
+            {% include "service/_booking_track_card.html" %}
         {% endif %}
         {% if order %}
             <article class="track-card">
@@ -74,6 +86,7 @@
                         <i class="fas fa-ban" aria-hidden="true"></i>
                         {% translate "Pesanan ini dibatalkan. Hubungi kami lewat WhatsApp jika ada pertanyaan." %}
                     </div>
+                    {% include "partials/_cancel_note.html" with obj=order %}
                 {% else %}
                     <ol class="track-steps">
                         {% for step in steps %}

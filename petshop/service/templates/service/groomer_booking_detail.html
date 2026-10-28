@@ -36,13 +36,13 @@
                     <div><dt>{% translate "Check-in" %}</dt><dd>{% if booking.checked_in_at %}{% blocktranslate trimmed with booking_checked_in_at=booking.checked_in_at|date:"H:i" booking_checked_in_by_display_name=booking.checked_in_by.display_name|default:"-" %}{{ booking_checked_in_at }} oleh {{ booking_checked_in_by_display_name }}{% endblocktranslate %}{% else %}{% translate "Belum" %}{% endif %}</dd></div>
                     <div><dt>{% translate "Berat / kondisi" %}</dt><dd>{% if booking.checkin_weight_kg %}{{ booking.checkin_weight_kg }} kg · {% endif %}{{ booking.checkin_condition|default:"-" }}</dd></div>
                     <div><dt>{% translate "Durasi perkiraan" %}</dt><dd>{% blocktranslate trimmed with booking_service_duration_minutes=booking.service.duration_minutes %}{{ booking_service_duration_minutes }} menit{% endblocktranslate %}</dd></div>
-                    <div><dt>{% translate "Pemilik" %}</dt><dd>{{ booking.customer.name }}</dd></div>
+                    <div><dt>{% translate "Pemilik" %}</dt><dd>{{ booking.owner_name }}</dd></div>
                     <div>
                         <dt>{% translate "Kontak" %}</dt>
                         <dd>
-                            {{ booking.customer.phone_number|default:"-" }}
-                            {% if booking.customer.whatsapp_url %}
-                                <a class="wa-link" href="{{ booking.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> WA</a>
+                            {{ booking.owner_phone|default:"-" }}
+                            {% if booking.owner_whatsapp_url %}
+                                <a class="wa-link" href="{{ booking.owner_whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> WA</a>
                             {% endif %}
                         </dd>
                     </div>

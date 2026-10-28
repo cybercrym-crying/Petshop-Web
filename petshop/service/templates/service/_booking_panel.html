@@ -1,4 +1,5 @@
-{% load i18n rupiah %}
+{% load l10n %}
+{% load i18n rupiah cancel_reason %}
 {% comment %}Panel detail booking terpilih di halaman Booking Layanan (b = booking, dianotasi `paid`).{% endcomment %}
 <aside class="sg-card bk-panel" aria-labelledby="bk-panel-title">
     <a class="bk-panel__close" href="{{ here }}{% if keep %}?{{ keep }}{% endif %}" aria-label="{% translate 'Tutup detail' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
@@ -21,9 +22,10 @@
         {% with p=b.progress %}<p class="sg-xs sg-muted mb-0">{% blocktranslate trimmed with done=p.0 total=p.1 %}Tahap {{ done }} dari {{ total }} selesai{% endblocktranslate %}</p>{% endwith %}
     {% endif %}
 
+    {% if b.status == "BATAL" %}{% include "partials/_cancel_note.html" with obj=b %}{% endif %}
     <dl class="bk-kv">
         <dt>{% translate "Pelanggan" %}</dt>
-        <dd>{{ b.customer.name }}<small>{% if b.customer.whatsapp_url %}<a href="{{ b.customer.whatsapp_url }}" target="_blank" rel="noopener" class="sg-link"><i class="bi bi-whatsapp" aria-hidden="true"></i> {{ b.customer.phone_number }}</a>{% else %}{{ b.customer.phone_number }}{% endif %}</small></dd>
+        <dd>{{ b.owner_name }}<small>{% if b.owner_whatsapp_url %}<a href="{{ b.owner_whatsapp_url }}" target="_blank" rel="noopener" class="sg-link"><i class="bi bi-whatsapp" aria-hidden="true"></i> {{ b.owner_phone }}</a>{% else %}{{ b.owner_phone }}{% endif %}</small>{% if b.is_guest %}<small>{% translate "Tamu tanpa akun" %} · {{ b.guest_address|default:"-" }}{% if b.guest_latitude is not None %} · <a href="https://www.google.com/maps/search/?api=1&amp;query={{ b.guest_latitude|unlocalize }},{{ b.guest_longitude|unlocalize }}" target="_blank" rel="noopener" class="sg-link"><i class="bi bi-geo-alt" aria-hidden="true"></i> {% translate "Peta" %}</a>{% endif %}</small>{% endif %}</dd>
         <dt>{% translate "Datang" %}</dt>
         <dd>{% if b.pickup_requested %}{% translate "Dijemput kurir" %}<small>{{ b.transport_address|default:"-" }} · {{ b.transport_distance_km }} km</small>{% else %}{% translate "Diantar sendiri" %}{% endif %}</dd>
         <dt>{% translate "Pulang" %}</dt>
@@ -83,10 +85,12 @@
     {% if share_link %}
         <section class="bk-share" aria-labelledby="bk-share-title">
             <h3 id="bk-share-title">{% translate "QR booking untuk pelanggan" %}</h3>
-            <p class="sg-xs sg-muted mb-2">{% translate "Kurir memindai QR ini di HP pelanggan saat menjemput dan mengantar pulang. Kirim tautannya bila pelanggan tidak memakai akun." %}</p>
+            <p class="sg-xs sg-muted mb-2">{% if b.needs_transport %}{% translate "Kurir memindai QR ini di HP pelanggan saat menjemput dan mengantar pulang, dan kasir memindainya saat check-in." %}{% else %}{% translate "Kasir memindai QR ini saat pelanggan datang untuk check-in. Kirim ke WhatsApp atau cetak tiketnya." %}{% endif %}</p>
             <div class="bk-share__row">
+                {% if ready_wa_url %}<a class="ui-btn ui-btn--sm ui-btn--primary" href="{{ ready_wa_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i>{% translate "Kabari sudah selesai" %}</a>{% endif %}
                 {% if share_wa_url %}<a class="ui-btn ui-btn--sm" href="{{ share_wa_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i>{% translate "Kirim ke WhatsApp" %}</a>{% endif %}
-                <a class="ui-btn ui-btn--sm" href="{{ share_link }}" target="_blank" rel="noopener"><i class="bi bi-qr-code" aria-hidden="true"></i>{% translate "Buka QR" %}</a>
+                <a class="ui-btn ui-btn--sm" href="{% url 'service:booking_ticket' b.pk %}"><i class="bi bi-qr-code" aria-hidden="true"></i>{% translate "Tiket & QR" %}</a>
+                <a class="ui-btn ui-btn--sm" href="{% url 'service:booking_ticket' b.pk %}?print=1"><i class="bi bi-printer" aria-hidden="true"></i>{% translate "Cetak" %}</a>
             </div>
         </section>
     {% endif %}
@@ -141,11 +145,10 @@
             {% endif %}
             {% if b.paid %}{% with line=b.payment_line %}{% if line %}<a class="bk-link" href="{% url 'transaction:receipt' line.order_id %}"><i class="bi bi-receipt" aria-hidden="true"></i> {% translate "Struk" %}</a>{% endif %}{% endwith %}{% endif %}
             {% if b.can_cancel or b.status == "ANTRE" %}
-                <form method="post" action="{% url 'service:cancel_booking' b.pk %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="back" value="{{ request.get_full_path }}">
-                    <button type="submit" class="bk-link is-bad" data-confirm="{% blocktranslate trimmed with b_pk=b.pk b_pet_name=b.pet_name %}Batalkan booking #{{ b_pk }} ({{ b_pet_name }})?{% endblocktranslate %}">{% translate "Batalkan booking" %}</button>
-                </form>
+                {% url 'service:cancel_booking' b.pk as cancel_url %}
+                {% translate "Batalkan booking" as cancel_label %}
+                {% blocktranslate trimmed with b_pk=b.pk b_pet_name=b.pet_name asvar cancel_confirm %}Batalkan booking #{{ b_pk }} ({{ b_pet_name }})?{% endblocktranslate %}
+                {% cancel_form "staff_booking" cancel_url cancel_label b.pk back=request.get_full_path confirm=cancel_confirm %}
             {% endif %}
         </div>
     </div>

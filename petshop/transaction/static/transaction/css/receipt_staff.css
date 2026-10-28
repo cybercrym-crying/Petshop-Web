@@ -9,7 +9,8 @@
 @media print {
     body * { visibility: hidden !important; }
     .rcp-stage, .rcp-stage * { visibility: visible !important; }
-    .rcp-stage { position: absolute; left: 0; top: 0; padding: 0; background: #fff; border: 0; box-shadow: none; }
+    .rcp .rcp-stage { position: absolute; left: 0; top: 0; padding: 0; background: #fff !important; border: 0; border-radius: 0; box-shadow: none; }
+    .rcp-stage::before, .rcp-stage::after { display: none !important; }
     .rcp-stage .receipt { box-shadow: none; }
     .rcp.receipt-58 .receipt { width: 58mm; padding: 0 2mm; font-size: 11px; }
 }

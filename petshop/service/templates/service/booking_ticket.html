@@ -1,0 +1,107 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah %}
+{% block title %}{% blocktranslate trimmed with pk=booking.pk %}Tiket Booking #{{ pk }}{% endblocktranslate %}{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'transaction/css/receipt.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'transaction/css/receipt_staff.css' %}?v=2">
+{% endblock %}
+{% block content %}
+    <div class="sg sg-page rcp receipt-58"{% if auto_print %} data-auto-print{% endif %}>
+        <header class="sg-hd no-print">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Booking layanan" %}</p>
+                <h1>{% blocktranslate trimmed with pk=booking.pk %}Tiket Booking #{{ pk }}{% endblocktranslate %}</h1>
+                <p>{{ booking.pet_name }} · {{ booking.service.name }} · {{ booking.schedule|date:"d M Y, H.i" }}</p>
+            </div>
+            <div class="sg-hd__actions">
+                <a href="{% url 'service:manage_bookings' %}?day={{ booking.schedule|date:'Y-m-d' }}&amp;id={{ booking.pk }}" class="ui-btn"><i class="bi bi-arrow-left" aria-hidden="true"></i>{% translate "Booking Layanan" %}</a>
+                {% if share_wa_url %}
+                    <a href="{{ share_wa_url }}" target="_blank" rel="noopener" class="ui-btn rcp-wa"><i class="bi bi-whatsapp" aria-hidden="true"></i>{% translate "Kirim WA" %}</a>
+                {% endif %}
+                {% if qr_url %}
+                    <button type="button" class="ui-btn ui-btn--primary" data-print><i class="bi bi-printer" aria-hidden="true"></i>{% translate "Cetak" %}</button>
+                {% endif %}
+            </div>
+        </header>
+        <div class="no-print">{% include "partials/_sg_messages.html" %}</div>
+        <div class="sg-grid">
+            <section class="sg-card rcp-stage sg-s5">
+                <article class="receipt">
+                    <header class="receipt-head">
+                        <h1>{{ store.name }}</h1>
+                        <p>{{ store.address }}</p>
+                        {% if store.whatsapp %}<p>WA {{ store.whatsapp }}</p>{% endif %}
+                    </header>
+                    <div class="receipt-rule"></div>
+                    <p class="receipt-head"><strong>{% blocktranslate trimmed with pk=booking.pk %}TIKET BOOKING #{{ pk }}{% endblocktranslate %}</strong></p>
+                    <dl class="receipt-meta">
+                        <dt>{% translate "Pemilik" %}</dt>
+                        <dd>{{ booking.owner_name }}</dd>
+                        <dt>{% translate "Hewan" %}</dt>
+                        <dd>{{ booking.pet_name }} ({{ booking.get_pet_type_display }})</dd>
+                        <dt>{% translate "Jenis layanan" %}</dt>
+                        <dd>{{ booking.service.name }}</dd>
+                        <dt>{% translate "Jadwal" %}</dt>
+                        <dd>{{ booking.schedule|date:"d/m/Y H:i" }}</dd>
+                        {% if booking.groomer %}
+                            <dt>{% translate "Groomer" %}</dt>
+                            <dd>{{ booking.groomer.display_name }}</dd>
+                        {% endif %}
+                        {% if booking.needs_transport %}
+                            <dt>{% translate "Antar-jemput" %}</dt>
+                            <dd>{% if booking.pickup_requested and booking.return_requested %}{% translate "Dijemput dan diantar pulang kurir" %}{% elif booking.pickup_requested %}{% translate "Dijemput kurir" %}{% else %}{% translate "Diantar pulang kurir" %}{% endif %}</dd>
+                        {% endif %}
+                    </dl>
+                    <div class="receipt-rule"></div>
+                    <table class="receipt-sum">
+                        <tbody>
+                            {% if booking.transport_fee %}
+                                <tr><td>{{ booking.service.name }}</td><td class="num">{{ booking.price|rupiah }}</td></tr>
+                                <tr><td>{% translate "Antar-jemput" %}</td><td class="num">{{ booking.transport_fee|rupiah }}</td></tr>
+                            {% endif %}
+                            <tr class="receipt-total"><td>{% translate "TOTAL" %}</td><td class="num">{{ booking.total_price|rupiah }}</td></tr>
+                            <tr><td colspan="2">{% if booking.is_paid %}{% translate "Lunas" %}{% elif booking.is_cod %}{% translate "Bayar tunai ke kurir saat hewan diantar pulang (COD)" %}{% else %}{% translate "Bayar di kasir toko" %}{% endif %}</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="receipt-rule"></div>
+                    {% if qr_url %}
+                        <footer class="receipt-foot">
+                            <img src="{{ qr_url }}" alt="{% blocktranslate trimmed with pk=booking.pk %}QR booking #{{ pk }}{% endblocktranslate %}" width="128" height="128">
+                            <p>{% if booking.needs_transport %}{% translate "Tunjukkan QR ini ke kurir saat dijemput/diantar dan ke kasir saat check-in." %}{% else %}{% translate "Tunjukkan QR ini ke kasir saat datang untuk check-in." %}{% endif %}</p>
+                            <p>{% translate "Kode booking" %}: <strong>{{ booking.checkin_code }}</strong></p>
+                            <p>{% blocktranslate trimmed with url=track_url %}Pantau proses grooming: {{ url }} (masukkan kode booking){% endblocktranslate %}</p>
+                        </footer>
+                    {% else %}
+                        <p class="receipt-note">{% blocktranslate trimmed with status=booking.get_status_display %}Booking sudah {{ status }}. QR tidak berlaku lagi.{% endblocktranslate %}</p>
+                    {% endif %}
+                </article>
+            </section>
+            <div class="sg-s7 no-print">
+                <section class="sg-card is-focus">
+                    <p class="sg-live mb-0"><i aria-hidden="true"></i>{{ booking.get_status_display }}</p>
+                    <h2 class="sg-h3 sg-mt8">{% translate "QR booking untuk pelanggan" %}</h2>
+                    {% if qr_url %}
+                        <p class="sg-sm sg-muted">{% translate "Kirim tautan QR ke WhatsApp pelanggan, atau cetak tiket ini. Saat pelanggan datang, pindai QR-nya di halaman Check-in (atau ketik kode cadangan), sama seperti struk belanja." %}</p>
+                        <div class="sg-row is-wrap sg-mt8">
+                            {% if share_wa_url %}
+                                <a href="{{ share_wa_url }}" target="_blank" rel="noopener" class="ui-btn ui-btn--primary"><i class="bi bi-whatsapp" aria-hidden="true"></i>{% translate "Kirim ke WA pelanggan" %}</a>
+                            {% else %}
+                                <span class="sg-pill is-gold">{% translate "Nomor WA pelanggan belum ada, cetak tiketnya" %}</span>
+                            {% endif %}
+                            <a href="{{ share_link }}" target="_blank" rel="noopener" class="ui-btn"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>{% translate "Buka tautan pelanggan" %}</a>
+                            {% if booking.can_check_in %}
+                                <a href="{% url 'service:check_in' %}?booking={{ booking.pk }}" class="ui-btn"><i class="bi bi-qr-code-scan" aria-hidden="true"></i>{% translate "Check-in sekarang" %}</a>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="sg-sm sg-muted mb-0">{% translate "Booking ini sudah selesai atau dibatalkan, jadi QR-nya tidak berlaku lagi." %}</p>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'transaction/js/receipt_staff.js' %}?v=1"></script>
+{% endblock %}

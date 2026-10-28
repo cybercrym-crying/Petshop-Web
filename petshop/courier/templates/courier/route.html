@@ -89,7 +89,7 @@
                         </div>
                         <h3 id="pet-title" class="ck-pet__name">{{ pet_task.pet_name }} · {{ pet_task.get_pet_type_display }}</h3>
                         <p class="ck-pet__sub">{% blocktranslate trimmed with s=pet_task.service.name t=pet_task.schedule|time:"H.i" %}{{ s }} · jadwal {{ t }}{% endblocktranslate %}</p>
-                        <p class="ck-pet__where">{{ pet_task.customer.name }} · {{ pet_task.transport_address|default:"-" }}{% if pet_task.transport_distance_km %} · {% blocktranslate trimmed with km=pet_task.transport_distance_km|floatformat:1 %}{{ km }} km dari toko{% endblocktranslate %}{% endif %}</p>
+                        <p class="ck-pet__where">{{ pet_task.owner_name }} · {{ pet_task.transport_address|default:"-" }}{% if pet_task.transport_distance_km %} · {% blocktranslate trimmed with km=pet_task.transport_distance_km|floatformat:1 %}{{ km }} km dari toko{% endblocktranslate %}{% endif %}</p>
                         {% if carrying and not pet_trip %}
                             <p class="ck-lock"><i class="bi bi-lock" aria-hidden="true"></i> {% blocktranslate trimmed count n=carrying %}Antar {{ n }} paket dulu sebelum berangkat.{% plural %}Antar {{ n }} paket dulu sebelum berangkat.{% endblocktranslate %}</p>
                         {% endif %}

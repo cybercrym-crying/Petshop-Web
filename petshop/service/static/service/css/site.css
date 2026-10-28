@@ -1359,3 +1359,11 @@
 .pet-add.is-empty {
   grid-column: 1 / -1;
 }
+
+/* Halaman pantau booking dari tautan WhatsApp (pelanggan tanpa akun) */
+.bk-share-page .svc-stages,
+.bk-share-page .svc-queue,
+.bk-share-page .svc-ready,
+.bk-share-page .svc-checkin,
+.bk-share-page .mo-steps,
+.bk-share-page .svc-note { margin-top: 14px; }

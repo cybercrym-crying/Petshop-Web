@@ -25,7 +25,7 @@
         {% else %}
             <span>{% if booking.is_today %}<span class="bk-today">{% translate "Hari ini" %}</span> {{ booking.schedule|date:"H.i" }}{% else %}{{ booking.schedule|date:"d M Y, H.i" }}{% endif %}</span>
         {% endif %}
-        <span>{{ booking.customer.name }}</span>
+        <span>{{ booking.owner_name }}</span>
     </p>
     {% if booking.status == "PROSES" %}
         <div class="gd-mini" role="img" aria-label="{% blocktranslate trimmed with booking_steps_done=booking.steps_done booking_steps_total=booking.steps_total %}Tahap {{ booking_steps_done }}/{{ booking_steps_total }}{% endblocktranslate %}"><i style="width: {% widthratio booking.steps_done booking.steps_total|default:1 100 %}%"></i></div>

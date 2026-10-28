@@ -2,6 +2,7 @@
 antar-jemput hewan, profil hewan & pengingat, ulasan, dan komplain."""
 
 from datetime import timedelta
+from urllib.parse import quote
 from decimal import Decimal
 from io import StringIO
 
@@ -284,8 +285,8 @@ class PetTransportTests(Stage4Fixtures, TestCase):
         self.assertFalse(ServiceBooking.objects.exists())
         r = self.client.post(reverse("service:create_booking"), data)
         b = ServiceBooking.objects.get()
-        self.assertRedirects(r, reverse("service:manage_bookings") + f"?day={tomorrow_at(10).date()}&id={b.pk}",
-                             fetch_redirect_response=False)
+        # Setelah dibuat, kasir langsung dibawa ke tiket booking ber-QR (cetak / kirim WA).
+        self.assertRedirects(r, reverse("service:booking_ticket", args=[b.pk]), fetch_redirect_response=False)
         self.assertEqual((b.status, b.payment_choice, b.pickup_requested, b.return_requested),
                          (BookingStatus.SCHEDULED, "COD", True, True))
         self.assertGreater(b.transport_fee, 0)
@@ -297,7 +298,7 @@ class PetTransportTests(Stage4Fixtures, TestCase):
         self.assertIn("wa.me/", panel.context["share_wa_url"])
         path = link.split("testserver", 1)[1]
         self.client.logout()
-        public = self.client.get(path)
+        public = self.client.post(path, {"wa4": self.customer.phone_number[-4:]}, follow=True)
         self.assertContains(public, b.checkin_code)
         self.assertContains(public, "COD")
         self.assertEqual(self.client.get(path.split("?")[0] + "?k=salah").status_code, 404)
@@ -678,3 +679,153 @@ class PaymentDeadlineTests(Stage4Fixtures, TestCase):
             "schedule": tomorrow_at(10).strftime("%Y-%m-%dT%H:%M"), "payment_choice": "TRANSFER",
         })
         self.assertEqual(ServiceBooking.objects.get().payment_choice, "TRANSFER")
+
+
+class WalkInBookingQrTests(Stage4Fixtures, TestCase):
+    """Booking manual dari kasir (datang sendiri) juga punya QR: dikirim ke WA / dicetak, dipindai saat check-in."""
+
+    def setUp(self):
+        self.make_people()
+
+    def test_kasir_booking_gets_ticket_with_qr_and_qr_checks_in(self):
+        self.client.force_login(self.kasir)
+        r = self.client.post(reverse("service:create_booking"), {
+            "customer": self.customer.pk, "service": self.service.pk, "pet_name": "Mochi", "pet_type": "KUCING",
+            "schedule": tomorrow_at(11).strftime("%Y-%m-%dT%H:%M"), "payment_choice": "NANTI",
+        })
+        b = ServiceBooking.objects.get()
+        self.assertFalse(b.needs_transport)
+        self.assertRedirects(r, reverse("service:booking_ticket", args=[b.pk]), fetch_redirect_response=False)
+
+        ticket = self.client.get(reverse("service:booking_ticket", args=[b.pk]))
+        self.assertContains(ticket, b.checkin_code)
+        self.assertContains(ticket, "qr.svg?k=")
+        self.assertIn("wa.me/", ticket.context["share_wa_url"])
+        self.assertIn("ke kasir saat datang untuk check-in", ticket.context["share_wa_url"].replace("%20", " "))
+
+        # Tautan untuk pelanggan (tanpa login) memuat QR yang sama.
+        path = ticket.context["share_link"].split("testserver", 1)[1]
+        self.client.logout()
+        # Tanpa login: detail & QR terkunci sampai 4 digit terakhir nomor WA pemilik dimasukkan.
+        locked = self.client.get(path)
+        self.assertNotContains(locked, b.checkin_code)
+        self.assertContains(locked, 'name="wa4"')
+        self.assertEqual(self.client.get(path.replace("/?k=", "/qr.svg?k=")).status_code, 404)
+        self.assertContains(self.client.post(path, {"wa4": "0000"}), "tidak cocok")
+        opened = self.client.post(path, {"wa4": self.customer.phone_number[-4:]})
+        self.assertRedirects(opened, path, fetch_redirect_response=False)
+        self.assertContains(self.client.get(path), b.checkin_code)
+        self.assertEqual(self.client.get(path.replace("/?k=", "/qr.svg?k=")).status_code, 200)
+
+        # Kasir memindai isi QR di halaman check-in -> booking ditemukan.
+        self.client.force_login(self.kasir)
+        found = self.client.get(reverse("service:check_in") + "?kode=" + b.checkin_payload)
+        self.assertEqual(found.context["booking"], b)
+
+    def test_ticket_is_staff_only_and_closed_booking_has_no_qr(self):
+        b = self.book(confirmed=True)
+        self.client.force_login(self.customer)
+        self.assertNotEqual(self.client.get(reverse("service:booking_ticket", args=[b.pk])).status_code, 200)
+        self.client.force_login(self.kasir)
+        b.cancel()
+        r = self.client.get(reverse("service:booking_ticket", args=[b.pk]))
+        self.assertNotContains(r, "qr.svg?k=")
+        self.assertNotIn("share_link", r.context)
+
+    def test_shared_link_shows_progress_and_ready_without_login(self):
+        b = self.book(confirmed=True)
+        ServiceBooking.objects.filter(pk=b.pk).update(status=BookingStatus.READY, finished_at=timezone.now())
+        b.refresh_from_db()
+        self.client.force_login(self.kasir)
+        panel = self.client.get(reverse("service:manage_bookings") + f"?day={b.schedule.date()}&id={b.pk}")
+        self.assertIn("siap%20diambil", panel.context["ready_wa_url"])
+        path = panel.context["share_link"].split("testserver", 1)[1]
+        self.client.logout()
+        page = self.client.post(path, {"wa4": self.customer.phone_number[-4:]}, follow=True)
+        self.assertContains(page, "siap diambil di toko")
+        self.assertContains(page, 'http-equiv="refresh"')
+        ServiceBooking.objects.filter(pk=b.pk).update(status=BookingStatus.DONE)
+        done = self.client.get(path)
+        self.assertContains(done, "sudah selesai. Terima kasih")
+        self.assertNotContains(done, 'http-equiv="refresh"')
+
+    def test_track_page_finds_booking_by_code_and_limits_guesses(self):
+        from django.core.cache import cache
+
+        cache.clear()
+        b = self.book(confirmed=True)
+        r = self.client.get(reverse("customer:track") + "?resi=" + b.checkin_code.lower())
+        self.assertRedirects(r, reverse("service:booking_share", args=[b.pk]) + "?k=" + b.share_key,
+                             fetch_redirect_response=False)
+        locked = self.client.get(r["Location"])
+        self.assertTemplateUsed(locked, "customer/track.html")
+        self.assertEqual(locked.context["active_page"], "track")
+        self.assertNotContains(locked, b.pet_name)
+        self.assertContains(locked, 'name="wa4"')
+        page = self.client.post(r["Location"], {"wa4": self.customer.phone_number[-4:]}, follow=True)
+        self.assertContains(page, b.pet_name)
+        # Pemilik yang login langsung melihat booking-nya tanpa verifikasi.
+        self.client.logout()
+        self.client.force_login(self.customer)
+        self.assertContains(self.client.get(r["Location"]), b.pet_name)
+        self.client.logout()
+        for _ in range(10):
+            self.client.get(reverse("customer:track") + "?resi=ZZZZZZZZ")
+        locked = self.client.get(reverse("customer:track") + "?resi=" + b.checkin_code)
+        self.assertEqual(locked.status_code, 200)
+        self.assertContains(locked, "Terlalu banyak percobaan")
+        cache.clear()
+
+
+class GuestBookingTests(Stage4Fixtures, TestCase):
+    """Tamu tanpa akun: form booking diteruskan ke WhatsApp admin, tidak langsung masuk jadwal."""
+
+    def setUp(self):
+        self.make_people()
+        store = StoreSettings.current()
+        store.whatsapp = "6281356703075"
+        store.save()
+
+    def data(self, **extra):
+        return {
+            "guest_name": "  Sari   Dewi ", "guest_phone": "+62 812-3333-4444", "address": "Jl. Melati 2",
+            "latitude": str(HOME[0]), "longitude": str(HOME[1]),
+            "service": self.service.pk, "pet_name": "Kiko", "pet_type": "KUCING",
+            "schedule": tomorrow_at(10).strftime("%Y-%m-%dT%H:%M"), "payment_choice": "NANTI", **extra,
+        }
+
+    def test_guest_booking_goes_to_admin_whatsapp_without_creating_booking(self):
+        from urllib.parse import unquote
+
+        page = self.client.get(reverse("service:catalog"))
+        self.assertContains(page, 'name="guest_phone"')
+        self.assertContains(page, "Kirim booking lewat WhatsApp")
+        self.assertNotContains(page, 'value="TRANSFER"')
+        r = self.client.post(reverse("service:catalog"), self.data(pickup="on", return_trip="on", payment_choice="COD"))
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(r["Location"].startswith("https://wa.me/6281356703075?text="))
+        text = unquote(r["Location"])
+        for part in ("Nama: Sari Dewi", "No. WhatsApp: 081233334444", "Hewan: Kiko (Kucing)",
+                     f"Layanan: {self.service.name}", "Dijemput dan diantar pulang kurir", "Alamat: Jl. Melati 2",
+                     "query=-1.255400,116.831200", "Pembayaran: Tunai ke kurir saat diantar pulang (COD)"):
+            self.assertIn(part, text)
+        # Tidak ada booking yang dibuat: admin yang membuatnya lewat kasir setelah membaca pesan.
+        self.assertFalse(ServiceBooking.objects.exists())
+
+    def test_guest_form_rules(self):
+        url = reverse("service:catalog")
+        no_pin = self.client.post(url, self.data(latitude="", longitude=""))
+        self.assertIn("address", no_pin.context["form"].errors)
+        cod = self.client.post(url, self.data(payment_choice="COD"))
+        self.assertIn("payment_choice", cod.context["form"].errors)
+        # Diantar pulang tapi "bayar di kasir": tamu tidak ke kasir, jadi wajib COD.
+        later = self.client.post(url, self.data(return_trip="on"))
+        self.assertIn("payment_choice", later.context["form"].errors)
+        # Tanpa nomor WA toko: tamu diminta menghubungi toko langsung.
+        store = StoreSettings.current()
+        store.whatsapp = ""
+        store.save()
+        r = self.client.post(url, self.data())
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.context["form"].non_field_errors())
+        self.assertFalse(ServiceBooking.objects.exists())

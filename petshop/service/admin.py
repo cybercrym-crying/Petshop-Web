@@ -35,6 +35,6 @@ class ServiceAdmin(admin.ModelAdmin):
 class ServiceBookingAdmin(admin.ModelAdmin):
     list_display = ("pk", "customer", "pet_name", "service", "schedule", "groomer", "status")
     list_filter = ("status", "service")
-    search_fields = ("pet_name", "customer__first_name", "customer__last_name", "customer__phone_number")
+    search_fields = ("pet_name", "guest_name", "guest_phone", "customer__first_name", "customer__last_name", "customer__phone_number")
     raw_id_fields = ("customer", "groomer", "created_by", "pet", "pet_courier", "confirmed_by", "checked_in_by")
     inlines = [BookingStepInline]

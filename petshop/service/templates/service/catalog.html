@@ -6,7 +6,7 @@
 {% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux7-lay1">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux8">
     <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
 {% endblock %}
 {% block content %}
@@ -226,22 +226,36 @@
             <!-- Bagian Kanan: Form Booking -->
             <aside class="svc-booking" id="booking" aria-labelledby="booking-title">
                 <h2 id="booking-title">{% translate "Booking layanan" %}</h2>
-                {% if not user.is_authenticated %}
-                    <p class="muted">{% translate "Masuk atau daftar akun customer untuk membuat booking dan memantau statusnya (konfirmasi → check-in & antrean → tiap tahap dengan foto → selesai)." %}</p>
-                    <div class="svc-auth">
-                        <a class="btn-primary-seelly"
-                           href="{% url 'login_form' %}?next={% url 'service:catalog' %}">{% translate "Masuk" %}</a>
-                        <a class="btn-ghost"
-                           href="{% url 'register' %}?next={% url 'service:catalog' %}">{% translate "Daftar" %}</a>
-                    </div>
-                {% elif not is_customer %}
+                {% if not is_customer and not is_guest %}
                     <p class="muted">{% translate "Anda masuk sebagai pegawai. Booking untuk pelanggan dibuat lewat menu" %} <strong>{% translate "Booking Layanan" %}</strong> {% translate "di halaman staf." %}</p>
                 {% else %}
+                    {% if is_guest %}
+                        <p class="muted svc-guest-note">{% blocktranslate trimmed with login=login_next register=register_next %}Belum punya akun? Isi form ini lalu kirim lewat WhatsApp ke admin. Admin mengecek jadwal, membuat booking, dan mengirim tautan pantau + QR ke nomor Anda. Punya akun? <a href="{{ login }}">Masuk</a> atau <a href="{{ register }}">daftar</a> untuk booking langsung dan menyimpan riwayat hewan.{% endblocktranslate %}</p>
+                    {% endif %}
                     <form method="post" novalidate data-booking-form>
                         {% csrf_token %}
                         {% if form.non_field_errors %}<div class="svc-alert svc-alert--error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+                        {% if is_guest %}
+                            <fieldset class="svc-transport svc-guest">
+                                <legend>{% translate "Data pemesan" %}</legend>
+                                {% include "service/_field.html" with field=form.guest_name %}
+                                {% include "service/_field.html" with field=form.guest_phone %}
+                                <p class="muted svc-hint">{% translate "Konfirmasi booking dan tautan pantau grooming dikirim ke nomor ini. 4 digit terakhirnya dipakai untuk membuka halaman pantau." %}</p>
+                                {% include "service/_field.html" with field=form.address %}
+                                <button type="button" class="btn-ghost btn-sm-soft" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
+                                <div class="svc-map"
+                                     data-map-picker
+                                     data-default-lat="{{ store.latitude|unlocalize }}"
+                                     data-default-lng="{{ store.longitude|unlocalize }}"
+                                     role="application"
+                                     aria-label="{% translate 'Peta lokasi Anda' %}"></div>
+                                {{ form.latitude }}{{ form.longitude }}
+                                <p class="muted svc-hint">{% translate "Ketuk peta atau geser pin ke titik rumah Anda." %}</p>
+                            </fieldset>
+                        {% endif %}
                         {% include "service/_field.html" with field=form.service icon="tag" %}
-                        {% if form.pet.field.queryset.exists %}
+                        {% if is_guest %}
+                        {% elif form.pet.field.queryset.exists %}
                             {% include "service/_field.html" with field=form.pet icon="paw" %}
                         {% else %}
                             {{ form.pet }}
@@ -249,7 +263,7 @@
                         <div data-new-pet>
                             {% include "service/_field.html" with field=form.pet_name hide_optional=True icon="paw" %}
                             {% include "service/_field.html" with field=form.pet_type hide_optional=True %}
-                            {% if not form.pet.field.queryset.exists %}
+                            {% if is_customer and not form.pet.field.queryset.exists %}
                                 <p class="muted svc-hint"><a href="{% url 'service:add_pet' %}">{% translate "Simpan profil hewan" %}</a> {% translate "supaya booking berikutnya lebih cepat dan riwayat perawatannya tercatat." %}</p>
                             {% endif %}
                         </div>
@@ -267,23 +281,33 @@
                                     <use href="#i-arrow" />
                                 </svg><span>{{ form.return_trip.label }}</span>{{ form.return_trip }}
                             </label>
-                            <div class="svc-transport__detail" data-transport-detail>
-                                <p class="muted svc-hint">
-                                    {% blocktranslate trimmed with store_pickup_base_fee=store.pickup_base_fee|rupiah store_pickup_base_km=store.pickup_base_km|unlocalize store_pickup_per_km=store.pickup_per_km|rupiah %}
-                                        Kurir dengan kandang khusus hewan. Tarif Rp {{ store_pickup_base_fee }} untuk {{ store_pickup_base_km }} km pertama + Rp {{ store_pickup_per_km }}/km, per perjalanan, dibayar bersama biaya layanan. Bila hewan diantar pulang, bayar lewat transfer setelah jadwal dikonfirmasi; kurir berangkat mengantar setelah booking lunas.
-                                    {% endblocktranslate %}
-                                </p>
-                                {% include "service/_field.html" with field=form.address %}
-                                <button type="button" class="btn-ghost btn-sm-soft" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
-                                <div class="svc-map"
-                                     data-map-picker
-                                     data-default-lat="{{ store.latitude|unlocalize }}"
-                                     data-default-lng="{{ store.longitude|unlocalize }}"
-                                     role="application"
-                                     aria-label="{% translate 'Peta lokasi jemput/antar' %}"></div>
-                                {{ form.latitude }}{{ form.longitude }}
-                                <p class="muted svc-hint">{% translate "Ketuk peta atau geser pin ke titik rumah Anda." %}</p>
-                            </div>
+                            {% if is_guest %}
+                                <div class="svc-transport__detail" data-transport-detail>
+                                    <p class="muted svc-hint">
+                                        {% blocktranslate trimmed with store_pickup_base_fee=store.pickup_base_fee|rupiah store_pickup_base_km=store.pickup_base_km|unlocalize store_pickup_per_km=store.pickup_per_km|rupiah %}
+                                            Kurir dengan kandang khusus hewan menjemput/mengantar ke titik lokasi di atas. Tarif Rp {{ store_pickup_base_fee }} untuk {{ store_pickup_base_km }} km pertama + Rp {{ store_pickup_per_km }}/km, per perjalanan, dibayar bersama biaya layanan (di kasir, atau tunai ke kurir saat hewan diantar pulang).
+                                        {% endblocktranslate %}
+                                    </p>
+                                </div>
+                            {% else %}
+                                <div class="svc-transport__detail" data-transport-detail>
+                                    <p class="muted svc-hint">
+                                        {% blocktranslate trimmed with store_pickup_base_fee=store.pickup_base_fee|rupiah store_pickup_base_km=store.pickup_base_km|unlocalize store_pickup_per_km=store.pickup_per_km|rupiah %}
+                                            Kurir dengan kandang khusus hewan. Tarif Rp {{ store_pickup_base_fee }} untuk {{ store_pickup_base_km }} km pertama + Rp {{ store_pickup_per_km }}/km, per perjalanan, dibayar bersama biaya layanan. Bila hewan diantar pulang, bayar lewat transfer setelah jadwal dikonfirmasi; kurir berangkat mengantar setelah booking lunas.
+                                        {% endblocktranslate %}
+                                    </p>
+                                    {% include "service/_field.html" with field=form.address %}
+                                    <button type="button" class="btn-ghost btn-sm-soft" data-map-locate><i class="fas fa-location-crosshairs" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
+                                    <div class="svc-map"
+                                         data-map-picker
+                                         data-default-lat="{{ store.latitude|unlocalize }}"
+                                         data-default-lng="{{ store.longitude|unlocalize }}"
+                                         role="application"
+                                         aria-label="{% translate 'Peta lokasi jemput/antar' %}"></div>
+                                    {{ form.latitude }}{{ form.longitude }}
+                                    <p class="muted svc-hint">{% translate "Ketuk peta atau geser pin ke titik rumah Anda." %}</p>
+                                </div>
+                            {% endif %}
                         </fieldset>
                         <fieldset class="svc-transport svc-pay">
                             <legend>{% translate "Cara bayar" %}</legend>
@@ -293,18 +317,25 @@
                                         <use href="#{% if choice.data.value == 'TRANSFER' %}i-clock{% else %}i-tag{% endif %}" />
                                     </svg>
                                     <span>{{ choice.choice_label }}
-                                        <small class="svc-check__sub">{% if choice.data.value == 'TRANSFER' %}{% blocktranslate trimmed with h=store.payment_deadline_hours %}Bayar maks. {{ h }} jam setelah jadwal dikonfirmasi. Lewat dari itu tanpa bukti bayar, booking dibatalkan otomatis.{% endblocktranslate %}{% else %}{% translate "Bayar tunai, transfer, atau QRIS di kasir saat datang." %}{% endif %}</small>
+                                        <small class="svc-check__sub">{% if choice.data.value == 'TRANSFER' %}{% blocktranslate trimmed with h=store.payment_deadline_hours %}Bayar maks. {{ h }} jam setelah jadwal dikonfirmasi. Lewat dari itu tanpa bukti bayar, booking dibatalkan otomatis.{% endblocktranslate %}{% elif choice.data.value == 'COD' %}{% translate "Wajib bila hewan diantar pulang kurir. Siapkan uang tunai saat hewan sampai." %}{% elif is_guest %}{% translate "Untuk hewan yang diambil sendiri di toko. Bayar tunai, transfer, atau QRIS di kasir." %}{% else %}{% translate "Bayar tunai, transfer, atau QRIS di kasir saat datang." %}{% endif %}</small>
                                     </span>{{ choice.tag }}
                                 </label>
                             {% endfor %}
                             {% for e in form.payment_choice.errors %}<p class="svc-error">{{ e }}</p>{% endfor %}
                         </fieldset>
-                        <button type="submit" class="btn-primary-seelly svc-cta w-100">
-                            <svg class="ic" width="22" height="22" aria-hidden="true">
-                                <use href="#i-calplus" />
-                            </svg>
-                            {% translate "Buat booking" %}
-                        </button>
+                        {% if is_guest %}
+                            <button type="submit" class="btn-primary-seelly svc-cta w-100">
+                                <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                                {% translate "Kirim booking lewat WhatsApp" %}
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn-primary-seelly svc-cta w-100">
+                                <svg class="ic" width="22" height="22" aria-hidden="true">
+                                    <use href="#i-calplus" />
+                                </svg>
+                                {% translate "Buat booking" %}
+                            </button>
+                        {% endif %}
                         <p class="muted svc-hint svc-note">
                             {% blocktranslate trimmed with store_hours_display=store.hours_display %}
                                 Jam layanan {{ store_hours_display }}. Booking dikonfirmasi toko, lalu tunjukkan QR booking saat check-in. Bayar di toko setelah layanan selesai.
@@ -318,7 +349,7 @@
 {% endblock %}
 {% block extra_js %}
     <script src="{% static 'service/js/catalog_filter.js' %}?v=1"></script>
-    {% if is_customer %}
+    {% if is_customer or is_guest %}
         <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
         <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
         <script src="{% static 'service/js/booking_form.js' %}?v=1"></script>

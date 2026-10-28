@@ -303,6 +303,12 @@ class Order(models.Model):
         "account.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     void_reason = models.CharField(max_length=255, blank=True, default="")
+    # Semua pembatalan (pelanggan, admin/kasir, otomatis) mencatat alasan & pelakunya.
+    cancel_reason = models.CharField("Alasan pembatalan", max_length=255, blank=True, default="")
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancelled_by = models.ForeignKey(
+        "account.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
 
     _ALLOWED_TRANSITIONS = {
         OrderStatus.PENDING: {OrderStatus.CONFIRMED, OrderStatus.CANCELLED},
@@ -458,7 +464,7 @@ class Order(models.Model):
         count = 0
         for order in expired.select_related("customer"):
             try:
-                order.cancel()
+                order.cancel(reason="Lewat batas waktu pembayaran")
             except InvalidTransition:
                 continue
             ActivityLog.record(order, "Dibatalkan otomatis", detail="Lewat batas waktu pembayaran")
@@ -564,6 +570,11 @@ class Order(models.Model):
     @property
     def is_walk_in(self):
         return bool(getattr(self.customer, "is_walk_in", False))
+
+    @property
+    def cancelled_by_label(self):
+        """Siapa yang membatalkan, untuk ditampilkan bersama alasannya."""
+        return _cancelled_by_label(self.cancelled_by_id, self.cancelled_by, self.customer_id)
 
     @property
     def buyer_display(self):
@@ -787,7 +798,7 @@ class Order(models.Model):
         self.payment_due_at = max(self.payment_due_at or timezone.now(), timezone.now() + extra)
         self.save(update_fields=["payment_proof", "payment_reject_note", "payment_due_at"])
 
-    def cancel_by_customer(self, customer):
+    def cancel_by_customer(self, customer, reason=""):
         """Pelanggan hanya boleh membatalkan pesanannya selama belum dikonfirmasi."""
         if self.customer_id != customer.pk:
             raise InvalidTransition("Pesanan ini bukan milik Anda.")
@@ -795,7 +806,7 @@ class Order(models.Model):
             raise InvalidTransition(
                 f"Pesanan #{self.pk} sudah diproses toko, hubungi admin untuk pembatalan."
             )
-        self.cancel()
+        self.cancel(reason=reason, by=customer)
 
     # OOP: ENKAPSULASI - satu pintu pesanan online dari pelanggan yang login.
     # Harga & stok diambil dari database (bukan dari keranjang di browser).
@@ -921,7 +932,8 @@ class Order(models.Model):
         self.queue_for_packing()
 
     @transaction.atomic
-    def cancel(self):
+    def cancel(self, reason="", by=None):
+        """Batalkan pesanan & kembalikan stok. `by` kosong berarti dibatalkan otomatis oleh sistem."""
         # Baca ulang status dengan kunci baris: dua pembatalan bersamaan tidak
         # boleh mengembalikan stok dua kali.
         self.order_status = (
@@ -930,7 +942,10 @@ class Order(models.Model):
             .get(pk=self.pk)
         )
         self._move_to(OrderStatus.CANCELLED)
-        self.save(update_fields=["order_status"])
+        self.cancel_reason = (reason or "").strip()[:255]
+        self.cancelled_at = timezone.now()
+        self.cancelled_by = by
+        self.save(update_fields=["order_status", "cancel_reason", "cancelled_at", "cancelled_by"])
         for detail in self.details.select_related("product"):
             detail.product.apply_mutation(
                 MutationType.IN,
@@ -941,6 +956,14 @@ class Order(models.Model):
     class Meta:
         verbose_name = "order"
         verbose_name_plural = "order"
+
+
+def _cancelled_by_label(by_id, by, customer_id):
+    if not by_id:
+        return _("Sistem (otomatis)")
+    if by_id == customer_id:
+        return _("Pelanggan")
+    return f"{_('Toko')} ({by.display_name})"
 
 
 class OrderDetail(models.Model):

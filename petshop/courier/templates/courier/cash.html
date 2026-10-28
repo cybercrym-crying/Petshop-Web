@@ -29,7 +29,7 @@
                         {% for b in pets_on_hand %}
                             <div class="ck-pkg">
                                 <span class="sg-av"><i class="bi bi-heart" aria-hidden="true"></i></span>
-                                <span class="ck-pkg__body"><b>{% blocktranslate trimmed with pk=b.pk pet=b.pet_name %}Booking #{{ pk }} · {{ pet }}{% endblocktranslate %}</b><small>{% blocktranslate trimmed with t=b.closed_at|date:"d M H.i" name=b.customer.name %}{{ t }} · {{ name }} · ditagih tunai{% endblocktranslate %}</small></span>
+                                <span class="ck-pkg__body"><b>{% blocktranslate trimmed with pk=b.pk pet=b.pet_name %}Booking #{{ pk }} · {{ pet }}{% endblocktranslate %}</b><small>{% blocktranslate trimmed with t=b.closed_at|date:"d M H.i" name=b.owner_name %}{{ t }} · {{ name }} · ditagih tunai{% endblocktranslate %}</small></span>
                                 <b class="sg-price">Rp {{ b.cash_collected|rupiah }}</b>
                             </div>
                         {% endfor %}

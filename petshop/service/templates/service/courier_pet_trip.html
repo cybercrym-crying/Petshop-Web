@@ -18,13 +18,13 @@
             {% include "courier/_page_head.html" with back=back_url title=t_title lead=t_lead pill=booking.get_status_display %}
             {% include "partials/_sg_messages.html" %}
             <section class="sg-card">
-                <p class="sg-h3 mb-0"><i class="bi bi-house" aria-hidden="true"></i> {{ booking.customer.name }}</p>
+                <p class="sg-h3 mb-0"><i class="bi bi-house" aria-hidden="true"></i> {{ booking.owner_name }}</p>
                 <p class="sg-xs sg-muted mb-0">{% blocktranslate trimmed with booking_transport_address=booking.transport_address|default:"-" booking_transport_distance_km=booking.transport_distance_km %}{{ booking_transport_address }} · {{ booking_transport_distance_km }} km dari toko{% endblocktranslate %}</p>
                 <div class="ck-row2 sg-mt12">
                     {% if booking.transport_latitude is not None %}
                         <a class="ck-btn" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ booking.transport_latitude|unlocalize }},{{ booking.transport_longitude|unlocalize }}" target="_blank" rel="noopener"><i class="bi bi-compass" aria-hidden="true"></i> {% translate "Navigasi" %}</a>
                     {% endif %}
-                    {% if booking.customer.whatsapp_url %}<a class="ck-btn is-ok" href="{{ booking.customer.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> {% translate "Hubungi" %}</a>{% endif %}
+                    {% if booking.owner_whatsapp_url %}<a class="ck-btn is-ok" href="{{ booking.owner_whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> {% translate "Hubungi" %}</a>{% endif %}
                 </div>
                 {% if booking.pet.notes %}<div class="sg-alert is-bad sg-mt12"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span>{{ booking.pet.notes }}</span></div>{% endif %}
                 {% if booking.customer_note %}<div class="sg-alert is-gold sg-mt8"><i class="bi bi-chat-left-text" aria-hidden="true"></i><span>{{ booking.customer_note }}</span></div>{% endif %}

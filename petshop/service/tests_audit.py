@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from account.models import Customer
+from store.models import Notification
 
 from .forms import BookingForm
 from .models import BookingStatus, InvalidBookingTransition, Service, ServiceBooking
@@ -21,16 +22,28 @@ class BookingCancelTests(Fixtures, TestCase):
     def test_customer_cancels_own_pending_booking(self):
         booking = self.book()
         self.client.login(username=self.customer.username, password="rahasia-123")
-        self.client.post(reverse("service:cancel_my_booking", args=[booking.pk]))
+        url = reverse("service:cancel_my_booking", args=[booking.pk])
+        # Tanpa alasan ditolak; pilihan "lain" wajib disertai keterangan.
+        self.client.post(url)
+        self.client.post(url, {"reason_choice": "lain", "reason_note": ""})
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, BookingStatus.PENDING)
+        self.client.post(url, {"reason_choice": "Hewan sedang sakit", "reason_note": "flu"})
         booking.refresh_from_db()
         self.assertEqual(booking.status, BookingStatus.CANCELLED)
         self.assertIsNotNone(booking.cancelled_at)
+        self.assertEqual((booking.cancel_reason, booking.cancelled_by), ("Hewan sedang sakit: flu", self.customer))
+        self.assertEqual(booking.cancelled_by_label, "Pelanggan")
+        page = self.client.get(reverse("service:my_bookings"))
+        self.assertContains(page, "Hewan sedang sakit: flu")
+        # Staf diberi tahu beserta alasannya.
+        self.assertTrue(Notification.objects.filter(user=self.kasir, body="Hewan sedang sakit: flu").exists())
 
     def test_customer_cannot_cancel_someone_elses_booking(self):
         other = Customer.objects.create(name="Lain", phone_number="0819", address="x")
         booking = self.book(customer=other)
         self.client.login(username=self.customer.username, password="rahasia-123")
-        r = self.client.post(reverse("service:cancel_my_booking", args=[booking.pk]))
+        r = self.client.post(reverse("service:cancel_my_booking", args=[booking.pk]), {"reason_note": "batal saja"})
         self.assertEqual(r.status_code, 404)
         booking.refresh_from_db()
         self.assertEqual(booking.status, BookingStatus.PENDING)
@@ -45,9 +58,17 @@ class BookingCancelTests(Fixtures, TestCase):
     def test_cashier_cancels_from_staff_page(self):
         booking = self.book()
         self.client.force_login(self.kasir)
-        self.client.post(reverse("service:cancel_booking", args=[booking.pk]))
+        url = reverse("service:cancel_booking", args=[booking.pk])
+        self.client.post(url)
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, BookingStatus.PENDING)
+        self.client.post(url, {"reason_choice": "lain", "reason_note": "Groomer sakit mendadak"})
         booking.refresh_from_db()
         self.assertEqual(booking.status, BookingStatus.CANCELLED)
+        self.assertEqual((booking.cancel_reason, booking.cancelled_by), ("Groomer sakit mendadak", self.kasir))
+        self.assertTrue(Notification.objects.filter(user=self.customer, body="Groomer sakit mendadak").exists())
+        panel = self.client.get(reverse("service:manage_bookings") + f"?day={booking.schedule.date()}&id={booking.pk}")
+        self.assertContains(panel, "Groomer sakit mendadak")
 
     def test_cancelled_booking_is_hidden_from_groomer_queue(self):
         booking = self.book()

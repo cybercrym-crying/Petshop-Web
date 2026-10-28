@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load static rupiah humanize l10n %}
+{% load static rupiah humanize l10n cancel_reason %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'id' }}">
     <head>
@@ -13,6 +13,7 @@
         <link rel="stylesheet"
               href="{% static 'transaction/css/manage_transaction.css' %}?v=ux2">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=1">
         <link href="{% static 'transaction/css/manage_transaction_sg.css' %}?v=1" rel="stylesheet">
     </head>
     <body>
@@ -405,15 +406,17 @@
                                                 value="assign_courier"
                                                 class="btn btn-primary fw-bold">{% translate "Daftarkan Kurir" %}</button>
                                     {% endif %}
-                                    {% if trx.is_open and not trx.receipt_no %}
-                                        <button type="submit"
-                                                name="action"
-                                                value="cancel"
-                                                class="btn btn-danger fw-bold"
-                                                data-confirm="{% translate 'Batalkan order ini? Stok akan dikembalikan.' %}">{% translate "Batalkan" %}</button>
-                                    {% endif %}
                                 </div>
                             </form>
+                            {% if trx.is_open and not trx.receipt_no %}
+                                <div class="mt-3 pt-3 border-top">
+                                    {% url 'transaction:update_status' trx.pk as cancel_url %}
+                                    {% translate "Batalkan order" as cancel_label %}
+                                    {% translate "Batalkan order ini? Stok akan dikembalikan." as cancel_confirm %}
+                                    {% cancel_form "staff_order" cancel_url cancel_label trx.pk order_action=True confirm=cancel_confirm %}
+                                </div>
+                            {% endif %}
+                            {% if trx.order_status == "DIBATALKAN" %}{% include "partials/_cancel_note.html" with obj=trx %}{% endif %}
                         </div>
                     </div>
                 </div>

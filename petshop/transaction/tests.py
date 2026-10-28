@@ -290,9 +290,15 @@ class ManageTransactionViewTests(TestCase):
             self.order.mark_on_delivery(self.courier)
 
     def test_cancel_via_view_restores_stock(self):
-        self.act("cancel")
+        self.act("cancel")  # tanpa alasan: ditolak
+        self.p.refresh_from_db()
+        self.assertEqual(self.p.stock, 3)
+        self.act("cancel", reason_choice="Stok habis")
         self.p.refresh_from_db()
         self.assertEqual(self.p.stock, 5)
+        self.order.refresh_from_db()
+        self.assertEqual((self.order.cancel_reason, self.order.cancelled_by), ("Stok habis", self.admin))
+        self.assertIsNotNone(self.order.cancelled_at)
 
     def test_update_cart_quantity_view(self):
         cart = Cart.objects.create(user=self.admin)
@@ -873,13 +879,19 @@ class OnlineOrderTests(TestCase):
         self.assertContains(r, order.tracking_number)
         self.client.post(f"/pesanan-saya/{order.pk}/batal/")
         order.refresh_from_db()
+        self.assertEqual(order.order_status, "MENUNGGU")  # alasan wajib
+        self.client.post(f"/pesanan-saya/{order.pk}/batal/", {"reason_choice": "Salah pilih produk atau jumlah"})
+        order.refresh_from_db()
         self.assertEqual(order.order_status, "DIBATALKAN")
+        self.assertEqual(order.cancel_reason, "Salah pilih produk atau jumlah")
+        self.assertEqual(order.cancelled_by_label, "Pelanggan")
+        self.assertContains(self.client.get(f"/lacak/{order.tracking_number}/"), "Salah pilih produk atau jumlah")
         self.p1.refresh_from_db()
         self.assertEqual(self.p1.stock, 10)  # stok kembali
 
         other = Order.objects.get(pk=self.place([{"id": self.p1.pk, "quantity": 1}]).json()["order_id"])
         other.confirm(self.admin)
-        self.client.post(f"/pesanan-saya/{other.pk}/batal/")
+        self.client.post(f"/pesanan-saya/{other.pk}/batal/", {"reason_note": "berubah pikiran"})
         other.refresh_from_db()
         self.assertEqual(other.order_status, "DIKONFIRMASI")
 
