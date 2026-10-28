@@ -1,0 +1,11 @@
+{% comment %}Satu isian di Pengaturan Toko. Parameter: field, span (s3/s4/s6/s12), prefix, suffix, hint.{% endcomment %}
+<div class="st-field {{ span|default:'s6' }}{% if field.errors %} has-error{% endif %}">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {% if prefix or suffix %}
+        <div class="st-affix">{% if prefix %}<span class="st-affix__pre">{{ prefix }}</span>{% endif %}{{ field }}{% if suffix %}<span class="st-affix__suf">{{ suffix }}</span>{% endif %}</div>
+    {% else %}
+        {{ field }}
+    {% endif %}
+    {% if hint %}<small class="st-hint">{{ hint }}</small>{% elif field.help_text %}<small class="st-hint">{{ field.help_text }}</small>{% endif %}
+    {% for e in field.errors %}<small class="st-err">{{ e }}</small>{% endfor %}
+</div>

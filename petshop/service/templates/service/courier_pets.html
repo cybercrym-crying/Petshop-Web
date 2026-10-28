@@ -31,7 +31,9 @@
                         <p class="pt-card__sub sg-xs">{{ b.service.name }} · {{ b.get_status_display }}</p>
                         {% if b.pet.notes %}<div class="sg-alert is-bad"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span>{{ b.pet.notes }}</span></div>{% endif %}
                         {% if b.is_return_leg %}
-                            {% if b.status == "SIAP" and not b.is_paid %}
+                            {% if b.status == "SIAP" and b.cod_due %}
+                                <div class="sg-alert is-gold"><i class="bi bi-cash-coin" aria-hidden="true"></i><span>{% blocktranslate trimmed with total=b.total_price|rupiah %}Siap diantar. COD: tagih tunai Rp {{ total }} saat diserahkan.{% endblocktranslate %}</span></div>
+                            {% elif b.status == "SIAP" and not b.is_paid %}
                                 <div class="sg-alert is-gold"><i class="bi bi-hourglass-split" aria-hidden="true"></i><span>{% translate "Menunggu pembayaran pelanggan. Antar pulang dimulai setelah lunas." %}</span></div>
                             {% elif b.status == "ANTRE" or b.status == "PROSES" %}
                                 <div class="sg-alert is-gold"><i class="bi bi-scissors" aria-hidden="true"></i><span>{% translate "Hewan masih dikerjakan groomer. Anda mendapat notifikasi saat siap." %}</span></div>

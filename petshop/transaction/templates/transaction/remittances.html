@@ -21,7 +21,7 @@
                             <span class="sg-av" aria-hidden="true">{{ r.courier.first_name|first|upper }}{{ r.courier.last_name|first|upper }}</span>
                             <div style="min-width:0">
                                 <b style="font-size:1.1rem">{% blocktranslate trimmed with r_pk=r.pk r_courier_name=r.courier.name %}Setoran #{{ r_pk }} · {{ r_courier_name }}{% endblocktranslate %}</b>
-                                <div class="sg-sm sg-muted">{% blocktranslate trimmed with r_submitted_at=r.submitted_at|date:"d M Y, H.i" r_orders_count=r.orders.count %}{{ r_submitted_at }} · {{ r_orders_count }} paket{% endblocktranslate %}</div>
+                                <div class="sg-sm sg-muted">{% blocktranslate trimmed with r_submitted_at=r.submitted_at|date:"d M Y, H.i" r_orders_count=r.item_count %}{{ r_submitted_at }} · {{ r_orders_count }} paket{% endblocktranslate %}</div>
                             </div>
                             <span class="sg-sp"></span>
                             <span class="sg-big">Rp {{ r.amount|rupiah }}</span>
@@ -30,6 +30,9 @@
                             <ul class="sg-lines">
                                 {% for o in r.orders.all %}
                                     <li><span><i class="bi bi-box-seam" aria-hidden="true"></i> <b style="display:inline">#{{ o.pk }} {{ o.customer.name }}</b>{% if o.delivered_at %} · {% blocktranslate trimmed with t=o.delivered_at|time:"H.i" %}diserahkan {{ t }}{% endblocktranslate %}{% endif %}</span><b>Rp {{ o.cash_collected|rupiah }}</b></li>
+                                {% endfor %}
+                                {% for b in r.bookings.all %}
+                                    <li><span><i class="bi bi-heart" aria-hidden="true"></i> <b style="display:inline">{% blocktranslate trimmed with pk=b.pk pet=b.pet_name %}Booking #{{ pk }} · {{ pet }}{% endblocktranslate %}</b> · {{ b.customer.name }}</span><b>Rp {{ b.cash_collected|rupiah }}</b></li>
                                 {% endfor %}
                             </ul>
                         </div>

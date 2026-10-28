@@ -3,8 +3,10 @@
 {% load static %}
 {% block title %}{% translate "Akun Saya - Seelly Petshop" %}{% endblock %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'customer/css/account.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'customer/css/account-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/account.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'customer/css/account-dark.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/address_pin.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <section class="container acc-page">
@@ -28,6 +30,25 @@
                 <span>{% translate "Booking layanan" %}</span>
             </a>
         </div>
+        <form method="post" enctype="multipart/form-data" class="acc-card acc-photo" data-acc-photo>
+            {% csrf_token %}
+            <input type="hidden" name="form" value="photo">
+            <div class="acc-photo__av" data-acc-photo-preview>
+                {% if user.photo %}<img src="{{ user.photo.url }}" alt="{% translate 'Foto profil' %}" width="88" height="88">{% else %}<span aria-hidden="true">{{ user.initials }}</span>{% endif %}
+            </div>
+            <div class="acc-photo__body">
+                <h2><i class="far fa-circle-user" aria-hidden="true"></i> {% translate "Foto profil" %}</h2>
+                <p class="acc-help mb-2">{% translate "Tampil di menu akun dan membantu kurir mengenali Anda. JPG, PNG, atau WEBP, maks. 10 MB." %}</p>
+                <div class="acc-photo__actions">
+                    <label class="btn-primary-seelly acc-photo__pick" for="acc-photo-input"><i class="fas fa-camera" aria-hidden="true"></i> {% if user.photo %}{% translate "Ganti foto" %}{% else %}{% translate "Pasang foto" %}{% endif %}</label>
+                    <input id="acc-photo-input" type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-acc-photo-input>
+                    {% if user.photo %}
+                        <button type="submit" name="remove" value="1" class="btn-soft" formnovalidate data-confirm="{% translate 'Hapus foto profil?' %}">{% translate "Hapus foto" %}</button>
+                    {% endif %}
+                </div>
+                <noscript><button type="submit" class="btn-soft mt-2">{% translate "Simpan foto" %}</button></noscript>
+            </div>
+        </form>
         <div class="acc-grid">
             <form method="post" class="acc-card" novalidate>
                 {% csrf_token %}
@@ -38,12 +59,20 @@
                     <span class="acc-static">{{ user.username }}</span>
                 </div>
                 {% for field in profile_form %}
+                    {% if field.name == "address" %}
+                        <div class="acc-field{% if field.errors or profile_form.latitude.errors %} has-error{% endif %}">
+                            {% include "partials/_address_pin.html" with uid="acc" fa=True input_class="form-control" lat=profile_form.latitude.value lng=profile_form.longitude.value address=field.value label=field.label errors=field.errors|add:profile_form.latitude.errors %}
+                            {% if field.help_text %}<small class="acc-help">{{ field.help_text }}</small>{% endif %}
+                        </div>
+                    {% elif field.name == "latitude" or field.name == "longitude" %}
+                    {% else %}
                     <div class="acc-field{% if field.errors %} has-error{% endif %}">
                         <label for="{{ field.id_for_label }}" class="acc-label">{{ field.label }}</label>
                         {{ field }}
                         {% if field.help_text %}<small class="acc-help">{{ field.help_text }}</small>{% endif %}
                         {% for error in field.errors %}<small class="acc-error">{{ error }}</small>{% endfor %}
                     </div>
+                    {% endif %}
                 {% endfor %}
                 <button type="submit" class="btn-primary-seelly">{% translate "Simpan Profil" %}</button>
             </form>
@@ -63,4 +92,9 @@
             </form>
         </div>
     </section>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
+    <script src="{% static 'customer/js/account_photo.js' %}?v=1"></script>
 {% endblock %}

@@ -1,0 +1,26 @@
+{% load i18n l10n %}
+{% comment %}
+Alamat pelanggan: titik dari peta (opsional) + detail alamat ketikan di bawahnya.
+Parameter: uid (unik per halaman), lat, lng, address, input_class, required, errors (list), label,
+fa (pakai ikon Font Awesome di situs pelanggan).
+Butuh leaflet.css/js, css/address_pin.css, dan store/js/map_picker.js di halaman.
+{% endcomment %}
+<div class="ap" data-map-scope>
+    <div class="ap-head">
+        <span class="ap-title">{% translate "Lokasi rumah di peta" %} <small>{% translate "(opsional)" %}</small></span>
+        <button type="button" class="ap-btn" data-map-locate><i class="{% if fa %}fas fa-location-crosshairs{% else %}bi bi-crosshair{% endif %}" aria-hidden="true"></i> {% translate "Pakai lokasi saya" %}</button>
+    </div>
+    <div class="ap-map" data-map-picker data-default-lat="{{ store.latitude|unlocalize }}" data-default-lng="{{ store.longitude|unlocalize }}" role="application" aria-label="{% translate 'Peta lokasi rumah' %}"></div>
+    <p class="ap-status" data-map-status>
+        <span class="ap-status__off"><i class="{% if fa %}far fa-hand-pointer{% else %}bi bi-hand-index{% endif %}" aria-hidden="true"></i> {% translate "Klik peta atau geser pin ke titik rumah. Ongkir & rute kurir dihitung dari titik ini." %}</span>
+        <span class="ap-status__on"><i class="{% if fa %}fas fa-circle-check{% else %}bi bi-check-circle-fill{% endif %}" aria-hidden="true"></i> {% translate "Titik rumah sudah ditandai." %}</span>
+        <button type="button" class="ap-clear" data-map-clear hidden>{% translate "Hapus titik" %}</button>
+    </p>
+    <input type="hidden" name="latitude" value="{{ lat|default_if_none:''|unlocalize }}" data-map-lat>
+    <input type="hidden" name="longitude" value="{{ lng|default_if_none:''|unlocalize }}" data-map-lng>
+    <label class="ap-label" for="ap-addr-{{ uid }}">{{ label|default:_("Detail alamat") }}</label>
+    <textarea id="ap-addr-{{ uid }}" name="address" rows="2" maxlength="255" class="{{ input_class }}{% if errors %} is-invalid{% endif %}"
+              placeholder="{% translate 'Nama jalan, nomor rumah, RT/RW, patokan (mis. pagar hijau dekat masjid)' %}"
+              autocomplete="street-address"{% if required %} required{% endif %}>{{ address|default:'' }}</textarea>
+    {% for e in errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+</div>

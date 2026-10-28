@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.test import TestCase
 from account.models import User, Customer, Role
 from django.test import SimpleTestCase
@@ -332,10 +333,12 @@ class CustomerSelectionTests(TestCase):
         self.submit(customer=9999)
         self.assertEqual(Order.objects.count(), 0)
 
-    def test_page_has_no_inline_new_customer_fields_but_links_to_manage_account(self):
+    def test_new_customer_is_added_from_separate_modal_not_the_pay_form(self):
+        # Pelanggan baru dibuat lewat modal "Pelanggan baru" (form sendiri), bukan isian di form Bayar.
         r = self.client.get("/staff/admin/make_transaction/")
         self.assertNotContains(r, "new_phone")
-        self.assertContains(r, "manage_account?tab=customer")
+        self.assertContains(r, "data-qc-open")
+        self.assertContains(r, f'action="{reverse("transaction:quick_customer")}"')
 
 
 class BoardViewTests(TestCase):
@@ -728,6 +731,17 @@ class OnlineOrderTests(TestCase):
         return self.client.post(
             "/checkout/pesan/", data=json.dumps(body), content_type="application/json"
         )
+
+    def test_guest_checkout_has_map_pin_and_public_shipping_quote(self):
+        """Tamu (tanpa login) memilih titik rumah di peta; ongkir perkiraan dari endpoint publik."""
+        r = self.client.get("/checkout")
+        self.assertContains(r, "data-map-picker")
+        self.assertContains(r, 'data-default-lat="-1.265400"')
+        self.assertContains(r, f'data-quote-url="{reverse("customer:shipping_quote")}"')
+        q = self.client.get(reverse("customer:shipping_quote"), {"latitude": "-1.26", "longitude": "116.84"})
+        self.assertEqual(q.status_code, 200)
+        self.assertTrue(q.json()["ok"])
+        self.assertGreater(q.json()["fee"], 0)
 
     def test_guest_sees_whatsapp_checkout_and_member_sees_system_checkout(self):
         r = self.client.get("/checkout")

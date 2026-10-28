@@ -1,0 +1,32 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'id' }}">
+    <head>
+        {% include "service/_groomer_head.html" %}
+        <link rel="stylesheet" href="{% static 'css/signature.css' %}?v=2">
+        <link rel="stylesheet" href="{% static 'css/sg_pages.css' %}?v=3-lay1">
+        <title>{% translate "Notifikasi - Groomer" %}</title>
+        <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
+    </head>
+    <body class="gd">
+        {% include "service/_groomer_nav.html" %}
+        <main class="gd-main sg" style="max-width:820px">
+            <a href="{% url 'service:groomer_dashboard' %}" class="sg-link"><i class="bi bi-arrow-left" aria-hidden="true"></i> {% translate "Pekerjaan hari ini" %}</a>
+            <header class="gd-head sg-mt8">
+                <div>
+                    <h1 class="gd-title">{% translate "Notifikasi" %}</h1>
+                    <p class="gd-lead">{% blocktranslate trimmed with n=unread_notifications|default:0 %}{{ n }} belum dibaca{% endblocktranslate %}</p>
+                </div>
+                {% if unread_notifications %}
+                    <form method="post" action="{% url 'store:read_all' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="gd-btn"><i class="bi bi-check2-all" aria-hidden="true"></i>{% translate "Tandai semua dibaca" %}</button>
+                    </form>
+                {% endif %}
+            </header>
+            {% include "partials/_sg_messages.html" %}
+            {% include "store/_notification_list_sg.html" %}
+        </main>
+    </body>
+</html>

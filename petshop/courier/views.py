@@ -231,7 +231,8 @@ def dashboard(request):
     """Halaman utama kurir: peta rute realtime dengan tujuan berikutnya."""
     start, stops = routing.route_for(request.user)
     store = StoreSettings.current()
-    cash = Order.cash_on_hand(request.user)
+    cash = list(Order.cash_on_hand(request.user))
+    pet_cash = list(ServiceBooking.cash_on_hand(request.user))
     next_stop = stops[0] if stops else None
     for stop in stops:
         stop.cod_due = stop.payment_method == PaymentMethod.CASH and stop.payment_status != PaymentStatus.PAID
@@ -252,8 +253,8 @@ def dashboard(request):
             "carrying": len(stops),
             "max_packages": store.max_packages_per_courier,
             "ready_count": ready_to_pick(request.user),
-            "cash_total": sum(o.cash_collected for o in cash),
-            "cash_count": cash.count(),
+            "cash_total": sum(o.cash_collected for o in cash) + sum(b.cash_collected for b in pet_cash),
+            "cash_count": len(cash) + len(pet_cash),
             "delivered_today": delivered_today,
             "pet_trip": pet_trip,
             "pet_task": pet_trip or ServiceBooking.pet_tasks(request.user).select_related("customer", "service").order_by("schedule").first(),
@@ -455,18 +456,23 @@ def cash(request):
             Notification.to_staff(
                 [Role.SUPERADMIN, Role.ADMIN, Role.CASHIER],
                 f"Setoran COD dari {request.user.name}",
-                f"Rp {remittance.amount:,}".replace(",", ".") + f" untuk {remittance.orders.count()} paket.",
+                f"Rp {remittance.amount:,}".replace(",", ".") + f" untuk {remittance.item_count} paket/booking hewan.",
                 reverse("transaction:remittances"),
             )
             messages.success(request, _("Setoran dicatat. Serahkan uangnya ke kasir untuk dicocokkan."))
         return redirect("courier:cash")
-    on_hand = Order.cash_on_hand(request.user).select_related("customer").order_by("delivered_at")
+    on_hand = list(Order.cash_on_hand(request.user).select_related("customer").order_by("delivered_at"))
+    pets_on_hand = list(
+        ServiceBooking.cash_on_hand(request.user).select_related("customer", "service").order_by("closed_at")
+    )
     return render(
         request,
         "courier/cash.html",
         {
             "on_hand": on_hand,
-            "on_hand_total": sum(o.cash_collected for o in on_hand),
+            "pets_on_hand": pets_on_hand,
+            "on_hand_count": len(on_hand) + len(pets_on_hand),
+            "on_hand_total": sum(o.cash_collected for o in on_hand) + sum(b.cash_collected for b in pets_on_hand),
             "remittances": CashRemittance.objects.filter(courier=request.user).prefetch_related("orders")[:20],
         },
     )

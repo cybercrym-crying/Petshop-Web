@@ -6,7 +6,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script src="{% static 'js/theme_boot.js' %}?v=1"></script>
-        <title>{% translate "Seelly Petshop - Daftar Staf" %}</title>
+        <title>{% translate "Seelly Petshop - Daftar Kurir" %}</title>
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
         <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
@@ -27,17 +27,17 @@
                     <span>{% translate "SEELLY PETSHOP" %}</span>
                 </a>
                 <div>
-                    <h1 class="left-title">{% translate "Bergabung sebagai Tim Seelly." %}</h1>
-                    <p class="left-desc">{% translate "Daftar sebagai kurir. Akun Anda aktif setelah disetujui admin toko. Akun kasir dan groomer dibuat oleh admin toko." %}</p>
+                    <h1 class="left-title">{% translate "Jadi Kurir Seelly." %}</h1>
+                    <p class="left-desc">{% translate "Antar pesanan dan hewan pelanggan di sekitar Samarinda. Akun Anda aktif setelah disetujui admin toko." %}</p>
                     <ul class="left-points">
                         <li><i class="bi bi-person-check-fill"></i>{% translate "Admin memeriksa data Anda" %}</li>
                         <li><i class="bi bi-bell-fill"></i>{% translate "Setelah disetujui, Anda bisa langsung masuk" %}</li>
-                        <li><i class="bi bi-shield-lock-fill"></i>{% translate "Akses sesuai peran masing-masing" %}</li>
+                        <li><i class="bi bi-phone-fill"></i>{% translate "Terima tugas antar langsung dari HP" %}</li>
                     </ul>
                 </div>
             </div>
             <div class="panel-right">
-                <h2 class="form-title">{% translate "Daftar Staf" %}</h2>
+                <h2 class="form-title">{% translate "Daftar Kurir" %}</h2>
                 <p class="form-sub">{% translate "Isi data dengan benar; admin akan menghubungi lewat WhatsApp bila perlu." %}</p>
                 {% if form.non_field_errors %}
                     <div class="error-box" role="alert">
@@ -48,24 +48,18 @@
                     {% csrf_token %}
                     <div class="form-grid">
                         {% for field in form %}
-                            <div class="input-group-custom{% if field.name == 'name' or field.name == 'address' or field.name == 'role' or field.name == 'can_carry_pets' %} span-2{% endif %}{% if field.name == 'vehicle' or field.name == 'plate_number' or field.name == 'can_carry_pets' %} courier-only{% endif %}">
+                            <div class="input-group-custom{% if field.name == 'name' or field.name == 'address' or field.name == 'can_carry_pets' %} span-2{% endif %}">
                                 {% if field.name == "can_carry_pets" %}
-                                    <label class="check-row" for="{{ field.id_for_label }}">{{ field }} <span>{{ field.label }}</span></label>
+                                    <label class="check-row" for="{{ field.id_for_label }}">{{ field }} <span>{% translate field.label %}</span></label>
                                 {% else %}
-                                    <label for="{{ field.id_for_label }}" class="form-label-custom">{{ field.label }}</label>
-                                    {% if field.name == "role" %}
-                                        <select name="role" id="{{ field.id_for_label }}" class="modern-input" data-role-select>
-                                            {% for value, label in field.field.choices %}
-                                                <option value="{{ value }}"{% if field.value == value %} selected{% endif %}>{{ label }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    {% elif field.name == "address" %}
+                                    <label for="{{ field.id_for_label }}" class="form-label-custom">{% translate field.label %}</label>
+                                    {% if field.name == "address" %}
                                         <textarea name="address" id="{{ field.id_for_label }}" rows="2" maxlength="255" class="modern-input{% if field.errors %} is-invalid{% endif %}" autocomplete="street-address">{{ field.value|default:'' }}</textarea>
                                     {% elif field.name == "password1" or field.name == "password2" %}
                                         <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}" class="modern-input pw-input{% if field.errors %} is-invalid{% endif %}" autocomplete="new-password" required />
                                         {% include "account/_password_toggle.html" with target=field.id_for_label %}
                                     {% else %}
-                                        <input type="{% if field.name == 'phone_number' %}tel{% else %}text{% endif %}" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" class="modern-input{% if field.errors %} is-invalid{% endif %}"{% if field.name == 'phone_number' %} inputmode="tel" placeholder="{% translate '08xxxxxxxxxx' %}"{% endif %}{% if field.name == 'name' %} autocomplete="name"{% endif %}{% if field.name == 'username' %} autocomplete="username"{% endif %} />
+                                        <input type="{% if field.name == 'phone_number' %}tel{% else %}text{% endif %}" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" class="modern-input{% if field.errors %} is-invalid{% endif %}"{% if field.name == 'phone_number' %} inputmode="tel" placeholder="{% translate '08xxxxxxxxxx' %}"{% endif %}{% if field.name == 'name' %} autocomplete="name"{% endif %}{% if field.name == 'username' %} autocomplete="username"{% endif %}{% if field.name == 'vehicle' %} placeholder="{% translate 'mis. Honda Beat' %}"{% endif %}{% if field.name == 'plate_number' %} placeholder="{% translate 'mis. KT 1234 AB' %}"{% endif %} />
                                     {% endif %}
                                 {% endif %}
                                 {% for e in field.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
@@ -80,7 +74,6 @@
             </div>
         </div>
         <script src="{% static 'account/js/login.js' %}?v=2"></script>
-        <script src="{% static 'account/js/register_staff.js' %}?v=1"></script>
         <script src="{% static 'js/layout.js' %}?v=1"></script>
     </body>
 </html>

@@ -22,6 +22,28 @@
 .acc-stat strong { font-size: 1.6rem; color: var(--purple-700); line-height: 1.1; }
 .acc-stat span { color: var(--muted); font-size: 0.9rem; }
 
+.acc-photo { display: flex; align-items: center; gap: 20px; margin-bottom: 22px; }
+.acc-photo h2 { margin-bottom: 4px; }
+.acc-photo__av {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--purple-600);
+  color: var(--white);
+  font-size: 1.8rem;
+  font-weight: 800;
+  box-shadow: 0 0 0 4px var(--purple-100);
+}
+.acc-photo__av img { width: 100%; height: 100%; object-fit: cover; }
+.acc-photo__body { min-width: 0; }
+.acc-photo__actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.acc-photo__pick { cursor: pointer; }
+.acc-photo.is-busy { opacity: 0.6; pointer-events: none; }
+
 .acc-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px; align-items: start; }
 .acc-card {
   padding: 24px;
@@ -45,4 +67,6 @@
 }
 @media (max-width: 520px) {
   .acc-stats { grid-template-columns: 1fr; }
+  .acc-photo { flex-direction: column; text-align: center; }
+  .acc-photo__actions { justify-content: center; }
 }

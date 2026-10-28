@@ -43,6 +43,29 @@ class StoreSettingsModelTests(TestCase):
         self.assertEqual(store.whatsapp_display, "0813-5670-3075")
 
 
+class QrisFileTests(TestCase):
+    def test_missing_qris_file_is_hidden_not_shown_broken(self):
+        """Database disalin tanpa folder media: QRIS tercatat tapi filenya tidak ada → tidak ditampilkan."""
+        import shutil
+        import tempfile
+
+        from django.core.files.base import ContentFile
+        from django.test import override_settings
+
+        media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media, ignore_errors=True)
+        with override_settings(MEDIA_ROOT=media):
+            store = StoreSettings.current()
+            self.assertIsNone(store.qris)
+            store.qris_image.save("qris.png", ContentFile(b"\x89PNG fake"), save=True)
+            self.assertEqual(store.qris, store.qris_image)
+            self.assertFalse(store.qris_missing)
+            store.qris_image.storage.delete(store.qris_image.name)
+            store = StoreSettings.current()
+            self.assertIsNone(store.qris)
+            self.assertTrue(store.qris_missing)
+
+
 class StoreSettingsPageTests(TestCase):
     def setUp(self):
         self.admin = make_user("adm", Role.ADMIN)
@@ -110,7 +133,7 @@ class StaffRegistrationTests(TestCase):
     def register(self, **override):
         data = {
             "name": "Budi Kurir", "username": "budi", "phone_number": "081234567890",
-            "address": "Balikpapan", "role": Role.COURIER, "vehicle": "Honda Beat",
+            "address": "Balikpapan", "vehicle": "Honda Beat",
             "plate_number": "kt 1234 ab", "can_carry_pets": "on",
             "password1": "Rahasia!2026x", "password2": "Rahasia!2026x",
         }
@@ -129,23 +152,27 @@ class StaffRegistrationTests(TestCase):
         self.assertEqual(user.courier_profile.plate_number, "KT 1234 AB")
         self.assertTrue(Notification.objects.filter(user=admin).exists())
 
-    def test_cannot_self_register_as_admin(self):
-        r = self.register(role=Role.ADMIN)
-        self.assertEqual(r.status_code, 200)
-        self.assertFalse(User.objects.filter(username="budi").exists())
+    def test_page_is_courier_only_without_role_choice(self):
+        r = self.client.get(reverse("register_staff"))
+        self.assertContains(r, "Daftar Kurir")
+        self.assertNotIn("role", r.context["form"].fields)
+        self.assertNotContains(r, 'name="role"')
 
-    def test_cannot_self_register_as_cashier(self):
-        r = self.register(role=Role.CASHIER, vehicle="", plate_number="", can_carry_pets="")
-        self.assertEqual(r.status_code, 200)
+    def test_posted_role_is_ignored_account_is_always_pending_courier(self):
+        # Peran lain tidak bisa diselundupkan lewat POST: akun tetap kurir yang menunggu persetujuan.
+        for role in (Role.ADMIN, Role.SUPERADMIN, Role.CASHIER, Role.GROOMER):
+            User.objects.filter(username="budi").delete()
+            r = self.register(role=role)
+            self.assertTemplateUsed(r, "account/register_staff_done.html")
+            user = User.objects.get(username="budi")
+            self.assertEqual(user.role, Role.COURIER)
+            self.assertFalse(user.is_active)
+
+    def test_vehicle_and_plate_are_required(self):
+        r = self.register(vehicle="", plate_number=" ")
         self.assertTemplateUsed(r, "account/register_staff.html")
         self.assertFalse(User.objects.filter(username="budi").exists())
-        roles = [code for code, _label in r.context["form"].fields["role"].choices]
-        self.assertEqual(roles, [Role.COURIER])
-
-    def test_cannot_self_register_as_groomer(self):
-        r = self.register(role=Role.GROOMER, vehicle="", plate_number="", can_carry_pets="")
-        self.assertTemplateUsed(r, "account/register_staff.html")
-        self.assertFalse(User.objects.filter(username="budi").exists())
+        self.assertIn("Wajib diisi untuk kurir.", r.context["form"].errors["vehicle"])
 
     def test_admin_and_superadmin_create_cashier_and_groomer_accounts(self):
         make_user("adm", Role.ADMIN)
@@ -181,15 +208,39 @@ class StaffRegistrationTests(TestCase):
         self.client.logout()
         self.assertTrue(self.client.login(username="budi", password="Rahasia!2026x"))
 
-    def test_reject(self):
+    def test_reject_needs_reason_and_reason_reaches_courier(self):
         make_user("adm", Role.ADMIN)
         self.register()
         self.client.login(username="adm", password="Pass12345!x")
         budi = User.objects.get(username="budi")
-        self.client.post(reverse("decide_staff", args=[budi.pk]), {"decision": "reject"})
+        url = reverse("decide_staff", args=[budi.pk])
+        self.client.post(url, {"decision": "reject", "note": "  "})
+        budi.refresh_from_db()
+        self.assertEqual(budi.approval, Approval.PENDING)  # tanpa alasan belum diproses
+        r = self.client.post(url, {"decision": "reject", "note": "SIM C belum ada"})
+        self.assertRedirects(r, reverse("manage_account") + f"?tab=approval&baru={budi.pk}", fetch_redirect_response=False)
         budi.refresh_from_db()
         self.assertEqual(budi.approval, Approval.REJECTED)
         self.assertFalse(budi.is_active)
+        self.assertEqual(budi.approval_note, "SIM C belum ada")
+        # Admin mendapat tombol WhatsApp berisi kabar penolakan + alasannya ke nomor kurir.
+        r = self.client.get(reverse("manage_account") + f"?tab=approval&baru={budi.pk}")
+        self.assertContains(r, "https://wa.me/6281234567890?text=")
+        self.assertContains(r, "BELUM%20DAPAT%20DITERIMA")
+        self.assertContains(r, "SIM%20C%20belum%20ada")
+        self.client.logout()
+        r = self.client.post(reverse("login_form"), {"username": "budi", "password": "Rahasia!2026x"})
+        self.assertContains(r, "SIM C belum ada")
+
+    def test_approve_gives_whatsapp_message_with_login_info(self):
+        make_user("adm", Role.ADMIN)
+        self.register()
+        self.client.login(username="adm", password="Pass12345!x")
+        budi = User.objects.get(username="budi")
+        self.client.post(reverse("decide_staff", args=[budi.pk]), {"decision": "approve"})
+        r = self.client.get(reverse("manage_account") + "?tab=approval")
+        self.assertContains(r, "DITERIMA")
+        self.assertContains(r, "budi%20dan%20kata%20sandi")
 
     def test_pending_list_visible_to_admin(self):
         make_user("adm", Role.ADMIN)
@@ -239,6 +290,14 @@ class NotificationTests(TestCase):
         self.client.login(username="kur", password="Pass12345!x")
         r = self.client.get(reverse("store:notifications"))
         self.assertTemplateUsed(r, "store/notifications_staff.html")
+
+    def test_groomer_page_uses_groomer_layout_without_cashier_links(self):
+        make_user("grm", Role.GROOMER)
+        self.client.login(username="grm", password="Pass12345!x")
+        r = self.client.get(reverse("store:notifications"))
+        self.assertTemplateUsed(r, "store/_notifications_groomer_page.html")
+        self.assertNotContains(r, reverse("transaction:cashier_home"))
+        self.assertContains(r, reverse("service:groomer_dashboard"))
 
 
 class CustomerDashboardTests(TestCase):

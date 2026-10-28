@@ -53,7 +53,7 @@
                             aria-expanded="false"
                             aria-controls="nav-account-menu"
                             aria-label="{% blocktranslate trimmed with user_name=user.name %}Akun {{ user_name }}{% endblocktranslate %}">
-                        <span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>
+                        {% if user.photo_url %}<img class="sn-avatar sn-avatar--img" src="{{ user.photo_url }}" alt="" width="36" height="36">{% else %}<span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>{% endif %}
                     </button>
                     <div class="sn-menu" id="nav-account-menu" hidden>
                         <div class="sn-menu__who">

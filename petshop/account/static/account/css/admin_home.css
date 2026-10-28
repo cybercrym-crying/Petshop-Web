@@ -80,15 +80,16 @@ html[data-theme="dark"] .ad {
 
 
 /* Kotak status berikon */
-.ad-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.ad-stat { position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid var(--sg-line); border-radius: 20px; background: var(--sg-card); box-shadow: var(--sg-sh-1); color: var(--sg-ink); text-decoration: none; min-width: 0; transition: border-color 0.18s var(--sg-ease), transform 0.18s var(--sg-ease), box-shadow 0.18s var(--sg-ease); }
+/* Kolom mengikuti lebar yang tersedia; angka rupiah besar tidak meluber dari kartunya. */
+.ad-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 14px; }
+.ad-stat { container-type: inline-size; position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid var(--sg-line); border-radius: 20px; background: var(--sg-card); box-shadow: var(--sg-sh-1); color: var(--sg-ink); text-decoration: none; min-width: 0; transition: border-color 0.18s var(--sg-ease), transform 0.18s var(--sg-ease), box-shadow 0.18s var(--sg-ease); }
 .ad-stat:hover { color: var(--sg-ink); border-color: var(--sg-pri); transform: translateY(-2px); box-shadow: var(--sg-sh-2); }
 .ad-stat.is-gold { background: var(--sg-pet-grad); border-color: var(--sg-gold-line); }
 .ad-stat.is-gold .sg-av { background: #c98a12; color: #ffffff; }
 .ad-stat__text { flex: 1; min-width: 0; }
 .ad-stat__text b { display: block; font-size: 0.95rem; font-weight: 800; }
 .ad-stat__text small { display: block; font-size: 0.76rem; font-weight: 600; color: var(--sg-muted); }
-.ad-stat__n { display: block; margin: 2px 0; font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; color: var(--sg-pri-text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ad-stat__n { display: block; margin: 2px 0; font-size: clamp(1.05rem, 8.5cqi, 1.45rem); font-weight: 800; letter-spacing: -0.02em; color: var(--sg-pri-text); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .ad-stat.is-gold .ad-stat__n { color: var(--sg-gold-soft-ink); }
 .ad-stat.is-ok .ad-stat__n { color: var(--sg-ok); }
 
@@ -98,7 +99,7 @@ html[data-theme="dark"] .ad {
 .ad-rank__no { width: 30px; height: 30px; flex: none; border-radius: 10px; display: grid; place-items: center; background: var(--sg-soft); color: var(--sg-pri-text); font-weight: 800; font-size: 0.8rem; }
 .ad-rank li:first-child .ad-rank__no { background: var(--sg-gold); color: var(--sg-gold-ink); }
 .ad-rank__body { flex: 1; min-width: 0; display: grid; gap: 6px; }
-.ad-rank__top { display: flex; flex-direction: column; font-size: 0.86rem; }
+.ad-rank__top { display: flex; flex-direction: column; min-width: 0; font-size: 0.86rem; }
 .ad-rank__top b { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ad-rank__top small { font-weight: 700; color: var(--sg-muted); font-size: 0.76rem; }
 
@@ -136,7 +137,7 @@ html[data-theme="dark"] .ad {
   .ad-pair { order: 5; }
 }
 @media (max-width: 991.98px) {
-  .ad-stats { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .ad-stats { gap: 10px; }
 }
 @media (max-width: 767.98px) {
   .ad-split, .ad-col { gap: 14px; }

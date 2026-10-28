@@ -1,4 +1,5 @@
 import json
+import secrets
 from datetime import timedelta
 
 from django.utils.translation import gettext as _
@@ -6,7 +7,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.utils import timezone
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
@@ -48,7 +49,7 @@ def _site_context(**extra):
         "wa_link": store.whatsapp_link,
         "wa_display": store.whatsapp_display,
         "bank_accounts": store.bank_accounts(),
-        "store_qris": store.qris_image or None,
+        "store_qris": store.qris,
         **extra,
     }
 
@@ -442,8 +443,8 @@ def checkout_page(request):
     """Checkout dipisah: customer yang login memesan langsung ke sistem,
     pengunjung (belum login) tetap memesan lewat WhatsApp admin."""
     if _is_customer(request.user):
-        # Titik peta pesanan terakhir dipakai sebagai isian awal.
-        last = (
+        # Isian awal titik peta: titik rumah di akun, atau titik pesanan terakhir.
+        last = (request.user.latitude, request.user.longitude) if request.user.has_pin else (
             Order.objects.filter(customer=request.user, delivery_latitude__isnull=False)
             .order_by("-date")
             .values_list("delivery_latitude", "delivery_longitude")
@@ -560,6 +561,9 @@ def place_order(request):
                 # order sendiri menyimpan salinan alamatnya (shipping_address).
                 customer.address = address
                 customer.save(update_fields=["address"])
+            if not customer.has_pin:
+                customer.latitude, customer.longitude = location
+                customer.save(update_fields=["latitude", "longitude"])
             order = Order.place_online(
                 customer,
                 lines,
@@ -717,12 +721,24 @@ def account(request):
     from django.contrib.auth import update_session_auth_hash
     from django.contrib.auth.forms import PasswordChangeForm
 
-    from account.form import ProfileForm
+    from account.form import ProfilePhotoForm, ProfileForm
 
     user = Customer.objects.get(pk=request.user.pk)
     profile_form = ProfileForm(instance=user)
     password_form = PasswordChangeForm(request.user)
+    photo_form = ProfilePhotoForm()
     if request.method == "POST":
+        if request.POST.get("form") == "photo":
+            photo_form = ProfilePhotoForm(request.POST, request.FILES)
+            if photo_form.is_valid():
+                photo_form.save(user)
+                messages.success(
+                    request, _("Foto profil dihapus.") if not user.photo else _("Foto profil diperbarui.")
+                )
+                return redirect("customer:account")
+            for error in photo_form.errors.values():
+                messages.error(request, " ".join(error))
+            return redirect("customer:account")
         if request.POST.get("form") == "password":
             password_form = PasswordChangeForm(request.user, request.POST)
             if password_form.is_valid():
@@ -866,6 +882,18 @@ def handover_qr(request, pk):
     return qr_response(order.handover_payload)
 
 
+def track_handover_qr(request, resi):
+    """QR serah-terima lewat tautan berkunci (dikirim kasir ke WhatsApp pembeli)."""
+    from transaction.qr import qr_response
+
+    order = get_object_or_404(Order, tracking_number=normalize_tracking_number(resi) or "-")
+    if not (order.shows_handover_qr and order.check_handover_key(request.GET.get("k"))):
+        raise Http404
+    response = qr_response(order.handover_payload)
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
 def tracking_qr(request, resi):
     """QR berisi nomor resi (untuk label paket & halaman lacak)."""
     from transaction.qr import qr_response
@@ -957,8 +985,48 @@ def _tracking_steps(order):
     return steps
 
 
+TRACK_MAX_FAILURES = 5
+TRACK_LOCK_SECONDS = 15 * 60
+TRACK_SESSION_KEY = "track_ok"
+
+
+def _track_allowed(request, order):
+    """Detail lacak terbuka untuk pemilik yang login, staf, atau pengunjung yang sudah verifikasi."""
+    user = request.user
+    if user.is_authenticated and (order.customer_id == user.pk or user.role != Role.CUSTOMER):
+        return True
+    return order.pk in request.session.get(TRACK_SESSION_KEY, [])
+
+
+def _track_grant(request, order):
+    granted = [pk for pk in request.session.get(TRACK_SESSION_KEY, []) if pk != order.pk]
+    request.session[TRACK_SESSION_KEY] = (granted + [order.pk])[-20:]
+
+
+def _track_verify(request, order):
+    """Pengunjung tanpa login mengetik 4 digit terakhir nomor WA pemesan. Mengembalikan pesan galat."""
+    from django.core.cache import cache
+
+    throttle = f"track-fail:{order.pk}:{request.META.get('REMOTE_ADDR', '')}"
+    failures = cache.get(throttle, 0)
+    if failures >= TRACK_MAX_FAILURES:
+        return _("Terlalu banyak percobaan. Coba lagi dalam 15 menit atau hubungi toko.")
+    digits = "".join(ch for ch in request.POST.get("wa4", "") if ch.isdigit())
+    expected = order.phone_last4
+    if len(digits) == 4 and expected and secrets.compare_digest(digits, expected):
+        cache.delete(throttle)
+        _track_grant(request, order)
+        return ""
+    cache.set(throttle, failures + 1, TRACK_LOCK_SECONDS)
+    return _("4 digit nomor WhatsApp tidak cocok dengan data pemesan.")
+
+
 def track_order(request, resi=None):
-    """Lacak pesanan lewat nomor resi: ?resi=... (form) atau /lacak/<resi>/ (tautan)."""
+    """Lacak pesanan lewat nomor resi: ?resi=... (form) atau /lacak/<resi>/ (tautan).
+
+    Resi tertera di label paket, jadi pengunjung tanpa login wajib memasukkan 4 digit
+    terakhir nomor WhatsApp pemesan sebelum status, isi paket, dan peta ditampilkan.
+    """
     raw = (resi if resi is not None else request.GET.get("resi", "")).strip()
     order = None
     error = ""
@@ -974,6 +1042,19 @@ def track_order(request, resi=None):
         if order is None:
             error = "Resi tidak ditemukan. Periksa kembali nomor resi Anda (contoh: PS-261022-K7M2QX)."
     context = {"raw": raw, "error": error, "order": None}
+    if order is not None and order.check_handover_key(request.GET.get("k", "")):
+        _track_grant(request, order)  # tautan dari kasir ke WA pembeli sudah terverifikasi
+    if order is not None and not _track_allowed(request, order):
+        verify_error = ""
+        if request.method == "POST":
+            verify_error = _track_verify(request, order)
+            if not verify_error:
+                return redirect("customer:track_detail", resi=order.tracking_number)
+        context.update(
+            locked=order.tracking_number, verify_error=verify_error,
+            login_url=reverse("login_form") + "?next=" + reverse("customer:track_detail", args=[order.tracking_number]),
+        )
+        order = None
     if order is not None:
         context.update(
             order=order,
@@ -987,6 +1068,13 @@ def track_order(request, resi=None):
             courier_photo=order.courier.photo_url if order.courier else "",
             items=list(order.details.all()),
         )
+        # QR serah-terima: untuk pemilik yang login, atau tautan berkunci dari kasir (pembeli tanpa login).
+        key = request.GET.get("k", "")
+        if order.shows_handover_qr:
+            if order.check_handover_key(key):
+                context["handover_qr_url"] = reverse("customer:track_handover_qr", args=[order.tracking_number]) + "?k=" + key
+            elif request.user.is_authenticated and order.customer_id == request.user.pk:
+                context["handover_qr_url"] = reverse("customer:handover_qr", args=[order.pk])
     response = render(
         request,
         "customer/track.html",
@@ -1046,6 +1134,8 @@ def track_location(request, resi):
     )
     if order is None:
         return JsonResponse({"found": False}, status=404)
+    if not _track_allowed(request, order):
+        return JsonResponse({"found": True, "locked": True}, status=403)
     data = {
         "found": True,
         "status": order.order_status,

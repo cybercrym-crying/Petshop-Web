@@ -703,3 +703,6 @@
     height: 36px;
   }
 }
+
+/* Foto profil sebagai avatar (pelanggan yang sudah memasang foto). */
+img.sn-avatar { object-fit: cover; flex: none; }

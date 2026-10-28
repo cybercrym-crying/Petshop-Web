@@ -4,7 +4,7 @@
 {% block title %}{% translate "Seelly - Ringkasan Toko" %}{% endblock %}
 {% block extra_head %}
     <link href="{% static 'css/ui.css' %}?v=ux3" rel="stylesheet" />
-    <link href="{% static 'account/css/admin_home.css' %}?v=3" rel="stylesheet" />
+    <link href="{% static 'account/css/admin_home.css' %}?v=3-lay1" rel="stylesheet" />
 {% endblock %}
 {% block content %}
     {% if days == 1 %}{% translate "kemarin" as vs %}{% else %}{% blocktranslate trimmed asvar vs with n=days %}{{ n }} hari sebelumnya{% endblocktranslate %}{% endif %}

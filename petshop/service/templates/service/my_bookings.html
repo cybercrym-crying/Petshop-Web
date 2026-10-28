@@ -6,11 +6,11 @@
 {% endblock %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
-    <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=4">
-    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=7">
+    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'customer/css/orders.css' %}?v=ux4">
     <link rel="stylesheet" href="{% static 'customer/css/orders-dark.css' %}?v=2">
-    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux7">
+    <link rel="stylesheet" href="{% static 'service/css/site.css' %}?v=ux7-lay1">
     <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'customer/css/my_orders.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'customer/css/my_orders-dark.css' %}?v=2">
@@ -246,6 +246,11 @@
                             <div class="mo-pay mo-pay--wait">
                                 <i class="far fa-clock" aria-hidden="true"></i>
                                 <p><strong>{% translate "Bayar setelah jadwal dikonfirmasi" %}</strong> {% if b.payment_choice == "TRANSFER" %}{% blocktranslate trimmed with h=store.payment_deadline_hours %}Anda memilih transfer/QRIS. Setelah jadwal dikonfirmasi, bayar dalam {{ h }} jam; lewat dari itu booking dibatalkan otomatis.{% endblocktranslate %}{% elif b.return_requested %}{% translate "Toko mengecek jadwal groomer dulu. Setelah terjadwal, bayar transfer di sini. Hewan diantar pulang setelah lunas." %}{% else %}{% translate "Toko mengecek jadwal groomer dulu. Setelah terjadwal, Anda bisa bayar transfer di sini atau bayar di kasir saat datang." %}{% endif %}</p>
+                            </div>
+                        {% elif b.is_cod and not b.awaiting_payment_check %}
+                            <div class="mo-pay mo-pay--wait">
+                                <i class="fas fa-money-bill-wave" aria-hidden="true"></i>
+                                <p><strong>{% translate "Bayar tunai ke kurir (COD)" %}</strong> {% blocktranslate trimmed with total=b.total_price|rupiah %}Siapkan uang tunai Rp {{ total }} saat kurir mengantar hewan Anda pulang.{% endblocktranslate %}</p>
                             </div>
                         {% elif b.awaiting_payment_check %}
                             <div class="mo-pay mo-pay--check">

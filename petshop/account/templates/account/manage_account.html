@@ -3,8 +3,10 @@
 {% load static %}
 {% block title %}{% translate "Seelly - Kelola Akun" %}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm3"
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm4"
           rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/address_pin.css' %}?v=1">
 {% endblock %}
 {% block content %}
     <div class="container-fluid px-xl-4 px-3 py-4">
@@ -107,6 +109,26 @@
         <!-- TAB: PERSETUJUAN STAF -->
         <div id="tab-approval"
              class="animate-fade-up {% if active_tab != 'approval' %}d-none{% endif %}">
+            {% if decided_staff %}
+                <div class="card-custom mb-3 decided-card">
+                    <h2 class="decided-title">{% translate "Kabari lewat WhatsApp" %}</h2>
+                    <p class="text-muted small mb-2">{% translate "Pesan diterima/ditolak (beserta alasannya) sudah terisi; tinggal tekan kirim di WhatsApp." %}</p>
+                    {% for s in decided_staff %}
+                        <div class="decided-row{% if just_decided == s.pk|stringformat:'s' %} is-new{% endif %}">
+                            <div class="decided-who">
+                                <span class="fw-bold text-dark">{{ s.display_name }}</span>
+                                {% if s.approval == "DISETUJUI" %}<span class="decided-pill is-ok">{% translate "Diterima" %}</span>{% else %}<span class="decided-pill is-bad">{% translate "Ditolak" %}</span>{% endif %}
+                                <small class="text-muted d-block">{{ s.phone_number }} · {{ s.approved_at|date:"d M, H:i" }}{% if s.approval_note %} · {% translate "Alasan:" %} {{ s.approval_note }}{% endif %}</small>
+                            </div>
+                            {% if s.decision_wa_url %}
+                                <a class="btn btn-success btn-sm fw-semibold" href="{{ s.decision_wa_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> {% translate "Kirim ke WA" %}</a>
+                            {% else %}
+                                <small class="text-muted">{% translate "Nomor WA tidak ada" %}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
             <div class="card-custom">
                 {% for s in pending_staff %}
                     <div class="approval-row">
@@ -130,9 +152,11 @@
                                 <input type="hidden" name="decision" value="approve" />
                                 <button type="submit" class="btn btn-primary btn-sm fw-semibold"><i class="bi bi-check-lg"></i> {% translate "Setujui" %}</button>
                             </form>
-                            <form method="post" action="{% url 'decide_staff' s.pk %}" data-confirm="{% blocktranslate trimmed with s_display_name=s.display_name %}Tolak pendaftaran {{ s_display_name }}?{% endblocktranslate %}">
+                            <form method="post" action="{% url 'decide_staff' s.pk %}" class="approval-reject" data-confirm="{% blocktranslate trimmed with s_display_name=s.display_name %}Tolak pendaftaran {{ s_display_name }}?{% endblocktranslate %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="decision" value="reject" />
+                                <label class="visually-hidden" for="reject-note-{{ s.pk }}">{% translate "Alasan penolakan" %}</label>
+                                <input id="reject-note-{{ s.pk }}" name="note" maxlength="255" required class="form-control form-control-sm" placeholder="{% translate 'Alasan penolakan' %}" />
                                 <button type="submit" class="btn btn-outline-danger btn-sm fw-semibold"><i class="bi bi-x-lg"></i> {% translate "Tolak" %}</button>
                             </form>
                         </div>
@@ -141,7 +165,7 @@
                     <div class="text-center py-5">
                         <i class="bi bi-person-check text-muted opacity-50 empty-icon" aria-hidden="true"></i>
                         <h5 class="fw-bold mt-3 text-dark">{% translate "Tidak ada pendaftaran yang menunggu" %}</h5>
-                        <p class="text-muted mb-0">{% translate "Calon staf mendaftar lewat halaman" %} <a href="{% url 'register_staff' %}">{% translate "Daftar sebagai staf" %}</a>.</p>
+                        <p class="text-muted mb-0">{% translate "Calon kurir mendaftar lewat halaman" %} <a href="{% url 'register_staff' %}">{% translate "Daftar Kurir" %}</a>.</p>
                     </div>
                 {% endfor %}
             </div>
@@ -318,12 +342,7 @@
                                    required />
                         </div>
                         <div class="mb-4">
-                            <label class="form-label-custom">{% translate "Alamat" %}</label>
-                            <textarea name="address"
-                                      class="dark-input"
-                                      rows="3"
-                                      placeholder="Alamat lengkap pengiriman"
-                                      required></textarea>
+                            {% include "partials/_address_pin.html" with uid="new" input_class="dark-input" required=True %}
                         </div>
                         <p class="modal-sub mb-3">{% translate "Akun login (opsional). Kosongkan bila pelanggan tidak perlu login; nama pengguna otomatis memakai nomor HP." %}</p>
                         <div class="row g-4 mb-2">
@@ -391,21 +410,10 @@
                                 </div>
                             </div>
                             <div class="mb-4">
-                                <label class="form-label-custom">{% translate "Alamat" %}</label>
-                                <div class="d-flex gap-2 align-items-start">
-                                    <textarea name="address"
-                                              class="dark-input"
-                                              rows="3"
-                                              required>{{ cust.address }}</textarea>
-                                    <a href="{{ cust.maps_url }}"
-                                       target="_blank"
-                                       rel="noopener"
-                                       class="btn-cancel px-3 h-100"
-                                       style="text-decoration:none;
-                                              padding-top: 15px;
-                                              padding-bottom: 15px"
-                                       title="{% translate 'Buka Maps' %}"><i class="bi bi-geo-alt text-primary"></i></a>
-                                </div>
+                                {% include "partials/_address_pin.html" with uid=cust.pk lat=cust.latitude lng=cust.longitude address=cust.address input_class="dark-input" required=True %}
+                                {% if cust.address or cust.has_pin %}
+                                    <a href="{{ cust.maps_url }}" target="_blank" rel="noopener" class="ap-btn mt-2" style="text-decoration:none"><i class="bi bi-geo-alt" aria-hidden="true"></i> {% translate "Buka Maps" %}</a>
+                                {% endif %}
                             </div>
                             <div class="d-flex flex-wrap gap-2 justify-content-end mt-5 border-top pt-4">
                                 <button type="button" class="btn-cancel" data-bs-dismiss="modal">{% translate "Batal" %}</button>
@@ -426,4 +434,8 @@
             </div>
         </div>
     {% endfor %}
+{% endblock %}
+{% block extra_script %}
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
 {% endblock %}

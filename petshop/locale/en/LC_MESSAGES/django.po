@@ -6766,3 +6766,708 @@ msgstr "Personal details"
 
 msgid "Kendaraan"
 msgstr "Vehicle"
+
+msgid "Tahapan kerja"
+msgstr "Work steps"
+
+msgid "Urutan pekerjaan yang diikuti groomer untuk layanan ini (%(m)s menit)."
+msgstr "The order of work the groomer follows for this service (%(m)s minutes)."
+
+msgid "Urutan tahapan"
+msgstr "Step order"
+
+msgid "Pakai panah untuk mengubah urutan"
+msgstr "Use the arrows to reorder"
+
+msgid "Tambah tahap"
+msgstr "Add step"
+
+msgid "Yang dilihat groomer"
+msgstr "What the groomer sees"
+
+msgid "Groomer mengerjakan dari atas ke bawah. Pelanggan melihat kemajuan dan foto tiap tahap di Booking Saya."
+msgstr "The groomer works from top to bottom. Customers see the progress and each step's photo in My Bookings."
+
+msgid "Belum ada tahap. Jika disimpan kosong, dipakai tahapan bawaan."
+msgstr "No steps yet. If saved empty, the default steps are used."
+
+msgid "Aturan"
+msgstr "Rules"
+
+msgid "Tahap Wajib foto harus difoto lewat kamera sebelum groomer bisa lanjut."
+msgstr "Photo-required steps must be photographed with the camera before the groomer can continue."
+
+msgid "Jika semua tahap dihapus, dipakai tahapan bawaan: %(steps)s."
+msgstr "If all steps are removed, the default steps are used: %(steps)s."
+
+msgid "Perubahan berlaku untuk booking yang mulai dikerjakan setelah disimpan."
+msgstr "Changes apply to bookings started after saving."
+
+msgid "Nama tahap"
+msgstr "Step name"
+
+msgid "Tahap ini akan dihapus saat disimpan."
+msgstr "This step will be removed when you save."
+
+msgid "Groomer wajib memotret tahap ini"
+msgstr "The groomer must photograph this step"
+
+msgid "Naikkan"
+msgstr "Move up"
+
+msgid "Turunkan"
+msgstr "Move down"
+
+msgid "Hapus tahap"
+msgstr "Remove step"
+
+msgid "Kosongkan baris"
+msgstr "Clear row"
+
+msgid "Jasa baru yang bisa dibooking pelanggan. Tahapan kerja diatur setelah layanan disimpan."
+msgstr "A new service customers can book. Work steps are set up after the service is saved."
+
+msgid "Info layanan"
+msgstr "Service info"
+
+msgid "Nama layanan"
+msgstr "Service name"
+
+msgid "mis. Grooming Lengkap Kucing"
+msgstr "e.g. Full Cat Grooming"
+
+msgid "Untuk hewan"
+msgstr "For pets"
+
+msgid "Apa saja yang didapat pelanggan, mis. mandi, potong kuku, bersihkan telinga."
+msgstr "What the customer gets, e.g. bath, nail trim, ear cleaning."
+
+msgid "Tampil di kartu layanan pada halaman booking pelanggan."
+msgstr "Shown on the service card on the customer booking page."
+
+msgid "Harga & waktu"
+msgstr "Price & time"
+
+msgid "Belum termasuk biaya antar-jemput hewan."
+msgstr "Excludes the pet pick-up and drop-off fee."
+
+msgid "Durasi pengerjaan"
+msgstr "Work duration"
+
+msgid "menit"
+msgstr "minutes"
+
+msgid "Dipakai untuk mengecek jadwal: makin lama, makin sedikit booking yang muat per jam."
+msgstr "Used to check the schedule: the longer it is, the fewer bookings fit per hour."
+
+msgid "Tampil di situs"
+msgstr "Shown on site"
+
+msgid "Pelanggan bisa melihat dan booking layanan ini"
+msgstr "Customers can see and book this service"
+
+msgid "Matikan untuk menyembunyikan. Booking yang sudah ada dan riwayatnya tetap tersimpan."
+msgstr "Turn off to hide it. Existing bookings and their history are kept."
+
+msgid "Simpan perubahan"
+msgstr "Save changes"
+
+msgid "Simpan layanan"
+msgstr "Save service"
+
+msgid "Jasa yang bisa dibooking pelanggan, lengkap dengan harga, durasi, dan tahapan kerja groomer."
+msgstr "Services customers can book, with price, duration, and the groomer's work steps."
+
+msgid "Cara kerja layanan"
+msgstr "How services work"
+
+msgid "Isi info layanan"
+msgstr "Fill in service info"
+
+msgid "Nama, harga, dan durasi. Durasi menentukan berapa booking yang muat di satu jam."
+msgstr "Name, price, and duration. The duration decides how many bookings fit in an hour."
+
+msgid "Atur tahapan kerja"
+msgstr "Set the work steps"
+
+msgid "Urutan yang dikerjakan groomer. Tahap bertanda kamera wajib difoto, dan fotonya dilihat pelanggan."
+msgstr "The order the groomer works in. Steps marked with a camera must be photographed, and customers see the photos."
+
+msgid "Tampilkan di situs"
+msgstr "Show on site"
+
+msgid "Layanan yang tampil bisa dibooking. Sembunyikan untuk berhenti menerima booking tanpa menghapus riwayatnya."
+msgstr "Shown services can be booked. Hide one to stop taking bookings without deleting its history."
+
+msgid "Saring layanan"
+msgstr "Filter services"
+
+msgid "Disembunyikan"
+msgstr "Hidden"
+
+msgid "%(n)s booking sedang berjalan"
+msgstr "%(n)s bookings in progress"
+
+msgid "%(m)s menit"
+msgstr "%(m)s min"
+
+msgid "Tahapan kerja groomer"
+msgstr "Groomer work steps"
+
+msgid "Memakai tahapan bawaan"
+msgstr "Using default steps"
+
+msgid "Total booking"
+msgstr "Total bookings"
+
+msgid "Atur tahapan"
+msgstr "Set steps"
+
+msgid "Tidak ada layanan di kelompok ini."
+msgstr "No services in this group."
+
+msgid "Belum ada layanan. Tambahkan layanan pertama agar pelanggan bisa booking."
+msgstr "No services yet. Add the first one so customers can book."
+
+msgid "Layanan '%(name)s' ditambahkan. Sekarang atur tahapan kerjanya."
+msgstr "Service '%(name)s' added. Now set up its work steps."
+
+msgid "Jawaban otomatis untuk pertanyaan yang sering ditanya di situs. Nomor resi yang diketik pelanggan langsung dijawab dengan status pesanan."
+msgstr "Automatic answers to questions often asked on the site. A tracking number typed by a customer is answered with the order status right away."
+
+msgid "Saring FAQ"
+msgstr "Filter FAQs"
+
+msgid "Cari FAQ"
+msgstr "Search FAQs"
+
+msgid "Cari pertanyaan atau kata kunci"
+msgstr "Search questions or keywords"
+
+msgid "Belum ada kata kunci, chatbot hanya mengenali kalimat pertanyaannya."
+msgstr "No keywords yet, so the chatbot only recognises the question itself."
+
+msgid "kali dipakai"
+msgstr "times used"
+
+msgid "Tidak ada FAQ yang cocok."
+msgstr "No matching FAQs."
+
+msgid "Belum ada FAQ. Tambahkan pertanyaan yang paling sering ditanya pelanggan."
+msgstr "No FAQs yet. Add the questions customers ask most often."
+
+msgid "Jadikan FAQ baru, atau tambahkan katanya ke kata kunci FAQ yang sudah ada."
+msgstr "Turn it into a new FAQ, or add its words to the keywords of an existing FAQ."
+
+msgid "Semua pertanyaan sudah terjawab."
+msgstr "All questions have been answered."
+
+msgid "Bersihkan daftar"
+msgstr "Clear list"
+
+msgid "Cara chatbot menjawab"
+msgstr "How the chatbot answers"
+
+msgid "Chatbot mencocokkan pesan pelanggan dengan pertanyaan dan kata kunci. Isi kata kunci dengan cara lain pelanggan bertanya."
+msgstr "The chatbot matches the customer's message against questions and keywords. Fill keywords with other ways customers ask."
+
+msgid "FAQ Pilihan cepat muncul sebagai tombol saat chat dibuka."
+msgstr "Quick-pick FAQs appear as buttons when the chat opens."
+
+msgid "Di jawaban, [[layanan]] diganti daftar harga layanan dan [[wa]] diganti nomor WhatsApp toko."
+msgstr "In answers, [[layanan]] becomes the service price list and [[wa]] becomes the store WhatsApp number."
+
+msgid "Sudah dipakai %(n)s kali"
+msgstr "Used %(n)s times"
+
+msgid "Pertanyaan baru yang dijawab chatbot secara otomatis."
+msgstr "A new question the chatbot answers automatically."
+
+msgid "Pertanyaan & jawaban"
+msgstr "Question & answer"
+
+msgid "mis. Berapa ongkos kirimnya?"
+msgstr "e.g. How much is shipping?"
+
+msgid "Sisipkan:"
+msgstr "Insert:"
+
+msgid "Daftar harga layanan"
+msgstr "Service price list"
+
+msgid "Cara lain pelanggan menanyakan hal ini, dipisahkan koma. Makin lengkap, makin sering chatbot menjawab dengan tepat."
+msgstr "Other ways customers ask this, separated by commas. The more complete, the more often the chatbot answers correctly."
+
+msgid "Tombol tautan"
+msgstr "Link button"
+
+msgid "Alamat halaman"
+msgstr "Page address"
+
+msgid "Teks tombol"
+msgstr "Button text"
+
+msgid "Tombol di bawah jawaban. Awali dengan / untuk halaman toko, atau https:// untuk situs lain."
+msgstr "A button below the answer. Start with / for a store page, or https:// for another site."
+
+msgid "Tampilan"
+msgstr "Display"
+
+msgid "Chatbot memakai FAQ ini untuk menjawab."
+msgstr "The chatbot uses this FAQ to answer."
+
+msgid "Muncul sebagai tombol saat chat dibuka."
+msgstr "Shown as a button when the chat opens."
+
+msgid "Angka kecil tampil lebih dulu di daftar dan tombol pilihan cepat."
+msgstr "Lower numbers appear first in the list and quick-pick buttons."
+
+msgid "Simpan FAQ"
+msgstr "Save FAQ"
+
+msgid "Notifikasi - Groomer"
+msgstr "Notifications - Groomer"
+
+msgid "Pekerjaan hari ini"
+msgstr "Today's work"
+
+msgid "Bayar saat sampai (COD)"
+msgstr "Pay on delivery (COD)"
+
+msgid "Tunai saat barang sampai (COD)"
+msgstr "Cash on delivery (COD)"
+
+msgid "Belum dibayar, ditagih kurir"
+msgstr "Not paid yet, collected by the courier"
+
+msgid "Bayar sekarang"
+msgstr "Pay now"
+
+msgid "Untuk pesanan lewat telepon/chat. Kurir menagih tunai ke pelanggan saat serah terima, lalu menyetorkannya ke kasir."
+msgstr "For orders taken by phone or chat. The courier collects cash from the customer at handover, then hands it in at the cashier."
+
+msgid "Simpan pesanan COD"
+msgstr "Save COD order"
+
+msgid "Pesanan %(no)s disimpan. Kurir menagih tunai saat barang sampai."
+msgstr "Order %(no)s saved. The courier collects cash on delivery."
+
+msgid "QR serah-terima untuk pembeli"
+msgstr "Handover QR for the buyer"
+
+msgid "Kirim tautan ini ke WhatsApp pembeli. Isinya status pengiriman dan QR yang dipindai kurir saat paket diserahkan. Jangan cetak atau tempel QR ini di paket."
+msgstr "Send this link to the buyer's WhatsApp. It shows the delivery status and the QR the courier scans at handover. Do not print or stick this QR on the package."
+
+msgid "Kirim ke WA pembeli"
+msgstr "Send to buyer's WhatsApp"
+
+msgid "Nomor WA pembeli belum ada"
+msgstr "Buyer has no WhatsApp number yet"
+
+msgid "Halo %(name)s, pesanan %(store)s %(no)s akan diantar kurir. Total Rp %(total)s%(cod)s. Saat paket tiba, buka tautan ini dan tunjukkan QR-nya ke kurir: %(url)s"
+msgstr "Hi %(name)s, your %(store)s order %(no)s will be delivered by courier. Total Rp %(total)s%(cod)s. When the package arrives, open this link and show the QR to the courier: %(url)s"
+
+msgid ", dibayar tunai ke kurir"
+msgstr ", paid in cash to the courier"
+
+msgid "Lokasi rumah di peta"
+msgstr "Home location on the map"
+
+msgid "Peta lokasi rumah"
+msgstr "Home location map"
+
+msgid "Klik peta atau geser pin ke titik rumah. Ongkir & rute kurir dihitung dari titik ini."
+msgstr "Click the map or drag the pin to the home. Shipping and the courier route are based on this point."
+
+msgid "Titik rumah sudah ditandai."
+msgstr "Home location is marked."
+
+msgid "Hapus titik"
+msgstr "Remove pin"
+
+msgid "Nama jalan, nomor rumah, RT/RW, patokan (mis. pagar hijau dekat masjid)"
+msgstr "Street, house number, RT/RW, landmark (e.g. green gate near the mosque)"
+
+msgid "Detail alamat"
+msgstr "Address details"
+
+msgid "Perlu verifikasi"
+msgstr "Verification needed"
+
+msgid "Masukkan 4 digit terakhir nomor WhatsApp pemesan"
+msgstr "Enter the last 4 digits of the buyer's WhatsApp number"
+
+msgid "Untuk menjaga privasi, detail pesanan hanya ditampilkan ke pemesan. Contoh: nomor 0812-3456-7890 berarti 7890."
+msgstr "To protect privacy, order details are only shown to the buyer. Example: for 0812-3456-7890, enter 7890."
+
+msgid "Lihat pesanan"
+msgstr "View order"
+
+msgid "Punya akun? <a href=\"%(url)s\">Masuk</a> untuk melihat semua pesanan tanpa verifikasi."
+msgstr "Have an account? <a href=\"%(url)s\">Log in</a> to see all your orders without verification."
+
+msgid "Terlalu banyak percobaan. Coba lagi dalam 15 menit atau hubungi toko."
+msgstr "Too many attempts. Try again in 15 minutes or contact the store."
+
+msgid "4 digit nomor WhatsApp tidak cocok dengan data pemesan."
+msgstr "The 4 digits do not match the buyer's WhatsApp number."
+
+msgid "Minta penerima menampilkan QR serah-terima dari Pesanan Saya atau dari tautan lacak yang dikirim toko lewat WhatsApp. Bila tidak bisa, minta penerima membacakan kode 8 huruf."
+msgstr "Ask the recipient to show the handover QR from My Orders or from the tracking link the store sent on WhatsApp. If that is not possible, ask them to read out the 8-letter code."
+
+msgid "COD / Transfer"
+msgstr "COD / Transfer"
+
+msgid "1. Pilih layanan"
+msgstr "1. Choose a service"
+
+msgid "Belum ada layanan aktif."
+msgstr "No active services yet."
+
+msgid "Ganti layanan"
+msgstr "Change service"
+
+msgid "2. Pilih groomer"
+msgstr "2. Choose a groomer"
+
+msgid "Tentukan nanti"
+msgstr "Decide later"
+
+msgid "%(n)s booking aktif hari ini"
+msgstr "%(n)s active bookings today"
+
+msgid "Tunai ditagih kurir saat hewan diantar pulang"
+msgstr "Cash collected by the courier when the pet is brought home"
+
+msgid "QR booking untuk pelanggan"
+msgstr "Booking QR for the customer"
+
+msgid "Kurir memindai QR ini di HP pelanggan saat menjemput dan mengantar pulang. Kirim tautannya bila pelanggan tidak memakai akun."
+msgstr "The courier scans this QR on the customer's phone at pickup and drop-off. Send the link if the customer has no account."
+
+msgid "Buka QR"
+msgstr "Open QR"
+
+msgid "COD: kurir menagih tunai Rp %(total)s saat mengantar pulang, lalu menyetorkannya ke kasir."
+msgstr "COD: the courier collects Rp %(total)s in cash when bringing the pet home, then hands it in at the cashier."
+
+msgid "Bayar di kasir"
+msgstr "Pay at the cashier"
+
+msgid "COD ke kurir"
+msgstr "COD to courier"
+
+msgid "Uang tunai Rp %(total)s sudah saya terima"
+msgstr "I have received Rp %(total)s in cash"
+
+msgid "(COD, disetor ke kasir lewat Setoran COD)"
+msgstr "(COD, handed in at the cashier via COD Deposits)"
+
+msgid "Belum dibayar: tagih tunai Rp %(total)s saat hewan diserahkan (COD)."
+msgstr "Not paid yet: collect Rp %(total)s in cash at handover (COD)."
+
+msgid "Siap diantar. COD: tagih tunai Rp %(total)s saat diserahkan."
+msgstr "Ready to deliver. COD: collect Rp %(total)s in cash at handover."
+
+msgid "3. Antar-jemput hewan"
+msgstr "3. Pet pickup & drop-off"
+
+msgid "Jemput di rumah"
+msgstr "Pick up at home"
+
+msgid "Kurir hewan menjemput ke alamat pelanggan"
+msgstr "The pet courier picks up at the customer's address"
+
+msgid "Kurir mengantar hewan setelah selesai"
+msgstr "The courier brings the pet home when done"
+
+msgid "Ongkos antar-jemput dihitung otomatis dari jarak titik rumah ke toko (maks. %(km)s km) dan ditambahkan ke total booking."
+msgstr "The pickup fee is calculated from the distance between the home pin and the store (max. %(km)s km) and added to the booking total."
+
+msgid "4. Pembayaran"
+msgstr "4. Payment"
+
+msgid "Tunai, transfer, atau QRIS dicatat kasir setelah hewan check-in"
+msgstr "Cash, transfer, or QRIS recorded by the cashier after check-in"
+
+msgid "Kurir menagih tunai saat mengantar hewan pulang. Centang Antar pulang dulu."
+msgstr "The courier collects cash when bringing the pet home. Tick Bring home first."
+
+msgid "Booking #%(pk)s - Seelly Petshop"
+msgstr "Booking #%(pk)s - Seelly Petshop"
+
+msgid "Tautan ini dikirim toko lewat WhatsApp. Jangan dibagikan ke orang lain."
+msgstr "The store sent you this link on WhatsApp. Do not share it."
+
+msgid "Dijemput dan diantar pulang kurir"
+msgstr "Picked up and brought home by courier"
+
+msgid "Diantar pulang kurir"
+msgstr "Brought home by courier"
+
+msgid "Bayar tunai ke kurir saat hewan diantar pulang (COD)"
+msgstr "Pay cash to the courier when the pet is brought home (COD)"
+
+msgid "Bayar di kasir toko"
+msgstr "Pay at the store cashier"
+
+msgid "QR booking (tunjukkan ke kurir / kasir)"
+msgstr "Booking QR (show it to the courier / cashier)"
+
+msgid "QR booking #%(pk)s"
+msgstr "Booking QR #%(pk)s"
+
+msgid "Kurir memindai QR ini saat menjemput dan saat mengantar pulang hewan Anda. Bila kamera kurir bermasalah, bacakan kode cadangan:"
+msgstr "The courier scans this QR when picking up and bringing home your pet. If the courier's camera fails, read out the backup code:"
+
+msgid "Bayar tunai ke kurir (COD)"
+msgstr "Pay cash to the courier (COD)"
+
+msgid "Siapkan uang tunai Rp %(total)s saat kurir mengantar hewan Anda pulang."
+msgstr "Have Rp %(total)s in cash ready when the courier brings your pet home."
+
+msgid "%(n)s tagihan COD sudah diterima dan uangnya belum disetor ke kasir."
+msgstr "%(n)s COD payments collected and not yet handed in at the cashier."
+
+msgid "Booking #%(pk)s · %(pet)s"
+msgstr "Booking #%(pk)s · %(pet)s"
+
+msgid "%(t)s · %(name)s · ditagih tunai"
+msgstr "%(t)s · %(name)s · collected in cash"
+
+msgid "Tunai ke kurir saat diantar pulang (COD)"
+msgstr "Cash to the courier on drop-off (COD)"
+
+msgid "COD hanya bisa bila hewan diantar pulang kurir."
+msgstr "COD is only available when the courier brings the pet home."
+
+msgid "Booking #%(pk)s dibuat. Tugaskan kurir hewan, lalu kirim QR booking ke WhatsApp pelanggan."
+msgstr "Booking #%(pk)s created. Assign a pet courier, then send the booking QR to the customer's WhatsApp."
+
+msgid "Scan QR di HP pemilik, tagih tunai Rp %(total)s (COD), foto saat diserahkan"
+msgstr "Scan the QR on the owner's phone, collect Rp %(total)s in cash (COD), photo at handover"
+
+msgid "Halo %(name)s, booking %(store)s #%(pk)s untuk %(pet)s (%(service)s) pada %(when)s. Total Rp %(total)s%(cod)s. Tunjukkan QR di tautan ini ke kurir saat menjemput/mengantar hewan: %(url)s"
+msgstr "Hi %(name)s, %(store)s booking #%(pk)s for %(pet)s (%(service)s) on %(when)s. Total Rp %(total)s%(cod)s. Show the QR at this link to the courier at pickup/drop-off: %(url)s"
+
+msgid ", dibayar tunai ke kurir saat hewan diantar pulang"
+msgstr ", paid in cash to the courier on drop-off"
+
+msgid "Pelanggan & hewan"
+msgstr "Customer & pet"
+
+msgid "mis. Mochi"
+msgstr "e.g. Mochi"
+
+msgid "Jam datang (%(open)s–%(close)s WITA)"
+msgstr "Arrival time (%(open)s–%(close)s WITA)"
+
+msgid "Tidak ada jam tersisa di tanggal ini. Pilih tanggal lain."
+msgstr "No times left on this date. Choose another date."
+
+msgid "Pilih jam datang."
+msgstr "Choose an arrival time."
+
+msgid "Kurir menagih tunai saat mengantar hewan pulang."
+msgstr "The courier collects cash when bringing the pet home."
+
+msgid "Centang Antar pulang dulu."
+msgstr "Tick Bring home first."
+
+msgid "mis. kulit sensitif, galak saat potong kuku"
+msgstr "e.g. sensitive skin, fussy during nail trims"
+
+msgid "+ ongkos antar-jemput (dihitung dari jarak)"
+msgstr "+ pickup fee (based on distance)"
+
+msgid "Jam itu sudah lewat. Pilih jam yang belum lewat."
+msgstr "That time has passed. Choose a later time."
+
+msgid "Pelanggan baru"
+msgstr "New customer"
+
+msgid "Pelanggan baru (untuk diantar)"
+msgstr "New customer (for delivery)"
+
+msgid "Data untuk pengantaran & kirim QR ke WhatsApp. Tanpa akun login."
+msgstr "Used for delivery and sending the QR on WhatsApp. No login account."
+
+msgid "mis. Budi Santoso"
+msgstr "e.g. Budi Santoso"
+
+msgid "Simpan & pilih"
+msgstr "Save & select"
+
+msgid "Klik peta atau tekan \"Pakai lokasi saya\" untuk menandai rumah Anda. Titik ini dikirim ke admin sebagai link Google Maps."
+msgstr "Tap the map or press \"Use my location\" to mark your home. This point is sent to the admin as a Google Maps link."
+
+msgid "Cek titik di Google Maps"
+msgstr "Check the point on Google Maps"
+
+msgid "Ongkir (perkiraan)"
+msgstr "Shipping (estimate)"
+
+msgid "Titik di Google Maps"
+msgstr "Point on Google Maps"
+
+msgid "Calon kurir mendaftar lewat halaman"
+msgstr "Prospective couriers register on the page"
+
+msgid "Daftar Kurir"
+msgstr "Courier Registration"
+
+msgid "Seelly Petshop - Daftar Kurir"
+msgstr "Seelly Petshop - Courier Registration"
+
+msgid "Jadi Kurir Seelly."
+msgstr "Become a Seelly Courier."
+
+msgid "Antar pesanan dan hewan pelanggan di sekitar Samarinda. Akun Anda aktif setelah disetujui admin toko."
+msgstr "Deliver orders and customers' pets around Samarinda. Your account becomes active after the store admin approves it."
+
+msgid "Terima tugas antar langsung dari HP"
+msgstr "Get delivery tasks right on your phone"
+
+msgid "mis. Honda Beat"
+msgstr "e.g. Honda Beat"
+
+msgid "mis. KT 1234 AB"
+msgstr "e.g. KT 1234 AB"
+
+msgid "Alamat domisili"
+msgstr "Home address"
+
+msgid "Nomor polisi"
+msgstr "License plate"
+
+msgid "Saya punya kandang/boks untuk antar-jemput hewan"
+msgstr "I have a cage/box for pet pickup and delivery"
+
+msgid "Kata sandi"
+msgstr "Password"
+
+msgid "Ulangi kata sandi"
+msgstr "Repeat password"
+
+msgid "Kabari lewat WhatsApp"
+msgstr "Notify on WhatsApp"
+
+msgid "Pesan diterima/ditolak (beserta alasannya) sudah terisi; tinggal tekan kirim di WhatsApp."
+msgstr "The accepted/rejected message (with the reason) is prefilled; just press send in WhatsApp."
+
+msgid "Kirim ke WA"
+msgstr "Send on WhatsApp"
+
+msgid "Nomor WA tidak ada"
+msgstr "No WhatsApp number"
+
+msgid "Alasan penolakan"
+msgstr "Rejection reason"
+
+msgid "Alasan bila ditolak, mis. SIM belum ada"
+msgstr "Reason if rejected, e.g. no driving licence yet"
+
+msgid "Foto profil"
+msgstr "Profile photo"
+
+msgid "Tampil di menu akun dan membantu kurir mengenali Anda. JPG, PNG, atau WEBP, maks. 10 MB."
+msgstr "Shown in your account menu and helps couriers recognise you. JPG, PNG, or WEBP, max 10 MB."
+
+msgid "Pasang foto"
+msgstr "Add photo"
+
+msgid "Hapus foto profil?"
+msgstr "Remove profile photo?"
+
+msgid "Simpan foto"
+msgstr "Save photo"
+
+msgid "Foto profil dihapus."
+msgstr "Profile photo removed."
+
+msgid "Foto profil diperbarui."
+msgstr "Profile photo updated."
+
+msgid "Bagian pengaturan"
+msgstr "Settings sections"
+
+msgid "Ongkir & antar-jemput"
+msgstr "Shipping & pick-up"
+
+msgid "Titik peta toko menjadi pusat hitungan jarak ongkir dan rute kurir."
+msgstr "The store map pin is the origin for shipping distance and courier routes."
+
+msgid "Jam layanan membatasi jadwal booking; nomor WhatsApp dipakai tombol Hubungi Kami dan pesanan tamu."
+msgstr "Service hours limit booking slots; the WhatsApp number is used by the Contact Us button and guest orders."
+
+msgid "Tes"
+msgstr "Test"
+
+msgid "Rekening aktif dan QRIS tampil di petunjuk transfer pelanggan dan layar kasir."
+msgstr "Active accounts and QRIS appear in customer transfer instructions and on the cashier screen."
+
+msgid "File QRIS tercatat tetapi tidak ditemukan di folder media. Unggah ulang supaya tampil di kasir dan checkout."
+msgstr "The QRIS file is recorded but missing from the media folder. Upload it again so it shows at the cashier and checkout."
+
+msgid "Belum ada QRIS. Unggah QRIS statis dari bank (gratis)."
+msgstr "No QRIS yet. Upload the static QRIS from your bank (free)."
+
+msgid "Ganti gambar QRIS"
+msgstr "Replace QRIS image"
+
+msgid "Unggah gambar QRIS"
+msgstr "Upload QRIS image"
+
+msgid "Hapus QRIS"
+msgstr "Remove QRIS"
+
+msgid "Tarif = biaya dasar untuk jarak dasar + tarif per km berikutnya (dibulatkan ke atas)."
+msgstr "Fee = base fee for the base distance + per-km rate after that (rounded up)."
+
+msgid "per arah"
+msgstr "per trip"
+
+msgid "Coba hitung"
+msgstr "Try it"
+
+msgid "Jarak dari toko"
+msgstr "Distance from store"
+
+msgid "Jarak dari toko (km)"
+msgstr "Distance from store (km)"
+
+msgid "Ongkir produk"
+msgstr "Product shipping"
+
+msgid "Jemput atau antar saja"
+msgstr "Pick-up or drop-off only"
+
+msgid "Jemput + antar pulang"
+msgstr "Pick-up + drop-off"
+
+msgid "Pajak, batas diskon kasir, retur, dan catatan di bawah struk."
+msgstr "Tax, cashier discount limit, returns, and the receipt footer note."
+
+msgid "Pratinjau bawah struk"
+msgstr "Receipt footer preview"
+
+msgid "Batas kerja kurir, batas waktu bayar, dan pengingat pelanggan."
+msgstr "Courier workload limits, payment deadlines, and customer reminders."
+
+msgid "Semua perubahan tersimpan"
+msgstr "All changes saved"
+
+msgid "Ada perubahan yang belum disimpan"
+msgstr "You have unsaved changes"
+
+msgid "hari"
+msgstr "days"
+
+msgid "paket"
+msgstr "packages"
+
+msgid "jam"
+msgstr "hours"
+
+msgid "detik"
+msgstr "seconds"

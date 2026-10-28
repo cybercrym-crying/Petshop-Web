@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from account.models import Customer, Role, User
@@ -135,6 +136,76 @@ class CheckoutRuleTests(PosTestCase):
         self.assertEqual(order.shipping_fee, 7000)
         self.assertIsNotNone(order.packing_seq)
 
+    def test_delivery_uses_customer_home_pin_for_route_and_fee(self):
+        from decimal import Decimal
+        customer = Customer.objects.create(name="Rina", phone_number="081211112222", address="Jl. Mawar 1",
+                                           latitude=Decimal("-0.510000"), longitude=Decimal("117.150000"))
+        order = self.sell(qty=1, customer=customer, fulfillment=Fulfillment.DELIVERY, cash_received=10**7)
+        self.assertEqual(order.delivery_latitude, Decimal("-0.510000"))
+        self.assertIsNotNone(order.delivery_distance_km)
+        self.assertGreater(order.shipping_fee, 0)  # ongkir dihitung dari jarak titik rumah
+
+    def test_manual_order_paid_on_delivery_is_collected_by_courier(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        customer = Customer.objects.create(name="Rina", phone_number="081211112222", address="Jl. Mawar 1")
+        with self.assertRaises(pos.PosError):  # COD hanya untuk diantar
+            self.sell(qty=1, customer=customer, pay_on_delivery=True)
+        order = self.sell(qty=1, customer=customer, fulfillment=Fulfillment.DELIVERY, shipping_fee=7000,
+                          pay_on_delivery=True, cash_received=0, pay_qris=5000)
+        self.assertEqual(order.total_payment, 27000)
+        self.assertEqual(order.payment_method, PaymentMethod.CASH)
+        self.assertEqual(order.payment_status, PaymentStatus.PENDING)
+        self.assertFalse(order.payments.exists())
+        self.assertEqual(self.shift.summary()["expected_cash"], 100000)  # uang belum masuk laci
+        courier = User.objects.create_user("krr", password="x", role=Role.COURIER)
+        Order.objects.filter(pk=order.pk).update(courier=courier, order_status=OrderStatus.ON_DELIVERY)
+        order.refresh_from_db()
+        photo = SimpleUploadedFile("p.jpg", b"x", content_type="image/jpeg")
+        with self.assertRaises(Exception):  # kurir wajib konfirmasi uang tunai diterima
+            order.handover(courier, order.handover_code, photo)
+        order.handover(courier, order.handover_code, photo, cash_received=True)
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, PaymentStatus.PAID)
+        self.assertEqual(order.cash_collected, 27000)
+        self.assertIn(order, Order.cash_on_hand(courier))
+
+    def test_pay_on_delivery_screen_and_receipt(self):
+        customer = Customer.objects.create(name="Rina", phone_number="081211112222", address="Jl. Mawar 1")
+        self.client.force_login(self.cashier)
+        self.cart_with(qty=1)
+        page = self.client.get(reverse("transaction:make_transaction"))
+        self.assertContains(page, 'name="pay_on_delivery" value="1"')
+        r = self.client.post(reverse("transaction:submit_transaction"), {
+            "customer": customer.pk, "fulfillment": "DIANTAR", "shipping_fee": "7000", "pay_on_delivery": "1",
+        }, follow=True)
+        self.assertContains(r, "Kurir menagih tunai")
+        self.assertContains(r, "Belum dibayar, ditagih kurir")
+
+    def test_manual_delivery_shares_handover_qr_link_with_buyer(self):
+        customer = Customer.objects.create(name="Rina", phone_number="081211112222", address="Jl. Mawar 1")
+        order = self.sell(qty=1, customer=customer, fulfillment=Fulfillment.DELIVERY, shipping_fee=7000,
+                          pay_on_delivery=True)
+        self.client.force_login(self.cashier)
+        page = self.client.get(reverse("transaction:receipt", args=[order.pk]))
+        self.assertContains(page, "QR serah-terima untuk pembeli")
+        self.assertContains(page, "https://wa.me/6281211112222?text=")
+        link = page.context["handover_link"]
+        self.client.logout()
+        track = reverse("customer:track_detail", args=[order.tracking_number])
+        qr = reverse("customer:track_handover_qr", args=[order.tracking_number])
+        # Resi saja (tertera di label paket) tidak membuka QR serah-terima.
+        self.assertNotContains(self.client.get(track), order.handover_code)
+        self.assertEqual(self.client.get(qr + "?k=salah").status_code, 404)
+        r = self.client.get(link)
+        self.assertContains(r, order.handover_code)
+        self.assertEqual(self.client.get(qr + "?k=" + order.handover_key).status_code, 200)
+        # Bawa langsung: tidak ada QR serah-terima.
+        take_away = self.sell(qty=1)
+        self.client.force_login(self.cashier)
+        self.assertNotContains(self.client.get(reverse("transaction:receipt", args=[take_away.pk])),
+                               "QR serah-terima untuk pembeli")
+
     def test_grooming_paid_in_same_transaction(self):
         from service.models import BookingStatus, Service, ServiceBooking
 
@@ -265,12 +336,58 @@ class PosViewTests(PosTestCase):
         self.client.post("/staff/admin/kasir/scan/", {"code": "8990001"})
         self.assertContains(self.client.get("/staff/admin/make_transaction/"), "Pelanggan umum")
 
+    def test_screen_shows_auto_shipping_fee_before_pay(self):
+        """Ongkir otomatis yang ditagih saat Bayar sudah terlihat di layar kasir (mis. untuk 'Uang pas')."""
+        customer = Customer.objects.create(name="Rina", phone_number="081211112222", address="Jl. Mawar 1",
+                                           latitude=Decimal("-0.510000"), longitude=Decimal("117.150000"))
+        store = StoreSettings.current()
+        fee = store.shipping_fee(store.distance_km(customer.latitude, customer.longitude))
+        self.assertGreater(fee, 0)
+        self.client.post("/staff/admin/kasir/scan/", {"code": "8990001"})
+        r = self.client.get("/staff/admin/make_transaction/")
+        self.assertContains(r, f'value="{customer.pk}" data-ship="{fee}"')
+        order = pos.checkout(Cart.objects.get(user=self.cashier), self.cashier, customer=customer,
+                             fulfillment=Fulfillment.DELIVERY, cash_received=20000 + fee)
+        self.assertEqual(order.shipping_fee, fee)
+
+    def test_cashier_adds_new_customer_for_delivery(self):
+        """Kasir bisa mendaftarkan pelanggan baru sendiri (tanpa admin) lalu langsung mengantar pesanannya."""
+        self.client.post("/staff/admin/kasir/scan/", {"code": "8990001"})
+        self.assertContains(self.client.get("/staff/admin/make_transaction/"), "data-qc-open")
+        r = self.client.post(reverse("transaction:quick_customer"), {
+            "name": "Budi Santoso", "phone_number": "0812 3333 4444", "address": "Jl. Kenari 5",
+            "latitude": "-0.510000", "longitude": "117.150000",
+        })
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        customer = Customer.objects.get(pk=data["pk"])
+        self.assertEqual(customer.name, "Budi Santoso")
+        self.assertFalse(customer.has_usable_password())  # belum bisa login sampai daftar sendiri
+        self.assertGreater(data["ship"], 0)
+        order = pos.checkout(Cart.objects.get(user=self.cashier), self.cashier, customer=customer,
+                             fulfillment=Fulfillment.DELIVERY, cash_received=20000 + data["ship"])
+        self.assertEqual(order.shipping_fee, data["ship"])
+        # Nomor yang sama tidak boleh dobel; alamat wajib.
+        r = self.client.post(reverse("transaction:quick_customer"), {
+            "name": "Budi Lain", "phone_number": "081233334444", "address": "",
+        })
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("phone_number", r.json()["errors"])
+        self.assertIn("address", r.json()["errors"])
+
+    def test_quick_customer_is_for_pos_roles_only(self):
+        User.objects.create_user("kur", password="x", role=Role.COURIER)
+        self.client.login(username="kur", password="x")
+        r = self.client.post(reverse("transaction:quick_customer"), {"name": "X", "phone_number": "0811", "address": "Y"})
+        self.assertEqual(r.status_code, 403)
+        self.assertFalse(Customer.objects.filter(first_name="X").exists())
+
     def test_phone_pay_bar_shows_only_with_items(self):
         self.assertNotContains(self.client.get("/staff/admin/make_transaction/"), "data-paybar-total")
         self.client.post("/staff/admin/kasir/scan/", {"code": "8990001"})
         r = self.client.get("/staff/admin/make_transaction/")
         self.assertContains(r, "data-paybar-total")
-        self.assertContains(r, 'href="#payCash"')
+        self.assertContains(r, 'href="#posPayment"')
 
     def test_category_chip_filters_products(self):
         toy = Product.objects.create(

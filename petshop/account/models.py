@@ -260,6 +260,9 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=Role.choices, null=False)
     phone_number = models.CharField(max_length=20)
     address = models.CharField(max_length=255, blank=True, default="")
+    # Titik rumah dari peta (opsional): dipakai untuk ongkir & rute kurir.
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     # Staf yang mendaftar sendiri baru aktif setelah disetujui admin.
     approval = models.CharField(
         "Status persetujuan",
@@ -275,6 +278,8 @@ class User(AbstractUser):
         related_name="+",
     )
     approved_at = models.DateTimeField(null=True, blank=True)
+    approval_note = models.CharField("Alasan penolakan", max_length=255, blank=True)
+    photo = models.ImageField("Foto profil", upload_to="avatars/%Y/%m", null=True, blank=True)
     # Akun sistem "Pelanggan umum" untuk pembeli di kasir tanpa akun (tidak bisa login,
     # tidak tampil di daftar pelanggan). Nama/HP pembeli disimpan di order.
     is_walk_in = models.BooleanField(default=False, editable=False)
@@ -372,13 +377,14 @@ class User(AbstractUser):
 
     @property
     def photo_url(self):
-        """Foto profil kurir (kosong kalau belum diunggah atau bukan kurir)."""
-        if self.role != Role.COURIER:
-            return ""
-        try:
-            photo = self.courier_profile.photo
-        except ObjectDoesNotExist:
-            return ""
+        """Foto profil: kurir dari profil kurirnya, peran lain (mis. pelanggan) dari akun. Kosong bila belum ada."""
+        if self.role == Role.COURIER:
+            try:
+                photo = self.courier_profile.photo
+            except ObjectDoesNotExist:
+                return ""
+        else:
+            photo = self.photo
         return photo.url if photo else ""
 
     @property
@@ -416,16 +422,36 @@ class User(AbstractUser):
             return True
         return self.role == Role.ADMIN and other_role not in ADMIN_ROLES
 
-    def decide_registration(self, staff, approve):
-        """Admin menyetujui/menolak staf yang mendaftar sendiri."""
+    def decide_registration(self, staff, approve, note=""):
+        """Admin menyetujui/menolak staf yang mendaftar sendiri. Penolakan wajib beralasan
+        (dikirim ke calon staf lewat WhatsApp dan tampil saat ia mencoba masuk)."""
+        note = (note or "").strip()[:255]
         if staff.approval != Approval.PENDING:
             return False
+        if not approve and not note:
+            raise ValueError("Tulis alasan penolakan.")
         staff.approval = Approval.APPROVED if approve else Approval.REJECTED
         staff.is_active = approve
         staff.approved_by = self
         staff.approved_at = timezone.now()
-        staff.save(update_fields=["approval", "is_active", "approved_by", "approved_at"])
+        staff.approval_note = "" if approve else note
+        staff.save(update_fields=["approval", "is_active", "approved_by", "approved_at", "approval_note"])
         return True
+
+    def registration_message(self, login_url):
+        """Isi pesan WhatsApp ke staf pendaftar setelah diterima/ditolak admin."""
+        if self.approval == Approval.APPROVED:
+            return (
+                f"Halo {self.name}, pendaftaran Anda sebagai {self.get_role_display().lower()} "
+                f"Seelly Petshop DITERIMA. Silakan masuk di {login_url} dengan nama pengguna "
+                f"{self.username} dan kata sandi yang Anda buat saat mendaftar. Selamat bergabung!"
+            )
+        return (
+            f"Halo {self.name}, terima kasih sudah mendaftar sebagai {self.get_role_display().lower()} "
+            f"Seelly Petshop. Mohon maaf, pendaftaran Anda BELUM DAPAT DITERIMA.\n"
+            f"Alasan: {self.approval_note}\n"
+            "Silakan balas pesan ini bila ada pertanyaan."
+        )
 
     @property
     def whatsapp_url(self):
@@ -436,7 +462,13 @@ class User(AbstractUser):
         return f"https://wa.me/{number}"
 
     @property
+    def has_pin(self):
+        return self.latitude is not None and self.longitude is not None
+
+    @property
     def maps_url(self):
+        if self.has_pin:
+            return f"https://www.google.com/maps/search/?api=1&query={self.latitude},{self.longitude}"
         if not self.address:
             return ""
         return f"https://www.google.com/maps/search/?api=1&query={quote(self.address)}"

@@ -569,6 +569,29 @@ class TrackOrderTests(TestCase):
             payment_method="TUNAI",
             total_payment=45000,
         )
+        # Pengunjung tanpa login: verifikasi 4 digit terakhir nomor WA pemesan dulu.
+        self.client.post(reverse("customer:track_detail", args=[self.order.tracking_number]), {"wa4": "1111"})
+
+    def test_stranger_must_verify_last_4_wa_digits(self):
+        from django.core.cache import cache
+
+        cache.clear()
+        stranger = self.client_class()
+        url = reverse("customer:track_detail", args=[self.order.tracking_number])
+        locked = stranger.get(url)
+        self.assertContains(locked, "4 digit terakhir nomor WhatsApp")
+        self.assertNotContains(locked, "Pesanan dikonfirmasi")
+        self.assertNotContains(locked, "Budi S****")
+        self.assertEqual(stranger.get(reverse("customer:track_location", args=[self.order.tracking_number])).status_code, 403)
+        self.assertContains(stranger.post(url, {"wa4": "9999"}), "tidak cocok")
+        self.assertRedirects(stranger.post(url, {"wa4": "1111"}), url)
+        self.assertContains(stranger.get(url), "Pesanan dikonfirmasi")
+        # Tebakan beruntun dikunci 15 menit.
+        other = self.client_class()
+        for _ in range(5):
+            other.post(url, {"wa4": "0000"})
+        self.assertContains(other.post(url, {"wa4": "1111"}), "Terlalu banyak percobaan")
+        cache.clear()
 
     def test_empty_form_page_renders(self):
         response = self.client.get(reverse("customer:track"))
@@ -756,7 +779,10 @@ class ProductTrackingMapTests(TestCase):
         self.assertIn("destination", data)  # pemilik melihat titik rumahnya
 
     def test_strangers_see_the_store_but_not_the_address(self):
-        data = self.client.get(reverse("customer:track_location", args=[self.order.tracking_number])).json()
+        url = reverse("customer:track_location", args=[self.order.tracking_number])
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.post(reverse("customer:track_detail", args=[self.order.tracking_number]), {"wa4": "0001"})
+        data = self.client.get(url).json()
         self.assertIn("store", data)
         self.assertNotIn("destination", data)
 
@@ -797,3 +823,60 @@ class DarkModeTests(TestCase):
         self.assertRegex(html, r'class="sn-icon ca-menu-btn"[^>]*data-label-open="[^"]+"\s+data-label-close="[^"]+"')
         css = open(finders.find("customer/css/app.css"), encoding="utf-8").read()
         self.assertIn(".ca-collapsed .ca-app", css)
+
+
+class ProfilePhotoTests(TestCase):
+    def setUp(self):
+        import shutil
+        import tempfile
+
+        from django.test import override_settings
+
+        media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media, ignore_errors=True)
+        patcher = override_settings(MEDIA_ROOT=media)
+        patcher.enable()
+        self.addCleanup(patcher.disable)
+        self.user = Customer.objects.create(name="Ayu", phone_number="081300000011", address="Jl. A")
+        self.user.set_password("x")
+        self.user.save()
+        self.client.force_login(self.user)
+
+    def png(self, name="a.png"):
+        import io
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+
+        buf = io.BytesIO()
+        Image.new("RGB", (40, 40), (120, 40, 160)).save(buf, "PNG")
+        return SimpleUploadedFile(name, buf.getvalue(), content_type="image/png")
+
+    def test_customer_uploads_replaces_and_removes_photo(self):
+        url = reverse("customer:account")
+        self.client.post(url, {"form": "photo", "photo": self.png()})
+        self.user.refresh_from_db()
+        first = self.user.photo.name
+        self.assertTrue(first.startswith("avatars/"))
+        # Foto tampil sebagai avatar di menu.
+        r = self.client.get(url)
+        self.assertContains(r, f'class="sn-avatar sn-avatar--img" src="{self.user.photo.url}"')
+        # Ganti foto: file lama dihapus dari penyimpanan.
+        self.client.post(url, {"form": "photo", "photo": self.png("b.png")})
+        self.user.refresh_from_db()
+        self.assertNotEqual(self.user.photo.name, first)
+        self.assertFalse(self.user.photo.storage.exists(first))
+        current = self.user.photo.name
+        self.client.post(url, {"form": "photo", "remove": "1"})
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.photo)
+        self.assertFalse(self.user.photo.storage.exists(current))
+
+    def test_non_image_is_rejected(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        r = self.client.post(reverse("customer:account"),
+                             {"form": "photo", "photo": SimpleUploadedFile("x.png", b"not an image")}, follow=True)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.photo)
+        self.assertContains(r, "File harus berupa foto")

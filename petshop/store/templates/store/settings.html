@@ -1,121 +1,208 @@
 {% extends "account/staff_base.html" %}
-{% load i18n %}
+{% load i18n l10n %}
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Pengaturan Toko" %}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'account/css/manage_account.css' %}?v=dm3" rel="stylesheet" />
+    <link href="{% static 'account/css/manage_account.css' %}?v=dm4" rel="stylesheet" />
     <link href="{% static 'vendor/leaflet/leaflet.css' %}" rel="stylesheet" />
-    <link href="{% static 'store/css/settings.css' %}?v=ux2" rel="stylesheet" />
+    <link href="{% static 'store/css/settings.css' %}?v=4" rel="stylesheet" />
 {% endblock %}
 {% block content %}
-    <div class="container-fluid px-xl-4 px-3 py-4">
-        <div class="mb-4 animate-fade-up">
-            <p class="eyebrow">{% translate "Toko" %}</p>
-            <h1 class="page-title mb-1">{% translate "Pengaturan Toko" %}</h1>
-            <p class="text-muted fw-medium mb-0">{% translate "Alamat dan titik peta toko dipakai untuk menghitung ongkir, rute kurir, dan antar-jemput hewan. Nomor WhatsApp dan rekening tampil di situs pelanggan." %}</p>
-            {% if store.updated_by %}<p class="small text-muted mt-1 mb-0">{% blocktranslate trimmed with store_updated_at=store.updated_at|date:"d M Y H:i" store_updated_by_name=store.updated_by.name|default:store.updated_by.username %}Terakhir diubah {{ store_updated_at }} oleh {{ store_updated_by_name }}{% endblocktranslate %}</p>{% endif %}
-        </div>
-        {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4 shadow-sm border-0" role="alert">{{ message }}</div>
-                {% endfor %}
+    <div class="container-fluid px-xl-4 px-3 py-4 st-page">
+        <header class="st-hd">
+            <div>
+                <p class="eyebrow">{% translate "Toko" %}</p>
+                <h1 class="page-title mb-1">{% translate "Pengaturan Toko" %}</h1>
+                <p class="st-hd__sub">{% translate "Alamat dan titik peta toko dipakai untuk menghitung ongkir, rute kurir, dan antar-jemput hewan. Nomor WhatsApp dan rekening tampil di situs pelanggan." %}</p>
+                {% if store.updated_by %}<p class="st-hd__meta"><i class="bi bi-clock-history" aria-hidden="true"></i> {% blocktranslate trimmed with store_updated_at=store.updated_at|date:"d M Y H:i" store_updated_by_name=store.updated_by.name|default:store.updated_by.username %}Terakhir diubah {{ store_updated_at }} oleh {{ store_updated_by_name }}{% endblocktranslate %}</p>{% endif %}
             </div>
-        {% endif %}
-        <form method="post" novalidate class="store-settings" enctype="multipart/form-data">
-            {% csrf_token %}
-            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-            <section class="card-custom store-card animate-fade-up">
-                <h2 class="store-card__title"><i class="bi bi-shop"></i> {% translate "Profil & lokasi" %}</h2>
-                <div class="row g-3">
-                    {% include "store/_field.html" with field=form.name %}
-                    {% include "store/_field.html" with field=form.email %}
-                    {% include "store/_field.html" with field=form.address col="col-12" %}
-                    <div class="col-12">
-                        <div class="store-map-tools">
-                            <span class="small text-muted">{% translate "Klik peta atau geser pin untuk menandai lokasi toko." %}</span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" data-map-locate><i class="bi bi-crosshair"></i> {% translate "Pakai lokasi saya" %}</button>
-                        </div>
-                        <div class="store-map" data-map-picker role="application" aria-label="{% translate 'Peta lokasi toko' %}"></div>
-                    </div>
-                    {% include "store/_field.html" with field=form.latitude %}
-                    {% include "store/_field.html" with field=form.longitude %}
-                </div>
-            </section>
-            <section class="card-custom store-card animate-fade-up">
-                <h2 class="store-card__title"><i class="bi bi-clock"></i> {% translate "Jam buka & kontak" %}</h2>
-                <div class="row g-3">
-                    {% include "store/_field.html" with field=form.open_hour col="col-6 col-md-3" %}
-                    {% include "store/_field.html" with field=form.close_hour col="col-6 col-md-3" %}
-                    {% include "store/_field.html" with field=form.whatsapp %}
-                </div>
-            </section>
-            <section class="card-custom store-card animate-fade-up">
-                <h2 class="store-card__title"><i class="bi bi-bank"></i> {% translate "Rekening transfer" %}</h2>
-                <p class="small text-muted">{% translate 'Rekening aktif tampil di petunjuk transfer pelanggan. Centang "Hapus" untuk membuang rekening.' %}</p>
-                {{ banks.management_form }}
-                {% for f in banks.non_form_errors %}<div class="alert alert-danger">{{ f }}</div>{% endfor %}
-                <div class="store-banks">
-                    {% for bf in banks %}
-                        <div class="store-bank">
-                            {{ bf.id }}
-                            <div><label class="form-label small fw-semibold" for="{{ bf.bank.id_for_label }}">{% translate "Bank" %}</label>{{ bf.bank }}{% for e in bf.bank.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
-                            <div><label class="form-label small fw-semibold" for="{{ bf.number.id_for_label }}">{% translate "Nomor rekening" %}</label>{{ bf.number }}{% for e in bf.number.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
-                            <div><label class="form-label small fw-semibold" for="{{ bf.holder.id_for_label }}">{% translate "Atas nama" %}</label>{{ bf.holder }}{% for e in bf.holder.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
-                            <div class="store-bank__checks">
-                                <label class="form-check-label small">{% blocktranslate trimmed with bf_is_active=bf.is_active %}{{ bf_is_active }} Aktif{% endblocktranslate %}</label>
-                                {% if bf.instance.pk %}<label class="form-check-label small text-danger">{% blocktranslate trimmed with bf_delete=bf.DELETE %}{{ bf_delete }} Hapus{% endblocktranslate %}</label>{% endif %}
+            <button type="submit" form="storeSettingsForm" class="ui-btn ui-btn--primary st-hd__save"><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Simpan pengaturan" %}</button>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+
+        <div class="st-layout">
+            <nav class="st-nav" aria-label="{% translate 'Bagian pengaturan' %}" data-st-nav>
+                <a href="#st-profil" class="is-on"><i class="bi bi-shop" aria-hidden="true"></i><span>{% translate "Profil & lokasi" %}</span></a>
+                <a href="#st-jam"><i class="bi bi-clock" aria-hidden="true"></i><span>{% translate "Jam buka & kontak" %}</span></a>
+                <a href="#st-bayar"><i class="bi bi-wallet2" aria-hidden="true"></i><span>{% translate "Pembayaran" %}</span></a>
+                <a href="#st-ongkir"><i class="bi bi-truck" aria-hidden="true"></i><span>{% translate "Ongkir & antar-jemput" %}</span></a>
+                <a href="#st-kasir"><i class="bi bi-receipt" aria-hidden="true"></i><span>{% translate "Kasir &amp; struk" %}</span></a>
+                <a href="#st-ops"><i class="bi bi-sliders" aria-hidden="true"></i><span>{% translate "Operasional" %}</span></a>
+            </nav>
+
+            <form method="post" novalidate class="st-form" enctype="multipart/form-data" id="storeSettingsForm" data-st-form>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="sg-alert is-bad"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span>{{ form.non_field_errors|join:" " }}</span></div>{% endif %}
+
+                <section class="st-card" id="st-profil" aria-labelledby="st-profil-t">
+                    <header class="st-card__hd">
+                        <span class="st-card__ic" aria-hidden="true"><i class="bi bi-shop"></i></span>
+                        <div><h2 id="st-profil-t">{% translate "Profil & lokasi" %}</h2><p>{% translate "Titik peta toko menjadi pusat hitungan jarak ongkir dan rute kurir." %}</p></div>
+                    </header>
+                    <div class="st-grid">
+                        {% include "store/_sfield.html" with field=form.name span="s6" %}
+                        {% include "store/_sfield.html" with field=form.email span="s6" %}
+                        {% include "store/_sfield.html" with field=form.address span="s12" %}
+                        <div class="st-field s12">
+                            <div class="st-map-tools">
+                                <span class="st-hint"><i class="bi bi-hand-index" aria-hidden="true"></i> {% translate "Klik peta atau geser pin untuk menandai lokasi toko." %}</span>
+                                <button type="button" class="ui-btn ui-btn--sm" data-map-locate><i class="bi bi-crosshair" aria-hidden="true"></i>{% translate "Pakai lokasi saya" %}</button>
                             </div>
+                            <div class="st-map" data-map-picker data-default-lat="{{ store.latitude|unlocalize }}" data-default-lng="{{ store.longitude|unlocalize }}" role="application" aria-label="{% translate 'Peta lokasi toko' %}"></div>
                         </div>
-                    {% endfor %}
+                        {% include "store/_sfield.html" with field=form.latitude span="s6" %}
+                        {% include "store/_sfield.html" with field=form.longitude span="s6" %}
+                    </div>
+                </section>
+
+                <section class="st-card" id="st-jam" aria-labelledby="st-jam-t">
+                    <header class="st-card__hd">
+                        <span class="st-card__ic" aria-hidden="true"><i class="bi bi-clock"></i></span>
+                        <div><h2 id="st-jam-t">{% translate "Jam buka & kontak" %}</h2><p>{% translate "Jam layanan membatasi jadwal booking; nomor WhatsApp dipakai tombol Hubungi Kami dan pesanan tamu." %}</p></div>
+                    </header>
+                    <div class="st-grid">
+                        {% include "store/_sfield.html" with field=form.open_hour span="s3" suffix=".00 WITA" %}
+                        {% include "store/_sfield.html" with field=form.close_hour span="s3" suffix=".00 WITA" %}
+                        <div class="st-field s6{% if form.whatsapp.errors %} has-error{% endif %}">
+                            <label for="{{ form.whatsapp.id_for_label }}">{{ form.whatsapp.label }}</label>
+                            <div class="st-affix"><span class="st-affix__pre"><i class="bi bi-whatsapp" aria-hidden="true"></i></span>{{ form.whatsapp }}<a class="st-affix__btn" href="https://wa.me/{{ store.whatsapp }}" target="_blank" rel="noopener" data-st-wa-test>{% translate "Tes" %}</a></div>
+                            {% if form.whatsapp.help_text %}<small class="st-hint">{{ form.whatsapp.help_text }}</small>{% endif %}
+                            {% for e in form.whatsapp.errors %}<small class="st-err">{{ e }}</small>{% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="st-card" id="st-bayar" aria-labelledby="st-bayar-t">
+                    <header class="st-card__hd">
+                        <span class="st-card__ic" aria-hidden="true"><i class="bi bi-wallet2"></i></span>
+                        <div><h2 id="st-bayar-t">{% translate "Pembayaran" %}</h2><p>{% translate "Rekening aktif dan QRIS tampil di petunjuk transfer pelanggan dan layar kasir." %}</p></div>
+                    </header>
+                    <h3 class="st-sub">{% translate "Rekening transfer" %}</h3>
+                    {{ banks.management_form }}
+                    {% for f in banks.non_form_errors %}<div class="sg-alert is-bad"><span>{{ f }}</span></div>{% endfor %}
+                    <div class="st-banks">
+                        {% for bf in banks %}
+                            <div class="st-bank{% if not bf.instance.pk %} is-new{% endif %}">
+                                {{ bf.id }}
+                                <span class="st-bank__ic" aria-hidden="true">{% if bf.instance.pk %}<i class="bi bi-bank"></i>{% else %}<i class="bi bi-plus-lg"></i>{% endif %}</span>
+                                <div class="st-field"><label for="{{ bf.bank.id_for_label }}">{% translate "Bank" %}</label>{{ bf.bank }}{% for e in bf.bank.errors %}<small class="st-err">{{ e }}</small>{% endfor %}</div>
+                                <div class="st-field"><label for="{{ bf.number.id_for_label }}">{% translate "Nomor rekening" %}</label>{{ bf.number }}{% for e in bf.number.errors %}<small class="st-err">{{ e }}</small>{% endfor %}</div>
+                                <div class="st-field"><label for="{{ bf.holder.id_for_label }}">{% translate "Atas nama" %}</label>{{ bf.holder }}{% for e in bf.holder.errors %}<small class="st-err">{{ e }}</small>{% endfor %}</div>
+                                <div class="st-bank__checks">
+                                    <label class="st-switch">{{ bf.is_active }}<span>{% translate "Aktif" %}</span></label>
+                                    {% if bf.instance.pk %}<label class="st-switch is-bad">{{ bf.DELETE }}<span>{% translate "Hapus" %}</span></label>{% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <p class="st-hint mt-2 mb-0"><i class="bi bi-info-circle" aria-hidden="true"></i> {% translate "Butuh baris tambahan? Simpan dulu, satu baris kosong baru akan muncul." %}</p>
+
+                    <h3 class="st-sub mt-4">{% translate "QRIS toko" %}</h3>
+                    <div class="st-qris{% if form.qris_image.errors %} has-error{% endif %}">
+                        <div class="st-qris__img" data-st-qris-preview>
+                            {% if store.qris %}
+                                <img src="{{ store.qris.url }}" alt="{% translate 'QRIS toko' %}">
+                            {% else %}
+                                <i class="bi bi-qr-code" aria-hidden="true"></i>
+                            {% endif %}
+                        </div>
+                        <div class="st-qris__body">
+                            {% if store.qris_missing %}
+                                <div class="sg-alert is-bad mb-2"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span>{% translate "File QRIS tercatat tetapi tidak ditemukan di folder media. Unggah ulang supaya tampil di kasir dan checkout." %}</span></div>
+                            {% elif not store.qris %}
+                                <p class="st-hint mb-2">{% translate "Belum ada QRIS. Unggah QRIS statis dari bank (gratis)." %}</p>
+                            {% endif %}
+                            <p class="st-hint mb-2">{{ form.qris_image.help_text }}</p>
+                            <div class="st-qris__actions">
+                                <label class="ui-btn ui-btn--sm" for="st-qris-input"><i class="bi bi-upload" aria-hidden="true"></i>{% if store.qris_image %}{% translate "Ganti gambar QRIS" %}{% else %}{% translate "Unggah gambar QRIS" %}{% endif %}</label>
+                                <input id="st-qris-input" type="file" name="qris_image" accept="image/*" class="visually-hidden" data-st-qris-input>
+                                {% if store.qris_image %}<label class="st-switch is-bad"><input type="checkbox" name="qris_image-clear" class="form-check-input"><span>{% translate "Hapus QRIS" %}</span></label>{% endif %}
+                                <span class="st-hint" data-st-qris-name></span>
+                            </div>
+                            {% for e in form.qris_image.errors %}<small class="st-err">{{ e }}</small>{% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="st-card" id="st-ongkir" aria-labelledby="st-ongkir-t">
+                    <header class="st-card__hd">
+                        <span class="st-card__ic" aria-hidden="true"><i class="bi bi-truck"></i></span>
+                        <div><h2 id="st-ongkir-t">{% translate "Ongkir & antar-jemput" %}</h2><p>{% translate "Tarif = biaya dasar untuk jarak dasar + tarif per km berikutnya (dibulatkan ke atas)." %}</p></div>
+                    </header>
+                    <h3 class="st-sub">{% translate "Ongkos kirim produk" %}</h3>
+                    <div class="st-grid">
+                        {% include "store/_sfield.html" with field=form.shipping_base_fee span="s3" prefix="Rp" %}
+                        {% include "store/_sfield.html" with field=form.shipping_base_km span="s3" suffix="km" %}
+                        {% include "store/_sfield.html" with field=form.shipping_per_km span="s3" prefix="Rp" suffix="/km" %}
+                        {% include "store/_sfield.html" with field=form.max_delivery_km span="s3" suffix="km" %}
+                    </div>
+                    <h3 class="st-sub mt-4">{% translate "Antar-jemput hewan" %} <small>{% translate "per arah" %}</small></h3>
+                    <div class="st-grid">
+                        {% include "store/_sfield.html" with field=form.pickup_base_fee span="s4" prefix="Rp" %}
+                        {% include "store/_sfield.html" with field=form.pickup_base_km span="s4" suffix="km" %}
+                        {% include "store/_sfield.html" with field=form.pickup_per_km span="s4" prefix="Rp" suffix="/km" %}
+                    </div>
+                    <div class="st-sim" data-st-sim>
+                        <div class="st-sim__hd">
+                            <b><i class="bi bi-calculator" aria-hidden="true"></i> {% translate "Coba hitung" %}</b>
+                            <label class="st-sim__km"><span>{% translate "Jarak dari toko" %}</span> <output data-st-km-out>7</output> km</label>
+                        </div>
+                        <input type="range" min="0" max="30" step="0.5" value="7" class="st-sim__range" aria-label="{% translate 'Jarak dari toko (km)' %}" data-st-km>
+                        <div class="st-sim__out">
+                            <div><small>{% translate "Ongkir produk" %}</small><strong data-st-ship>-</strong></div>
+                            <div><small>{% translate "Jemput atau antar saja" %}</small><strong data-st-pet1>-</strong></div>
+                            <div><small>{% translate "Jemput + antar pulang" %}</small><strong data-st-pet2>-</strong></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="st-card" id="st-kasir" aria-labelledby="st-kasir-t">
+                    <header class="st-card__hd">
+                        <span class="st-card__ic" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+                        <div><h2 id="st-kasir-t">{% translate "Kasir &amp; struk" %}</h2><p>{% translate "Pajak, batas diskon kasir, retur, dan catatan di bawah struk." %}</p></div>
+                    </header>
+                    <div class="st-kasir">
+                        <div class="st-grid">
+                            {% include "store/_sfield.html" with field=form.tax_percent span="s4" suffix="%" %}
+                            {% include "store/_sfield.html" with field=form.cashier_discount_limit span="s4" prefix="Rp" %}
+                            {% include "store/_sfield.html" with field=form.return_days span="s4" suffix=_("hari") %}
+                            {% include "store/_sfield.html" with field=form.receipt_footer span="s12" %}
+                        </div>
+                        <figure class="st-receipt" aria-label="{% translate 'Pratinjau bawah struk' %}">
+                            <b data-st-receipt-name>{{ store.name }}</b>
+                            <span class="st-receipt__line"></span>
+                            <span class="st-receipt__row"><span>{% translate "Total" %}</span><span>Rp 50.000</span></span>
+                            <span class="st-receipt__line"></span>
+                            <small data-st-receipt-footer>{{ store.receipt_footer }}</small>
+                            <figcaption>{% translate "Pratinjau bawah struk" %}</figcaption>
+                        </figure>
+                    </div>
+                </section>
+
+                <section class="st-card" id="st-ops" aria-labelledby="st-ops-t">
+                    <header class="st-card__hd">
+                        <span class="st-card__ic" aria-hidden="true"><i class="bi bi-sliders"></i></span>
+                        <div><h2 id="st-ops-t">{% translate "Operasional" %}</h2><p>{% translate "Batas kerja kurir, batas waktu bayar, dan pengingat pelanggan." %}</p></div>
+                    </header>
+                    <div class="st-grid">
+                        {% include "store/_sfield.html" with field=form.max_packages_per_courier span="s6" suffix=_("paket") %}
+                        {% include "store/_sfield.html" with field=form.payment_deadline_hours span="s6" suffix=_("jam") %}
+                        {% include "store/_sfield.html" with field=form.gps_stale_seconds span="s6" suffix=_("detik") %}
+                        {% include "store/_sfield.html" with field=form.grooming_reminder_days span="s6" suffix=_("hari") %}
+                    </div>
+                </section>
+
+                <div class="st-bar" data-st-bar>
+                    <span class="st-bar__state" data-st-state><i class="bi bi-check2" aria-hidden="true"></i> {% translate "Semua perubahan tersimpan" %}</span>
+                    <span class="st-bar__dirty" data-st-dirty hidden><i class="bi bi-dot" aria-hidden="true"></i> {% translate "Ada perubahan yang belum disimpan" %}</span>
+                    <button type="submit" class="ui-btn ui-btn--primary"><i class="bi bi-check2-circle" aria-hidden="true"></i>{% translate "Simpan pengaturan" %}</button>
                 </div>
-                <p class="small text-muted mb-0 mt-2">{% translate "Butuh baris tambahan? Simpan dulu, satu baris kosong baru akan muncul." %}</p>
-            </section>
-            <section class="card-custom store-card animate-fade-up">
-                <h2 class="store-card__title"><i class="bi bi-truck"></i> {% translate "Ongkos kirim produk" %}</h2>
-                <p class="small text-muted">{% blocktranslate trimmed with example_fee=example_fee|rupiah %}Ongkir = biaya dasar untuk jarak dasar + tarif per km berikutnya (dibulatkan ke atas). Dengan tarif tersimpan, alamat 7 km dari toko kena Rp {{ example_fee }}.{% endblocktranslate %}</p>
-                <div class="row g-3">
-                    {% include "store/_field.html" with field=form.shipping_base_fee col="col-md-3" %}
-                    {% include "store/_field.html" with field=form.shipping_base_km col="col-md-3" %}
-                    {% include "store/_field.html" with field=form.shipping_per_km col="col-md-3" %}
-                    {% include "store/_field.html" with field=form.max_delivery_km col="col-md-3" %}
-                </div>
-            </section>
-            <section class="card-custom store-card animate-fade-up">
-                <h2 class="store-card__title"><i class="bi bi-heart"></i> {% translate "Antar-jemput hewan" %}</h2>
-                <p class="small text-muted">{% translate "Dihitung per arah: dijemput saja atau diantar saja = 1×, jemput + antar pulang = 2×." %}</p>
-                <div class="row g-3">
-                    {% include "store/_field.html" with field=form.pickup_base_fee col="col-md-4" %}
-                    {% include "store/_field.html" with field=form.pickup_base_km col="col-md-4" %}
-                    {% include "store/_field.html" with field=form.pickup_per_km col="col-md-4" %}
-                </div>
-            </section>
-            <section class="card-custom store-card animate-fade-up">
-                <h2 class="store-card__title"><i class="bi bi-sliders"></i> {% translate "Operasional" %}</h2>
-                <div class="row g-3">
-                    {% include "store/_field.html" with field=form.max_packages_per_courier col="col-md-4" %}
-                    {% include "store/_field.html" with field=form.payment_deadline_hours col="col-md-4" %}
-                    {% include "store/_field.html" with field=form.gps_stale_seconds col="col-md-4" %}
-                    {% include "store/_field.html" with field=form.grooming_reminder_days col="col-md-4" %}
-                </div>
-            </section>
-            <section class="card-custom store-card animate-fade-up">
-                <h2 class="store-card__title"><i class="bi bi-receipt"></i> {% translate "Kasir &amp; struk" %}</h2>
-                <div class="row g-3">
-                    {% include "store/_field.html" with field=form.tax_percent col="col-md-4" %}
-                    {% include "store/_field.html" with field=form.cashier_discount_limit col="col-md-4" %}
-                    {% include "store/_field.html" with field=form.return_days col="col-md-4" %}
-                    {% include "store/_field.html" with field=form.qris_image %}
-                    {% include "store/_field.html" with field=form.receipt_footer %}
-                </div>
-            </section>
-            <div class="store-actions">
-                <button type="submit" class="btn-orange"><i class="bi bi-check2-circle me-1"></i> {% translate "Simpan pengaturan" %}</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 {% endblock %}
 {% block extra_script %}
     <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
-    <script src="{% static 'store/js/map_picker.js' %}?v=1"></script>
+    <script src="{% static 'store/js/map_picker.js' %}?v=2"></script>
+    <script src="{% static 'store/js/settings.js' %}?v=1"></script>
 {% endblock %}

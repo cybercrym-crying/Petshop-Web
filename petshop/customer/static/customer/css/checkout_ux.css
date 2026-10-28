@@ -161,6 +161,14 @@
 }
 .cx-chip-btn:hover { background: #e7d6f4; }
 .cx-map { border-radius: 14px; }
+/* Checkout tamu tidak memuat orders.css: ukuran & bingkai peta di sini. */
+.cx-map-field { margin-top: 16px; }
+.cx-map-field .cx-map { height: 300px; border: 1px solid var(--cx-line); overflow: hidden; z-index: 0; }
+.cx-map-field .cx-map.is-missing { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15); }
+.cx-gmaps { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.85rem; font-weight: 700; color: var(--cx-purple); text-decoration: none; }
+.cx-gmaps:hover { text-decoration: underline; }
+.cx-map-field .co-req { margin-left: 4px; font-size: 0.75rem; font-weight: 700; color: #dc2626; text-transform: uppercase; }
+.cx-ship-bad { color: #dc2626 !important; font-weight: 600; }
 
 /* Pilihan bayar */
 .cx-pay { display: grid; gap: 10px; }

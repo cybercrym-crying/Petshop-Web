@@ -108,6 +108,23 @@ class StoreSettings(models.Model):
         return (float(self.latitude), float(self.longitude))
 
     @property
+    def qris(self):
+        """Gambar QRIS yang benar-benar ada di penyimpanan (None bila belum diunggah atau filenya hilang,
+        mis. database disalin tanpa folder media), agar halaman tidak menampilkan gambar rusak."""
+        image = self.qris_image
+        if not image:
+            return None
+        try:
+            return image if image.storage.exists(image.name) else None
+        except Exception:
+            return None
+
+    @property
+    def qris_missing(self):
+        """QRIS tercatat di pengaturan tetapi filenya tidak ada: admin perlu mengunggah ulang."""
+        return bool(self.qris_image) and self.qris is None
+
+    @property
     def whatsapp_link(self):
         return f"https://wa.me/{self.whatsapp}"
 
