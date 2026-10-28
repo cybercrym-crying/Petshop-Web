@@ -10,7 +10,6 @@ html[data-theme="dark"] .category-item:hover .category-circle { box-shadow: 0 10
 html[data-theme="dark"] .category-count { color: #b9adc7; }
 html[data-theme="dark"] .product-card { background: #211a2b; border: 1px solid #3a2f48; }
 html[data-theme="dark"] .product-card:hover { box-shadow: 0 10px 30px rgba(107, 33, 168, 0.14); border-color: #5b4775; }
-html[data-theme="dark"] .product-photo { background: #18121f; }
 html[data-theme="dark"] .chip-stock { background: #3f3318; color: #f5ce84; }
 html[data-theme="dark"] .chip-out { background: #3f1818; color: #ef8a8a; }
 html[data-theme="dark"] .chip.static { background: #2b2139; box-shadow: none; }

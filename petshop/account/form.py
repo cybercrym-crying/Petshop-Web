@@ -170,6 +170,7 @@ class RegisterForm(forms.ModelForm):
         model = Customer
         fields = ["username", "phone_number"]
         labels = {"username": "Nama pengguna"}
+        error_messages = {"username": {"unique": "Nama pengguna sudah dipakai. Coba nama lain."}}
 
     def clean_phone_number(self):
         phone = _clean_phone(self.cleaned_data["phone_number"])
@@ -300,6 +301,7 @@ class StaffRegisterForm(forms.ModelForm):
         model = User
         fields = ["username"]
         labels = {"username": "Nama pengguna"}
+        error_messages = {"username": {"unique": "Nama pengguna sudah dipakai. Coba nama lain."}}
 
     def clean_phone_number(self):
         return _clean_phone(self.cleaned_data["phone_number"])

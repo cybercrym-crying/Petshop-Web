@@ -209,6 +209,8 @@ a.link-purple:hover {
 body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   background-color: #f1f5f9;
+  background-image: linear-gradient(160deg, #f5f3ff 0%, #f1f5f9 45%, #fff7ed 100%);
+  background-attachment: fixed;
   color: #1e293b;
   margin: 0;
   min-height: 100vh;
@@ -221,7 +223,8 @@ body {
 
 /* Latar Belakang Gradient Blobs */
 .bg-blob {
-  position: absolute;
+  position: fixed;
+  pointer-events: none;
   border-radius: 50%;
   filter: blur(100px);
   z-index: -1;
@@ -607,4 +610,24 @@ html {
 }
 .login-glass-card--single {
   max-width: 560px;
+}
+
+/* Ikon mata selalu di tengah kolom kata sandi, walau ada pesan error di bawahnya */
+.pw-wrap {
+  position: relative;
+}
+.pw-wrap .toggle-password,
+.auth-register .pw-wrap .toggle-password {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  right: 12px;
+}
+
+/* Setelah kirim formulir yang gagal, kartu langsung tampil (tanpa animasi muncul ulang) */
+.login-glass-card:has(.error-box, .field-error, .is-invalid, .alert) {
+  animation: none;
+  opacity: 1;
 }

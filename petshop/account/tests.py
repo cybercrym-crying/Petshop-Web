@@ -481,3 +481,30 @@ class RoleBehaviorTests(TestCase):
 
         for kelas in (InsufficientStock, CheckoutError, InvalidTransition):
             self.assertTrue(issubclass(kelas, PetshopError))
+
+
+class AuthErrorStateTests(TestCase):
+    """Halaman masuk/daftar saat ada error: pesan jelas, ikut bahasa, ikon mata tetap di kolomnya."""
+
+    def setUp(self):
+        User.objects.create_user("kurirlama", password="Pass12345!x", role=Role.COURIER, phone_number="0811111112")
+
+    def test_empty_login_asks_to_fill_and_is_not_counted_as_failure(self):
+        for _ in range(8):
+            r = self.client.post("/login", {"username": "", "password": ""})
+            self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Isi nama pengguna dan kata sandi terlebih dahulu.")
+
+    def test_wrong_login_error_follows_english(self):
+        self.client.cookies["django_language"] = "en"
+        r = self.client.post("/login", {"username": "kurirlama", "password": "salah"})
+        self.assertContains(r, "Incorrect username or password")
+
+    def test_staff_register_duplicate_username_is_friendly(self):
+        r = self.client.post("/daftar/staf", {"username": "kurirlama"})
+        self.assertContains(r, "Nama pengguna sudah dipakai. Coba nama lain.")
+        self.assertContains(r, 'class="pw-wrap"', count=2)
+
+    def test_customer_register_duplicate_username_is_friendly(self):
+        r = self.client.post("/daftar", {"username": "kurirlama"})
+        self.assertContains(r, "Nama pengguna sudah dipakai. Coba nama lain.")

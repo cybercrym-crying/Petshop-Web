@@ -11,5 +11,6 @@ document.addEventListener("click", function (event) {
   const iconHide = btn.querySelector("[data-icon-hide]") || document.getElementById("icon-hide");
   if (iconShow) iconShow.classList.toggle("d-none", show);
   if (iconHide) iconHide.classList.toggle("d-none", !show);
-  btn.setAttribute("aria-label", show ? "Sembunyikan kata sandi" : "Tampilkan kata sandi");
+  const label = show ? btn.dataset.labelHide : btn.dataset.labelShow;
+  if (label) btn.setAttribute("aria-label", label);
 });

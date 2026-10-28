@@ -8837,3 +8837,48 @@ msgstr "Invalid coordinates."
 
 msgid "Tahap ini wajib foto."
 msgstr "This step requires a photo."
+
+msgid "Sembunyikan kata sandi"
+msgstr "Hide password"
+
+msgid "Nama pengguna sudah dipakai. Coba nama lain."
+msgstr "That username is already taken. Try another one."
+
+msgid "Isi nama pengguna dan kata sandi terlebih dahulu."
+msgstr "Enter your username and password first."
+
+msgid "Terlalu banyak percobaan masuk yang gagal. Coba lagi dalam 15 menit atau hubungi admin."
+msgstr "Too many failed sign-in attempts. Try again in 15 minutes or contact the admin."
+
+msgid "Nama pengguna atau kata sandi salah"
+msgstr "Incorrect username or password"
+
+msgid "Akun Anda masih menunggu persetujuan admin. Anda akan bisa masuk setelah disetujui."
+msgstr "Your account is still awaiting admin approval. You can sign in once it is approved."
+
+msgid "Pendaftaran Anda tidak disetujui."
+msgstr "Your registration was not approved."
+
+msgid "Alasan: %(note)s."
+msgstr "Reason: %(note)s."
+
+msgid "Hubungi admin toko untuk informasi lebih lanjut."
+msgstr "Contact the store admin for more information."
+
+msgid "Akun ini dinonaktifkan. Hubungi admin toko."
+msgstr "This account has been deactivated. Contact the store admin."
+
+msgid "Terpopuler"
+msgstr "Most popular"
+
+msgid "Terbaru"
+msgstr "Newest"
+
+msgid "Harga Terendah"
+msgstr "Lowest price"
+
+msgid "Harga Tertinggi"
+msgstr "Highest price"
+
+msgid "Nama A–Z"
+msgstr "Name A–Z"

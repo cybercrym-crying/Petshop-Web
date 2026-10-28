@@ -24,7 +24,7 @@ html[data-theme="dark"] .btn-orange { background: #f0a63c; color: #412402; borde
 html[data-theme="dark"] .btn-orange:hover, html[data-theme="dark"] .btn-orange:focus-visible { background: #e09a30; color: #412402; }
 html[data-theme="dark"] .error-box { background: #18121f; color: #e79393; border: 1px solid #602e2e; }
 html[data-theme="dark"] .foot-text { color: #b9adc7; }
-html[data-theme="dark"] body { background-color: #18121f; color: #f1ebf7; }
+html[data-theme="dark"] body { background-color: #18121f; background-image: linear-gradient(160deg, #18121f 0%, #18121f 45%, #18121f 100%); background-attachment: fixed; color: #f1ebf7; }
 html[data-theme="dark"] .blob-purple { background-color: #3d2b63; }
 html[data-theme="dark"] .blob-orange { background-color: #2b2139; }
 html[data-theme="dark"] .login-glass-card { background: rgba(33, 26, 43, 0.88); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); border: 1px solid rgba(58, 47, 72, 0.8); }
