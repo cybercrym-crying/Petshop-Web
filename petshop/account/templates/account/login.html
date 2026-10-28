@@ -12,8 +12,8 @@
         <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}"
               rel="stylesheet">
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux2">
-        <link rel="stylesheet" href="{% static 'account/css/login-dark.css' %}?v=1">
+        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux4">
+        <link rel="stylesheet" href="{% static 'account/css/login-dark.css' %}?v=3">
         <link rel="stylesheet" href="{% static 'css/theme_toggle.css' %}?v=1">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
@@ -61,45 +61,49 @@
                     </div>
                     <div class="input-group-custom">
                         <label for="password" class="form-label-custom">{% translate "Kata Sandi" %}</label>
-                        <input type="password"
-                               name="password"
-                               class="modern-input"
-                               id="password"
-                               placeholder="••••••••"
-                               autocomplete="current-password"
-                               required />
-                        <button class="toggle-password"
-                                type="button"
-                                aria-label="{% translate 'Tampilkan kata sandi' %}"
-                                data-toggle-password>
-                            <svg id="icon-show"
-                                 data-icon-show
-                                 width="22"
-                                 height="22"
-                                 viewBox="0 0 24 24"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="2"
-                                 stroke-linecap="round"
-                                 stroke-linejoin="round">
-                                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            <svg id="icon-hide"
-                                 data-icon-hide
-                                 class="d-none"
-                                 width="22"
-                                 height="22"
-                                 viewBox="0 0 24 24"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="2"
-                                 stroke-linecap="round"
-                                 stroke-linejoin="round">
-                                <path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.4 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22" />
-                                <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-                            </svg>
-                        </button>
+                        <div class="pw-wrap">
+                            <input type="password"
+                                   name="password"
+                                   class="modern-input pw-input"
+                                   id="password"
+                                   placeholder="••••••••"
+                                   autocomplete="current-password"
+                                   required />
+                            <button class="toggle-password"
+                                    type="button"
+                                    aria-label="{% translate 'Tampilkan kata sandi' %}"
+                                    data-label-show="{% translate 'Tampilkan kata sandi' %}"
+                                    data-label-hide="{% translate 'Sembunyikan kata sandi' %}"
+                                    data-toggle-password>
+                                <svg id="icon-show"
+                                     data-icon-show
+                                     width="22"
+                                     height="22"
+                                     viewBox="0 0 24 24"
+                                     fill="none"
+                                     stroke="currentColor"
+                                     stroke-width="2"
+                                     stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg id="icon-hide"
+                                     data-icon-hide
+                                     class="d-none"
+                                     width="22"
+                                     height="22"
+                                     viewBox="0 0 24 24"
+                                     fill="none"
+                                     stroke="currentColor"
+                                     stroke-width="2"
+                                     stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.4 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22" />
+                                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" class="btn-login">{% translate "Masuk" %}</button>
                     <p class="foot-text">

@@ -10,8 +10,8 @@
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
         <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux2">
-        <link rel="stylesheet" href="{% static 'account/css/login-dark.css' %}?v=1">
+        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux4">
+        <link rel="stylesheet" href="{% static 'account/css/login-dark.css' %}?v=3">
         <link rel="stylesheet" href="{% static 'css/theme_toggle.css' %}?v=1">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
@@ -92,27 +92,29 @@
                         </div>
                         <div class="input-group-custom">
                             <label for="id_password1" class="form-label-custom">{% translate "Kata Sandi" %}</label>
-                            <input type="password"
-                                   name="password1"
-                                   id="id_password1"
-                                   class="modern-input{% if form.password1.errors %} is-invalid{% endif %}"
-                                   placeholder="{% translate 'Minimal 8 karakter' %}"
-                                   autocomplete="new-password"
-                                   style="padding-right: 50px"
-                                   required />
-                            {% include "account/_password_toggle.html" with target="id_password1" %}
+                            <div class="pw-wrap">
+                                <input type="password"
+                                       name="password1"
+                                       id="id_password1"
+                                       class="modern-input pw-input{% if form.password1.errors %} is-invalid{% endif %}"
+                                       placeholder="{% translate 'Minimal 8 karakter' %}"
+                                       autocomplete="new-password"
+                                       required />
+                                {% include "account/_password_toggle.html" with target="id_password1" %}
+                            </div>
                         </div>
                         <div class="input-group-custom">
                             <label for="id_password2" class="form-label-custom">{% translate "Ulangi Kata Sandi" %}</label>
-                            <input type="password"
-                                   name="password2"
-                                   id="id_password2"
-                                   class="modern-input{% if form.password2.errors %} is-invalid{% endif %}"
-                                   placeholder="••••••••"
-                                   autocomplete="new-password"
-                                   style="padding-right: 50px"
-                                   required />
-                            {% include "account/_password_toggle.html" with target="id_password2" %}
+                            <div class="pw-wrap">
+                                <input type="password"
+                                       name="password2"
+                                       id="id_password2"
+                                       class="modern-input pw-input{% if form.password2.errors %} is-invalid{% endif %}"
+                                       placeholder="••••••••"
+                                       autocomplete="new-password"
+                                       required />
+                                {% include "account/_password_toggle.html" with target="id_password2" %}
+                            </div>
                         </div>
                         {% if form.password1.errors or form.password2.errors %}
                             <div class="span-2">

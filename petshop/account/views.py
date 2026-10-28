@@ -61,10 +61,13 @@ def loginForm(request):
         username = request.POST.get("username", "")
         password = request.POST.get("password", "")
         context["username"] = username
+        if not username.strip() or not password:
+            context["error"] = _("Isi nama pengguna dan kata sandi terlebih dahulu.")
+            return render(request, "account/login.html", context)
         key = _login_throttle_key(request, username)
         failures = cache.get(key, 0)
         if failures >= LOGIN_MAX_FAILURES:
-            context["error"] = (
+            context["error"] = _(
                 "Terlalu banyak percobaan masuk yang gagal. "
                 "Coba lagi dalam 15 menit atau hubungi admin."
             )
@@ -75,7 +78,7 @@ def loginForm(request):
             login(request, user)
             return redirect(_next_url(request, None) or user.dashboard_url_name)
         cache.set(key, failures + 1, LOGIN_LOCK_SECONDS)
-        context["error"] = _inactive_reason(username, password) or "Nama pengguna atau kata sandi salah"
+        context["error"] = _inactive_reason(username, password) or _("Nama pengguna atau kata sandi salah")
     return render(request, "account/login.html", context)
 
 
@@ -85,11 +88,14 @@ def _inactive_reason(username, password):
     if user is None or user.is_active or not user.check_password(password):
         return ""
     if user.approval == Approval.PENDING:
-        return "Akun Anda masih menunggu persetujuan admin. Anda akan bisa masuk setelah disetujui."
+        return _("Akun Anda masih menunggu persetujuan admin. Anda akan bisa masuk setelah disetujui.")
     if user.approval == Approval.REJECTED:
-        reason = f" Alasan: {user.approval_note}." if user.approval_note else ""
-        return f"Pendaftaran Anda tidak disetujui.{reason} Hubungi admin toko untuk informasi lebih lanjut."
-    return "Akun ini dinonaktifkan. Hubungi admin toko."
+        parts = [_("Pendaftaran Anda tidak disetujui.")]
+        if user.approval_note:
+            parts.append(_("Alasan: %(note)s.") % {"note": user.approval_note})
+        parts.append(_("Hubungi admin toko untuk informasi lebih lanjut."))
+        return " ".join(parts)
+    return _("Akun ini dinonaktifkan. Hubungi admin toko.")
 
 
 def register_staff(request):

@@ -10,8 +10,8 @@
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
         <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
-        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux3">
-        <link rel="stylesheet" href="{% static 'account/css/login-dark.css' %}?v=2">
+        <link rel="stylesheet" href="{% static 'account/css/login.css' %}?v=ux4">
+        <link rel="stylesheet" href="{% static 'account/css/login-dark.css' %}?v=3">
         <link rel="stylesheet" href="{% static 'css/theme_toggle.css' %}?v=1">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
     </head>
@@ -51,8 +51,10 @@
                             <div class="input-group-custom{% if field.name == 'name' %} span-2{% endif %}">
                                 <label for="{{ field.id_for_label }}" class="form-label-custom">{% translate field.label %}</label>
                                 {% if field.name == "password1" or field.name == "password2" %}
-                                    <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}" class="modern-input pw-input{% if field.errors %} is-invalid{% endif %}" autocomplete="new-password" required />
-                                    {% include "account/_password_toggle.html" with target=field.id_for_label %}
+                                    <div class="pw-wrap">
+                                        <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}" class="modern-input pw-input{% if field.errors %} is-invalid{% endif %}" autocomplete="new-password" required />
+                                        {% include "account/_password_toggle.html" with target=field.id_for_label %}
+                                    </div>
                                 {% else %}
                                     <input type="{% if field.name == 'phone_number' %}tel{% else %}text{% endif %}" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" class="modern-input{% if field.errors %} is-invalid{% endif %}"{% if field.name == 'phone_number' %} inputmode="tel" placeholder="{% translate '08xxxxxxxxxx' %}"{% endif %}{% if field.name == 'name' %} autocomplete="name"{% endif %}{% if field.name == 'username' %} autocomplete="username"{% endif %}{% if field.name == 'vehicle' %} placeholder="{% translate 'mis. Honda Beat' %}"{% endif %}{% if field.name == 'plate_number' %} placeholder="{% translate 'mis. KT 1234 AB' %}"{% endif %} />
                                 {% endif %}

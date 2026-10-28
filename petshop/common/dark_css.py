@@ -296,6 +296,8 @@ def dark_rule(prelude, body, tokens):
     if prelude.startswith("@"):
         return None
     decls = list(declarations(body))
+    if any(name == "--keep-in-dark" for name, _ in decls):
+        return None  # aturan sengaja sama di mode gelap (mis. latar putih foto produk)
     resolved = {name: resolve(value, tokens) for name, value in decls}
     keep_text = any(name in ("background", "background-color") and is_solid(resolved[name]) for name in resolved)
     out = []

@@ -238,11 +238,11 @@ def cart_check(request):
 
 PRODUCTS_PER_PAGE = 12
 SORT_OPTIONS = [
-    ("popular", "Terpopuler"),
-    ("newest", "Terbaru"),
-    ("price_asc", "Harga Terendah"),
-    ("price_desc", "Harga Tertinggi"),
-    ("name", "Nama A–Z"),
+    ("popular", _lazy("Terpopuler")),
+    ("newest", _lazy("Terbaru")),
+    ("price_asc", _lazy("Harga Terendah")),
+    ("price_desc", _lazy("Harga Tertinggi")),
+    ("name", _lazy("Nama A–Z")),
 ]
 PET_FILTERS = [p for p in PetType.values if p != PetType.ALL]
 CONDITION_FILTERS = list(ProductCondition.values)

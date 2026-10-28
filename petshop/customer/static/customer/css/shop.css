@@ -258,9 +258,10 @@
 }
 
 .product-photo {
+  --keep-in-dark: 1; /* latar putih = latar foto produk, juga di mode gelap */
   position: relative;
   aspect-ratio: 4 / 3;
-  background: var(--purple-50);
+  background: #fff;
   overflow: hidden;
 }
 .product-photo > a {
@@ -271,7 +272,7 @@
 .product-photo img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.4s;
 }
 .product-card:hover .product-photo img {
