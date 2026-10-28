@@ -288,21 +288,18 @@ class StaffRegisterForm(forms.ModelForm):
     plate_number = forms.CharField(
         max_length=20, label="Nomor polisi", error_messages={"required": "Wajib diisi untuk kurir."}
     )
-    can_carry_pets = forms.BooleanField(
-        required=False, label="Saya punya kandang/boks untuk antar-jemput hewan"
-    )
     password1 = forms.CharField(widget=forms.PasswordInput, label="Kata sandi")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Ulangi kata sandi")
 
     field_order = [
-        "name", "username", "phone_number", "address",
-        "vehicle", "plate_number", "can_carry_pets", "password1", "password2",
+        "name", "username", "phone_number",
+        "vehicle", "plate_number", "password1", "password2",
     ]
 
     class Meta:
         model = User
-        fields = ["username", "address"]
-        labels = {"username": "Nama pengguna", "address": "Alamat domisili"}
+        fields = ["username"]
+        labels = {"username": "Nama pengguna"}
 
     def clean_phone_number(self):
         return _clean_phone(self.cleaned_data["phone_number"])
@@ -336,7 +333,6 @@ class StaffRegisterForm(forms.ModelForm):
                 defaults={
                     "vehicle": self.cleaned_data["vehicle"].strip(),
                     "plate_number": self.cleaned_data["plate_number"].strip().upper(),
-                    "can_carry_pets": self.cleaned_data["can_carry_pets"],
                 },
             )
         return user

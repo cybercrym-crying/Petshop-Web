@@ -9,7 +9,7 @@
         <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
         <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
         <link href="{% static 'vendor/fonts/fonts.css' %}" rel="stylesheet">
-        <link href="{% static 'css/ui.css' %}?v=ux3" rel="stylesheet" />
+        <link href="{% static 'css/ui.css' %}?v=ux4" rel="stylesheet" />
         <link rel="stylesheet" href="{% static 'transaction/css/make_transaction.css' %}?v=sg4">
         <link href="{% static 'css/actions.css' %}?v=ux2" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
@@ -100,8 +100,8 @@
                             <span class="pos-held__text">
                                 <strong>{% blocktranslate trimmed with label=h.label|default:h.pk %}Transaksi diparkir: {{ label }}{% endblocktranslate %}</strong>
                                 <small>
-                                    {% blocktranslate trimmed with n=h.item_count total=h.total|rupiah time=h.created_at|time:"H.i" %}
-                                        {{ n }} item · Rp {{ total }} · {{ time }}
+                                    {% blocktranslate trimmed with total=h.total|rupiah time=h.created_at|time:"H.i" count n=h.item_count %}
+                                        {{ n }} item · Rp {{ total }} · {{ time }}{% plural %}{{ n }} item · Rp {{ total }} · {{ time }}
                                     {% endblocktranslate %}
                                 </small>
                             </span>
@@ -158,7 +158,7 @@
                     <div class="pos-cart__head">
                         <h2 id="cartTitle" class="pos-cart__title">{% translate "Keranjang" %}</h2>
                         {% if not cart_empty %}
-                            <span class="pos-count">{% blocktranslate trimmed with n=cart_count %}{{ n }} item{% endblocktranslate %}</span>
+                            <span class="pos-count">{% blocktranslate trimmed count n=cart_count %}{{ n }} item{% plural %}{{ n }} item{% endblocktranslate %}</span>
                         {% endif %}
                     </div>
                     <ul class="pos-lines">
@@ -350,7 +350,7 @@
             {% if not cart_empty %}
                 <div class="pos-paybar" aria-label="{% translate 'Total belanja' %}">
                     <div class="pos-paybar__sum">
-                        <span>{% blocktranslate trimmed with n=cart_count %}Total · {{ n }} item{% endblocktranslate %}</span>
+                        <span>{% blocktranslate trimmed count n=cart_count %}Total · {{ n }} item{% plural %}Total · {{ n }} item{% endblocktranslate %}</span>
                         <b data-paybar-total>Rp {{ numbers.total|rupiah }}</b>
                     </div>
                     <a href="#posPayment">{% translate "Bayar" %}</a>

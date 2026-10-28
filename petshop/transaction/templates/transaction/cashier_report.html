@@ -32,7 +32,7 @@
         {% if report.pending_returns %}
             <p class="sg-alert is-gold cr-gap">
                 <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                <span>{% blocktranslate trimmed with n=report.pending_returns %}{{ n }} retur menunggu persetujuan.{% endblocktranslate %}</span>
+                <span>{% blocktranslate trimmed count n=report.pending_returns %}{{ n }} retur menunggu persetujuan.{% plural %}{{ n }} retur menunggu persetujuan.{% endblocktranslate %}</span>
                 <a class="sg-link" href="{% url 'transaction:returns' %}">{% translate "Buka daftar retur" %} →</a>
             </p>
         {% endif %}

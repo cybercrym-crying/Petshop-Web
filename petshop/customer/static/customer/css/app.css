@@ -125,6 +125,10 @@
 .ca-link i {
   width: 20px;
   text-align: center;
+  color: var(--muted, #6f6479); /* ikon menu netral, berwarna saat aktif/hover (sama dengan menu staf) */
+}
+.ca-link:hover i,
+.ca-link.is-active i {
   color: var(--purple-600, #7e2fb8);
 }
 .ca-link:hover {

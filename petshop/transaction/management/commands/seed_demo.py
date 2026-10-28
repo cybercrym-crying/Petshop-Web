@@ -30,6 +30,7 @@ from transaction.models import (
     PaymentMethod,
 )
 
+from . import _demo_images as media
 from ._demo_text import (
     BOOKING_NOTES,
     GROOMER_NOTES,
@@ -726,7 +727,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--media-only",
             action="store_true",
-            help="Hanya pulihkan file demo yang hilang (QRIS contoh, foto produk demo); data lain tidak diubah.",
+            help="Hanya pulihkan file demo yang hilang (QRIS contoh, foto produk, foto profil, foto hewan); data lain tidak diubah.",
         )
         parser.add_argument(
             "--force",
@@ -766,6 +767,8 @@ class Command(BaseCommand):
             self.seed_pos(admins, cashiers[0], customers)
             fresh = list(extra) + ([DEMO_CUSTOMER[0]] if made else [])
             self.seed_customer_notifications(fresh)
+            if not opts["no_photos"]:
+                self.seed_media()
         self.summary(made, opts["password"])
 
     def reset(self):
@@ -842,9 +845,9 @@ class Command(BaseCommand):
             user = make((username, first, last, phone), role)
             User.objects.filter(pk=user.pk).update(approval=Approval.PENDING, is_active=False)
             if courier:
-                vehicle, plate, pets = courier
+                vehicle, plate, _pets = courier
                 CourierProfile.objects.get_or_create(
-                    user=user, defaults={"vehicle": vehicle, "plate_number": plate, "can_carry_pets": pets}
+                    user=user, defaults={"vehicle": vehicle, "plate_number": plate}
                 )
         couriers = [make(r, Role.COURIER) for r in COURIERS]
         cashiers = [make(r, Role.CASHIER) for r in CASHIERS]
@@ -858,8 +861,6 @@ class Command(BaseCommand):
                     "plate_number": plate,
                     "service_area": area,
                     "status": status,
-                    # Semua kurir demo punya boks hewan kecuali kurir 1 (untuk mencoba tab Hewan).
-                    "can_carry_pets": courier.username in ("demo_kurir2", "demo_kurir3"),
                 },
             )
         return admins, couriers, cashiers, groomers
@@ -911,8 +912,8 @@ class Command(BaseCommand):
     def seed_pets(self, customers):
         """Profil hewan pelanggan (1-2 per pelanggan) dari daftar nama hewan demo."""
         pool = list(dict.fromkeys(PET_NAMES))
-        breeds = {"KUCING": ["Persia", "Anggora", "Domestik", "British Shorthair"],
-                  "ANJING": ["Pomeranian", "Shih Tzu", "Golden Retriever", "Kampung"],
+        breeds = {"KUCING": ["Persia", "Anggora", "Domestik", "Bengal", "British Shorthair"],
+                  "ANJING": ["Golden Retriever", "French Bulldog", "Pomeranian", "Shih Tzu", "Kampung"],
                   "KELINCI": ["Holland Lop", "Lokal"]}
         pets = {}
         for customer in customers:
@@ -920,10 +921,11 @@ class Command(BaseCommand):
             if not mine:
                 rng = random.Random(customer.phone_number)
                 picks = [("Mochi", "KUCING"), ("Kopi", "ANJING")] if customer.username == DEMO_CUSTOMER[0] else rng.sample(pool, k=rng.randint(1, 2))
+                fixed = {"Mochi": "Persia", "Kopi": "Golden Retriever"} if customer.username == DEMO_CUSTOMER[0] else {}
                 for name, pet_type in picks:
                     mine.append(Pet.objects.create(
                         owner=customer, name=name, pet_type=pet_type,
-                        breed=rng.choice(breeds.get(pet_type, [""])),
+                        breed=fixed.get(name) or rng.choice(breeds.get(pet_type, [""])),
                         sex=rng.choice(["JANTAN", "BETINA"]),
                         birth_date=timezone.localdate() - timedelta(days=rng.randint(200, 2500)),
                         weight_kg=round(rng.uniform(2.5, 4.8) if pet_type != "ANJING" else rng.uniform(3, 18), 1),
@@ -932,8 +934,18 @@ class Command(BaseCommand):
             pets[customer.pk] = mine
         return pets
 
-    def demo_step_photo(self, booking, step_name):
-        """Gambar CONTOH tahap grooming (jelas ditandai data demo, bukan foto asli)."""
+    def demo_step_photo(self, booking, step_name, when=None):
+        """Foto tahap grooming: foto hewan sesuai rasnya dengan cap tahap & jam.
+        Ras tanpa foto yang cocok memakai kartu CONTOH (jelas ditandai data demo)."""
+        pet = booking.pet
+        when = timezone.localtime(when or timezone.now())
+        photo = media.pet_photo(
+            pet.breed if pet else "", booking.pk + len(step_name),
+            stamp=[f"Seelly Grooming · {step_name[:28]}", f"{booking.pet_name} · {when:%d/%m/%Y %H:%M}"],
+            name=f"demo-tahap-{booking.pk}.jpg",
+        )
+        if photo:
+            return photo
         from PIL import ImageDraw, ImageFont
 
         font = ImageFont.load_default(size=22)
@@ -958,7 +970,7 @@ class Command(BaseCommand):
             if n == len(steps):
                 step.note = self.rng.choice(GROOMER_NOTES)
             if photos and step.needs_photo:
-                step.photo.save(f"contoh-tahap-{booking.pk}-{n}.jpg", self.demo_step_photo(booking, step.name), save=False)
+                step.photo.save(f"demo-tahap-{booking.pk}-{n}.jpg", self.demo_step_photo(booking, step.name, step.done_at), save=False)
             step.save()
         updates = {"started_at": started}
         if upto == len(steps):
@@ -1156,7 +1168,7 @@ class Command(BaseCommand):
         self.backdate(packed, now - timedelta(hours=3))
 
         rejected = self.feature_order(customer, T)
-        rejected.submit_payment_proof(customer, self.demo_proof(rejected))
+        rejected.submit_payment_proof(customer, self.demo_proof(rejected, short=10000))
         rejected.reject_payment(cashier, "Nominal di bukti tidak sama dengan total pesanan. Mohon kirim ulang.")
         self.backdate(rejected, now - timedelta(hours=5))
 
@@ -1224,7 +1236,7 @@ class Command(BaseCommand):
             )
             for name, kind, breed, sex, weight, age, notes in [
                 ("Simba", PetType.CAT, "Persia", "JANTAN", 4.2, 1100, "Takut suara pengering."),
-                ("Choco", PetType.DOG, "Pomeranian", "BETINA", 3.6, 800, ""),
+                ("Choco", PetType.DOG, "French Bulldog", "BETINA", 9.6, 800, ""),
                 ("Bulbul", PetType.RABBIT, "Holland Lop", "BETINA", 1.8, 500, "Kulit sensitif."),
             ]
         }
@@ -1385,24 +1397,18 @@ class Command(BaseCommand):
         """--media-only: pulihkan file demo yang hilang tanpa menambah/mengubah data lain."""
         qris = self.restore_demo_qris(StoreSettings.current())
         photos = 0
-        for name, _cat, _buy, _sell, _stock, photo, *_rest in PRODUCTS:
-            product = Product.objects.filter(name=name).first()
-            if product and photo and product.photo and self.needs_demo_file(product.photo, "products/demo-"):
-                content = self.photo_file(photo)
+        for product in Product.objects.filter(name__in=PRODUCT_NAMES):
+            if product.photo and media.is_demo_file(product.photo):
+                content = media.product_photo(product.name)
                 if content:
-                    product.photo.save(f"demo-{product.pk}.png", content, save=True)
+                    product.photo.save(content.name, content, save=True)
                     photos += 1
-        self.stdout.write(f"QRIS contoh dipulihkan: {'ya' if qris else 'tidak perlu'} · foto produk dipulihkan: {photos}")
-
-    def photo_file(self, static_path):
-        found = finders.find(static_path)
-        if not found:
-            return None
-        img = Image.open(found)
-        img.thumbnail((600, 600))
-        buf = io.BytesIO()
-        img.save(buf, "PNG", optimize=True)
-        return ContentFile(buf.getvalue())
+        people = self.seed_people_photos(only_missing=True)
+        pets = self.seed_pet_photos(only_missing=True)
+        self.stdout.write(
+            f"QRIS contoh dipulihkan: {'ya' if qris else 'tidak perlu'} · foto produk: {photos} · "
+            f"foto profil: {people} · foto hewan: {pets}"
+        )
 
     def seed_products(self, admin, no_photos):
         now = timezone.now()
@@ -1453,10 +1459,10 @@ class Command(BaseCommand):
                     StockMutation.objects.filter(pk=second.pk).update(
                         date=opened + timedelta(days=10)
                     )
-            if photo and not no_photos and self.needs_demo_file(product.photo, "products/demo-"):
-                content = self.photo_file(photo)
+            if not no_photos and media.is_demo_file(product.photo):
+                content = media.product_photo(name)
                 if content:
-                    product.photo.save(f"demo-{product.pk}.png", content, save=True)
+                    product.photo.save(content.name, content, save=True)
 
     def restock(self, admin, when):
         """Produk yang hampir habis diisi ulang, seperti toko sungguhan."""
@@ -1481,28 +1487,14 @@ class Command(BaseCommand):
         lng = float(store.longitude) + (km / 111.0) * math.sin(bearing)
         return round(lat, 6), round(lng, 6)
 
-    def demo_proof(self, order):
-        """Gambar bukti transfer CONTOH (jelas ditandai contoh, bukan struk asli)."""
-        from PIL import ImageDraw, ImageFont
-
-        font = ImageFont.load_default(size=26)
-        img = Image.new("RGB", (480, 640), "#f4f6fb")
-        draw = ImageDraw.Draw(img)
-        draw.rectangle([20, 20, 460, 620], outline="#5c418c", width=4)
-        lines = [
-            "CONTOH BUKTI TRANSFER",
-            "(data demo, bukan transaksi asli)",
-            "",
-            f"Order #{order.pk}",
-            f"Nominal: Rp {order.total_payment:,}".replace(",", "."),
-            f"Dari: {order.customer.name}",
-            "Ke: rekening contoh toko",
-        ]
-        for n, text in enumerate(lines):
-            draw.text((44, 60 + n * 52), text, fill="#2b3674", font=font)
-        buf = io.BytesIO()
-        img.save(buf, "JPEG", quality=80)
-        return ContentFile(buf.getvalue(), name=f"contoh-bukti-{order.pk}.jpg")
+    def demo_proof(self, order, short=0, when=None):
+        """Tangkapan layar transfer contoh untuk order (short = kurang bayar, untuk bukti yang ditolak)."""
+        bank = BankAccount.objects.filter(is_active=True).order_by("order", "pk").first()
+        when = timezone.localtime(when or order.date + timedelta(minutes=18))
+        return media.transfer_receipt(
+            order.pk, order.total_payment - short, order.customer.name, bank, when,
+            f"Order #{order.pk}", f"demo-bukti-{order.pk}.jpg",
+        )
 
     def seed_orders(self, admins, couriers, customers, count, more):
         if Order.objects.filter(admin__in=admins).exists() and not more:
@@ -1618,7 +1610,7 @@ class Command(BaseCommand):
             .order_by("-date")[:3]
         )
         for order in waiting:
-            order.payment_proof.save(f"contoh-bukti-{order.pk}.jpg", self.demo_proof(order), save=False)
+            order.payment_proof.save(f"demo-bukti-{order.pk}.jpg", self.demo_proof(order), save=False)
             Order.objects.filter(pk=order.pk).update(
                 payment_proof=order.payment_proof.name,
                 payment_proof_at=order.date + timedelta(minutes=20),
@@ -1954,6 +1946,91 @@ class Command(BaseCommand):
                     user, f"Menunggu pembayaran pesanan #{order.pk}",
                     "Transfer ke rekening toko lalu kirim foto bukti.", "/dasbor/",
                 )
+
+    # ----- Foto & bukti -------------------------------------------------
+    def seed_people_photos(self, only_missing=False):
+        """Foto profil staf & sebagian besar pelanggan (tidak semua orang mengunggah foto)."""
+        staff = [r[0] for r in SUPERADMINS + ADMINS + CASHIERS + GROOMERS + COURIERS] + [r[0] for r in PENDING_STAFF]
+        accounts = [DEMO_CUSTOMER[0]] + [row[0] for row in FEATURE_CUSTOMERS]
+        users = list(User.objects.filter(username__in=staff + accounts))
+        users.sort(key=lambda u: (staff + accounts).index(u.username))
+        plain = User.objects.filter(role=Role.CUSTOMER, is_walk_in=False, phone_number__in=CUSTOMER_PHONES).order_by("pk")
+        users += [u for u in plain if u.pk % 3]
+        done = 0
+        for n, user in enumerate(users, start=1):
+            if only_missing:
+                if not user.photo or not media.is_demo_file(user.photo):
+                    continue
+            elif user.photo:
+                continue
+            content = media.avatar(n)
+            if not content:
+                continue
+            user.photo.save(content.name, content, save=False)
+            User.objects.filter(pk=user.pk).update(photo=user.photo.name)
+            done += 1
+            profile = CourierProfile.objects.filter(user=user).first()
+            if profile and (not profile.photo or media.is_demo_file(profile.photo)):
+                profile.photo.save(content.name, media.avatar(n), save=False)
+                CourierProfile.objects.filter(pk=profile.pk).update(photo=profile.photo.name)
+        return done
+
+    def seed_pet_photos(self, only_missing=False):
+        """Foto hewan untuk ras yang punya foto cocok; hewan akun demo selalu diberi foto."""
+        accounts = {DEMO_CUSTOMER[0]} | {row[0] for row in FEATURE_CUSTOMERS}
+        done = 0
+        for pet in Pet.objects.select_related("owner").filter(breed__in=list(media.BREED_PHOTOS)):
+            if only_missing:
+                if not pet.photo or not media.is_demo_file(pet.photo):
+                    continue
+            elif pet.photo or (pet.pk % 3 == 0 and pet.owner.username not in accounts):
+                continue
+            content = media.pet_photo(pet.breed, pet.pk, name=f"demo-hewan-{pet.pk}.jpg")
+            if content:
+                pet.photo.save(content.name, content, save=False)
+                Pet.objects.filter(pk=pet.pk).update(photo=pet.photo.name)
+                done += 1
+        return done
+
+    def seed_media(self):
+        """Lengkapi foto yang di alur nyata selalu ada: bukti transfer yang sudah lunas,
+        foto serah terima paket, dan foto hewan saat check-in / dijemput / diantar pulang."""
+        self.seed_people_photos()
+        self.seed_pet_photos()
+        demo_orders = Order.objects.filter(customer__phone_number__in=CUSTOMER_PHONES + ACCOUNT_PHONES)
+        for order in demo_orders.filter(
+            channel="ONLINE", payment_method=PaymentMethod.TRANSFER, payment_status="LUNAS", payment_proof=""
+        ):
+            paid = (order.confirmed_at or order.date) + timedelta(minutes=12)
+            order.payment_proof.save(f"demo-bukti-{order.pk}.jpg", self.demo_proof(order, when=paid), save=False)
+            Order.objects.filter(pk=order.pk).update(payment_proof=order.payment_proof.name, payment_proof_at=paid)
+        for order in demo_orders.filter(order_status="TERKIRIM", delivery_photo="").exclude(fulfillment="BAWA"):
+            when = timezone.localtime(order.delivered_at or order.date)
+            receiver = order.customer.first_name or order.customer.name
+            photo = media.delivery_photo(order, [f"Diterima: {receiver[:24]}", f"Order #{order.pk} · {when:%d/%m/%Y %H:%M}"])
+            if photo:
+                order.delivery_photo.save(photo.name, photo, save=False)
+                Order.objects.filter(pk=order.pk).update(delivery_photo=order.delivery_photo.name)
+        bookings = ServiceBooking.objects.filter(customer__phone_number__in=CUSTOMER_PHONES + ACCOUNT_PHONES).select_related("pet")
+        for b in bookings:
+            breed = b.pet.breed if b.pet else ""
+            updates = {}
+            shots = [
+                ("checkin_photo", b.checked_in_at, "Check-in" + (f" · {b.checkin_weight_kg} kg" if b.checkin_weight_kg else "")),
+                ("pickup_photo", b.pet_collected_at, "Dijemput kurir"),
+                ("return_photo", b.closed_at if b.return_requested else None, "Diantar pulang"),
+            ]
+            for n, (field, when, label) in enumerate(shots):
+                if not when or getattr(b, field):
+                    continue
+                when = timezone.localtime(when)
+                photo = media.pet_photo(breed, b.pk + n, stamp=[f"{label} · {b.pet_name}", f"{when:%d/%m/%Y %H:%M}"],
+                                        name=f"demo-{field.split('_')[0]}-{b.pk}.jpg")
+                if photo:
+                    getattr(b, field).save(photo.name, photo, save=False)
+                    updates[field] = getattr(b, field).name
+            if updates:
+                ServiceBooking.objects.filter(pk=b.pk).update(**updates)
 
     def summary(self, made, password):
         self.stdout.write(self.style.SUCCESS("Data demo siap."))

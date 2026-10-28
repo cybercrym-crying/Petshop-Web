@@ -23,7 +23,7 @@
                         <p class="sg-sm sg-muted mb-0">{{ request.user.phone_number|default:"-" }} · {% blocktranslate trimmed with d=request.user.date_joined|date:"M Y" %}bergabung {{ d }}{% endblocktranslate %}</p>
                         <div class="ck-hero__pills">
                             <span class="sg-pill {% if courier_profile.status == 'AKTIF' %}is-ok{% elif courier_profile.status == 'ISTIRAHAT' %}is-gold{% else %}is-ink{% endif %}"><i class="bi bi-circle-fill" style="font-size:.5rem" aria-hidden="true"></i> {{ courier_profile.get_status_display }}</span>
-                            {% if courier_profile.can_carry_pets %}<span class="sg-pill is-pri">{% include "partials/_paw.html" %} {% translate "Antar-jemput hewan" %}</span>{% endif %}
+                            <span class="sg-pill is-pri">{% include "partials/_paw.html" %} {% translate "Antar-jemput hewan" %}</span>
                         </div>
                         <dl class="sg-kv ck-hero__kv">
                             <div><dt>{% translate "Paket terkirim" %}</dt><dd>{{ delivered_count }}</dd></div>

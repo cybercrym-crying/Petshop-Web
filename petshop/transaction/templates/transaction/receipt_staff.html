@@ -1,5 +1,6 @@
 {% extends "account/staff_base.html" %}
 {% load i18n %}
+{% load stored_i18n %}
 {% load static rupiah %}
 {% block title %}{% blocktranslate trimmed with no=order.receipt_no %}Struk {{ no }}{% endblocktranslate %}{% endblock %}
 {% block extra_head %}
@@ -42,7 +43,7 @@
                         {% if order.change_given %}<span class="sg-pill is-ok">{% blocktranslate trimmed with n=order.change_given|rupiah %}Kembalian Rp {{ n }}{% endblocktranslate %}</span>{% endif %}
                     </div>
                     <dl class="sg-kv sg-mt12">
-                        <div><dt>{% translate "Barang" %}</dt><dd>{% blocktranslate trimmed with n=details|length %}{{ n }} jenis{% endblocktranslate %}{% if service_lines %} · {% blocktranslate trimmed with n=service_lines|length %}{{ n }} layanan{% endblocktranslate %}{% endif %}</dd></div>
+                        <div><dt>{% translate "Barang" %}</dt><dd>{% blocktranslate trimmed count n=details|length %}{{ n }} jenis{% plural %}{{ n }} jenis{% endblocktranslate %}{% if service_lines %} · {% blocktranslate trimmed count n=service_lines|length %}{{ n }} layanan{% plural %}{{ n }} layanan{% endblocktranslate %}{% endif %}</dd></div>
                         <div><dt>{% translate "Pengambilan" %}</dt><dd>{{ order.get_fulfillment_display }}</dd></div>
                         <div><dt>{% translate "Diskon" %}</dt><dd>Rp {{ order.discount|rupiah }}{% if order.discount_reason %} · {{ order.discount_reason }}{% endif %}</dd></div>
                         <div><dt>{% translate "Struk digital" %}</dt><dd><a class="sg-link" href="{{ public_url }}" target="_blank" rel="noopener">{% translate "Buka tautan" %}</a></dd></div>
@@ -67,7 +68,7 @@
                         <h2 id="rcp-log" class="sg-h3">{% translate "Riwayat struk ini" %}</h2>
                         <ol class="sg-steps sg-mt8">
                             {% for e in log %}
-                                <li class="sg-step is-done"><span class="sg-step__n"><i class="bi bi-check-lg" aria-hidden="true"></i></span><b>{{ e.action }}{% if e.detail %} <span class="sg-muted sg-sm">· {{ e.detail }}</span>{% endif %}</b><small>{{ e.created_at|date:"d M H.i" }}</small></li>
+                                <li class="sg-step is-done"><span class="sg-step__n"><i class="bi bi-check-lg" aria-hidden="true"></i></span><b>{{ e.action|tr }}{% if e.detail %} <span class="sg-muted sg-sm">· {{ e.detail|tr }}</span>{% endif %}</b><small>{{ e.created_at|date:"d M H.i" }}</small></li>
                             {% endfor %}
                             {% for r in returns %}
                                 <li class="sg-step is-now"><span class="sg-step__n">!</span><b>{% blocktranslate trimmed with pk=r.pk status=r.get_status_display %}Retur #{{ pk }} ({{ status }}){% endblocktranslate %} <span class="sg-muted sg-sm">· {% for line in r.lines.all %}{{ line.quantity }}× {{ line.detail.product.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span></b><small>Rp {{ r.refund_amount|rupiah }}</small></li>

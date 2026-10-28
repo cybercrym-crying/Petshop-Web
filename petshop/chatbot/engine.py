@@ -15,6 +15,7 @@ from difflib import SequenceMatcher
 
 from django.urls import reverse
 from django.utils.html import strip_tags
+from django.utils.translation import gettext as _
 
 MIN_SCORE = 2.0
 SUGGESTION_SCORE = 1.0
@@ -139,24 +140,24 @@ def _order_reply(raw):
     order = Order.objects.filter(tracking_number=code).first() if code else None
     if order is None:
         return Reply(
-            answer=f"Resi {raw.upper()} tidak ditemukan. Periksa kembali nomor resinya ya (contoh: PS-261022-K7M2QX).",
+            answer=_("Resi %(code)s tidak ditemukan. Periksa kembali nomor resinya ya (contoh: PS-261022-K7M2QX).") % {"code": raw.upper()},
             intent="resi",
             fallback=True,
         )
     notes = {
-        OrderStatus.PENDING: "Pesanan sedang menunggu konfirmasi admin.",
-        OrderStatus.CONFIRMED: "Pesanan sudah dikonfirmasi dan sedang disiapkan.",
-        OrderStatus.ON_DELIVERY: "Pesanan sedang diantar kurir. Posisi kurir bisa dilihat langsung di peta.",
-        OrderStatus.DELIVERED: "Pesanan sudah sampai. Foto bukti pengiriman ada di halaman lacak.",
-        OrderStatus.CANCELLED: "Pesanan ini dibatalkan.",
+        OrderStatus.PENDING: _("Pesanan sedang menunggu konfirmasi admin."),
+        OrderStatus.CONFIRMED: _("Pesanan sudah dikonfirmasi dan sedang disiapkan."),
+        OrderStatus.ON_DELIVERY: _("Pesanan sedang diantar kurir. Posisi kurir bisa dilihat langsung di peta."),
+        OrderStatus.DELIVERED: _("Pesanan sudah sampai. Foto bukti pengiriman ada di halaman lacak."),
+        OrderStatus.CANCELLED: _("Pesanan ini dibatalkan."),
     }
     return Reply(
         answer=(
-            f"Status pesanan {order.tracking_number}: {order.get_order_status_display()}.\n"
-            f"{notes.get(order.order_status, '')}"
+            _("Status pesanan %(code)s: %(status)s.") % {"code": order.tracking_number, "status": order.get_order_status_display()}
+            + "\n" + notes.get(order.order_status, "")
         ).strip(),
         link_url=reverse("customer:track_detail", args=[order.tracking_number]),
-        link_label="Buka halaman lacak",
+        link_label=_("Buka halaman lacak"),
         intent="resi",
     )
 
@@ -166,7 +167,7 @@ def answer(message, faqs, wa_display):
     message = (message or "").strip()[:MAX_MESSAGE]
     text_norm = normalize(message)
     if not text_norm:
-        return Reply(answer="Silakan ketik pertanyaan Anda 🙂", intent="empty")
+        return Reply(answer=_("Silakan ketik pertanyaan Anda 🙂"), intent="empty")
 
     resi = RESI_RE.search(message)
     if resi:
@@ -174,12 +175,12 @@ def answer(message, faqs, wa_display):
 
     raw_words = text_norm.split()
     if any(t in text_norm for t in THANKS) and len(raw_words) <= 5:
-        return Reply(answer="Sama-sama! Senang bisa membantu. 🐾", intent="thanks")
+        return Reply(answer=_("Sama-sama! Senang bisa membantu. 🐾"), intent="thanks")
 
     words = tokens(message)
     if not words and raw_words and set(raw_words) <= GREETINGS | STOPWORDS:
         return Reply(
-            answer="Halo! Saya asisten Seelly Petshop. Silakan pilih pertanyaan di bawah atau ketik pertanyaan Anda.",
+            answer=_("Halo! Saya asisten Seelly Petshop. Silakan pilih pertanyaan di bawah atau ketik pertanyaan Anda."),
             intent="greeting",
         )
 
@@ -193,9 +194,9 @@ def answer(message, faqs, wa_display):
         related = [f.question for s, f in ranked[:MAX_SUGGESTIONS] if s >= SUGGESTION_SCORE]
         return Reply(
             answer=(
-                "Maaf, saya belum menemukan jawabannya. "
-                + ("Mungkin maksud Anda salah satu pertanyaan di bawah? " if related else "")
-                + f"Anda juga bisa langsung chat admin di WhatsApp {wa_display}."
+                _("Maaf, saya belum menemukan jawabannya.") + " "
+                + (_("Mungkin maksud Anda salah satu pertanyaan di bawah?") + " " if related else "")
+                + _("Anda juga bisa langsung chat admin di WhatsApp %(wa)s.") % {"wa": wa_display}
             ),
             suggestions=related,
             fallback=True,

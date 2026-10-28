@@ -1,4 +1,4 @@
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 import math
 import secrets
 import uuid
@@ -167,9 +167,11 @@ class Pet(TimeStampedModel):
             months -= 1
         months = max(0, months)
         if months < 12:
-            return f"{months} bulan"
+            return gettext("%(n)s bulan") % {"n": months}
         years, rest = divmod(months, 12)
-        return f"{years} tahun" + (f" {rest} bulan" if rest else "")
+        if rest:
+            return gettext("%(y)s tahun %(m)s bulan") % {"y": years, "m": rest}
+        return gettext("%(y)s tahun") % {"y": years}
 
     def last_service(self):
         return (
@@ -862,7 +864,7 @@ class ServiceBooking(TimeStampedModel):
         if not self.needs_transport:
             raise InvalidBookingTransition(f"Booking #{self.pk} tidak meminta antar-jemput.")
         if courier is None or not User.pet_couriers().filter(pk=courier.pk).exists():
-            raise InvalidBookingTransition("Pilih kurir yang ditandai 'Bisa antar-jemput hewan'.")
+            raise InvalidBookingTransition("Pilih kurir aktif untuk antar-jemput hewan.")
         if self.status in (BookingStatus.PICKUP, BookingStatus.RETURNING) or not self.is_open:
             raise InvalidBookingTransition(f"Booking #{self.pk}: kurir tidak bisa diganti saat ini.")
         self.pet_courier = courier

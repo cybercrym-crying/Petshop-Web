@@ -133,8 +133,7 @@ class StaffRegistrationTests(TestCase):
     def register(self, **override):
         data = {
             "name": "Budi Kurir", "username": "budi", "phone_number": "081234567890",
-            "address": "Balikpapan", "vehicle": "Honda Beat",
-            "plate_number": "kt 1234 ab", "can_carry_pets": "on",
+            "vehicle": "Honda Beat", "plate_number": "kt 1234 ab",
             "password1": "Rahasia!2026x", "password2": "Rahasia!2026x",
         }
         data.update(override)
@@ -148,7 +147,7 @@ class StaffRegistrationTests(TestCase):
         user = User.objects.get(username="budi")
         self.assertEqual(user.approval, Approval.PENDING)
         self.assertFalse(user.is_active)
-        self.assertTrue(user.courier_profile.can_carry_pets)
+        self.assertEqual(user.address, "")  # alamat rumah tidak diminta
         self.assertEqual(user.courier_profile.plate_number, "KT 1234 AB")
         self.assertTrue(Notification.objects.filter(user=admin).exists())
 
@@ -167,6 +166,21 @@ class StaffRegistrationTests(TestCase):
             user = User.objects.get(username="budi")
             self.assertEqual(user.role, Role.COURIER)
             self.assertFalse(user.is_active)
+
+    def test_form_is_like_a_real_courier_signup(self):
+        """Tanpa alamat rumah & tanpa centang kandang (kandang disediakan toko)."""
+        r = self.client.get(reverse("register_staff"))
+        fields = list(r.context["form"].fields)
+        self.assertEqual(fields, ["name", "username", "phone_number", "vehicle", "plate_number", "password1", "password2"])
+        self.assertNotContains(r, 'name="address"')
+        self.assertNotContains(r, 'name="can_carry_pets"')
+        self.assertContains(r, "disediakan toko")
+
+    def test_approved_courier_can_take_pet_trips_without_own_cage(self):
+        self.register()
+        user = User.objects.get(username="budi")
+        User.objects.filter(pk=user.pk).update(is_active=True, approval=Approval.APPROVED)
+        self.assertTrue(User.pet_couriers().filter(pk=user.pk).exists())
 
     def test_vehicle_and_plate_are_required(self):
         r = self.register(vehicle="", plate_number=" ")

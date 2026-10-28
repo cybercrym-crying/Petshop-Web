@@ -90,7 +90,7 @@ a.dash-stat:hover { border-color: var(--purple-300); color: var(--ink); }
 .dash-page .dash-stat strong { color: var(--dash-ink); }
 .dash-page .dash-stat.is-warn { border-color: #f5e2b3; background: #fff4db; }
 .dash-page .dash-stat.is-warn strong { color: #8a5a00; }
-.dash-page .dash-hello__eyebrow { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--dash-muted); }
+.dash-page .dash-hello__eyebrow { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dash-muted); }
 .dash-attn { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .dash-attn li { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--white); border: 1px solid var(--dash-line); border-radius: 16px; }
 .dash-attn__icon { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: #fff4db; color: #8a5a00; font-weight: 800; }

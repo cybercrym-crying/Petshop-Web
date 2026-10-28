@@ -3,7 +3,7 @@
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Ringkasan Toko" %}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'css/ui.css' %}?v=ux3" rel="stylesheet" />
+    <link href="{% static 'css/ui.css' %}?v=ux4" rel="stylesheet" />
     <link href="{% static 'account/css/admin_home.css' %}?v=3-lay1" rel="stylesheet" />
 {% endblock %}
 {% block content %}
@@ -124,7 +124,7 @@
                     </a>
                     <a class="ad-stat is-ok" href="{% url 'service:manage_bookings' %}">
                         <span class="sg-av is-ok" aria-hidden="true"><i class="bi bi-scissors"></i></span>
-                        <span class="ad-stat__text"><b>{% translate "Grooming selesai" %}</b><strong class="ad-stat__n">{% blocktranslate trimmed with n=summary.services.n %}{{ n }} hewan{% endblocktranslate %}</strong><small>{% blocktranslate trimmed with total=summary.services.total|rupiah %}Nilai layanan Rp {{ total }}{% endblocktranslate %}</small></span>
+                        <span class="ad-stat__text"><b>{% translate "Grooming selesai" %}</b><strong class="ad-stat__n">{% blocktranslate trimmed count n=summary.services.n %}{{ n }} hewan{% plural %}{{ n }} hewan{% endblocktranslate %}</strong><small>{% blocktranslate trimmed with total=summary.services.total|rupiah %}Nilai layanan Rp {{ total }}{% endblocktranslate %}</small></span>
                     </a>
                 </section>
 
@@ -257,7 +257,7 @@
                         <h2 id="cash-title" class="sg-h3">{% translate "Kasir sekarang" %}</h2>
                         <span class="sg-sp"></span>
                         {% if cashier.open %}
-                            <span class="sg-pill is-ok">{% blocktranslate trimmed with n=cashier.open|length %}{{ n }} kasir buka{% endblocktranslate %}</span>
+                            <span class="sg-pill is-ok">{% blocktranslate trimmed count n=cashier.open|length %}{{ n }} kasir buka{% plural %}{{ n }} kasir buka{% endblocktranslate %}</span>
                         {% else %}
                             <span class="sg-pill is-line">{% translate "Kasir tutup" %}</span>
                         {% endif %}

@@ -369,7 +369,7 @@ def edit_pet(request, pk=None):
             saved = form.save(commit=False)
             saved.owner = request.user
             saved.save()
-            messages.success(request, f"Profil {saved.name} {'diperbarui' if pet else 'ditambahkan'}.")
+            messages.success(request, (_("Profil %(name)s diperbarui.") if pet else _("Profil %(name)s ditambahkan.")) % {"name": saved.name})
             return redirect("service:my_pets")
     history = []
     if pet:
@@ -843,19 +843,19 @@ def service_steps(request, pk):
 
 GROOMER_TABS = {
     "antrean": {
-        "title": "Antrean Hari Ini",
+        "title": _lazy("Antrean Hari Ini"),
         "icon": "bi-list-ol",
-        "empty": "Belum ada hewan yang check-in. Hewan masuk antrean setelah check-in di meja kasir.",
+        "empty": _lazy("Belum ada hewan yang check-in. Hewan masuk antrean setelah check-in di meja kasir."),
     },
     "proses": {
-        "title": "Sedang Dikerjakan",
+        "title": _lazy("Sedang Dikerjakan"),
         "icon": "bi-scissors",
-        "empty": "Belum ada layanan yang sedang Anda kerjakan.",
+        "empty": _lazy("Belum ada layanan yang sedang Anda kerjakan."),
     },
     "selesai": {
-        "title": "Riwayat Selesai",
+        "title": _lazy("Riwayat Selesai"),
         "icon": "bi-check2-circle",
-        "empty": "Belum ada layanan yang selesai.",
+        "empty": _lazy("Belum ada layanan yang selesai."),
     },
 }
 DONE_LIMIT = 30

@@ -227,9 +227,8 @@ class CourierAccountTests(TestCase):
         self.assertFalse(self.courier.photo_url)
 
     def test_courier_cannot_change_admin_fields(self):
-        self.post_profile(status="OFFLINE", can_carry_pets="on", service_area="Semua")
+        self.post_profile(status="OFFLINE", service_area="Semua")
         profile = User.objects.get(pk=self.courier.pk).courier_profile
-        self.assertFalse(profile.can_carry_pets)
         self.assertEqual(profile.service_area, "")
 
     def test_password_change_keeps_session(self):

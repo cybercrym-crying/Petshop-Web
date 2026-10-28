@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load stored_i18n %}
 {% load static rupiah l10n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'id' }}">
@@ -53,14 +54,14 @@
                         {% for e in log %}
                             <li>
                                 {% if e.photo %}
-                                    <a class="pt-proof__img" href="{{ e.photo.url }}" target="_blank" rel="noopener"><img src="{{ e.photo.url }}" alt="{{ e.action }}" loading="lazy"></a>
+                                    <a class="pt-proof__img" href="{{ e.photo.url }}" target="_blank" rel="noopener"><img src="{{ e.photo.url }}" alt="{{ e.action|tr }}" loading="lazy"></a>
                                 {% else %}
                                     <span class="pt-proof__img is-empty"><i class="bi {% if 'erangkat' in e.action %}bi-scooter{% elif 'heck-in' in e.action %}bi-tag{% else %}bi-clock-history{% endif %}" aria-hidden="true"></i></span>
                                 {% endif %}
                                 <span class="pt-proof__body">
-                                    <b>{{ e.action }}</b>
+                                    <b>{{ e.action|tr }}</b>
                                     <small>{{ e.created_at|date:"d M H.i" }}{% if e.actor %} · {{ e.actor.display_name }}{% endif %}</small>
-                                    {% if e.detail %}<small>{{ e.detail }}</small>{% endif %}
+                                    {% if e.detail %}<small>{{ e.detail|tr }}</small>{% endif %}
                                     <span class="pt-proof__tags">
                                         {% if e.photo %}<span class="sg-pill is-pri">{% translate "Foto bukti" %}</span>{% else %}<span class="sg-pill is-line">{% translate "Tanpa foto" %}</span>{% endif %}
                                         {% if e.latitude is not None %}<a class="sg-pill is-line" href="https://www.google.com/maps?q={{ e.latitude|unlocalize }},{{ e.longitude|unlocalize }}" target="_blank" rel="noopener"><i class="bi bi-geo-alt" aria-hidden="true"></i>{% translate "Lokasi" %}</a>{% endif %}
