@@ -161,7 +161,7 @@ class CustomerLinksAndManageTests(TestCase):
         Order.objects.create(admin=admin, customer=c, payment_method="TUNAI")
         r = self.client.post(f"/staff/admin/customer/{c.pk}/delete/", follow=True)
         self.assertTrue(Customer.objects.filter(pk=c.pk).exists())
-        self.assertContains(r, "riwayat order")
+        self.assertContains(r, "riwayat pesanan")
 
 
 class EmployeeProfileTests(TestCase):
@@ -241,7 +241,7 @@ class EmployeeProfileTests(TestCase):
         r = self.client.post(f"/staff/admin/employee/{self.courier.pk}/delete/", {"next": profile})
         self.assertRedirects(r, profile, fetch_redirect_response=False)
         self.assertTrue(User.objects.filter(pk=self.courier.pk).exists())
-        self.assertIn("riwayat order", [str(m) for m in get_messages(r.wsgi_request)][0])
+        self.assertIn("riwayat pesanan", [str(m) for m in get_messages(r.wsgi_request)][0])
 
     def test_delete_employee_without_orders_works(self):
         r = self.client.post(f"/staff/admin/employee/{self.courier.pk}/delete/")

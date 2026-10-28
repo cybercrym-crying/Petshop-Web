@@ -204,10 +204,13 @@ class PetTransportTests(Stage4Fixtures, TestCase):
         with self.assertRaises(InvalidBookingTransition):
             self.book(pickup=True)  # tanpa pin
 
-    def test_only_pet_couriers_can_be_assigned(self):
+    def test_any_active_courier_can_be_assigned_cage_comes_from_store(self):
         b = self.book(pickup=True, location=HOME)
+        b.assign_pet_courier(self.kurir_paket)  # tidak perlu punya kandang sendiri
+        self.assertEqual(b.pet_courier, self.kurir_paket)
+        User.objects.filter(pk=self.kurir.pk).update(is_active=False)
         with self.assertRaises(InvalidBookingTransition):
-            b.assign_pet_courier(self.kurir_paket)
+            self.book(pickup=True, location=HOME).assign_pet_courier(self.kurir)
         plain = self.book()
         with self.assertRaises(InvalidBookingTransition):
             plain.assign_pet_courier(self.kurir)
@@ -382,11 +385,10 @@ class PetTransportTests(Stage4Fixtures, TestCase):
         self.assertEqual(self.client.get(reverse("service:booking_location", args=[b.pk])).status_code, 404)
         self.assertEqual(self.client.get(reverse("service:booking_qr", args=[b.pk])).status_code, 404)
 
-    def test_pet_tab_only_for_pet_couriers(self):
-        self.client.force_login(self.kurir)
-        self.assertContains(self.client.get(reverse("courier:dashboard")), reverse("service:courier_pets"))
-        self.client.force_login(self.kurir_paket)
-        self.assertNotContains(self.client.get(reverse("courier:dashboard")), reverse("service:courier_pets"))
+    def test_every_courier_sees_pet_tab(self):
+        for courier in (self.kurir, self.kurir_paket):
+            self.client.force_login(courier)
+            self.assertContains(self.client.get(reverse("courier:dashboard")), reverse("service:courier_pets"))
 
 
 class PetProfileTests(Stage4Fixtures, TestCase):

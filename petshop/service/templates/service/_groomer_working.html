@@ -43,7 +43,7 @@
             <input type="hidden" name="from" value="dashboard">
             <div class="gd-act__cam">
                 {% if working.next_step_obj.needs_photo %}
-                    {% include "partials/_camera.html" with btn="btn-orange" btn2="btn-cancel" geo=True hint="Tahap ini wajib foto." %}
+                    {% include "partials/_camera.html" with btn="btn-orange" btn2="btn-cancel" geo=True hint=_("Tahap ini wajib foto.") %}
                 {% else %}
                     {% include "partials/_camera.html" with btn="btn-orange" btn2="btn-cancel" geo=True optional=True hint="Foto boleh dilewati untuk tahap ini." %}
                 {% endif %}

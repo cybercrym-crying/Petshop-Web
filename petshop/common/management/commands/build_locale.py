@@ -13,12 +13,21 @@ from django.core.management.base import BaseCommand, CommandError
 
 
 def parse_po(path):
-    """Kembalikan {msgid: msgstr} dari file .po sederhana (tanpa plural/konteks)."""
-    entries, msgid, msgstr, current = {}, None, None, None
+    """Kembalikan {msgid: msgstr} dari file .po sederhana (tanpa konteks).
+
+    Entri jamak (msgid_plural + msgstr[n]) disimpan dengan kunci "tunggal\\0jamak" dan
+    nilai "bentuk0\\0bentuk1", sama seperti isi file .mo.
+    """
+    entries, msgid, plural, forms, current = {}, None, None, {}, None
 
     def flush():
-        if msgid is not None and msgstr is not None and (msgstr or msgid == ""):
-            entries[msgid] = msgstr
+        if msgid is None:
+            return
+        if plural is not None:
+            if forms and all(forms.values()):
+                entries[f"{msgid}\0{plural}"] = "\0".join(forms[i] for i in sorted(forms))
+        elif forms.get(None) or (msgid == "" and None in forms):
+            entries[msgid] = forms[None]
 
     for lineno, raw in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), 1):
         line = raw.strip()
@@ -26,19 +35,28 @@ def parse_po(path):
             continue
         if line.startswith("msgid "):
             flush()
-            msgid, msgstr, current = ast.literal_eval(line[6:]), None, "id"
+            msgid, plural, forms, current = ast.literal_eval(line[6:]), None, {}, "id"
+        elif line.startswith("msgid_plural "):
+            plural, current = ast.literal_eval(line[13:]), "plural"
+        elif line.startswith("msgstr["):
+            index, text = line[7:].split("]", 1)
+            current = int(index)
+            forms[current] = ast.literal_eval(text.strip())
         elif line.startswith("msgstr "):
-            msgstr, current = ast.literal_eval(line[7:]), "str"
+            current = None
+            forms[None] = ast.literal_eval(line[7:])
         elif line.startswith('"'):
             text = ast.literal_eval(line)
             if current == "id":
                 msgid += text
-            elif current == "str":
-                msgstr += text
+            elif current == "plural":
+                plural += text
+            elif current in forms:
+                forms[current] += text
             else:
                 raise CommandError(f"{path}:{lineno}: baris lanjutan tanpa msgid/msgstr")
         else:
-            raise CommandError(f"{path}:{lineno}: format tidak dikenal (plural/konteks tidak didukung)")
+            raise CommandError(f"{path}:{lineno}: format tidak dikenal (konteks tidak didukung)")
     flush()
     return entries
 

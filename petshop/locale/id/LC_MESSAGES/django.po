@@ -4,6 +4,237 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: id\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 msgid "- Select an option -"
 msgstr "- Pilih -"
+
+msgid "Customer"
+msgstr "Pelanggan"
+
+# Penyeragaman istilah: "order" -> "pesanan", "customer" -> "pelanggan" di teks bahasa Indonesia.
+
+msgid "%(overdue_unpaid)s order transfer"
+msgstr "%(overdue_unpaid)s pesanan transfer"
+
+msgid "%(point_day)s: Rp %(point_total)s (%(point_n)s order)"
+msgstr "%(point_day)s: Rp %(point_total)s (%(point_n)s pesanan)"
+
+msgid "%(summary_sales_n)s order lunas · rata-rata Rp %(summary_avg_order)s"
+msgstr "%(summary_sales_n)s pesanan lunas · rata-rata Rp %(summary_avg_order)s"
+
+msgid "%(summary_work_unpaid_n)s order berjalan menunggu pembayaran"
+msgstr "%(summary_work_unpaid_n)s pesanan berjalan menunggu pembayaran"
+
+msgid ": order yang masih berjalan dengan pembayaran Menunggu (semua tanggal)."
+msgstr ": pesanan yang masih berjalan dengan pembayaran Menunggu (semua tanggal)."
+
+msgid ": total order berstatus bayar Lunas dan tidak dibatalkan, menurut tanggal order. Order tunai baru lunas saat barang diterima."
+msgstr ": total pesanan berstatus bayar Lunas dan tidak dibatalkan, menurut tanggal pesanan. Pesanan tunai baru lunas saat barang diterima."
+
+msgid "Batalkan order ini? Stok akan dikembalikan."
+msgstr "Batalkan pesanan ini? Stok akan dikembalikan."
+
+msgid "Belum ada bukti transfer untuk order ini."
+msgstr "Belum ada bukti transfer untuk pesanan ini."
+
+msgid "Belum ada order."
+msgstr "Belum ada pesanan."
+
+msgid "Booking online hanya untuk akun customer."
+msgstr "Booking online hanya untuk akun pelanggan."
+
+msgid "Buat Akun Customer"
+msgstr "Buat Akun Pelanggan"
+
+msgid "Bukti transfer order #%(order_pk)s"
+msgstr "Bukti transfer pesanan #%(order_pk)s"
+
+msgid "Cek Bukti Transfer · Order #%(order_pk)s"
+msgstr "Cek Bukti Transfer · Pesanan #%(order_pk)s"
+
+msgid "Daftar akun customer"
+msgstr "Daftar akun pelanggan"
+
+msgid "Detail Order - Kurir"
+msgstr "Detail Pesanan - Kurir"
+
+msgid "Foto bukti pengiriman order #%(order_pk)s"
+msgstr "Foto bukti pengiriman pesanan #%(order_pk)s"
+
+msgid "Foto bukti pengiriman order #%(trx_pk)s"
+msgstr "Foto bukti pengiriman pesanan #%(trx_pk)s"
+
+msgid "ID Order"
+msgstr "ID Pesanan"
+
+msgid "Masuk atau daftar akun customer untuk membuat booking dan memantau statusnya (konfirmasi → check-in & antrean → tiap tahap dengan foto → selesai)."
+msgstr "Masuk atau daftar akun pelanggan untuk membuat booking dan memantau statusnya (konfirmasi → check-in & antrean → tiap tahap dengan foto → selesai)."
+
+msgid "Order"
+msgstr "Pesanan"
+
+msgid "Order #%(o_pk)s · %(o_customer_name)s"
+msgstr "Pesanan #%(o_pk)s · %(o_customer_name)s"
+
+msgid "Order #%(order_pk)s"
+msgstr "Pesanan #%(order_pk)s"
+
+msgid "Order #%(order_pk)s · %(order_date)s"
+msgstr "Pesanan #%(order_pk)s · %(order_date)s"
+
+msgid "Order #%(trx_pk)s"
+msgstr "Pesanan #%(trx_pk)s"
+
+msgid "Order Terbaru yang Dibuat"
+msgstr "Pesanan Terbaru yang Dibuat"
+
+msgid "Order lunas"
+msgstr "Pesanan lunas"
+
+msgid "Order sudah lunas: kembalikan dana ke pelanggan."
+msgstr "Pesanan sudah lunas: kembalikan dana ke pelanggan."
+
+msgid "Order terbaru"
+msgstr "Pesanan terbaru"
+
+msgid "Order yang sudah dikonfirmasi dan lunas (atau COD) mendapat nomor urut harian. Kemas sesuai urutan, tempel label ber-QR, lalu tandai siap diambil kurir."
+msgstr "Pesanan yang sudah dikonfirmasi dan lunas (atau COD) mendapat nomor urut harian. Kemas sesuai urutan, tempel label ber-QR, lalu tandai siap diambil kurir."
+
+msgid "Pesanan akan dikirim lewat WhatsApp admin. Masuk sebagai customer untuk memesan langsung di situs dan memantau status pesanan."
+msgstr "Pesanan akan dikirim lewat WhatsApp admin. Masuk sebagai pelanggan untuk memesan langsung di situs dan memantau status pesanan."
+
+msgid "Ringkasan Order"
+msgstr "Ringkasan Pesanan"
+
+msgid "Seelly Petshop - Daftar Akun Customer"
+msgstr "Seelly Petshop - Daftar Akun Pelanggan"
+
+msgid "Status Order"
+msgstr "Status Pesanan"
+
+msgid "Tidak ada foto bukti (order ditutup manual)."
+msgstr "Tidak ada foto bukti (pesanan ditutup manual)."
+
+msgid "Tidak ada foto bukti untuk order ini."
+msgstr "Tidak ada foto bukti untuk pesanan ini."
+
+msgid "order dikonfirmasi belum punya kurir"
+msgstr "pesanan dikonfirmasi belum punya kurir"
+
+msgid "order sedang diantar kurir"
+msgstr "pesanan sedang diantar kurir"
+
+msgid ": total order berstatus bayar Lunas dan tidak dibatalkan, menurut tanggal order. Order tunai online baru lunas saat barang diterima; transaksi kasir langsung lunas."
+msgstr ": total pesanan berstatus bayar Lunas dan tidak dibatalkan, menurut tanggal pesanan. Pesanan tunai online baru lunas saat barang diterima; transaksi kasir langsung lunas."
+
+msgid "Order sudah lunas, tidak ada uang yang ditagih."
+msgstr "Pesanan sudah lunas, tidak ada uang yang ditagih."
+
+msgid "order"
+msgstr "pesanan"
+
+msgid "Rata-rata order"
+msgstr "Rata-rata pesanan"
+
+msgid "%(n)s order menunggu"
+msgstr "%(n)s pesanan menunggu"
+
+msgid "Karyawan '%(employee_username)s' tidak bisa dihapus karena sudah punya riwayat order/layanan."
+msgstr "Karyawan '%(employee_username)s' tidak bisa dihapus karena sudah punya riwayat pesanan/layanan."
+
+msgid "Pelanggan '%(customer_name)s' tidak bisa dihapus karena sudah punya riwayat order/booking."
+msgstr "Pelanggan '%(customer_name)s' tidak bisa dihapus karena sudah punya riwayat pesanan/booking."
+
+msgid "Order #%(order_pk)s lunas dan masuk antrean packing."
+msgstr "Pesanan #%(order_pk)s lunas dan masuk antrean packing."
+
+msgid "Order #%(order_pk)s ditandai lunas."
+msgstr "Pesanan #%(order_pk)s ditandai lunas."
+
+msgid "Bukti order #%(order_pk)s ditolak; pelanggan diminta kirim ulang."
+msgstr "Bukti pesanan #%(order_pk)s ditolak; pelanggan diminta kirim ulang."
+
+msgid "Order #%(order_pk)s siap diambil kurir."
+msgstr "Pesanan #%(order_pk)s siap diambil kurir."
+
+msgid "Kurir %(or_courier_username)s ditugaskan ke order #%(order_pk)s."
+msgstr "Kurir %(or_courier_username)s ditugaskan ke pesanan #%(order_pk)s."
+
+msgid "Order #%(order_pk)s selesai diantar."
+msgstr "Pesanan #%(order_pk)s selesai diantar."
+
+msgid "Order #%(order_pk)s dibatalkan, stok dikembalikan."
+msgstr "Pesanan #%(order_pk)s dibatalkan, stok dikembalikan."
+
+msgid "Order #%(order_pk)s bukan transaksi kasir."
+msgstr "Pesanan #%(order_pk)s bukan transaksi kasir."
+
+msgid "Order #%(order_pk)s sudah dibatalkan."
+msgstr "Pesanan #%(order_pk)s sudah dibatalkan."
+
+msgid "Order #%(order_pk)s sedang diantar kurir; tunggu kembali ke toko."
+msgstr "Pesanan #%(order_pk)s sedang diantar kurir; tunggu kembali ke toko."
+
+msgid "Order #%(order_pk)s sudah punya retur; selesaikan lewat retur."
+msgstr "Pesanan #%(order_pk)s sudah punya retur; selesaikan lewat retur."
+
+msgid "Order #%(self_pk)s: status %(f_order_status_label)s tidak bisa diubah ke %(tus_new_status_label)s."
+msgstr "Pesanan #%(self_pk)s: status %(f_order_status_label)s tidak bisa diubah ke %(tus_new_status_label)s."
+
+msgid "Order #%(self_pk)s: pilih kurir terlebih dahulu."
+msgstr "Pesanan #%(self_pk)s: pilih kurir terlebih dahulu."
+
+msgid "Order #%(self_pk)s: kurir hanya bisa ditugaskan saat order Dikonfirmasi."
+msgstr "Pesanan #%(self_pk)s: kurir hanya bisa ditugaskan saat pesanan Dikonfirmasi."
+
+msgid "Order #%(self_pk)s: transfer harus lunas dulu sebelum kurir ditugaskan."
+msgstr "Pesanan #%(self_pk)s: transfer harus lunas dulu sebelum kurir ditugaskan."
+
+msgid "Order #%(self_pk)s: transfer belum lunas, belum bisa dikirim."
+msgstr "Pesanan #%(self_pk)s: transfer belum lunas, belum bisa dikirim."
+
+msgid "Order #%(self_pk)s sudah dikonfirmasi atau diproses."
+msgstr "Pesanan #%(self_pk)s sudah dikonfirmasi atau diproses."
+
+msgid "Order #%(self_pk)s belum masuk antrean packing."
+msgstr "Pesanan #%(self_pk)s belum masuk antrean packing."
+
+msgid "Order #%(self_pk)s berstatus %(f_order_status_label)s, tidak bisa diambil."
+msgstr "Pesanan #%(self_pk)s berstatus %(f_order_status_label)s, tidak bisa diambil."
+
+msgid "Order #%(self_pk)s belum siap dikirim (belum lunas / belum masuk antrean packing)."
+msgstr "Pesanan #%(self_pk)s belum siap dikirim (belum lunas / belum masuk antrean packing)."
+
+msgid "Order #%(self_pk)s sudah ditugaskan ke kurir lain."
+msgstr "Pesanan #%(self_pk)s sudah ditugaskan ke kurir lain."
+
+msgid "Order #%(self_pk)s bukan paket Anda."
+msgstr "Pesanan #%(self_pk)s bukan paket Anda."
+
+msgid "Order #%(self_pk)s tidak sedang diantar."
+msgstr "Pesanan #%(self_pk)s tidak sedang diantar."
+
+msgid "Order #%(self_pk)s tidak sedang Anda antar."
+msgstr "Pesanan #%(self_pk)s tidak sedang Anda antar."
+
+msgid "Order #%(self_pk)s tidak punya bukti transfer yang menunggu dicek."
+msgstr "Pesanan #%(self_pk)s tidak punya bukti transfer yang menunggu dicek."
+
+msgid "Order #%(self_pk)s sudah dibatalkan."
+msgstr "Pesanan #%(self_pk)s sudah dibatalkan."
+
+msgid "Belum ada item di order."
+msgstr "Belum ada item di pesanan."
+
+msgid "Order transfer: kurir bisa ditugaskan setelah pembayaran lunas."
+msgstr "Pesanan transfer: kurir bisa ditugaskan setelah pembayaran lunas."
+
+msgid "Order #%(order_pk)s adalah transaksi kasir: batalkan lewat halaman struk (admin, dengan alasan)."
+msgstr "Pesanan #%(order_pk)s adalah transaksi kasir: batalkan lewat halaman struk (admin, dengan alasan)."
+
+msgid "Order online #%(n)s"
+msgstr "Pesanan online #%(n)s"
+
+msgid "Order #%(n)s dibatalkan, stok dikembalikan"
+msgstr "Pesanan #%(n)s dibatalkan, stok dikembalikan"

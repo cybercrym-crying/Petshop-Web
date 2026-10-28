@@ -589,21 +589,21 @@ html {
 .pw-input {
   padding-right: 50px;
 }
-.check-row {
+.reg-note {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  font-size: 0.9rem;
-  cursor: pointer;
+  margin: 4px 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f5edfb;
+  color: #5b2a86;
+  font-size: 0.86rem;
+  line-height: 1.45;
 }
-.check-row input {
-  margin-top: 3px;
-  width: 18px;
-  height: 18px;
-  accent-color: #7e2fb8;
-}
-.courier-only[hidden] {
-  display: none !important;
+.reg-note i {
+  margin-top: 1px;
+  font-size: 1rem;
 }
 .login-glass-card--single {
   max-width: 560px;

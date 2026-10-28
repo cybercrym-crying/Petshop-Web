@@ -8,7 +8,8 @@ html[data-theme="dark"] .ca-side__who strong { color: #f1ebf7; }
 html[data-theme="dark"] .ca-side__who small { color: #b9adc7; }
 html[data-theme="dark"] .ca-nav__group { color: #b9adc7; }
 html[data-theme="dark"] .ca-link { border: 0; background: none; color: #f1ebf7; }
-html[data-theme="dark"] .ca-link i { color: #d8b4fe; }
+html[data-theme="dark"] .ca-link i { color: #b9adc7; }
+html[data-theme="dark"] .ca-link:hover i, html[data-theme="dark"] .ca-link.is-active i { color: #d8b4fe; }
 html[data-theme="dark"] .ca-link:hover { background: #18121f; color: #d8b4fe; }
 html[data-theme="dark"] .ca-link.is-active { background: #2b2139; color: #d8b4fe; }
 html[data-theme="dark"] .ca-link:focus-visible, html[data-theme="dark"] .ca-tab:focus-visible { outline: 3px solid #5b4775; }

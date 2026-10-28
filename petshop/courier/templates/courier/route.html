@@ -16,7 +16,7 @@
                     <p class="sg-eyebrow">{% now "l, j F Y" %}</p>
                     <h1 class="ck-head__title">{% translate "Rute hari ini" %}</h1>
                     <p class="ck-head__lead">
-                        {% blocktranslate trimmed with n=carrying %}{{ n }} paket dibawa{% endblocktranslate %}{% if carrying %} · {% blocktranslate trimmed with km=remaining_km|floatformat:1 %}± {{ km }} km lagi{% endblocktranslate %}{% if finish_eta %} · {% blocktranslate trimmed with t=finish_eta|time:"H.i" %}perkiraan selesai {{ t }}{% endblocktranslate %}{% endif %}{% endif %}
+                        {% blocktranslate trimmed count n=carrying %}{{ n }} paket dibawa{% plural %}{{ n }} paket dibawa{% endblocktranslate %}{% if carrying %} · {% blocktranslate trimmed with km=remaining_km|floatformat:1 %}± {{ km }} km lagi{% endblocktranslate %}{% if finish_eta %} · {% blocktranslate trimmed with t=finish_eta|time:"H.i" %}perkiraan selesai {{ t }}{% endblocktranslate %}{% endif %}{% endif %}
                     </p>
                 </div>
                 <div class="ck-head__actions">
@@ -91,7 +91,7 @@
                         <p class="ck-pet__sub">{% blocktranslate trimmed with s=pet_task.service.name t=pet_task.schedule|time:"H.i" %}{{ s }} · jadwal {{ t }}{% endblocktranslate %}</p>
                         <p class="ck-pet__where">{{ pet_task.customer.name }} · {{ pet_task.transport_address|default:"-" }}{% if pet_task.transport_distance_km %} · {% blocktranslate trimmed with km=pet_task.transport_distance_km|floatformat:1 %}{{ km }} km dari toko{% endblocktranslate %}{% endif %}</p>
                         {% if carrying and not pet_trip %}
-                            <p class="ck-lock"><i class="bi bi-lock" aria-hidden="true"></i> {% blocktranslate trimmed with n=carrying %}Antar {{ n }} paket dulu sebelum berangkat.{% endblocktranslate %}</p>
+                            <p class="ck-lock"><i class="bi bi-lock" aria-hidden="true"></i> {% blocktranslate trimmed count n=carrying %}Antar {{ n }} paket dulu sebelum berangkat.{% plural %}Antar {{ n }} paket dulu sebelum berangkat.{% endblocktranslate %}</p>
                         {% endif %}
                         <a class="ck-btn" href="{% url 'service:courier_pet_trip' pet_task.pk %}">{% translate "Lihat tugas hewan" %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
                     </section>

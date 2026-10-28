@@ -14,7 +14,7 @@
         </button>
         <a href="{% url 'customer:dashboard' %}" class="sn-brand ca-brand" aria-label="{% translate 'Dasbor' %} Seelly Petshop">
             <span class="sn-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M8 18c0-2.5 1.8-5 4-5s4 2.5 4 5c0 1.4-1 2-2 2h-4c-1 0-2-.6-2-2z"/></svg></span>
-            <span class="sn-brand__name">Seelly <small class="sn-brand__tag">{% translate "Pelanggan" %}</small></span>
+            <span class="sn-brand__name">Seelly <small class="sn-brand__tag">{{ user.get_role_display }}</small></span>
         </a>
         <div class="sn-actions">
             <span class="sn-opt">{% include "partials/_theme_toggle.html" with extra="sn-icon" %}</span>
@@ -38,7 +38,7 @@
                         aria-expanded="false"
                         aria-controls="nav-account-menu"
                         aria-label="{% blocktranslate trimmed with user_name=user.name %}Akun {{ user_name }}{% endblocktranslate %}">
-                    <span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>
+                    {% if user.photo_url %}<img class="sn-avatar sn-avatar--img" src="{{ user.photo_url }}" alt="" width="36" height="36">{% else %}<span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>{% endif %}
                     <span class="sn-account__name" aria-hidden="true">{{ user.first_name|default:user.name }}</span>
                 </button>
                 <div class="sn-menu" id="nav-account-menu" hidden>

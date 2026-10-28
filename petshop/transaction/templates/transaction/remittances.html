@@ -94,7 +94,7 @@
                     {% for c in on_hand %}
                         <div class="sg-item">
                             <span class="sg-av" aria-hidden="true" style="width:40px;height:40px;font-size:0.8rem">{{ c.courier__first_name|first|upper }}{{ c.courier__last_name|first|upper }}</span>
-                            <span class="sg-item__body"><b>{{ c.courier__first_name }} {{ c.courier__last_name|default:c.courier__username }}</b><small>{% blocktranslate trimmed with c_n=c.n %}{{ c_n }} paket belum disetor{% endblocktranslate %}</small></span>
+                            <span class="sg-item__body"><b>{{ c.courier__first_name }} {{ c.courier__last_name|default:c.courier__username }}</b><small>{% blocktranslate trimmed count c_n=c.n %}{{ c_n }} paket belum disetor{% plural %}{{ c_n }} paket belum disetor{% endblocktranslate %}</small></span>
                             <b>Rp {{ c.total|rupiah }}</b>
                         </div>
                     {% empty %}

@@ -187,7 +187,7 @@ def share_location(request):
     lat = _coordinate(request.POST.get("lat"), 90)
     lng = _coordinate(request.POST.get("lng"), 180)
     if lat is None or lng is None:
-        return JsonResponse({"ok": False, "reason": "invalid", "message": "Koordinat tidak valid."}, status=400)
+        return JsonResponse({"ok": False, "reason": "invalid", "message": _("Koordinat tidak valid.")}, status=400)
     try:
         accuracy = max(0, min(int(float(request.POST.get("accuracy") or 0)), 100000)) or None
     except ValueError:

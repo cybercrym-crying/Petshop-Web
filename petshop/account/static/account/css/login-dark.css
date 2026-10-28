@@ -48,3 +48,4 @@ html[data-theme="dark"] .modern-input.is-invalid { border-color: #602e2e; backgr
 html[data-theme="dark"] .field-error { color: #ef4444; }
 html[data-theme="dark"] .field-hint { color: #94a3b8; }
 html[data-theme="dark"] .left-points i { color: #ffb347; }
+html[data-theme="dark"] .reg-note { background: #18121f; color: #d8b4fe; }

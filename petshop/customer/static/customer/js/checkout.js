@@ -82,7 +82,61 @@ function readCheckoutData() {
     phone: String(data.get("no_wa") || "").trim(),
     address: String(data.get("alamat") || "").trim(),
     payment: payment ? payment.value : "",
+    lat: String(data.get("latitude") || ""),
+    lng: String(data.get("longitude") || ""),
   };
+}
+
+/* Titik rumah dari peta: link Google Maps untuk admin/kurir + perkiraan ongkir dari server. */
+var shipQuote = null; // {fee, distance_km}; null = belum ada titik / di luar jangkauan
+var quoteSeq = 0;
+
+function mapsUrl(lat, lng) {
+  return lat && lng ? "https://www.google.com/maps?q=" + lat + "," + lng : "";
+}
+
+function shipText() {
+  return shipQuote ? formatRupiah(shipQuote.fee) + " (±" + shipQuote.distance_km.toFixed(1) + " km)" : tr("Diinfokan admin");
+}
+
+function updateLocation() {
+  var root = document.querySelector("[data-guest-checkout]");
+  var lat = document.getElementById("co-lat").value;
+  var lng = document.getElementById("co-lng").value;
+  var shipEl = root.querySelector("[data-guest-ship]");
+  var distEl = root.querySelector("[data-guest-distance]");
+  var info = root.querySelector("[data-guest-ship-info]");
+  var link = root.querySelector("[data-guest-gmaps]");
+  link.hidden = !lat;
+  link.href = mapsUrl(lat, lng) || "#";
+  shipQuote = null;
+  distEl.textContent = "";
+  shipEl.classList.remove("cx-ship-bad");
+  if (!lat || !lng) {
+    shipEl.textContent = tr("Pilih titik di peta");
+    return;
+  }
+  root.querySelector("[data-map-picker]").classList.remove("is-missing");
+  var seq = ++quoteSeq;
+  shipEl.textContent = tr("Menghitung…");
+  fetch(root.getAttribute("data-quote-url") + "?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lng), { credentials: "same-origin" })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (seq !== quoteSeq) return;
+      if (data.ok) {
+        shipQuote = { fee: data.fee, distance_km: data.distance_km };
+        shipEl.textContent = formatRupiah(data.fee);
+        distEl.textContent = "(±" + data.distance_km.toFixed(1) + " km)";
+        info.textContent = tr("Titik tersimpan. Jarak dari toko ±{km} km.", { km: data.distance_km.toFixed(1) });
+      } else {
+        shipEl.textContent = tr("Di luar jangkauan");
+        shipEl.classList.add("cx-ship-bad");
+        info.textContent = data.message;
+      }
+    })
+    .catch(function () {
+      if (seq === quoteSeq) shipEl.textContent = tr("Diinfokan admin");
+    });
 }
 
 function phoneError(value) {
@@ -111,7 +165,16 @@ function validateCheckoutForm() {
     var input = form.elements[rule[0]];
     input.setCustomValidity(rule[1](input.value));
   });
-  return form.reportValidity();
+  if (!form.reportValidity()) return false;
+  var map = form.querySelector("[data-map-picker]");
+  if (map && !form.elements.latitude.value) {
+    map.classList.add("is-missing");
+    map.scrollIntoView({ behavior: "smooth", block: "center" });
+    var info = form.querySelector("[data-guest-ship-info]");
+    if (info) info.textContent = tr("Tandai titik rumah di peta dulu (klik peta atau Pakai lokasi saya).");
+    return false;
+  }
+  return true;
 }
 
 function buildWhatsappUrl(data, cart) {
@@ -120,6 +183,7 @@ function buildWhatsappUrl(data, cart) {
   pesan += "• Nama Lengkap: " + data.name + "\n";
   pesan += "• No. HP/WA: " + data.phone + "\n";
   pesan += "• Alamat Lengkap: " + data.address + "\n";
+  if (data.lat) pesan += "• Titik Lokasi (Google Maps): " + mapsUrl(data.lat, data.lng) + "\n";
   pesan += "• Metode Pembayaran: " + data.payment + "\n\n";
   pesan += "*Ringkasan Pesanan:*\n";
 
@@ -129,7 +193,8 @@ function buildWhatsappUrl(data, cart) {
       "- " + item.name + " - " + item.quantity + "x (" + formatRupiah(item.price) + ") = " + formatRupiah(subtotal) + "\n";
   });
 
-  pesan += "\n*Total Estimasi: " + formatRupiah(cartTotal(cart)) + "*\n";
+  pesan += "\n*Total Barang: " + formatRupiah(cartTotal(cart)) + "*\n";
+  if (shipQuote) pesan += "Perkiraan ongkir dari situs: " + formatRupiah(shipQuote.fee) + " (±" + shipQuote.distance_km.toFixed(1) + " km)\n";
   pesan += "\nMohon info total biaya + ongkirnya ya kak. Terima kasih!";
 
   return "https://wa.me/" + WHATSAPP_ADMIN + "?text=" + encodeURIComponent(pesan);
@@ -137,7 +202,7 @@ function buildWhatsappUrl(data, cart) {
 
 function buildPlainSummary(data, cart) {
   var lines = [tr("Periksa pesanan Anda:"), ""];
-  lines.push(tr("Nama") + ": " + data.name, tr("Telepon") + ": " + data.phone, tr("Alamat") + ": " + data.address, tr("Pembayaran") + ": " + data.payment, "");
+  lines.push(tr("Nama") + ": " + data.name, tr("Telepon") + ": " + data.phone, tr("Alamat") + ": " + data.address + (data.lat ? " (" + mapsUrl(data.lat, data.lng) + ")" : ""), tr("Pembayaran") + ": " + data.payment, "");
   cart.forEach(function (item) {
     lines.push(item.quantity + " x " + item.name + " = " + formatRupiah(item.price * item.quantity));
   });
@@ -149,6 +214,10 @@ function fillConfirmDialog(data, cart) {
   document.getElementById("confirm-name").textContent = data.name;
   document.getElementById("confirm-phone").textContent = data.phone;
   document.getElementById("confirm-address").textContent = data.address;
+  var gm = document.getElementById("confirm-gmaps");
+  gm.href = mapsUrl(data.lat, data.lng) || "#";
+  gm.parentNode.hidden = !data.lat;
+  document.getElementById("confirm-ship").textContent = shipText();
   document.getElementById("confirm-payment").textContent = data.payment;
   document.getElementById("confirm-total").textContent = formatRupiah(cartTotal(cart));
 
@@ -232,6 +301,8 @@ function placeOrder(event) {
 
 document.addEventListener("DOMContentLoaded", function () {
   renderOrderSummary();
+  var latInput = document.getElementById("co-lat");
+  if (latInput) latInput.addEventListener("change", updateLocation);
   if (window.Store) window.Store.refreshCart(renderOrderSummary);
 });
 

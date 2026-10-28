@@ -21,7 +21,7 @@ dibuat Admin/Super Admin lewat Kelola Akun → Tambah Pegawai.
 | Pelanggan | Checkout di situs dengan titik peta (ongkir per km), bayar transfer (foto bukti lewat kamera) atau COD, batas bayar transfer 24 jam, **peta lacak sejak pesanan dibuat (toko → rumah) dan posisi kurir realtime saat diantar**, QR serah-terima, ulasan & komplain; booking grooming dengan profil hewan, QR check-in, pantau antrean & foto tiap tahap, minta jemput/antar hewan dan pantau kurirnya di peta, pengingat grooming |
 | Kasir | **Transaksi offline (kasir)**: buka/tutup shift dengan modal & rekap selisih, scan kode barang (scanner USB/kamera) atau QR booking, pembeli tanpa akun, dibawa langsung atau diantar kurir, bayar tunai (kembalian otomatis)/transfer/QRIS statis/campuran, diskon dengan alasan, parkir transaksi, struk 58 mm/A4 + kirim WA + struk digital lewat QR, ajukan retur; juga cek & setujui bukti transfer, antrean packing + label QR, terima setoran COD kurir, check-in hewan (scan QR) & papan antrean, booking layanan, komplain |
 | Groomer | Antrean hari ini, kerjakan tahap demi tahap dengan foto kamera (tahap wajib foto tidak bisa dilewati) |
-| Kurir | Rute otomatis terdekat → terjauh dengan peta realtime, fitur terkunci selama GPS mati, scan QR label untuk mengambil paket, scan QR pelanggan + foto saat serah terima, laporan kendala, setoran COD; kurir berkandang hewan juga mendapat tugas antar-jemput hewan; **satu tugas sekaligus**: selama antar-jemput hewan kurir tidak bisa mengambil/menerima paket, dan kurir yang masih membawa paket tidak bisa berangkat menjemput hewan |
+| Kurir | Rute otomatis terdekat → terjauh dengan peta realtime, fitur terkunci selama GPS mati, scan QR label untuk mengambil paket, scan QR pelanggan + foto saat serah terima, laporan kendala, setoran COD; semua kurir juga bisa mendapat tugas antar-jemput hewan (kandang/boks disediakan toko); **satu tugas sekaligus**: selama antar-jemput hewan kurir tidak bisa mengambil/menerima paket, dan kurir yang masih membawa paket tidak bisa berangkat menjemput hewan |
 | Admin | Semua fitur kasir + batalkan transaksi kasir (stok kembali, tercatat), setujui/tolak retur, diskon di atas batas kasir, Laporan Kasir (per metode bayar, per kasir, online vs offline, shift, CSV), kode barang & label QR, dasbor Ringkasan Toko (CSV), produk, stok & harga, akun pegawai/pelanggan, persetujuan staf, layanan & tahapannya, FAQ, Pengaturan Toko (alamat & titik peta toko, tarif ongkir, rekening, jam buka, batas bayar). **Tidak bisa membuat/mengubah akun admin** |
 | Super Admin | Semua fitur admin + membuat dan mengelola akun admin, akses `/admin/` |
 
@@ -178,9 +178,20 @@ Isi data contoh (angka dari `seed_demo` bawaan):
 | Ulasan & komplain | beberapa | Rating pesanan/layanan dan 8 komplain (baru, diproses, selesai) |
 
 Semua nama, nomor, alamat, dan email fiktif. Gambar QRIS di Pengaturan Toko
-adalah **contoh bertuliskan "data demo"**, bukan QRIS sungguhan; ganti dengan
-QRIS statis milik toko sebelum dipakai. Foto tahap grooming dan foto bukti
-di data demo diberi tulisan "data demo" agar tidak dikira foto asli.
+adalah **contoh bertuliskan "data demo"**, bukan QRIS sungguhan, dan rekening
+bank demo bertanda "(contoh)"; ganti keduanya dengan milik toko sebelum dipakai.
+
+Gambar data demo (semua file benar-benar ada di `media/`, tidak ada gambar rusak):
+
+| Gambar | Sumber |
+| --- | --- |
+| Foto produk | Ilustrasi kemasan khusus per produk (`transaction/management/commands/demo_assets/products/`, dibuat ulang dengan `packshots.js`). Ganti dengan foto produk asli lewat Kelola Produk. |
+| Foto profil staf & sebagian besar pelanggan, foto kurir | Ilustrasi DiceBear "notionists" berlisensi CC0 (`demo_assets/avatars/`) |
+| Foto hewan, foto tahap grooming, check-in, jemput/antar | Potongan foto hewan di `static/` sesuai rasnya, dengan cap tahap & jam. Ras tanpa foto yang cocok (mis. kelinci, Pomeranian) dibiarkan tanpa foto. |
+| Bukti transfer, foto serah terima paket | Tangkapan layar transfer umum (bertanda "Data contoh") dan foto paket dengan nama penerima & jam |
+
+Database disalin tanpa folder `media/`? Jalankan `python manage.py seed_demo --media-only`
+untuk memulihkan file demo yang hilang tanpa mengubah data lain.
 
 Perintah ini menolak berjalan saat `DJANGO_DEBUG=0` kecuali diberi `--force`,
 jadi jangan dipakai di server produksi.
@@ -213,9 +224,18 @@ tampil dalam Bahasa Indonesia. Terjemahan ada di
 python manage.py build_locale       # kompilasi .po -> .mo, tanpa GNU gettext
 ```
 
-Yang tetap berbahasa Indonesia: isi database (nama produk/layanan/tahap,
-catatan), notifikasi yang sudah tersimpan, sebagian pesan validasi & pesan
-sistem yang memuat angka/nama, dan pesan WhatsApp ke admin.
+Label, placeholder, dan pesan error form ikut bahasa aktif lewat
+`common/form_i18n.py`. Notifikasi, riwayat aktivitas, catatan mutasi stok, dan
+pesan sukses/gagal yang disimpan dalam bahasa Indonesia diterjemahkan saat
+ditampilkan (`common/stored_i18n.py`, filter template `|tr`): teksnya dicocokkan
+dengan pola katalog seperti `Pesanan #%(order_pk)s dikonfirmasi`. Jumlah
+memakai bentuk tunggal/jamak (`{% blocktranslate count %}`: "1 pet", "5 pets").
+Katalog `locale/id` dipakai untuk menyeragamkan istilah Indonesia
+("order" tampil sebagai "pesanan", "customer" sebagai "pelanggan").
+
+Yang tetap berbahasa Indonesia: isi database yang ditulis pengguna (nama
+produk/layanan/tahap, deskripsi, catatan, jawaban FAQ chatbot) dan pesan
+WhatsApp ke admin.
 
 ## Konfigurasi (environment)
 
@@ -246,7 +266,8 @@ python manage.py makemigrations --check --dry-run
 
 Tes juga memeriksa konvensi repo (tanpa `<style>`/`<script>` inline atau
 `onclick=`, file statis yang dirujuk harus ada, variabel tema gelap) dan
-kelengkapan terjemahan Inggris untuk semua teks template.
+kelengkapan terjemahan Inggris untuk semua teks template, kode Python, form,
+notifikasi/riwayat yang disimpan, dan pesan error proses.
 
 ## Deploy (ringkas)
 

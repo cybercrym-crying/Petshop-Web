@@ -1,6 +1,7 @@
 import json
 
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from django.contrib import messages
 from django.db.models import Count, F
 from django.http import JsonResponse
@@ -17,7 +18,7 @@ from .forms import FaqForm
 from .models import ChatLog, FaqEntry
 
 QUICK_LIMIT = 6
-GREETING = (
+GREETING = _lazy(
     "Halo! 👋 Saya asisten Seelly Petshop. Pilih pertanyaan di bawah "
     "atau ketik pertanyaan Anda, misalnya “ongkir berapa?” atau nomor resi pesanan."
 )
@@ -34,7 +35,7 @@ def _quick_questions():
 @require_GET
 @never_cache
 def start(request):
-    return JsonResponse({"greeting": GREETING, "quick": _quick_questions(), "wa": StoreSettings.current().whatsapp_link})
+    return JsonResponse({"greeting": str(GREETING), "quick": _quick_questions(), "wa": StoreSettings.current().whatsapp_link})
 
 
 @require_POST
@@ -52,7 +53,7 @@ def ask(request):
     if faq_id:
         entry = active.filter(pk=faq_id).first() if str(faq_id).isdigit() else None
         if entry is None:
-            return JsonResponse({"answer": "Pertanyaan itu sudah tidak tersedia.", "suggestions": []})
+            return JsonResponse({"answer": _("Pertanyaan itu sudah tidak tersedia."), "suggestions": []})
         reply = engine.Reply(
             answer=engine.fill_placeholders(entry.answer, StoreSettings.current().whatsapp_display),
             link_url=entry.link_url,
@@ -113,7 +114,7 @@ def save_faq(request, pk=None):
     form = FaqForm(request.POST, instance=instance)
     if form.is_valid():
         faq = form.save()
-        messages.success(request, f"FAQ “{faq.question}” {'diperbarui' if instance else 'ditambahkan'}.")
+        messages.success(request, (_("FAQ “%(q)s” diperbarui.") if instance else _("FAQ “%(q)s” ditambahkan.")) % {"q": faq.question})
     else:
         for field, errors in form.errors.items():
             label = form.fields[field].label if field in form.fields else ""

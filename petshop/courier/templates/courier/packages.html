@@ -28,7 +28,7 @@
                         </a>
                         <div class="ck-dcard__meta">
                             <span class="sg-chip"><i class="bi bi-telephone" aria-hidden="true"></i>{{ order.customer.phone_number }}</span>
-                            <span class="sg-chip"><i class="bi bi-box-seam" aria-hidden="true"></i>{% blocktranslate trimmed with n=order.details.count %}{{ n }} barang{% endblocktranslate %}</span>
+                            <span class="sg-chip"><i class="bi bi-box-seam" aria-hidden="true"></i>{% blocktranslate trimmed count n=order.details.count %}{{ n }} barang{% plural %}{{ n }} barang{% endblocktranslate %}</span>
                             <b>Rp {{ order.total_payment|rupiah }}</b>
                         </div>
                         {% if order.order_status == "DALAM_PENGIRIMAN" %}

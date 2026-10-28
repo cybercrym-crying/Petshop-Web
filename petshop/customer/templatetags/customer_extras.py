@@ -1,26 +1,27 @@
 from django import template
+from django.utils.translation import gettext_lazy as _
 
 register = template.Library()
 
 # Nama category_label di database memakai kode bahasa Inggris; ini label untuk pengunjung.
 CATEGORY_LABELS = {
-    "MAKANAN": "Makanan",
-    "PERLENGKAPAN": "Perlengkapan",
-    "AKSESORIS": "Aksesori",
-    "KESEHATAN": "Kesehatan",
-    "MAINAN": "Mainan",
+    "MAKANAN": _("Makanan"),
+    "PERLENGKAPAN": _("Perlengkapan"),
+    "AKSESORIS": _("Aksesori"),
+    "KESEHATAN": _("Kesehatan"),
+    "MAINAN": _("Mainan"),
 }
 # Hewan tujuan & kondisi produk (kode di database -> label untuk pengunjung).
 PET_LABEL = {
-    "SEMUA": "Semua Hewan",
-    "KUCING": "Kucing",
-    "ANJING": "Anjing",
-    "BURUNG": "Burung",
-    "KELINCI": "Kelinci",
-    "IKAN": "Ikan",
-    "HAMSTER": "Hamster",
+    "SEMUA": _("Semua Hewan"),
+    "KUCING": _("Kucing"),
+    "ANJING": _("Anjing"),
+    "BURUNG": _("Burung"),
+    "KELINCI": _("Kelinci"),
+    "IKAN": _("Ikan"),
+    "HAMSTER": _("Hamster"),
 }
-CONDITION_LABEL = {"BARU": "Baru", "BEKAS": "Bekas"}
+CONDITION_LABEL = {"BARU": _("Baru"), "BEKAS": _("Bekas")}
 
 
 @register.filter

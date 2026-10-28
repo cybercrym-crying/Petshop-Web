@@ -1,5 +1,6 @@
 {% extends "account/staff_base.html" %}
 {% load i18n %}
+{% load stored_i18n %}
 {% load static rupiah l10n %}
 {% block title %}{% translate "Seelly - Check-in & Antrean" %}{% endblock %}
 {% block extra_head %}
@@ -51,11 +52,11 @@
                                         {% for e in trip_log %}
                                             <figure class="mb-0">
                                                 {% if e.photo %}
-                                                    <a href="{{ e.photo.url }}" target="_blank" rel="noopener" class="sg-photo"><img src="{{ e.photo.url }}" alt="{{ e.action }}"><span class="sg-photo__tag"><i class="bi bi-clock" aria-hidden="true"></i>{{ e.created_at|time:"H.i" }}</span></a>
+                                                    <a href="{{ e.photo.url }}" target="_blank" rel="noopener" class="sg-photo"><img src="{{ e.photo.url }}" alt="{{ e.action|tr }}"><span class="sg-photo__tag"><i class="bi bi-clock" aria-hidden="true"></i>{{ e.created_at|time:"H.i" }}</span></a>
                                                 {% else %}
                                                     <div class="sg-photo"><i class="bi bi-camera" aria-hidden="true"></i></div>
                                                 {% endif %}
-                                                <figcaption class="sg-xs sg-mt8"><b>{{ e.action }}</b>{% if e.detail %} · <span class="sg-muted">{{ e.detail }}</span>{% endif %}</figcaption>
+                                                <figcaption class="sg-xs sg-mt8"><b>{{ e.action|tr }}</b>{% if e.detail %} · <span class="sg-muted">{{ e.detail|tr }}</span>{% endif %}</figcaption>
                                             </figure>
                                         {% endfor %}
                                     </div>
@@ -125,7 +126,7 @@
                 <div class="sg-card__head">
                     <h2 id="ci-board" class="sg-h3">{% translate "Papan antrean hari ini" %}</h2>
                     <span class="sg-sp"></span>
-                    <span class="sg-pill is-line">{% blocktranslate trimmed with n=groomers_active %}{{ n }} groomer aktif{% endblocktranslate %}</span>
+                    <span class="sg-pill is-line">{% blocktranslate trimmed count n=groomers_active %}{{ n }} groomer aktif{% plural %}{{ n }} groomer aktif{% endblocktranslate %}</span>
                 </div>
                 <p class="sg-xs sg-muted">{% translate "Perkiraan waktu = sisa pekerjaan yang berjalan + durasi layanan di depan, dibagi jumlah groomer aktif." %}</p>
 

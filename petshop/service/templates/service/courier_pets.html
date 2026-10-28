@@ -10,7 +10,7 @@
     <body>
         {% include "courier/_nav.html" %}
         <main class="container-fluid px-xl-5 px-3 py-4 ck-page sg">
-            {% translate "Antar-jemput hewan" as t_title %}{% blocktranslate trimmed asvar t_lead with n=active|length %}{{ n }} tugas aktif{% endblocktranslate %}
+            {% translate "Antar-jemput hewan" as t_title %}{% blocktranslate trimmed asvar t_lead count n=active|length %}{{ n }} tugas aktif{% plural %}{{ n }} tugas aktif{% endblocktranslate %}
             {% include "courier/_page_head.html" with title=t_title lead=t_lead %}
             <p class="sg-sm sg-muted">{% translate "Jemput di rumah pemilik (scan QR + foto bukti), bawa ke kasir untuk check-in, lalu antar pulang setelah lunas (foto berangkat, scan QR + foto saat diserahkan)." %}</p>
             {% include "partials/_sg_messages.html" %}
@@ -46,7 +46,7 @@
                                 <li class="{% if b.pet_collected_at %}is-now{% endif %}">{% translate "Ke toko" %}</li>
                             </ol>
                             {% if carrying and b.status != "DIJEMPUT" %}
-                                <div class="sg-alert is-gold"><i class="bi bi-lock" aria-hidden="true"></i><span>{% blocktranslate trimmed with n=carrying %}Antar {{ n }} paket dulu sebelum berangkat.{% endblocktranslate %}</span></div>
+                                <div class="sg-alert is-gold"><i class="bi bi-lock" aria-hidden="true"></i><span>{% blocktranslate trimmed count n=carrying %}Antar {{ n }} paket dulu sebelum berangkat.{% plural %}Antar {{ n }} paket dulu sebelum berangkat.{% endblocktranslate %}</span></div>
                             {% endif %}
                         {% endif %}
                         <a class="ck-btn is-block {% if forloop.first %}is-primary is-lg{% endif %}" href="{% url 'service:courier_pet_trip' b.pk %}">{% if b.is_return_leg %}{% translate "Buka langkah antar pulang" %}{% elif b.status == "DIJEMPUT" %}{% translate "Lanjutkan jemput" %}{% else %}{% translate "Buka langkah jemput" %}{% endif %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>

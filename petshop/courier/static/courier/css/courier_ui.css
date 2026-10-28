@@ -41,7 +41,7 @@
 .ck-btn:focus-visible, .ck-link:focus-visible, .ck-more:focus-visible, .ck-stops a:focus-visible, .ck-today a:focus-visible { outline: 3px solid var(--sg-focus); outline-offset: 2px; }
 
 /* Kepala halaman */
-.ck-main { max-width: 1480px; }
+.ck-main { --ck-max: 1480px; max-width: var(--ck-max); margin-inline: auto; }
 .ck-head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 16px; margin-bottom: 20px; }
 .ck-head > div:first-child { margin-right: auto; }
 .ck-head__title { margin: 2px 0 0; font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; color: var(--c-text); }
@@ -202,8 +202,12 @@
 .ck-pghd h1 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: var(--sg-ink); }
 .ck-pghd p { margin: 2px 0 0; color: var(--sg-muted); font-size: 0.88rem; font-weight: 500; }
 .ck-pghd .sg-pill { margin-top: 6px; }
-.ck-page { max-width: 1180px; }
-.ck-page.is-narrow { max-width: 640px; }
+.ck-page { --ck-max: 1180px; max-width: var(--ck-max); margin-inline: auto; }
+.ck-page.is-narrow { --ck-max: 640px; }
+/* Layar lebar: konten di tengah area kanan sidebar (sama dengan halaman admin) */
+@media (min-width: 992px) {
+  .ck-side ~ main:is(.ck-page, .ck-main) { margin-left: calc(var(--ck-side) + max(0px, (100% - var(--ck-side) - var(--ck-max)) / 2)); margin-right: auto; }
+}
 /* Kamera scan QR berbingkai gelap */
 .ck-scan { background: #1d1729; color: #ffffff; border-radius: 22px; padding: 16px; position: relative; overflow: hidden; }
 .ck-scan video { width: 100%; border-radius: 16px; display: block; max-height: 320px; object-fit: cover; }

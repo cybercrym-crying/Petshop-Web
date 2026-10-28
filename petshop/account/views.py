@@ -1,5 +1,7 @@
 import csv
 import re
+from datetime import timedelta
+from urllib.parse import quote
 
 from django.utils.translation import gettext as _
 from django.db.models import Count, ProtectedError, Q
@@ -85,12 +87,13 @@ def _inactive_reason(username, password):
     if user.approval == Approval.PENDING:
         return "Akun Anda masih menunggu persetujuan admin. Anda akan bisa masuk setelah disetujui."
     if user.approval == Approval.REJECTED:
-        return "Pendaftaran Anda tidak disetujui. Hubungi admin toko untuk informasi lebih lanjut."
+        reason = f" Alasan: {user.approval_note}." if user.approval_note else ""
+        return f"Pendaftaran Anda tidak disetujui.{reason} Hubungi admin toko untuk informasi lebih lanjut."
     return "Akun ini dinonaktifkan. Hubungi admin toko."
 
 
 def register_staff(request):
-    """Pendaftaran kasir/kurir/groomer. Akun aktif setelah disetujui admin."""
+    """Pendaftaran kurir (satu-satunya peran yang boleh mendaftar sendiri). Akun aktif setelah disetujui admin."""
     if request.user.is_authenticated:
         return redirect(request.user.dashboard_url_name)
     form = StaffRegisterForm(request.POST or None)
@@ -100,8 +103,8 @@ def register_staff(request):
 
         Notification.to_staff(
             (Role.SUPERADMIN, Role.ADMIN),
-            "Pendaftaran staf baru",
-            f"{staff.name} mendaftar sebagai {staff.get_role_display()}.",
+            "Pendaftaran kurir baru",
+            f"{staff.name} mendaftar sebagai kurir.",
             reverse("manage_account") + "?tab=approval",
         )
         return render(request, "account/register_staff_done.html", {"staff": staff})
@@ -265,6 +268,8 @@ def manage_account(request):
         ).select_related("courier_profile").order_by("date_joined"),
         "customers": Customer.objects.order_by("first_name", "last_name"),
         "staff_roles": _assignable_roles(request.user),
+        "decided_staff": _decided_staff(request),
+        "just_decided": request.GET.get("baru", ""),
     }
     return render(request, "account/manage_account.html", context)
 
@@ -280,19 +285,48 @@ def decide_staff(request, pk):
         return redirect(f"{reverse('manage_account')}?tab=approval")
     staff = get_object_or_404(User, pk=pk, role__in=STAFF_ROLES)
     approve = request.POST.get("decision") == "approve"
+    back = f"{reverse('manage_account')}?tab=approval"
     if not request.user.can_manage(staff.role):
         messages.error(request, _("Hanya Super Admin yang bisa memproses akun tingkat admin."))
-    elif request.user.decide_registration(staff, approve):
-        from store.models import ActivityLog
-
-        ActivityLog.record(staff, "Pendaftaran disetujui" if approve else "Pendaftaran ditolak", request.user)
-        messages.success(
-            request,
-            f"{staff.name} {'disetujui dan sekarang bisa masuk' if approve else 'ditolak'}.",
-        )
-    else:
+        return redirect(back)
+    try:
+        decided = request.user.decide_registration(staff, approve, request.POST.get("note", ""))
+    except ValueError as error:
+        messages.error(request, str(error))
+        return redirect(back)
+    if not decided:
         messages.error(request, _("Pendaftaran ini sudah diproses."))
-    return redirect(f"{reverse('manage_account')}?tab=approval")
+        return redirect(back)
+    from store.models import ActivityLog
+
+    ActivityLog.record(
+        staff, "Pendaftaran disetujui" if approve else "Pendaftaran ditolak", request.user,
+        detail=staff.approval_note,
+    )
+    messages.success(
+        request,
+        (
+            _("%(name)s disetujui dan sekarang bisa masuk. Kirim kabarnya ke WhatsApp lewat tombol di bawah.")
+            if approve
+            else _("%(name)s ditolak. Kirim kabarnya ke WhatsApp lewat tombol di bawah.")
+        ) % {"name": staff.name},
+    )
+    return redirect(f"{back}&baru={staff.pk}")
+
+
+def _decided_staff(request):
+    """Pendaftaran yang baru diputuskan (14 hari) + tautan WhatsApp berisi kabar diterima/ditolak."""
+    since = timezone.now() - timedelta(days=14)
+    login_url = request.build_absolute_uri(reverse("login_form"))
+    rows = list(
+        User.objects.filter(role__in=STAFF_ROLES, approved_by__isnull=False, approved_at__gte=since)
+        .exclude(approval=Approval.PENDING)
+        .order_by("-approved_at")[:10]
+    )
+    for s in rows:
+        wa = s.whatsapp_url
+        s.decision_wa_url = f"{wa}?text={quote(s.registration_message(login_url))}" if wa else ""
+    return rows
 
 
 @roleRequired(Role.ADMIN)

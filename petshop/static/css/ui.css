@@ -47,7 +47,7 @@ html[data-theme="dark"] {
 .ui { font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ui-ink); }
 body.ui-page, body:has(.ui-wrap) { background: var(--ui-bg); }
 .ui *, .ui *::before, .ui *::after { box-sizing: border-box; }
-.ui-wrap { padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 22px; max-width: 1480px; }
+.ui-wrap { padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 22px; max-width: 1480px; margin-inline: auto; }
 @media (max-width: 575.98px) { .ui-wrap { padding: 18px 16px 40px; gap: 16px; } }
 
 /* Kepala halaman */

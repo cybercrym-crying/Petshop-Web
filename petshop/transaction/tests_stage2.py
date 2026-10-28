@@ -157,7 +157,7 @@ class PackingAndLabelTests(TestCase):
         order = self.cod()
         self.client.login(username="kas", password="Pass12345!x")
         r = self.client.get(reverse("transaction:packing_queue"))
-        self.assertContains(r, f"Order #{order.pk}")
+        self.assertContains(r, f"Pesanan #{order.pk}")
         self.client.post(reverse("transaction:update_status", args=[order.pk]), {"action": "packed", "next": "packing"})
         order.refresh_from_db()
         self.assertIsNotNone(order.packed_at)
