@@ -75,7 +75,7 @@ html[data-theme="dark"] .product-price { color: #d8b4fe; }
 html[data-theme="dark"] .btn-add-cart { background: #7c3aed; color: white; border: none; }
 html[data-theme="dark"] .btn-add-cart:hover { background: #6d28d9; }
 html[data-theme="dark"] .btn-add-cart:focus-visible, html[data-theme="dark"] .icon-btn:focus-visible { outline: 3px solid #f97316; }
-html[data-theme="dark"] .btn-add-cart:disabled { background: #2b2139; color: #b9adc7; }
+html[data-theme="dark"] .btn-add-cart:disabled, html[data-theme="dark"] .btn-add-cart.is-staff, html[data-theme="dark"] .btn-add-cart.is-staff:hover { background: #2b2139; color: #b9adc7; }
 html[data-theme="dark"] .view-all { color: #d8b4fe; }
 html[data-theme="dark"] .view-all:hover { color: #d8b4fe; }
 html[data-theme="dark"] .empty-products { color: #b9adc7; }

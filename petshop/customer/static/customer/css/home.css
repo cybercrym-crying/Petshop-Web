@@ -866,7 +866,9 @@ a.icon-btn,
   outline-offset: 2px;
 }
 
-.btn-add-cart:disabled {
+.btn-add-cart:disabled,
+.btn-add-cart.is-staff,
+.btn-add-cart.is-staff:hover {
   background: #d1d5db;
   color: #6b7280;
   cursor: not-allowed;

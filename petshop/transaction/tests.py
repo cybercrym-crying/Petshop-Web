@@ -823,9 +823,12 @@ class OnlineOrderTests(TestCase):
         self.assertEqual(data["fee"], 5000 + 2 * 2000)
         self.assertEqual(self.client.get("/checkout/ongkir/").status_code, 400)
 
-    def test_staff_gets_guest_checkout(self):
+    def test_staff_cannot_checkout(self):
+        # Akun staf tidak berbelanja dari situs pelanggan (bukan lagi checkout tamu lewat WhatsApp).
         self.client.login(username="adm_online", password="x")
-        self.assertTemplateUsed(self.client.get("/checkout"), "customer/checkout.html")
+        r = self.client.get("/checkout")
+        self.assertEqual(r.status_code, 403)
+        self.assertTemplateUsed(r, "customer/staff_blocked.html")
 
     def test_place_order_uses_server_prices_and_reduces_stock(self):
         self.login()

@@ -41,6 +41,9 @@
                     </p>
                 {% endif %}
                 <div class="detail-actions">
+                    {% if staff_viewer %}
+                        <p class="muted mb-0"><i class="fas fa-lock" aria-hidden="true"></i> {% translate "Akun staf tidak bisa berbelanja di situs pelanggan. Jual produk ini lewat Kasir." %}</p>
+                    {% else %}
                     <div class="qty-control" aria-label="{% translate 'Jumlah' %}">
                         <button type="button" id="detail-minus" aria-label="{% translate 'Kurangi jumlah' %}">−</button>
                         <span id="detail-qty">1</span>
@@ -65,6 +68,7 @@
                             {% translate "Tambah ke Keranjang" %}
                         {% endif %}
                     </button>
+                    {% endif %}
                     <button type="button"
                             class="wishlist-btn inline"
                             data-wishlist-toggle

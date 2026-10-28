@@ -19,12 +19,12 @@
         <div class="sn-actions">
             <span class="sn-opt">{% include "partials/_theme_toggle.html" with extra="sn-icon" %}</span>
             {% include "partials/_lang_toggle.html" %}
-            <a class="sn-icon"
+            {% if not staff_viewer %}<a class="sn-icon"
                href="{% url 'customer:cart' %}"
                aria-label="{% translate 'Keranjang' %}">
                 <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                 <span class="sn-badge" id="cart-count" hidden>0</span>
-            </a>
+            </a>{% endif %}
             <a class="sn-icon"
                href="{% url 'store:notifications' %}"
                aria-label="{% translate 'Notifikasi' %}{% if unread_notifications %}, {% blocktranslate trimmed with n=unread_notifications %}{{ n }} belum dibaca{% endblocktranslate %}{% endif %}">

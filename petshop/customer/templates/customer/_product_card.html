@@ -35,6 +35,14 @@
         </h3>
         <div class="product-buy">
             <div class="product-price">Rp {{ item.selling_price|default:"0"|rupiah }}</div>
+            {% if staff_viewer %}
+                <button type="button" class="btn-add-cart is-staff" disabled
+                        title="{% translate 'Akun staf tidak bisa berbelanja di situs pelanggan' %}"
+                        aria-label="{% translate 'Akun staf tidak bisa berbelanja di situs pelanggan' %}">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
+                    <span class="btn-add-cart__long">{% translate "Khusus pelanggan" %}</span><span class="btn-add-cart__short" aria-hidden="true">{% translate "Khusus pelanggan" %}</span>
+                </button>
+            {% else %}
             <button type="button"
                     class="btn-add-cart"
                     data-add-to-cart
@@ -53,6 +61,7 @@
                     <span class="btn-add-cart__long">{% translate "Tambah ke Keranjang" %}</span><span class="btn-add-cart__short" aria-hidden="true">{% translate "Keranjang" %}</span>
                 {% endif %}
             </button>
+            {% endif %}
         </div>
     </div>
 </article>

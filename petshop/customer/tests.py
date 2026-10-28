@@ -880,3 +880,48 @@ class ProfilePhotoTests(TestCase):
         self.user.refresh_from_db()
         self.assertFalse(self.user.photo)
         self.assertContains(r, "File harus berupa foto")
+
+
+class StaffCannotShopTests(TestCase):
+    """Akun staf hanya melihat situs pelanggan: tidak bisa checkout atau booking layanan."""
+
+    def setUp(self):
+        self.product = make_product()
+        self.kasir = User.objects.create_user("kasir_x", password="x", role=Role.CASHIER)
+        self.groomer = User.objects.create_user("groomer_x", password="x", role=Role.GROOMER)
+
+    def test_staff_sees_no_cart_and_cannot_checkout(self):
+        import json
+
+        for staff in (self.kasir, self.groomer):
+            self.client.force_login(staff)
+            for name in ("customer:cart", "customer:checkout"):
+                r = self.client.get(reverse(name))
+                self.assertEqual(r.status_code, 403)
+                self.assertContains(r, "Keranjang & checkout khusus pelanggan", status_code=403)
+            detail = self.client.get(reverse("customer:product_detail", args=[self.product.pk]))
+            self.assertNotContains(detail, "data-add-to-cart")
+            self.assertNotContains(detail, 'href="' + reverse("customer:cart") + '"')
+            shop = self.client.get(reverse("customer:products"))
+            self.assertNotContains(shop, "data-add-to-cart")
+            self.assertContains(shop, "Khusus pelanggan")
+            payload = {"items": [{"id": self.product.pk, "quantity": 1}], "payment_method": "COD"}
+            self.client.post(reverse("customer:place_order"), json.dumps(payload), content_type="application/json")
+            self.assertFalse(Order.objects.exists())
+        # Kasir diarahkan ke Kasir; groomer ke halaman stafnya.
+        self.client.force_login(self.kasir)
+        self.assertContains(self.client.get(reverse("customer:cart")), reverse("transaction:make_transaction"), status_code=403)
+
+    def test_staff_cannot_book_service_from_site(self):
+        from service.models import Service, ServiceBooking
+
+        service = Service.objects.create(name="Mandi", price=50000)
+        self.client.force_login(self.kasir)
+        page = self.client.get(reverse("service:catalog"))
+        self.assertNotContains(page, "data-booking-form")
+        self.client.post(reverse("service:catalog"), {"service": service.pk, "pet_name": "Mochi", "pet_type": "KUCING"})
+        self.assertFalse(ServiceBooking.objects.exists())
+
+    def test_customer_and_guest_still_see_cart(self):
+        self.assertEqual(self.client.get(reverse("customer:cart")).status_code, 200)
+        self.assertContains(self.client.get(reverse("customer:product_detail", args=[self.product.pk])), "data-add-to-cart")
