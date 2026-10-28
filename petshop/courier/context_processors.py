@@ -25,5 +25,5 @@ def courier_counts(request):
     profile = getattr(user, "courier_profile", None)
     return {
         "ck_ready_count": ready_to_pick(user),
-        "ck_pet_count": ServiceBooking.pet_tasks(user).count() if profile and profile.can_carry_pets else 0,
+        "ck_pet_count": ServiceBooking.pet_tasks(user).count() if profile else 0,
     }

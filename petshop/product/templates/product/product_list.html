@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load stored_i18n %}
 {% load static rupiah %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'id' }}">
@@ -175,7 +176,7 @@
                                     </b>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-1">
-                                    <small class="text-muted fw-medium">{{ m.note|default:"Tidak ada catatan" }}</small>
+                                    <small class="text-muted fw-medium">{% if m.note %}{{ m.note|tr }}{% else %}{% translate "Tidak ada catatan" %}{% endif %}</small>
                                     <small class="text-muted fw-semibold">
                                         <i class="bi bi-clock me-1"></i> {{ m.date|date:"d M Y, H:i" }} • {% if m.createdBy %}{{ m.createdBy.username }}{% else %}{% translate "Sistem" %}{% endif %}
                                     </small>

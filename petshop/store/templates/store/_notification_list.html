@@ -1,10 +1,11 @@
 {% load i18n %}
+{% load stored_i18n %}
 <ul class="notif-list">
     {% for n in items %}
         <li class="notif-item{% if not n.read_at %} is-unread{% endif %}">
             <a href="{% url 'store:open_notification' n.pk %}">
-                <strong>{{ n.title }}</strong>
-                {% if n.body %}<span>{{ n.body }}</span>{% endif %}
+                <strong>{{ n.title|tr }}</strong>
+                {% if n.body %}<span>{{ n.body|tr }}</span>{% endif %}
                 <small>{{ n.created_at|date:"d M Y, H:i" }}</small>
             </a>
         </li>

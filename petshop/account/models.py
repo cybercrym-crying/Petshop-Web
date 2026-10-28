@@ -313,10 +313,9 @@ class User(AbstractUser):
 
     @classmethod
     def pet_couriers(cls):
-        """Kurir aktif yang membawa kandang/boks hewan (boleh antar-jemput hewan grooming)."""
-        return cls.objects.filter(
-            role=Role.COURIER, is_active=True, courier_profile__can_carry_pets=True
-        )
+        """Kurir aktif yang bisa ditugasi antar-jemput hewan grooming. Kandang/boks disediakan
+        toko, jadi semua kurir aktif bisa (kolom lama can_carry_pets tidak dipakai lagi)."""
+        return cls.objects.filter(role=Role.COURIER, is_active=True)
 
     @classmethod
     def customers(cls):

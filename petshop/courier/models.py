@@ -30,7 +30,8 @@ class CourierProfile(TimeStampedModel):
         choices=CourierStatus.choices,
         default=CourierStatus.ACTIVE,
     )
-    # Kurir yang membawa kandang/boks hewan bisa ditugasi antar-jemput hewan grooming.
+    # Tidak dipakai lagi: kandang/boks hewan disediakan toko, semua kurir aktif bisa antar-jemput hewan.
+    # Kolom dibiarkan agar data lama & migrasi tetap utuh.
     can_carry_pets = models.BooleanField("Bisa antar-jemput hewan", default=False)
     # Foto wajah kurir: tampil di halaman lacak pelanggan dan dasbor admin.
     photo = models.ImageField(_("Foto kurir"), upload_to="couriers/%Y/%m", null=True, blank=True)

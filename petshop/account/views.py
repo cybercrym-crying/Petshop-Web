@@ -305,8 +305,11 @@ def decide_staff(request, pk):
     )
     messages.success(
         request,
-        f"{staff.name} {'disetujui dan sekarang bisa masuk' if approve else 'ditolak'}. "
-        "Kirim kabarnya ke WhatsApp lewat tombol di bawah.",
+        (
+            _("%(name)s disetujui dan sekarang bisa masuk. Kirim kabarnya ke WhatsApp lewat tombol di bawah.")
+            if approve
+            else _("%(name)s ditolak. Kirim kabarnya ke WhatsApp lewat tombol di bawah.")
+        ) % {"name": staff.name},
     )
     return redirect(f"{back}&baru={staff.pk}")
 

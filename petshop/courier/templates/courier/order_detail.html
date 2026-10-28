@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load stored_i18n %}
 {% load static rupiah l10n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'id' }}">
@@ -67,8 +68,8 @@
                     <ul class="sg-rows sg-mt8">
                         {% for h in history %}
                             <li>
-                                {% if h.photo %}<a href="{{ h.photo.url }}" target="_blank" rel="noopener" class="ck-thumb"><img src="{{ h.photo.url }}" alt="{% blocktranslate trimmed with h_action=h.action %}Foto {{ h_action }}{% endblocktranslate %}" loading="lazy"></a>{% else %}<span class="sg-av" style="width:40px;height:40px;font-size:0.95rem"><i class="bi bi-clock-history" aria-hidden="true"></i></span>{% endif %}
-                                <span style="flex:1;min-width:0"><b class="sg-sm">{{ h.action }}</b><br><small class="sg-xs sg-muted">{{ h.created_at|date:"d M H.i" }}{% if h.actor %} · {{ h.actor.name }}{% endif %}{% if h.detail %} · {{ h.detail }}{% endif %}</small></span>
+                                {% if h.photo %}<a href="{{ h.photo.url }}" target="_blank" rel="noopener" class="ck-thumb"><img src="{{ h.photo.url }}" alt="{% blocktranslate trimmed with h_action=h.action|tr %}Foto {{ h_action }}{% endblocktranslate %}" loading="lazy"></a>{% else %}<span class="sg-av" style="width:40px;height:40px;font-size:0.95rem"><i class="bi bi-clock-history" aria-hidden="true"></i></span>{% endif %}
+                                <span style="flex:1;min-width:0"><b class="sg-sm">{{ h.action|tr }}</b><br><small class="sg-xs sg-muted">{{ h.created_at|date:"d M H.i" }}{% if h.actor %} · {{ h.actor.name }}{% endif %}{% if h.detail %} · {{ h.detail|tr }}{% endif %}</small></span>
                             </li>
                         {% endfor %}
                     </ul>

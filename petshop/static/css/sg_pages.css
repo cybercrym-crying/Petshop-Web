@@ -4,7 +4,7 @@
  * supaya mode gelap ikut berubah.
  */
 .sg { color: var(--sg-ink); }
-.sg-page { padding: 24px 28px 48px; min-width: 0; }
+.sg-page { padding: 24px 28px 48px; min-width: 0; max-width: 1480px; margin-inline: auto; }
 @media (max-width: 767.98px) { .sg-page { padding: 18px 16px 96px; } }
 
 /* Kepala halaman */

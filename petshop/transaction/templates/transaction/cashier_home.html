@@ -3,7 +3,7 @@
 {% load static rupiah %}
 {% block title %}{% translate "Seelly - Beranda Kasir" %}{% endblock %}
 {% block extra_head %}
-    <link href="{% static 'css/ui.css' %}?v=ux3" rel="stylesheet" />
+    <link href="{% static 'css/ui.css' %}?v=ux4" rel="stylesheet" />
     <link href="{% static 'transaction/css/cashier_home.css' %}?v=1-lay1" rel="stylesheet" />
 {% endblock %}
 {% block content %}
@@ -14,7 +14,7 @@
                 <h1 class="ui-title">{% blocktranslate trimmed with name=request.user.first_name|default:request.user.username %}Halo, {{ name }}{% endblocktranslate %}</h1>
                 <p class="ui-sub">
                     {% if shift %}{% blocktranslate trimmed with since=shift.opened_at|timesince %}Shift berjalan {{ since }}{% endblocktranslate %}{% else %}{% translate "Kasir belum dibuka" %}{% endif %}
-                    · {% if tasks_total %}{% blocktranslate trimmed with n=tasks_total %}{{ n }} hal menunggu tindakanmu{% endblocktranslate %}{% else %}{% translate "tidak ada yang menunggu" %}{% endif %}
+                    · {% if tasks_total %}{% blocktranslate trimmed count n=tasks_total %}{{ n }} hal menunggu tindakanmu{% plural %}{{ n }} hal menunggu tindakanmu{% endblocktranslate %}{% else %}{% translate "tidak ada yang menunggu" %}{% endif %}
                 </p>
             </div>
             <div class="ui-actions">
@@ -52,8 +52,8 @@
                         <div class="kh-held__text">
                             {% if held_sales %}
                                 {% with h=held_sales.0 %}
-                                    <b>{% blocktranslate trimmed with n=held_sales|length %}{{ n }} transaksi diparkir{% endblocktranslate %}</b>
-                                    <small>{% blocktranslate trimmed with label=h.label|default:"-" n=h.item_count total=h.total|rupiah %}{{ label }} · {{ n }} item · Rp {{ total }}{% endblocktranslate %}</small>
+                                    <b>{% blocktranslate trimmed count n=held_sales|length %}{{ n }} transaksi diparkir{% plural %}{{ n }} transaksi diparkir{% endblocktranslate %}</b>
+                                    <small>{% blocktranslate trimmed with label=h.label|default:"-" total=h.total|rupiah count n=h.item_count %}{{ label }} · {{ n }} item · Rp {{ total }}{% plural %}{{ label }} · {{ n }} item · Rp {{ total }}{% endblocktranslate %}</small>
                                 {% endwith %}
                             {% else %}
                                 <b>{% translate "Tidak ada transaksi diparkir" %}</b>

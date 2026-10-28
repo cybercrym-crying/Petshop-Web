@@ -218,7 +218,7 @@ class ManageTransactionViewTests(TestCase):
     def test_list_page_renders_with_orders(self):
         r = self.client.get("/staff/admin/manage_transaction/")
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, f"Order #{self.order.pk}")
+        self.assertContains(r, f"Pesanan #{self.order.pk}")
 
     def test_modal_shows_resi_and_whatsapp_share_link(self):
         r = self.client.get("/staff/admin/manage_transaction/")
@@ -232,7 +232,7 @@ class ManageTransactionViewTests(TestCase):
             "/staff/admin/manage_transaction/",
             {"view": "list", "q": self.order.tracking_number[-6:]},
         )
-        self.assertContains(hit, f"Order #{self.order.pk}")
+        self.assertContains(hit, f"Pesanan #{self.order.pk}")
         miss = self.client.get(
             "/staff/admin/manage_transaction/", {"view": "list", "q": "ZZZZZZ"}
         )
@@ -380,7 +380,7 @@ class BoardViewTests(TestCase):
             {"pending": 0, "confirmed": 1, "on-delivery": 1, "delivered": 0, "cancelled": 1},
         )
         for o in (a, b, c):
-            self.assertContains(r, f"Order #{o.pk}")  # modal detail tetap ada
+            self.assertContains(r, f"Pesanan #{o.pk}")  # modal detail tetap ada
             # kartu bisa diklik dan menunjuk ke modal yang ada di halaman
             self.assertContains(r, f'data-modal="#detailTransaction{o.pk}"')
             self.assertContains(r, f'id="detailTransaction{o.pk}"')
@@ -391,7 +391,7 @@ class BoardViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.context["view"], "list")
         self.assertContains(r, f"#{o.pk}")
-        self.assertContains(r, "Status Order")
+        self.assertContains(r, "Status Pesanan")
 
     def test_search_by_customer_name_and_number(self):
         a = self.make_order(self.budi)
@@ -593,6 +593,45 @@ class SeedDemoTests(TestCase):
         self.assertTrue(Product.objects.filter(pk=mine.pk).exists())
         self.assertTrue(User.objects.filter(pk=owner.pk).exists())
         self.assertEqual(Product.objects.count(), len(PRODUCTS) + 1)
+
+    def test_seed_images_all_exist_and_media_only_restores_them(self):
+        """Data final: tiap produk punya foto sendiri, staf punya foto profil, bukti lunas & serah terima
+        punya foto, dan semua file benar-benar ada (tidak ada gambar rusak)."""
+        import os
+
+        from django.conf import settings
+        from django.test import override_settings
+
+        from courier.models import CourierProfile
+        from service.models import Pet
+
+        def missing(qs, field):
+            return [getattr(o, field).name for o in qs if not getattr(o, field).storage.exists(getattr(o, field).name)]
+
+        with override_settings(DEBUG=True):
+            self.run_seed(orders=20)
+        products = Product.objects.all()
+        self.assertFalse(products.filter(photo="").exists())
+        self.assertEqual(len({p.photo.name for p in products}), products.count())  # tidak ada foto kembar
+        self.assertEqual(missing(products, "photo"), [])
+        staff = User.objects.exclude(role=Role.CUSTOMER)
+        self.assertFalse(staff.filter(photo="").exists())
+        self.assertFalse(CourierProfile.objects.filter(photo="").exists())
+        self.assertTrue(Pet.objects.exclude(photo="").exists())
+        paid = Order.objects.filter(channel="ONLINE", payment_method="TRANSFER", payment_status="LUNAS")
+        self.assertFalse(paid.filter(payment_proof="").exists())
+        self.assertFalse(Order.objects.filter(order_status="TERKIRIM", delivery_photo="").exclude(fulfillment="BAWA").exists())
+        for qs, field in [(staff, "photo"), (Pet.objects.exclude(photo=""), "photo"), (paid, "payment_proof")]:
+            self.assertEqual(missing(qs, field), [])
+
+        # Database disalin tanpa folder media: --media-only memulihkan file demo tanpa menambah data.
+        for p in products:
+            os.remove(os.path.join(settings.MEDIA_ROOT, p.photo.name))
+        users = User.objects.count()
+        with override_settings(DEBUG=True):
+            self.run_seed(media_only=True)
+        self.assertEqual(missing(Product.objects.all(), "photo"), [])
+        self.assertEqual(User.objects.count(), users)
 
 
 class AddToCartLimitsTests(TestCase):

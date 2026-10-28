@@ -6,7 +6,7 @@
             {% if user.photo_url %}<img class="sn-avatar sn-avatar--img" src="{{ user.photo_url }}" alt="" width="36" height="36">{% else %}<span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>{% endif %}
             <div>
                 <strong>{{ user.name }}</strong>
-                <small>{% translate "Pelanggan" %}</small>
+                <small>{{ user.get_role_display }}</small>
             </div>
         </div>
         <nav class="ca-nav">

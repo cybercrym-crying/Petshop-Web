@@ -3,6 +3,7 @@ import secrets
 from datetime import timedelta
 
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
@@ -246,11 +247,11 @@ SORT_OPTIONS = [
 PET_FILTERS = [p for p in PetType.values if p != PetType.ALL]
 CONDITION_FILTERS = list(ProductCondition.values)
 CATEGORY_BLURB = {
-    "MAKANAN": "Makanan sehat dan lezat",
-    "PERLENGKAPAN": "Perlengkapan praktis dan awet",
-    "AKSESORIS": "Aksesori yang lucu dan nyaman",
-    "KESEHATAN": "Perawatan kesehatan yang terpercaya",
-    "MAINAN": "Mainan seru",
+    "MAKANAN": _lazy("Makanan sehat dan lezat"),
+    "PERLENGKAPAN": _lazy("Perlengkapan praktis dan awet"),
+    "AKSESORIS": _lazy("Aksesori yang lucu dan nyaman"),
+    "KESEHATAN": _lazy("Perawatan kesehatan yang terpercaya"),
+    "MAINAN": _lazy("Mainan seru"),
 }
 
 
@@ -289,22 +290,22 @@ def _heading(pets, categories, query, has_filters):
     elif cat_label:
         title = cat_label
     elif one_pet:
-        title = f"Produk untuk {one_pet}"
+        title = _("Produk untuk %(pet)s") % {"pet": one_pet}
     elif query:
-        title = f"Hasil pencarian “{query}”"
+        title = _("Hasil pencarian “%(q)s”") % {"q": query}
     elif has_filters:
-        title = "Hasil Filter"
+        title = _("Hasil Filter")
     else:
-        title = "Semua Produk"
+        title = _("Semua Produk")
     opening = (
-        CATEGORY_BLURB.get(one_cat, "Temukan kebutuhan terbaik")
+        CATEGORY_BLURB.get(one_cat, _("Temukan kebutuhan terbaik"))
         if one_cat
-        else "Temukan kebutuhan terbaik"
+        else _("Temukan kebutuhan terbaik")
     )
     target = (
-        f"{one_pet.lower()} kesayangan Anda" if one_pet else "hewan kesayangan Anda"
+        _("%(pet)s kesayangan Anda") % {"pet": one_pet.lower()} if one_pet else _("hewan kesayangan Anda")
     )
-    return title, f"{opening} untuk {target}."
+    return title, _("%(opening)s untuk %(target)s.") % {"opening": opening, "target": target}
 
 
 def products(request):
@@ -493,7 +494,7 @@ def shipping_quote(request):
     location = _parse_location(request.GET)
     if location is None:
         return JsonResponse(
-            {"ok": False, "message": "Tandai lokasi pengiriman di peta."}, status=400
+            {"ok": False, "message": _("Tandai lokasi pengiriman di peta.")}, status=400
         )
     store = StoreSettings.current()
     distance = store.distance_km(*location)
@@ -939,16 +940,16 @@ def _tracking_steps(order):
         steps = [
             {
                 "icon": "fa-cart-shopping",
-                "title": "Pesanan dibuat",
+                "title": _("Pesanan dibuat"),
                 "time": order.date,
                 "done": True,
             },
             {
                 "icon": "fa-clipboard-check",
                 "title": (
-                    "Dikonfirmasi toko"
+                    _("Dikonfirmasi toko")
                     if order.order_status != OrderStatus.PENDING
-                    else "Menunggu konfirmasi toko"
+                    else _("Menunggu konfirmasi toko")
                 ),
                 "time": order.confirmed_at,
                 "done": order.order_status
@@ -959,7 +960,7 @@ def _tracking_steps(order):
         steps = [
             {
                 "icon": "fa-clipboard-check",
-                "title": "Pesanan dikonfirmasi",
+                "title": _("Pesanan dikonfirmasi"),
                 "time": order.date,
                 "done": True,
             },
@@ -967,14 +968,14 @@ def _tracking_steps(order):
     steps += [
         {
             "icon": "fa-truck-fast",
-            "title": "Sedang dikirim kurir",
+            "title": _("Sedang dikirim kurir"),
             "time": order.shipped_at,
             "done": order.order_status
             in (OrderStatus.ON_DELIVERY, OrderStatus.DELIVERED),
         },
         {
             "icon": "fa-box-open",
-            "title": "Pesanan sampai",
+            "title": _("Pesanan sampai"),
             "time": order.delivered_at,
             "done": order.order_status == OrderStatus.DELIVERED,
         },

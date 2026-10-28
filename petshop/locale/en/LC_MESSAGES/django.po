@@ -4,6 +4,7 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "%(active_n)s pesanan aktif · Total Rp %(active_total)s"
 msgstr "%(active_n)s active orders · Total Rp %(active_total)s"
@@ -84,7 +85,7 @@ msgid "%(o_rating)s bintang"
 msgstr "%(o_rating)s stars"
 
 msgid "%(on_hand)s paket COD sudah diserahkan dan uangnya belum disetor ke kasir."
-msgstr "%(on_hand)s COD parcels have been delivered and the cash has not yet been handed to the cashier."
+msgstr "%(on_hand)s COD packages have been delivered and the cash has not yet been handed to the cashier."
 
 msgid "%(order_details_count)s Barang"
 msgstr "%(order_details_count)s Items"
@@ -111,7 +112,7 @@ msgid "%(r_received_at)s oleh %(r_received_by_name)s"
 msgstr "%(r_received_at)s by %(r_received_by_name)s"
 
 msgid "%(r_submitted_at)s · %(r_orders_count)s paket"
-msgstr "%(r_submitted_at)s · %(r_orders_count)s parcels"
+msgstr "%(r_submitted_at)s · %(r_orders_count)s packages"
 
 msgid "%(restock_needed)s perlu restock"
 msgstr "%(restock_needed)s need restocking"
@@ -147,7 +148,7 @@ msgid "%(trx_details_count)s item"
 msgstr "%(trx_details_count)s items"
 
 msgid "(%(c_n)s paket)"
-msgstr "(%(c_n)s parcels)"
+msgstr "(%(c_n)s packages)"
 
 msgid "(%(s_open_bookings)s berjalan)"
 msgstr "(%(s_open_bookings)s ongoing)"
@@ -186,7 +187,7 @@ msgid ", lalu foto bukti transfernya."
 msgstr ", then take a photo of the transfer receipt."
 
 msgid ", pelanggan mendapat notifikasi, dan rute dihitung ulang. Maks. %(max_packages)s paket per rute."
-msgstr ", the customer is notified, and the route is recalculated. Max. %(max_packages)s parcels per route."
+msgstr ", the customer is notified, and the route is recalculated. Max. %(max_packages)s packages per route."
 
 msgid "- Pilih Kategori -"
 msgstr "- Choose Category -"
@@ -387,16 +388,16 @@ msgid "Ambil Foto"
 msgstr "Take Photo"
 
 msgid "Ambil Paket"
-msgstr "Pick Up Parcel"
+msgstr "Pick Up Packages"
 
 msgid "Ambil Paket - Kurir"
-msgstr "Pick Up Parcel - Courier"
+msgstr "Pick Up Packages - Courier"
 
 msgid "Ambil paket"
-msgstr "Pick up parcel"
+msgstr "Pick up package"
 
 msgid "Ambil paket dengan memindai QR label di menu"
-msgstr "Pick up parcels by scanning the label QR in the menu"
+msgstr "Pick up packages by scanning the label QR in the menu"
 
 msgid "Anda belum masuk."
 msgstr "You are not signed in."
@@ -648,10 +649,10 @@ msgid "Belum ada order."
 msgstr "No orders yet."
 
 msgid "Belum ada paket siap diambil."
-msgstr "No parcels ready for pickup yet."
+msgstr "No packages ready for pickup yet."
 
 msgid "Belum ada paket yang dibawa. Ambil paket di toko dengan memindai QR pada label."
-msgstr "No parcels on hand yet. Pick up parcels at the store by scanning the QR on the label."
+msgstr "No packages on hand yet. Pick up packages at the store by scanning the QR on the label."
 
 msgid "Belum ada penjualan lunas pada %(days)s hari terakhir."
 msgstr "No paid sales in the last %(days)s days."
@@ -1032,7 +1033,7 @@ msgid "Cek"
 msgstr "Check"
 
 msgid "Cek Bukti Transfer"
-msgstr "Check Transfer Proof"
+msgstr "Transfer Proofs"
 
 msgid "Cek Bukti Transfer · Order #%(order_pk)s"
 msgstr "Check Transfer Proof · Order #%(order_pk)s"
@@ -1320,7 +1321,7 @@ msgid "Filter produk"
 msgstr "Product filter"
 
 msgid "Fitur kurir terkunci selama GPS mati agar pelanggan dan toko selalu tahu posisi paket."
-msgstr "Courier features are locked while GPS is off so customers and the store always know where the parcels are."
+msgstr "Courier features are locked while GPS is off so customers and the store always know where the packages are."
 
 msgid "Foto"
 msgstr "Photo"
@@ -1380,7 +1381,7 @@ msgid "Foto pagar / rumah sebagai bukti kunjungan."
 msgstr "Photo of the gate / house as proof of the visit."
 
 msgid "Foto paket di tangan penerima"
-msgstr "Photo of the parcel in the recipient's hands"
+msgstr "Photo of the package in the recipient's hands"
 
 msgid "Foto saat diserahkan kurir"
 msgstr "Photo when handed over by the courier"
@@ -1668,7 +1669,7 @@ msgid "Isi nama hewan atau pilih dari Hewan Saya."
 msgstr "Fill in the pet name or choose from My Pets."
 
 msgid "Isi paket"
-msgstr "Parcel contents"
+msgstr "Package contents"
 
 msgid "Istirahat"
 msgstr "On break"
@@ -1833,7 +1834,7 @@ msgid "Kelola Produk"
 msgstr "Manage Products"
 
 msgid "Kelola Transaksi"
-msgstr "Manage Transactions"
+msgstr "Transactions"
 
 msgid "Kelola data diri, alamat pengiriman, dan kata sandi akun Anda."
 msgstr "Manage your personal details, shipping address and account password."
@@ -1872,7 +1873,7 @@ msgid "Kembalikan ke toko"
 msgstr "Return to the store"
 
 msgid "Kembalikan paket #%(order_pk)s ke toko?"
-msgstr "Return parcel #%(order_pk)s to the store?"
+msgstr "Return package #%(order_pk)s to the store?"
 
 msgid "Kenapa belanja di sini"
 msgstr "Why shop here"
@@ -2046,7 +2047,7 @@ msgid "Kurir: %(b_pet_courier_display_name)s"
 msgstr "Courier: %(b_pet_courier_display_name)s"
 
 msgid "Kurir: scan QR ini saat mengambil paket. Serah terima: scan QR di HP penerima."
-msgstr "Courier: scan this QR when picking up the parcel. Handover: scan the QR on the recipient's phone."
+msgstr "Courier: scan this QR when picking up the package. Handover: scan the QR on the recipient's phone."
 
 msgid "LUNAS"
 msgstr "PAID"
@@ -2355,7 +2356,7 @@ msgid "Minimal 1 jam."
 msgstr "At least 1 hour."
 
 msgid "Minimal 1 paket."
-msgstr "At least 1 parcel."
+msgstr "At least 1 package."
 
 msgid "Minimal 8 karakter"
 msgstr "At least 8 characters"
@@ -2481,7 +2482,7 @@ msgid "No. packing"
 msgstr "Packing no."
 
 msgid "No. packing %(order_packing_label)s · scan label di toko untuk membawa paket ini."
-msgstr "Packing no. %(order_packing_label)s · scan the label at the store to take this parcel."
+msgstr "Packing no. %(order_packing_label)s · scan the label at the store to take this package."
 
 msgid "Nomor HP"
 msgstr "Phone Number"
@@ -2598,22 +2599,22 @@ msgid "Pakai lokasi saya"
 msgstr "Use my location"
 
 msgid "Paket"
-msgstr "Parcel"
+msgstr "Packages"
 
 msgid "Paket #%(order_pk)s tidak bisa diantar"
-msgstr "Parcel #%(order_pk)s cannot be delivered"
+msgstr "Package #%(order_pk)s cannot be delivered"
 
 msgid "Paket Saya"
-msgstr "My Parcels"
+msgstr "My Packages"
 
 msgid "Paket Saya - Kurir"
-msgstr "My Parcels - Courier"
+msgstr "My Packages - Courier"
 
 msgid "Paket dibawa"
-msgstr "Parcels carried"
+msgstr "Packages carried"
 
 msgid "Paket dikembalikan ke antrean toko, admin dan pelanggan diberi tahu. Bawa paket kembali ke toko."
-msgstr "The parcel was returned to the store queue, the admin and customer were notified. Bring the parcel back to the store."
+msgstr "The package was returned to the store queue, the admin and customer were notified. Bring the package back to the store."
 
 msgid "Paling Dicari"
 msgstr "Most Wanted"
@@ -2682,7 +2683,7 @@ msgid "Penerima"
 msgstr "Recipient"
 
 msgid "Penerima menolak paket"
-msgstr "The recipient refused the parcel"
+msgstr "The recipient refused the package"
 
 msgid "Penerima tidak ada di lokasi"
 msgstr "The recipient is not at the location"
@@ -2970,7 +2971,7 @@ msgid "Pilihan cepat"
 msgstr "Quick picks"
 
 msgid "Pindai QR di label setiap paket yang Anda bawa. Paket langsung berstatus"
-msgstr "Scan the QR on the label of every parcel you carry. The parcel status changes straight to"
+msgstr "Scan the QR on the label of every package you carry. The package status changes straight to"
 
 msgid "Posisi kurir"
 msgstr "Courier position"
@@ -3048,7 +3049,7 @@ msgid "QR / kode booking tidak ditemukan atau booking sudah selesai."
 msgstr "QR / booking code not found or the booking is already finished."
 
 msgid "QR / resi tidak dikenal. Scan QR pada label paket."
-msgstr "Unknown QR / tracking number. Scan the QR on the parcel label."
+msgstr "Unknown QR / tracking number. Scan the QR on the package label."
 
 msgid "QR booking #%(b_pk)s"
 msgstr "QR for booking #%(b_pk)s"
@@ -3171,7 +3172,7 @@ msgid "SEELLY PETSHOP"
 msgstr "SEELLY PETSHOP"
 
 msgid "Saat paket tiba, kurir memindai QR ini lalu memotret paket di tangan Anda. Jangan bagikan QR ini sebelum paket benar-benar diterima. Kode cadangan:"
-msgstr "When the parcel arrives, the courier scans this QR and photographs the parcel in your hands. Do not share this QR before the parcel is actually received. Backup code:"
+msgstr "When the package arrives, the courier scans this QR and photographs the package in your hands. Do not share this QR before the package is actually received. Backup code:"
 
 msgid "Sampai"
 msgstr "Arrived"
@@ -3180,7 +3181,7 @@ msgid "Sampai pada %(order_delivered_at)s"
 msgstr "Arrived on %(order_delivered_at)s"
 
 msgid "Sampai, serahkan paket"
-msgstr "Arrived, hand over the parcel"
+msgstr "Arrived, hand over the package"
 
 msgid "Sapa Kami"
 msgstr "Say Hello"
@@ -3210,10 +3211,10 @@ msgid "Scan QR di HP penerima"
 msgstr "Scan the QR on the recipient's phone"
 
 msgid "Scan QR label paket"
-msgstr "Scan the parcel label QR"
+msgstr "Scan the package label QR"
 
 msgid "Scan ambil paket"
-msgstr "Scan to pick up parcel"
+msgstr "Scan to pick up package"
 
 msgid "Scan label untuk mengambil"
 msgstr "Scan the label to pick up"
@@ -3264,7 +3265,7 @@ msgid "Selesai, hewan sudah diserahkan ke pemilik."
 msgstr "Done, the pet has been handed to the owner."
 
 msgid "Selesai, paket diterima"
-msgstr "Done, parcel received"
+msgstr "Done, package received"
 
 msgid "Selesaikan tahap terakhir (hewan siap)"
 msgstr "Finish the last step (pet ready)"
@@ -3333,7 +3334,7 @@ msgid "Serahkan (scan QR pelanggan)"
 msgstr "Hand over (scan customer QR)"
 
 msgid "Serahkan paket"
-msgstr "Hand over parcel"
+msgstr "Hand over package"
 
 msgid "Server Bermasalah"
 msgstr "Server Error"
@@ -3783,7 +3784,7 @@ msgid "Tidak ada langkah untuk Anda saat ini (%(booking_get_status_display)s)."
 msgstr "There is no step for you right now (%(booking_get_status_display)s)."
 
 msgid "Tidak ada paket yang menunggu kurir."
-msgstr "No parcels waiting for a courier."
+msgstr "No packages waiting for a courier."
 
 msgid "Tidak ada pendaftaran yang menunggu"
 msgstr "No registrations waiting"
@@ -4029,7 +4030,7 @@ msgid "Urutan"
 msgstr "Order"
 
 msgid "Urutan antar dihitung dari jarak terdekat ke terjauh (nearest neighbour + 2-opt) dan diperbarui setiap paket diambil atau diserahkan."
-msgstr "The delivery order goes from nearest to farthest (nearest neighbour + 2-opt) and is updated every time a parcel is picked up or handed over."
+msgstr "The delivery order goes from nearest to farthest (nearest neighbour + 2-opt) and is updated every time a package is picked up or handed over."
 
 msgid "Urutan berikutnya"
 msgstr "Next in line"
@@ -4299,7 +4300,7 @@ msgid "Foto kondisi awal membantu bila ada komplain."
 msgstr "A photo of the initial condition helps if there is a complaint."
 
 msgid "Foto paket saat dipegang penerima (wajah tidak harus terlihat)."
-msgstr "Photo of the parcel held by the recipient (the face need not be visible)."
+msgstr "Photo of the package held by the recipient (the face need not be visible)."
 
 msgid "Struk"
 msgstr "Receipt"
@@ -4314,7 +4315,7 @@ msgid ": harga booking grooming yang berstatus Selesai, menurut waktu selesai. P
 msgstr ": price of grooming bookings marked Done, by finish time. Service payments are recorded at the cashier (see Cashier Report)."
 
 msgid "Kasir (Transaksi Offline)"
-msgstr "Cashier (In-store Sales)"
+msgstr "Cashier (In-store)"
 
 msgid "Kas &amp; Shift"
 msgstr "Cash &amp; Shift"
@@ -4395,7 +4396,9 @@ msgid "%(n)s hari"
 msgstr "%(n)s days"
 
 msgid "%(n)s retur menunggu persetujuan."
-msgstr "%(n)s return(s) awaiting approval."
+msgid_plural "%(n)s retur menunggu persetujuan."
+msgstr[0] "%(n)s return awaiting approval."
+msgstr[1] "%(n)s returns awaiting approval."
 
 msgid "Buka daftar retur"
 msgstr "Open returns list"
@@ -4905,7 +4908,9 @@ msgid "Kasir sekarang"
 msgstr "Cashier now"
 
 msgid "%(n)s kasir buka"
-msgstr "%(n)s cashier(s) open"
+msgid_plural "%(n)s kasir buka"
+msgstr[0] "%(n)s cashier open"
+msgstr[1] "%(n)s cashiers open"
 
 msgid "Kasir tutup"
 msgstr "Cashier closed"
@@ -4941,7 +4946,9 @@ msgid "Grooming selesai"
 msgstr "Grooming done"
 
 msgid "%(n)s hewan"
-msgstr "%(n)s pet(s)"
+msgid_plural "%(n)s hewan"
+msgstr[0] "%(n)s pet"
+msgstr[1] "%(n)s pets"
 
 msgid "Nilai layanan Rp %(total)s"
 msgstr "Service value Rp %(total)s"
@@ -5121,7 +5128,9 @@ msgid "Hapus foto ini"
 msgstr "Remove this photo"
 
 msgid "Total · %(n)s item"
-msgstr "Total · %(n)s item(s)"
+msgid_plural "Total · %(n)s item"
+msgstr[0] "Total · %(n)s item"
+msgstr[1] "Total · %(n)s items"
 
 msgid "Foto hewan membantu groomer mengenali hewan Anda."
 msgstr "A photo helps the groomer recognise your pet."
@@ -5175,13 +5184,13 @@ msgid "Peta pengiriman"
 msgstr "Delivery map"
 
 msgid "Paket belum dibawa kurir. Posisi kurir muncul di peta begitu paket diambil, dan halaman ini memperbarui sendiri."
-msgstr "No courier has the parcel yet. The courier's position appears on the map once the parcel is picked up, and this page updates itself."
+msgstr "No courier has the package yet. The courier's position appears on the map once the package is picked up, and this page updates itself."
 
 msgid "Anda sedang antar-jemput %(pet)s."
 msgstr "You are transporting %(pet)s."
 
 msgid "Selama tugas ini berjalan Anda tidak bisa mengambil atau mengantar paket. Selesaikan dulu, lalu paket bisa diambil lagi."
-msgstr "While this task runs you cannot pick up or deliver parcels. Finish it first, then you can take parcels again."
+msgstr "While this task runs you cannot pick up or deliver packages. Finish it first, then you can take packages again."
 
 msgid "Buka tugas hewan"
 msgstr "Open pet task"
@@ -5205,7 +5214,9 @@ msgid "Buka kasir dulu supaya bisa menerima pembayaran."
 msgstr "Open the till first to accept payments."
 
 msgid "%(n)s item"
-msgstr "%(n)s items"
+msgid_plural "%(n)s item"
+msgstr[0] "%(n)s item"
+msgstr[1] "%(n)s items"
 
 msgid "Perlu tindakan sekarang"
 msgstr "Needs action now"
@@ -5217,7 +5228,7 @@ msgid "Tugaskan"
 msgstr "Assign"
 
 msgid "Kurir yang sedang antar-jemput hewan tidak bisa diberi paket."
-msgstr "Couriers transporting a pet cannot be given parcels."
+msgstr "Couriers transporting a pet cannot be given packages."
 
 msgid "Belum ada kurir aktif."
 msgstr "No active couriers yet."
@@ -5226,16 +5237,16 @@ msgid "%(pet)s, booking #%(pk)s"
 msgstr "%(pet)s, booking #%(pk)s"
 
 msgid "Antar paket"
-msgstr "Delivering parcels"
+msgstr "Delivering packages"
 
 msgid "%(n)s paket di jalan"
-msgstr "%(n)s parcels on the way"
+msgstr "%(n)s packages on the way"
 
 msgid "Siap"
 msgstr "Available"
 
 msgid "Tidak membawa paket"
-msgstr "Not carrying parcels"
+msgstr "Not carrying packages"
 
 msgid "%(n)s pesanan selesai"
 msgstr "%(n)s orders completed"
@@ -5253,7 +5264,7 @@ msgid "Catatan pemilik"
 msgstr "Owner's note"
 
 msgid "Lacak resi"
-msgstr "Track parcel"
+msgstr "Track package"
 
 msgid "Bukti terkirim, sedang dicek"
 msgstr "Proof sent, being checked"
@@ -5454,7 +5465,7 @@ msgid "Ringkasan kurir"
 msgstr "Courier summary"
 
 msgid "%(n)s paket terkirim"
-msgstr "%(n)s parcels delivered"
+msgstr "%(n)s packages delivered"
 
 msgid "Data diri &amp; foto"
 msgstr "Personal details &amp; photo"
@@ -5463,7 +5474,7 @@ msgid "Foto kurir"
 msgstr "Courier photo"
 
 msgid "Foto wajah yang jelas. Tampil untuk pelanggan saat paket diantar. JPG/PNG/WEBP, maks. 10 MB."
-msgstr "A clear photo of your face. Customers see it while their parcel is on the way. JPG/PNG/WEBP, max. 10 MB."
+msgstr "A clear photo of your face. Customers see it while their package is on the way. JPG/PNG/WEBP, max. 10 MB."
 
 msgid "Hapus foto"
 msgstr "Remove photo"
@@ -5739,7 +5750,9 @@ msgid "Ke toko"
 msgstr "To the store"
 
 msgid "Antar %(n)s paket dulu sebelum berangkat."
-msgstr "Deliver %(n)s package(s) first before you set off."
+msgid_plural "Antar %(n)s paket dulu sebelum berangkat."
+msgstr[0] "Deliver %(n)s package first before you set off."
+msgstr[1] "Deliver %(n)s packages first before you set off."
 
 msgid "Buka langkah antar pulang"
 msgstr "Open return steps"
@@ -5769,7 +5782,9 @@ msgid "Tugas antar-jemput hewan"
 msgstr "Pet pickup & return tasks"
 
 msgid "%(n)s paket dibawa"
-msgstr "%(n)s package(s) on board"
+msgid_plural "%(n)s paket dibawa"
+msgstr[0] "%(n)s package on board"
+msgstr[1] "%(n)s packages on board"
 
 msgid "± %(km)s km lagi"
 msgstr "± %(km)s km to go"
@@ -5832,7 +5847,9 @@ msgid "Shift berjalan %(since)s"
 msgstr "Shift running for %(since)s"
 
 msgid "%(n)s hal menunggu tindakanmu"
-msgstr "%(n)s item(s) waiting for you"
+msgid_plural "%(n)s hal menunggu tindakanmu"
+msgstr[0] "%(n)s item waiting for you"
+msgstr[1] "%(n)s items waiting for you"
 
 msgid "tidak ada yang menunggu"
 msgstr "nothing waiting"
@@ -5841,10 +5858,14 @@ msgid "Modal awal Rp %(cash)s"
 msgstr "Opening cash Rp %(cash)s"
 
 msgid "%(n)s transaksi diparkir"
-msgstr "%(n)s parked sale(s)"
+msgid_plural "%(n)s transaksi diparkir"
+msgstr[0] "%(n)s parked sale"
+msgstr[1] "%(n)s parked sales"
 
 msgid "%(label)s · %(n)s item · Rp %(total)s"
-msgstr "%(label)s · %(n)s item(s) · Rp %(total)s"
+msgid_plural "%(label)s · %(n)s item · Rp %(total)s"
+msgstr[0] "%(label)s · %(n)s item · Rp %(total)s"
+msgstr[1] "%(label)s · %(n)s items · Rp %(total)s"
 
 msgid "Tidak ada transaksi diparkir"
 msgstr "No parked sales"
@@ -5871,7 +5892,9 @@ msgid "Transaksi diparkir: %(label)s"
 msgstr "Parked sale: %(label)s"
 
 msgid "%(n)s item · Rp %(total)s · %(time)s"
-msgstr "%(n)s item(s) · Rp %(total)s · %(time)s"
+msgid_plural "%(n)s item · Rp %(total)s · %(time)s"
+msgstr[0] "%(n)s item · Rp %(total)s · %(time)s"
+msgstr[1] "%(n)s items · Rp %(total)s · %(time)s"
 
 msgid "Pilih yang dijual"
 msgstr "Choose what to sell"
@@ -5940,7 +5963,9 @@ msgid "Semua booking hari ini sudah check-in."
 msgstr "All of today's bookings are checked in."
 
 msgid "%(n)s groomer aktif"
-msgstr "%(n)s groomer(s) active"
+msgid_plural "%(n)s groomer aktif"
+msgstr[0] "%(n)s groomer active"
+msgstr[1] "%(n)s groomers active"
 
 msgid "Tunggu lunas"
 msgstr "Wait for payment"
@@ -5997,7 +6022,9 @@ msgid "Menunggu check-in kasir. Tugas jemput selesai otomatis setelah check-in."
 msgstr "Waiting for cashier check-in. The pickup task finishes automatically after check-in."
 
 msgid "%(n)s tugas aktif"
-msgstr "%(n)s active task(s)"
+msgid_plural "%(n)s tugas aktif"
+msgstr[0] "%(n)s active task"
+msgstr[1] "%(n)s active tasks"
 
 msgid "Jemput di rumah pemilik (scan QR + foto bukti), bawa ke kasir untuk check-in, lalu antar pulang setelah lunas (foto berangkat, scan QR + foto saat diserahkan)."
 msgstr "Pick up at the owner's home (scan QR + photo proof), bring to the cashier for check-in, then take the pet home once paid (photo on departure, scan QR + photo on handover)."
@@ -6093,7 +6120,9 @@ msgid "Dibawa"
 msgstr "Carrying"
 
 msgid "%(n)s barang"
-msgstr "%(n)s item(s)"
+msgid_plural "%(n)s barang"
+msgstr[0] "%(n)s item"
+msgstr[1] "%(n)s items"
 
 msgid "Sampai, serahkan"
 msgstr "Arrived, hand over"
@@ -6201,10 +6230,14 @@ msgid "Kembalian Rp %(n)s"
 msgstr "Change Rp %(n)s"
 
 msgid "%(n)s jenis"
-msgstr "%(n)s kind(s)"
+msgid_plural "%(n)s jenis"
+msgstr[0] "%(n)s kind"
+msgstr[1] "%(n)s kinds"
 
 msgid "%(n)s layanan"
-msgstr "%(n)s service(s)"
+msgid_plural "%(n)s layanan"
+msgstr[0] "%(n)s service"
+msgstr[1] "%(n)s services"
 
 msgid "Pengambilan"
 msgstr "Pickup"
@@ -6333,7 +6366,9 @@ msgid "Menunggu diterima (0)"
 msgstr "Waiting to be accepted (0)"
 
 msgid "%(c_n)s paket belum disetor"
-msgstr "%(c_n)s package(s) not handed in yet"
+msgid_plural "%(c_n)s paket belum disetor"
+msgstr[0] "%(c_n)s package not handed in yet"
+msgstr[1] "%(c_n)s packages not handed in yet"
 
 msgid "Kurir mengajukan setoran dari HP; setoran muncul di kiri untuk dihitung."
 msgstr "Couriers submit remittances from their phones; they appear on the left to be counted."
@@ -6750,13 +6785,13 @@ msgid "Sedang diantar"
 msgstr "Out for delivery"
 
 msgid "Paket di tangan kurir"
-msgstr "Parcels with couriers"
+msgstr "Packages with couriers"
 
 msgid "Kelola profil, kendaraan, dan keamanan akun kurir Anda."
 msgstr "Manage your courier profile, vehicle, and account security."
 
 msgid "Paket terkirim"
-msgstr "Parcels delivered"
+msgstr "Packages delivered"
 
 msgid "Rating"
 msgstr "Rating"
@@ -7471,3 +7506,1334 @@ msgstr "hours"
 
 msgid "detik"
 msgstr "seconds"
+
+msgid "Kabar ke WhatsApp"
+msgstr "WhatsApp updates"
+
+msgid "Kabar diterima/ditolak (beserta alasannya) dikirim otomatis lewat %(wa_auto)s saat Anda menekan Setuju/Tolak."
+msgstr "The approved/rejected message (with the reason) is sent automatically via %(wa_auto)s when you press Approve/Reject."
+
+msgid "WhatsApp otomatis belum diaktifkan (lihat .env.example). Pesan sudah terisi; tekan Kirim ke WA."
+msgstr "Automatic WhatsApp is not enabled yet (see .env.example). The message is prefilled; press Send to WA."
+
+msgid "Terkirim otomatis"
+msgstr "Sent automatically"
+
+msgid "Gagal terkirim"
+msgstr "Failed to send"
+
+msgid "Kirim ulang otomatis"
+msgstr "Resend automatically"
+
+msgid "Buka chat"
+msgstr "Open chat"
+
+msgid "Kandang/boks untuk antar-jemput hewan disediakan toko, jadi Anda cukup membawa kendaraan sendiri."
+msgstr "Pet carriers for pick-up and drop-off are provided by the store, so you only need your own vehicle."
+
+msgid "%(name)s disetujui dan sekarang bisa masuk."
+msgstr "%(name)s is approved and can now log in."
+
+msgid "%(name)s ditolak."
+msgstr "%(name)s was rejected."
+
+msgid "Kabarnya sudah terkirim otomatis ke WhatsApp %(phone)s."
+msgstr "The message was sent automatically to WhatsApp %(phone)s."
+
+msgid "WhatsApp otomatis gagal (%(why)s). Coba kirim ulang di bawah."
+msgstr "Automatic WhatsApp failed (%(why)s). Try resending below."
+
+msgid "WhatsApp otomatis belum diaktifkan; kirim kabarnya lewat tombol di bawah."
+msgstr "Automatic WhatsApp is not enabled; send the message with the button below."
+
+msgid "Pendaftaran ini belum diproses."
+msgstr "This registration has not been processed yet."
+
+msgid "Kabar untuk %(name)s terkirim ke WhatsApp."
+msgstr "Message for %(name)s sent to WhatsApp."
+
+msgid "Belum terkirim: %(why)s"
+msgstr "Not sent yet: %(why)s"
+
+msgid "Titik peta tidak lengkap. Klik ulang lokasi di peta."
+msgstr "The map point is incomplete. Click the location on the map again."
+
+msgid "Titik peta tidak valid."
+msgstr "The map point is not valid."
+
+msgid "Nomor telepon sudah dipakai pelanggan lain."
+msgstr "This phone number is already used by another customer."
+
+msgid "Nama pengguna sudah dipakai."
+msgstr "This username is already taken."
+
+msgid "Kata sandi wajib diisi."
+msgstr "Password is required."
+
+msgid "Kata sandi tidak sama."
+msgstr "Passwords do not match."
+
+msgid "Pilih foto terlebih dahulu."
+msgstr "Choose a photo first."
+
+msgid "Nomor telepon"
+msgstr "Phone number"
+
+msgid "Latitude"
+msgstr "Latitude"
+
+msgid "Longitude"
+msgstr "Longitude"
+
+msgid "Nama depan"
+msgstr "First name"
+
+msgid "Nama belakang"
+msgstr "Last name"
+
+msgid "Email (opsional)"
+msgstr "Email (optional)"
+
+msgid "Alamat utama"
+msgstr "Main address"
+
+msgid "Dipakai sebagai isian awal saat checkout."
+msgstr "Used to prefill checkout."
+
+msgid "File harus berupa foto (JPG, PNG, atau WEBP)."
+msgstr "The file must be a photo (JPG, PNG, or WEBP)."
+
+msgid "Wajib diisi untuk kurir."
+msgstr "Required for couriers."
+
+msgid "Tautan harus diawali '/' (halaman toko) atau 'https://'."
+msgstr "The link must start with '/' (a store page) or 'https://'."
+
+msgid "Boleh memakai [[layanan]] (daftar harga layanan) dan [[wa]] (nomor WhatsApp admin)."
+msgstr "You can use [[layanan]] (service price list) and [[wa]] (admin WhatsApp number)."
+
+msgid "Pisahkan dengan koma, mis. ongkir, ongkos kirim, biaya kirim"
+msgstr "Separate with commas, e.g. shipping, delivery fee, shipping cost"
+
+msgid "Tautan"
+msgstr "Link"
+
+msgid "Tampil sebagai pilihan cepat"
+msgstr "Show as a quick option"
+
+msgid "Ambil foto terlebih dahulu."
+msgstr "Take a photo first."
+
+msgid "Ukuran foto maksimal 5 MB."
+msgstr "Maximum photo size is 5 MB."
+
+msgid "Format foto harus JPG, PNG, atau WEBP."
+msgstr "Photo format must be JPG, PNG, or WEBP."
+
+msgid "Harga jual tidak boleh lebih rendah dari harga beli."
+msgstr "Selling price cannot be lower than the purchase price."
+
+msgid "Nama produk"
+msgstr "Product name"
+
+msgid "Harga beli"
+msgstr "Purchase price"
+
+msgid "Tipe hewan"
+msgstr "Pet type"
+
+msgid "Status aktif"
+msgstr "Active status"
+
+msgid "Foto produk"
+msgstr "Product photo"
+
+msgid "Jenis mutasi"
+msgstr "Movement type"
+
+msgid "Nama toko"
+msgstr "Store name"
+
+msgid "Alamat toko"
+msgstr "Store address"
+
+msgid "Jam tutup"
+msgstr "Closing hour"
+
+msgid "Nomor WhatsApp admin"
+msgstr "Admin WhatsApp number"
+
+msgid "Format internasional tanpa +, contoh 6281234567890."
+msgstr "International format without +, e.g. 6281234567890."
+
+msgid "Email toko"
+msgstr "Store email"
+
+msgid "Ongkir dasar (Rp)"
+msgstr "Base shipping fee (Rp)"
+
+msgid "Jarak ongkir dasar (km)"
+msgstr "Base shipping distance (km)"
+
+msgid "Ongkir per km berikutnya (Rp)"
+msgstr "Shipping per extra km (Rp)"
+
+msgid "Jarak antar maksimal (km)"
+msgstr "Maximum delivery distance (km)"
+
+msgid "Antar-jemput hewan dasar (Rp)"
+msgstr "Base pet pick-up fee (Rp)"
+
+msgid "Jarak antar-jemput dasar (km)"
+msgstr "Base pick-up distance (km)"
+
+msgid "Antar-jemput per km berikutnya (Rp)"
+msgstr "Pick-up per extra km (Rp)"
+
+msgid "Maks. paket per kurir per rute"
+msgstr "Max. packages per courier per route"
+
+msgid "Batas waktu bayar transfer/QRIS (jam)"
+msgstr "Transfer/QRIS payment deadline (hours)"
+
+msgid "Pesanan barang & booking layanan yang belum dibayar lewat batas ini dibatalkan otomatis."
+msgstr "Unpaid orders and service bookings past this deadline are cancelled automatically."
+
+msgid "GPS kurir dianggap mati setelah (detik)"
+msgstr "Courier GPS counts as lost after (seconds)"
+
+msgid "Ingatkan grooming lagi setelah (hari)"
+msgstr "Grooming reminder after (days)"
+
+msgid "Pajak / PPN (%)"
+msgstr "Tax / VAT (%)"
+
+msgid "Isi 0 bila toko belum memungut pajak."
+msgstr "Enter 0 if the store does not charge tax yet."
+
+msgid "Batas diskon kasir per transaksi (Rp)"
+msgstr "Cashier discount limit per transaction (Rp)"
+
+msgid "Diskon di atas batas ini hanya bisa diberikan Admin/Super Admin."
+msgstr "Discounts above this limit can only be given by an Admin/Super Admin."
+
+msgid "Batas retur (hari)"
+msgstr "Return window (days)"
+
+msgid "Gambar QRIS toko"
+msgstr "Store QRIS image"
+
+msgid "QRIS statis dari bank (gratis). Ditampilkan di layar kasir; pembayaran tetap dicek manual."
+msgstr "Static QRIS from your bank (free). Shown on the cashier screen; payments are still checked manually."
+
+msgid "Catatan kaki struk"
+msgstr "Receipt footer note"
+
+msgid "Harga satuan"
+msgstr "Unit price"
+
+msgid "Status pesanan"
+msgstr "Order status"
+
+msgid "Metode pembayaran"
+msgstr "Payment method"
+
+msgid "Status pembayaran"
+msgstr "Payment status"
+
+msgid "Total pembayaran"
+msgstr "Total payment"
+
+msgid "Ulasan %(order_rating)s★ untuk pesanan #%(order_pk)s"
+msgstr "%(order_rating)s★ review for order #%(order_pk)s"
+
+msgid "Bukti transfer dikirim"
+msgstr "Transfer proof sent"
+
+msgid "Bukti transfer pesanan #%(order_pk)s"
+msgstr "Transfer proof for order #%(order_pk)s"
+
+msgid "Pendaftaran disetujui"
+msgstr "Registration approved"
+
+msgid "Pendaftaran ditolak"
+msgstr "Registration rejected"
+
+msgid "Pendaftaran kurir baru"
+msgstr "New courier registration"
+
+msgid "%(staff_name)s mendaftar sebagai kurir."
+msgstr "%(staff_name)s registered as a courier."
+
+msgid "Dibatalkan otomatis"
+msgstr "Cancelled automatically"
+
+msgid "Lewat batas waktu pembayaran"
+msgstr "Payment deadline passed"
+
+msgid "Booking #%(booking_pk)s dibatalkan"
+msgstr "Booking #%(booking_pk)s cancelled"
+
+msgid "Batas waktu transfer/QRIS sudah lewat. Silakan booking ulang bila masih berminat."
+msgstr "The transfer/QRIS deadline has passed. Please book again if you are still interested."
+
+msgid "Tahapan diubah"
+msgstr "Steps changed"
+
+msgid "Dibatalkan pelanggan"
+msgstr "Cancelled by customer"
+
+msgid "Groomer ditugaskan"
+msgstr "Groomer assigned"
+
+msgid "Booking #%(booking_pk)s ditugaskan ke Anda"
+msgstr "Booking #%(booking_pk)s assigned to you"
+
+msgid "Dibatalkan toko"
+msgstr "Cancelled by store"
+
+msgid "Booking #%(booking_pk)s dibatalkan toko"
+msgstr "Booking #%(booking_pk)s cancelled by the store"
+
+msgid "Hubungi admin lewat WhatsApp bila ada pertanyaan."
+msgstr "Contact the admin via WhatsApp if you have questions."
+
+msgid "Bukti transfer booking #%(booking_pk)s"
+msgstr "Transfer proof for booking #%(booking_pk)s"
+
+msgid "Booking dibuat"
+msgstr "Booking created"
+
+msgid "Booking baru #%(booking_pk)s menunggu konfirmasi"
+msgstr "New booking #%(booking_pk)s awaiting confirmation"
+
+msgid "Ulasan %(booking_rating)s★ untuk booking #%(booking_pk)s"
+msgstr "%(booking_rating)s★ review for booking #%(booking_pk)s"
+
+msgid "Booking dibuat kasir"
+msgstr "Booking created by cashier"
+
+msgid "COD"
+msgstr "COD"
+
+msgid "Dikonfirmasi toko"
+msgstr "Confirmed by store"
+
+msgid "Booking #%(booking_pk)s terjadwal"
+msgstr "Booking #%(booking_pk)s scheduled"
+
+msgid "%(booking_service_name)s untuk %(booking_pet_name)s, %(ime_booking_schedule)s. Bayar transfer dari Booking Saya atau di kasir saat datang. Tunjukkan QR booking saat tiba."
+msgstr "%(booking_service_name)s for %(booking_pet_name)s, %(ime_booking_schedule)s. Pay by transfer from My Bookings or at the cashier when you arrive. Show the booking QR on arrival."
+
+msgid "%(booking_pet_name)s sudah check-in · antrean %(booking_queue_label)s"
+msgstr "%(booking_pet_name)s checked in · queue %(booking_queue_label)s"
+
+msgid "%(ahead)s hewan di depan, perkiraan mulai ±%(ng_queue_eta_minutes)s menit lagi."
+msgstr "%(ahead)s pets ahead, estimated start in about %(ng_queue_eta_minutes)s minutes."
+
+msgid "Antrean %(booking_queue_label)s. %(ng_checkin_condition)s"
+msgstr "Queue %(booking_queue_label)s. %(ng_checkin_condition)s"
+
+msgid "Mulai dikerjakan"
+msgstr "Work started"
+
+msgid "%(booking_pet_name)s mulai dikerjakan"
+msgstr "Work on %(booking_pet_name)s has started"
+
+msgid "Groomer %(st_user_display_name)s · ikuti tiap tahap dan fotonya di Booking Saya."
+msgstr "Groomer %(st_user_display_name)s · follow each step and its photos in My Bookings."
+
+msgid "Booking #%(booking_pk)s ditandai tidak datang"
+msgstr "Booking #%(booking_pk)s marked as no-show"
+
+msgid "Silakan booking ulang bila masih membutuhkan layanan."
+msgstr "Please book again if you still need the service."
+
+msgid "%(booking_pet_name)s masuk antrean %(booking_queue_label)s"
+msgstr "%(booking_pet_name)s joined queue %(booking_queue_label)s"
+
+msgid "Tahap: %(step_name)s"
+msgstr "Step: %(step_name)s"
+
+msgid "Kurir berangkat menjemput"
+msgstr "Courier on the way to pick up"
+
+msgid "Kurir menuju rumah Anda untuk menjemput %(booking_pet_name)s"
+msgstr "The courier is heading to your home to pick up %(booking_pet_name)s"
+
+msgid "Pantau posisinya di Booking Saya. Siapkan QR booking."
+msgstr "Track the position in My Bookings. Have the booking QR ready."
+
+msgid "Pembayaran transfer diverifikasi"
+msgstr "Transfer payment verified"
+
+msgid "Pembayaran booking #%(booking_pk)s diterima"
+msgstr "Payment for booking #%(booking_pk)s received"
+
+msgid "%(booking_service_name)s untuk %(booking_pet_name)s sudah lunas. Tidak perlu bayar lagi di kasir."
+msgstr "%(booking_service_name)s for %(booking_pet_name)s is fully paid. No need to pay again at the cashier."
+
+msgid "%(booking_pet_name)s sudah diambil"
+msgstr "%(booking_pet_name)s has been picked up"
+
+msgid "Terima kasih! Beri ulasan untuk layanan kami."
+msgstr "Thank you! Please review our service."
+
+msgid "%(booking_pet_name)s: %(step_name)s selesai"
+msgstr "%(booking_pet_name)s: %(step_name)s done"
+
+msgid "Lihat fotonya di Booking Saya."
+msgstr "See the photo in My Bookings."
+
+msgid "%(booking_pet_name)s siap diantar pulang"
+msgstr "%(booking_pet_name)s is ready to be taken home"
+
+msgid "Bukti transfer ditolak"
+msgstr "Transfer proof rejected"
+
+msgid "Bukti transfer booking #%(booking_pk)s perlu dikirim ulang"
+msgstr "Transfer proof for booking #%(booking_pk)s needs to be resent"
+
+msgid "Kurir hewan ditugaskan"
+msgstr "Pet courier assigned"
+
+msgid "Tugas antar-jemput hewan #%(booking_pk)s"
+msgstr "Pet pickup and delivery task #%(booking_pk)s"
+
+msgid "Hewan dijemput kurir"
+msgstr "Pet picked up by courier"
+
+msgid "%(booking_pet_name)s sudah bersama kurir"
+msgstr "%(booking_pet_name)s is with the courier"
+
+msgid "Sedang dibawa ke toko."
+msgstr "On the way to the store."
+
+msgid "%(booking_pet_name)s sedang diantar pulang"
+msgstr "%(booking_pet_name)s is on the way home"
+
+msgid "Pantau posisi kurir di Booking Saya. Siapkan QR booking."
+msgstr "Track the courier in My Bookings. Have the booking QR ready."
+
+msgid "Diserahkan ke pemilik"
+msgstr "Handed over to owner"
+
+msgid "%(booking_pet_name)s sudah sampai di rumah"
+msgstr "%(booking_pet_name)s has arrived home"
+
+msgid "Komplain baru #%(complaint_pk)s · %(get_category_display)s"
+msgstr "New complaint #%(complaint_pk)s · %(get_category_display)s"
+
+msgid "Komplain diajukan"
+msgstr "Complaint submitted"
+
+msgid "Komplain #%(complaint_pk)s: %(t_get_status_display)s"
+msgstr "Complaint #%(complaint_pk)s: %(t_get_status_display)s"
+
+msgid "Pengaturan toko diubah"
+msgstr "Store settings changed"
+
+msgid "Gagal diantar, kembali ke toko"
+msgstr "Delivery failed, returned to store"
+
+msgid "Pesanan #%(order_pk)s belum bisa diantar"
+msgstr "Order #%(order_pk)s could not be delivered yet"
+
+msgid "Kurir: %(note)s. Admin akan menghubungi Anda."
+msgstr "Courier: %(note)s. The admin will contact you."
+
+msgid "Paket #%(order_pk)s gagal diantar"
+msgstr "Package #%(order_pk)s failed to deliver"
+
+msgid "Setoran COD dari %(request_user_name)s"
+msgstr "COD remittance from %(request_user_name)s"
+
+msgid "Diserahkan ke penerima"
+msgstr "Handed over to recipient"
+
+msgid "Pesanan #%(order_pk)s sudah diterima"
+msgstr "Order #%(order_pk)s has been received"
+
+msgid "Terima kasih! Foto serah terima bisa dilihat di halaman lacak."
+msgstr "Thank you! The handover photo is on the tracking page."
+
+msgid "Diambil kurir"
+msgstr "Picked up by courier"
+
+msgid "Pesanan #%(order_pk)s dibawa kurir"
+msgstr "Order #%(order_pk)s is with the courier"
+
+msgid "Pantau posisi kurir secara langsung di peta."
+msgstr "Track the courier live on the map."
+
+msgid "Scan label %(rder_tracking_number)s"
+msgstr "Label scanned %(rder_tracking_number)s"
+
+msgid "Kasir dibuka"
+msgstr "Cashier opened"
+
+msgid "Transaksi kasir"
+msgstr "Cashier transaction"
+
+msgid "Dibatalkan admin"
+msgstr "Cancelled by admin"
+
+msgid "Retur diajukan"
+msgstr "Return requested"
+
+msgid "Retur menunggu persetujuan (%(t_no_or_str_order_pk)s)"
+msgstr "Return awaiting approval (%(t_no_or_str_order_pk)s)"
+
+msgid "Retur disetujui"
+msgstr "Return approved"
+
+msgid "Retur ditolak"
+msgstr "Return rejected"
+
+msgid "Pelanggan baru dari kasir"
+msgstr "New customer from cashier"
+
+msgid "Kasir ditutup"
+msgstr "Cashier closed"
+
+msgid "Pesanan #%(order_pk)s dibatalkan"
+msgstr "Order #%(order_pk)s cancelled"
+
+msgid "Batas waktu transfer sudah lewat. Silakan pesan ulang bila masih berminat."
+msgstr "The transfer deadline has passed. Please order again if you are still interested."
+
+msgid "Selisih kas %(cashier_display_name)s"
+msgstr "Cash discrepancy %(cashier_display_name)s"
+
+msgid "Setoran diterima kasir"
+msgstr "Remittance received by cashier"
+
+msgid "Setoran #%(remittance_pk)s diterima kasir"
+msgstr "Remittance #%(remittance_pk)s received by cashier"
+
+msgid "Pesanan #%(order_pk)s dikonfirmasi"
+msgstr "Order #%(order_pk)s confirmed"
+
+msgid "Nomor packing %(order_packing_label)s."
+msgstr "Packing number %(order_packing_label)s."
+
+msgid "Silakan selesaikan pembayaran transfer."
+msgstr "Please complete the transfer payment."
+
+msgid "Pembayaran diverifikasi"
+msgstr "Payment verified"
+
+msgid "Pembayaran pesanan #%(order_pk)s diterima"
+msgstr "Payment for order #%(order_pk)s received"
+
+msgid "Pesanan Anda masuk antrean packing."
+msgstr "Your order is in the packing queue."
+
+msgid "Ditandai lunas"
+msgstr "Marked as paid"
+
+msgid "Bukti transfer pesanan #%(order_pk)s perlu dikirim ulang"
+msgstr "Transfer proof for order #%(order_pk)s needs to be resent"
+
+msgid "Selesai dikemas"
+msgstr "Packing finished"
+
+msgid "Kurir ditugaskan"
+msgstr "Courier assigned"
+
+msgid "Ditutup manual oleh toko"
+msgstr "Closed manually by store"
+
+msgid "Pesanan #%(order_pk)s dibatalkan toko"
+msgstr "Order #%(order_pk)s cancelled by the store"
+
+msgid "Pesanan #%(n)s sudah sampai"
+msgstr "Order #%(n)s has arrived"
+
+msgid "Pesanan #%(n)s sedang diantar"
+msgstr "Order #%(n)s is on the way"
+
+msgid "Menunggu pembayaran pesanan #%(n)s"
+msgstr "Waiting for payment of order #%(n)s"
+
+msgid "%(pet)s sudah selesai dan siap diambil"
+msgstr "%(pet)s is done and ready for pickup"
+
+msgid "Pendaftaran staf baru"
+msgstr "New staff registration"
+
+msgid "%(name)s mendaftar sebagai Kurir dan menunggu persetujuan."
+msgstr "%(name)s registered as a Courier and is awaiting approval."
+
+msgid "Transfer ke rekening toko lalu kirim foto bukti."
+msgstr "Transfer to the store account, then send a photo of the proof."
+
+msgid "Pantau posisi kurir di peta."
+msgstr "Track the courier on the map."
+
+msgid "Lihat foto tiap tahap di Booking Saya."
+msgstr "See photos of each step in My Bookings."
+
+msgid "Nominal di bukti tidak sama dengan total pesanan. Mohon kirim ulang."
+msgstr "The amount on the proof does not match the order total. Please resend."
+
+msgid "Pantau posisinya di Booking Saya."
+msgstr "Track it in My Bookings."
+
+msgid "Pesanan #%(order_pk)s tidak sedang menunggu bukti transfer."
+msgstr "Order #%(order_pk)s is not waiting for a transfer proof."
+
+msgid "Pesanan #%(order_pk)s dibatalkan."
+msgstr "Order #%(order_pk)s cancelled."
+
+msgid "%(name)s disetujui dan sekarang bisa masuk. Kirim kabarnya ke WhatsApp lewat tombol di bawah."
+msgstr "%(name)s approved and can now sign in. Send the news via WhatsApp with the button below."
+
+msgid "%(name)s ditolak. Kirim kabarnya ke WhatsApp lewat tombol di bawah."
+msgstr "%(name)s rejected. Send the news via WhatsApp with the button below."
+
+msgid "Karyawan '%(employee_username)s' tidak bisa dihapus karena sudah punya riwayat order/layanan."
+msgstr "Employee '%(employee_username)s' cannot be deleted because they already have order/service history."
+
+msgid "Pelanggan '%(customer_name)s' tidak bisa dihapus karena sudah punya riwayat order/booking."
+msgstr "Customer '%(customer_name)s' cannot be deleted because they already have order/booking history."
+
+msgid "FAQ “%(faq_question)s” dihapus."
+msgstr "FAQ “%(faq_question)s” deleted."
+
+msgid "FAQ “%(q)s” diperbarui."
+msgstr "FAQ “%(q)s” updated."
+
+msgid "FAQ “%(q)s” ditambahkan."
+msgstr "FAQ “%(q)s” added."
+
+msgid "Tahapan '%(service_name)s' disimpan."
+msgstr "Steps for '%(service_name)s' saved."
+
+msgid "Booking #%(booking_pk)s dibatalkan."
+msgstr "Booking #%(booking_pk)s cancelled."
+
+msgid "%(pet_name)s dihapus dari daftar Hewan Saya. Riwayat booking tetap tersimpan."
+msgstr "%(pet_name)s removed from My Pets. Booking history is kept."
+
+msgid "Profil %(name)s diperbarui."
+msgstr "%(name)s's profile updated."
+
+msgid "Profil %(name)s ditambahkan."
+msgstr "%(name)s's profile added."
+
+msgid "Booking #%(booking_pk)s ditugaskan ke %(groomer_display_name)s."
+msgstr "Booking #%(booking_pk)s assigned to %(groomer_display_name)s."
+
+msgid "Layanan '%(service_name)s' diperbarui."
+msgstr "Service '%(service_name)s' updated."
+
+msgid "Booking #%(booking_pk)s tidak sedang menunggu pembayaran."
+msgstr "Booking #%(booking_pk)s is not waiting for payment."
+
+msgid "Booking #%(booking_pk)s berhasil dibuat dan menunggu konfirmasi toko."
+msgstr "Booking #%(booking_pk)s created and awaiting store confirmation."
+
+msgid "Booking #%(booking_pk)s dikonfirmasi (Terjadwal)."
+msgstr "Booking #%(booking_pk)s confirmed (Scheduled)."
+
+msgid "%(booking_pet_name)s masuk antrean %(booking_queue_label)s."
+msgstr "%(booking_pet_name)s joined queue %(booking_queue_label)s."
+
+msgid "Booking #%(booking_pk)s mulai dikerjakan."
+msgstr "Work on booking #%(booking_pk)s started."
+
+msgid "Booking #%(booking_pk)s dibuat (Terjadwal)."
+msgstr "Booking #%(booking_pk)s created (Scheduled)."
+
+msgid "Booking #%(booking_pk)s ditandai tidak datang."
+msgstr "Booking #%(booking_pk)s marked as no-show."
+
+msgid "Booking #%(booking_pk)s lunas (struk %(order_receipt_no)s)."
+msgstr "Booking #%(booking_pk)s paid (receipt %(order_receipt_no)s)."
+
+msgid "Booking #%(booking_pk)s selesai, hewan sudah diambil pemilik."
+msgstr "Booking #%(booking_pk)s finished, the pet was picked up by its owner."
+
+msgid "Semua tahap selesai. Booking #%(booking_pk)s siap."
+msgstr "All steps done. Booking #%(booking_pk)s is ready."
+
+msgid "Tahap '%(step_name)s' selesai."
+msgstr "Step '%(step_name)s' done."
+
+msgid "Bukti booking #%(booking_pk)s ditolak; pelanggan diminta kirim ulang."
+msgstr "Proof for booking #%(booking_pk)s rejected; the customer was asked to resend."
+
+msgid "%(courier_display_name)s ditugaskan antar-jemput booking #%(booking_pk)s."
+msgstr "%(courier_display_name)s assigned to pick up and deliver booking #%(booking_pk)s."
+
+msgid "Waktunya %(pet_name)s grooming lagi"
+msgstr "Time for %(pet_name)s's next grooming"
+
+msgid "Terakhir %(last_service_name)s pada %(ime_last_finished_at)s."
+msgstr "Last %(last_service_name)s on %(ime_last_finished_at)s."
+
+msgid "Komplain #%(complaint_pk)s terkirim. Admin akan membalas lewat notifikasi."
+msgstr "Complaint #%(complaint_pk)s sent. The admin will reply via notifications."
+
+msgid "Komplain #%(complaint_pk)s diperbarui dan pelanggan diberi tahu."
+msgstr "Complaint #%(complaint_pk)s updated and the customer was notified."
+
+msgid "Paket #%(order_pk)s dicatat kembali ke toko."
+msgstr "Package #%(order_pk)s recorded as returned to the store."
+
+msgid "Paket #%(order_pk)s selesai diantar."
+msgstr "Package #%(order_pk)s delivered."
+
+msgid "Paket #%(order_pk)s (%(order_customer_name)s) masuk rute Anda."
+msgstr "Package #%(order_pk)s (%(order_customer_name)s) added to your route."
+
+msgid "Produk '%(product_name)s' berhasil ditambahkan."
+msgstr "Product '%(product_name)s' added."
+
+msgid "Harga jual '%(product_name)s' berhasil diperbarui."
+msgstr "Selling price of '%(product_name)s' updated."
+
+msgid "Produk '%(product_name)s' berhasil diperbarui."
+msgstr "Product '%(product_name)s' updated."
+
+msgid "Produk '%(name)s' berhasil dihapus."
+msgstr "Product '%(name)s' deleted."
+
+msgid "Produk '%(name)s' tidak bisa dihapus karena sudah punya riwayat mutasi stok. Nonaktifkan produk ini saja lewat tombol Update."
+msgstr "Product '%(name)s' cannot be deleted because it has stock movement history. Deactivate it with the Update button instead."
+
+msgid "%(cancelled)s pesanan transfer dibatalkan otomatis karena lewat batas bayar."
+msgstr "%(cancelled)s transfer orders were cancelled automatically because the payment deadline passed."
+
+msgid "'%(product_name)s' ditambahkan."
+msgstr "'%(product_name)s' added."
+
+msgid "Setoran #%(remittance_pk)s dari %(ittance_courier_name)s diterima."
+msgstr "Remittance #%(remittance_pk)s from %(ittance_courier_name)s received."
+
+msgid "Pesanan online #%(order_pk)s dikonfirmasi."
+msgstr "Online order #%(order_pk)s confirmed."
+
+msgid "Stok '%(product_name)s' habis."
+msgstr "'%(product_name)s' is out of stock."
+
+msgid "Stok '%(product_name)s' hanya %(product_stock)s, semuanya sudah ada di keranjang."
+msgstr "Only %(product_stock)s of '%(product_name)s' in stock, all already in the cart."
+
+msgid "Order #%(order_pk)s lunas dan masuk antrean packing."
+msgstr "Order #%(order_pk)s paid and added to the packing queue."
+
+msgid "Order #%(order_pk)s ditandai lunas."
+msgstr "Order #%(order_pk)s marked as paid."
+
+msgid "Bukti order #%(order_pk)s ditolak; pelanggan diminta kirim ulang."
+msgstr "Proof for order #%(order_pk)s rejected; the customer was asked to resend."
+
+msgid "Order #%(order_pk)s siap diambil kurir."
+msgstr "Order #%(order_pk)s ready for courier pickup."
+
+msgid "Kurir %(or_courier_username)s ditugaskan ke order #%(order_pk)s."
+msgstr "Courier %(or_courier_username)s assigned to order #%(order_pk)s."
+
+msgid "Order #%(order_pk)s selesai diantar."
+msgstr "Order #%(order_pk)s delivered."
+
+msgid "Order #%(order_pk)s dibatalkan, stok dikembalikan."
+msgstr "Order #%(order_pk)s cancelled, stock restored."
+
+msgid "%(n)s: kembalikan Rp %(amount)s ke pembeli."
+msgstr "%(n)s: refund Rp %(amount)s to the buyer."
+
+msgid "Uang kembali Rp %(amount)s (%(method)s)"
+msgstr "Refund Rp %(amount)s (%(method)s)"
+
+msgid "Makanan sehat dan lezat"
+msgstr "Healthy and tasty food"
+
+msgid "Perlengkapan praktis dan awet"
+msgstr "Practical and durable supplies"
+
+msgid "Aksesori yang lucu dan nyaman"
+msgstr "Cute and comfortable accessories"
+
+msgid "Perawatan kesehatan yang terpercaya"
+msgstr "Trusted health care"
+
+msgid "Mainan seru"
+msgstr "Fun toys"
+
+msgid "Temukan kebutuhan terbaik"
+msgstr "Find the best essentials"
+
+msgid "hewan kesayangan Anda"
+msgstr "your beloved pet"
+
+msgid "%(pet)s kesayangan Anda"
+msgstr "your beloved %(pet)s"
+
+msgid "%(opening)s untuk %(target)s."
+msgstr "%(opening)s for %(target)s."
+
+msgid "Sedang dikirim kurir"
+msgstr "Out for delivery"
+
+msgid "Pesanan sampai"
+msgstr "Order delivered"
+
+msgid "Pesanan dikonfirmasi"
+msgstr "Order confirmed"
+
+msgid "Produk untuk %(pet)s"
+msgstr "Products for %(pet)s"
+
+msgid "Menunggu konfirmasi toko"
+msgstr "Waiting for store confirmation"
+
+msgid "Hasil pencarian “%(q)s”"
+msgstr "Search results for “%(q)s”"
+
+msgid "Hasil Filter"
+msgstr "Filter Results"
+
+msgid "Makanan"
+msgstr "Food"
+
+msgid "Perlengkapan"
+msgstr "Supplies"
+
+msgid "Kesehatan"
+msgstr "Health"
+
+msgid "Mainan"
+msgstr "Toys"
+
+msgid "Semua Hewan"
+msgstr "All Pets"
+
+msgid "%(y)s tahun"
+msgstr "%(y)s yr"
+
+msgid "%(n)s bulan"
+msgstr "%(n)s mo"
+
+msgid "%(y)s tahun %(m)s bulan"
+msgstr "%(y)s yr %(m)s mo"
+
+msgid "Antrean Hari Ini"
+msgstr "Today's Queue"
+
+msgid "Belum ada hewan yang check-in. Hewan masuk antrean setelah check-in di meja kasir."
+msgstr "No pets have checked in yet. Pets join the queue after check-in at the cashier desk."
+
+msgid "Sedang Dikerjakan"
+msgstr "In Progress"
+
+msgid "Belum ada layanan yang sedang Anda kerjakan."
+msgstr "You are not working on any service yet."
+
+msgid "Riwayat Selesai"
+msgstr "Completed History"
+
+msgid "Belum ada layanan yang selesai."
+msgstr "No completed services yet."
+
+msgid "Tunggu jadwal dikonfirmasi toko dulu, baru bayar."
+msgstr "Wait until the store confirms the schedule, then pay."
+
+msgid "mis. titip di pos satpam, kirim sore"
+msgstr "e.g. leave at the security post, deliver in the afternoon"
+
+msgid "%(name)s mengirim bukti Rp %(amount)s"
+msgstr "%(name)s sent a proof of Rp %(amount)s"
+
+msgid "Seharusnya Rp %(expected)s, dihitung Rp %(counted)s"
+msgstr "Expected Rp %(expected)s, counted Rp %(counted)s"
+
+msgid "Shift #%(pk)s: selisih Rp %(diff)s. %(note)s"
+msgstr "Shift #%(pk)s: difference Rp %(diff)s. %(note)s"
+
+msgid "%(n)s tahap"
+msgid_plural "%(n)s tahap"
+msgstr[0] "%(n)s step"
+msgstr[1] "%(n)s steps"
+
+msgid "Layanan '%(service_name)s' sedang tidak tersedia."
+msgstr "Service '%(service_name)s' is currently unavailable."
+
+msgid "Layanan '%(service_name)s' khusus %(t_type_display_lower)s."
+msgstr "Service '%(service_name)s' is only for %(t_type_display_lower)s."
+
+msgid "Jadwal tersebut sudah penuh. Silakan pilih jam lain."
+msgstr "That slot is full. Please choose another time."
+
+msgid "COD hanya untuk hewan yang diantar pulang kurir."
+msgstr "COD is only for pets taken home by a courier."
+
+msgid "Booking ini bukan milik Anda."
+msgstr "This booking is not yours."
+
+msgid "Booking #%(self_pk)s tidak sedang menunggu pembayaran."
+msgstr "Booking #%(self_pk)s is not waiting for payment."
+
+msgid "Booking #%(self_pk)s tidak punya bukti transfer yang menunggu dicek."
+msgstr "Booking #%(self_pk)s has no transfer proof waiting to be checked."
+
+msgid "Tulis alasan penolakan supaya pelanggan tahu yang harus diperbaiki."
+msgstr "Write the reason for rejection so the customer knows what to fix."
+
+msgid "Booking #%(self_pk)s: status %(us_self_status_label)s tidak bisa diubah ke %(tus_new_status_label)s."
+msgstr "Booking #%(self_pk)s: status %(us_self_status_label)s cannot change to %(tus_new_status_label)s."
+
+msgid "Pilih groomer terlebih dahulu."
+msgstr "Choose a groomer first."
+
+msgid "Booking #%(self_pk)s bukan tugas antar-jemput Anda."
+msgstr "Booking #%(self_pk)s is not your pickup/delivery task."
+
+msgid "Anda masih membawa %(carrying)s paket. Antar semua paket dulu sebelum antar-jemput hewan."
+msgstr "You are still carrying %(carrying)s package(s). Deliver them all before a pet pickup/delivery."
+
+msgid "Booking #%(self_pk)s sudah dikonfirmasi."
+msgstr "Booking #%(self_pk)s is already confirmed."
+
+msgid "Booking #%(self_pk)s: hewan sudah dibawa kurir, check-in dulu lalu hubungi pemilik."
+msgstr "Booking #%(self_pk)s: the pet is already with the courier; check it in first, then contact the owner."
+
+msgid "Booking #%(self_pk)s sudah berjalan, hubungi admin untuk pembatalan."
+msgstr "Booking #%(self_pk)s is already in progress; contact the admin to cancel."
+
+msgid "Booking #%(self_pk)s sudah dibayar transfer. Hubungi admin untuk pembatalan & pengembalian dana."
+msgstr "Booking #%(self_pk)s was already paid by transfer. Contact the admin for cancellation and refund."
+
+msgid "Jadwal booking #%(self_pk)s belum lewat."
+msgstr "The schedule of booking #%(self_pk)s has not passed yet."
+
+msgid "Booking #%(self_pk)s: groomer hanya bisa diganti sebelum dikerjakan."
+msgstr "Booking #%(self_pk)s: the groomer can only be changed before work starts."
+
+msgid "Booking #%(self_pk)s tidak meminta antar-jemput."
+msgstr "Booking #%(self_pk)s did not request pickup/delivery."
+
+msgid "Pilih kurir aktif untuk antar-jemput hewan."
+msgstr "Choose an active courier for the pet pickup/delivery."
+
+msgid "Booking #%(self_pk)s: kurir tidak bisa diganti saat ini."
+msgstr "Booking #%(self_pk)s: the courier cannot be changed right now."
+
+msgid "Booking #%(self_pk)s tidak meminta penjemputan."
+msgstr "Booking #%(self_pk)s did not request a pickup."
+
+msgid "Booking #%(self_pk)s belum dikonfirmasi toko."
+msgstr "Booking #%(self_pk)s has not been confirmed by the store."
+
+msgid "Booking #%(self_pk)s tidak sedang dijemput."
+msgstr "Booking #%(self_pk)s is not being picked up."
+
+msgid "QR / kode booking tidak cocok."
+msgstr "The booking QR / code does not match."
+
+msgid "Foto hewan saat dijemput wajib diambil."
+msgstr "A photo of the pet at pickup is required."
+
+msgid "Booking #%(self_pk)s: hewan belum dijemput atau sudah check-in."
+msgstr "Booking #%(self_pk)s: the pet has not been picked up or is already checked in."
+
+msgid "Booking #%(self_pk)s berstatus %(f_get_status_display)s, tidak bisa check-in."
+msgstr "Booking #%(self_pk)s is %(f_get_status_display)s and cannot be checked in."
+
+msgid "Booking #%(self_pk)s sudah ditugaskan ke groomer lain."
+msgstr "Booking #%(self_pk)s is already assigned to another groomer."
+
+msgid "Booking #%(self_pk)s bukan tugas Anda."
+msgstr "Booking #%(self_pk)s is not your task."
+
+msgid "Booking #%(self_pk)s tidak sedang dikerjakan."
+msgstr "Booking #%(self_pk)s is not in progress."
+
+msgid "Semua tahap sudah selesai."
+msgstr "All steps are already done."
+
+msgid "Tahap '%(step_name)s' wajib difoto."
+msgstr "Step '%(step_name)s' requires a photo."
+
+msgid "Booking #%(self_pk)s belum siap diambil."
+msgstr "Booking #%(self_pk)s is not ready for pickup yet."
+
+msgid "Booking #%(self_pk)s belum lunas. Terima pembayarannya dulu di Kasir (scan QR booking), baru serahkan hewan ke pemilik."
+msgstr "Booking #%(self_pk)s is not paid yet. Take the payment at the Cashier first (scan the booking QR), then hand the pet to its owner."
+
+msgid "Booking #%(self_pk)s tidak meminta diantar pulang."
+msgstr "Booking #%(self_pk)s did not request a drop-off."
+
+msgid "Booking #%(self_pk)s belum lunas. Hewan diantar pulang setelah pelanggan membayar transfer."
+msgstr "Booking #%(self_pk)s is not paid yet. The pet is taken home after the customer pays by transfer."
+
+msgid "Foto hewan saat dibawa pulang wajib diambil."
+msgstr "A photo of the pet when leaving for home is required."
+
+msgid "Booking #%(self_pk)s tidak sedang diantar pulang."
+msgstr "Booking #%(self_pk)s is not on its way home."
+
+msgid "Foto hewan saat diserahkan wajib diambil."
+msgstr "A photo of the pet at handover is required."
+
+msgid "Ulasan bisa diberikan setelah layanan selesai."
+msgstr "You can review once the service is finished."
+
+msgid "Booking ini sudah diberi ulasan."
+msgstr "This booking has already been reviewed."
+
+msgid "Pilih 1 sampai 5 bintang."
+msgstr "Choose 1 to 5 stars."
+
+msgid "Hewan ini bukan milik pelanggan tersebut."
+msgstr "This pet does not belong to that customer."
+
+msgid "Lokasi ±%(km)s km dari toko, di luar jangkauan antar-jemput (%(tore_max_delivery_km)s km)."
+msgstr "The location is ±%(km)s km from the store, outside the pickup range (%(tore_max_delivery_km)s km)."
+
+msgid "Pastikan uang tunai Rp %(self_total_price)s sudah diterima."
+msgstr "Make sure the cash of Rp %(self_total_price)s has been received."
+
+msgid "Status komplain tidak dikenal."
+msgstr "Unknown complaint status."
+
+msgid "Tulis balasan sebelum menandai komplain selesai."
+msgstr "Write a reply before marking the complaint as resolved."
+
+msgid "Setoran #%(self_pk)s sudah diterima."
+msgstr "Remittance #%(self_pk)s has already been received."
+
+msgid "Isi jumlah uang yang benar-benar diterima."
+msgstr "Enter the amount actually received."
+
+msgid "Jumlah berbeda dari tagihan: tulis catatan selisihnya."
+msgstr "The amount differs from the bill: write a note about the difference."
+
+msgid "Tidak ada uang COD yang perlu disetor."
+msgstr "There is no COD money to hand in."
+
+msgid "Kasir Anda sudah dibuka."
+msgstr "Your till is already open."
+
+msgid "Isi modal awal uang di laci (boleh 0)."
+msgstr "Enter the opening cash in the drawer (0 is allowed)."
+
+msgid "Buka kasir dulu (isi modal awal laci) sebelum menerima pembayaran."
+msgstr "Open the till first (enter the opening cash) before taking payments."
+
+msgid "Booking #%(booking_pk)s berstatus %(g_get_status_display)s: bisa dibayar setelah hewan check-in."
+msgstr "Booking #%(booking_pk)s is %(g_get_status_display)s: it can be paid after the pet checks in."
+
+msgid "Booking #%(booking_pk)s sudah dibayar (struk %(ine_order_receipt_no)s)."
+msgstr "Booking #%(booking_pk)s is already paid (receipt %(ine_order_receipt_no)s)."
+
+msgid "Booking #%(booking_pk)s sudah mengirim bukti transfer. Cek buktinya dulu di Booking Layanan."
+msgstr "Booking #%(booking_pk)s already sent a transfer proof. Check it first in Service Booking."
+
+msgid "Belum ada barang atau layanan di transaksi."
+msgstr "There are no items or services in the transaction yet."
+
+msgid "Pilih: dibawa langsung atau diantar."
+msgstr "Choose: take away or deliver."
+
+msgid "Diskon tidak boleh melebihi total belanja."
+msgstr "The discount cannot exceed the total."
+
+msgid "Tulis alasan diskon."
+msgstr "Write the reason for the discount."
+
+msgid "Diskon di atas Rp %(shier_discount_limit)s harus diberikan Admin."
+msgstr "Discounts above Rp %(shier_discount_limit)s must be given by an Admin."
+
+msgid "Nominal pembayaran tidak valid."
+msgstr "Invalid payment amount."
+
+msgid "Nominal transfer/QRIS melebihi total yang harus dibayar."
+msgstr "The transfer/QRIS amount exceeds the total due."
+
+msgid "Pastikan dana transfer/QRIS sudah masuk ke rekening toko, lalu centang konfirmasinya."
+msgstr "Make sure the transfer/QRIS funds have reached the store account, then tick the confirmation."
+
+msgid "Uang tunai kurang: harus Rp %(cash_due)s."
+msgstr "Not enough cash: Rp %(cash_due)s is required."
+
+msgid "Transaksi masih kosong, tidak ada yang diparkir."
+msgstr "The transaction is empty, nothing to park."
+
+msgid "Maksimal %(max_held_sales)s transaksi diparkir. Lanjutkan atau hapus yang lama."
+msgstr "At most %(max_held_sales)s parked sales. Resume or delete an old one."
+
+msgid "Transaksi parkir ini milik kasir lain."
+msgstr "This parked sale belongs to another cashier."
+
+msgid "Selesaikan atau parkir transaksi yang sedang berjalan dulu."
+msgstr "Finish or park the current transaction first."
+
+msgid "Pembatalan transaksi kasir hanya oleh Admin/Super Admin."
+msgstr "Only an Admin/Super Admin can void a cashier transaction."
+
+msgid "Tulis alasan pembatalan."
+msgstr "Write the reason for cancelling."
+
+msgid "Order #%(order_pk)s bukan transaksi kasir."
+msgstr "Order #%(order_pk)s is not a cashier transaction."
+
+msgid "Order #%(order_pk)s sudah dibatalkan."
+msgstr "Order #%(order_pk)s is already cancelled."
+
+msgid "Order #%(order_pk)s sedang diantar kurir; tunggu kembali ke toko."
+msgstr "Order #%(order_pk)s is out with a courier; wait until it is back at the store."
+
+msgid "Order #%(order_pk)s sudah punya retur; selesaikan lewat retur."
+msgstr "Order #%(order_pk)s already has a return; settle it through the return."
+
+msgid "Retur hanya untuk transaksi lunas yang barangnya sudah diterima."
+msgstr "Returns are only for paid transactions whose items were received."
+
+msgid "Batas retur %(current_return_days)s hari sudah lewat."
+msgstr "The %(current_return_days)s-day return window has passed."
+
+msgid "Tulis alasan retur (mis. rusak, salah ukuran)."
+msgstr "Write the reason for the return (e.g. damaged, wrong size)."
+
+msgid "Pilih cara pengembalian uang."
+msgstr "Choose the refund method."
+
+msgid "Pilih barang dan jumlah yang diretur."
+msgstr "Choose the items and quantities to return."
+
+msgid "Retur hanya bisa disetujui Admin/Super Admin."
+msgstr "Only an Admin/Super Admin can approve returns."
+
+msgid "Retur ini sudah diputuskan."
+msgstr "This return has already been decided."
+
+msgid "Untuk diantar, pilih pelanggan terdaftar (alamat & nomor HP tersimpan)."
+msgstr "For delivery, choose a registered customer (saved address & phone number)."
+
+msgid "Tidak ada barang yang perlu diantar."
+msgstr "There are no items to deliver."
+
+msgid "Alamat %(customer_name)s kosong. Lengkapi dulu di Kelola Akun."
+msgstr "%(customer_name)s has no address. Complete it in Manage Account first."
+
+msgid "Bayar saat barang sampai (COD) hanya untuk pesanan yang diantar."
+msgstr "Cash on delivery (COD) is only for delivered orders."
+
+msgid "Biaya layanan grooming dibayar di kasir; pisahkan dari pesanan COD."
+msgstr "Grooming fees are paid at the cashier; keep them separate from COD orders."
+
+msgid "'%(product_name)s' tidak dijual."
+msgstr "'%(product_name)s' is not for sale."
+
+msgid "Barang retur tidak ada di transaksi ini."
+msgstr "The returned item is not in this transaction."
+
+msgid "'%(detail_product_name)s' maksimal %(eturnable_qty_detail)s pcs yang bisa diretur."
+msgstr "At most %(eturnable_qty_detail)s pcs of '%(detail_product_name)s' can be returned."
+
+msgid "Tulis alasan penolakan."
+msgstr "Write the reason for rejection."
+
+msgid "Jumlah retur tidak valid."
+msgstr "Invalid return quantity."
+
+msgid "Gagal membuat resi unik, coba lagi."
+msgstr "Could not create a unique tracking number, please try again."
+
+msgid "Order #%(self_pk)s: status %(f_order_status_label)s tidak bisa diubah ke %(tus_new_status_label)s."
+msgstr "Order #%(self_pk)s: status %(f_order_status_label)s cannot change to %(tus_new_status_label)s."
+
+msgid "Kurir sedang antar-jemput hewan (booking #%(trip_pk)s). Paket bisa dibawa setelah tugas itu selesai."
+msgstr "The courier is on a pet pickup/delivery (booking #%(trip_pk)s). Packages can be taken after that task is done."
+
+msgid "Order #%(self_pk)s: pilih kurir terlebih dahulu."
+msgstr "Order #%(self_pk)s: choose a courier first."
+
+msgid "Order #%(self_pk)s: kurir hanya bisa ditugaskan saat order Dikonfirmasi."
+msgstr "Order #%(self_pk)s: a courier can only be assigned when the order is Confirmed."
+
+msgid "Order #%(self_pk)s: transfer harus lunas dulu sebelum kurir ditugaskan."
+msgstr "Order #%(self_pk)s: the transfer must be paid before a courier is assigned."
+
+msgid "Order #%(self_pk)s: transfer belum lunas, belum bisa dikirim."
+msgstr "Order #%(self_pk)s: the transfer is not paid yet, it cannot be shipped."
+
+msgid "Order #%(self_pk)s sudah dikonfirmasi atau diproses."
+msgstr "Order #%(self_pk)s is already confirmed or processed."
+
+msgid "Order #%(self_pk)s belum masuk antrean packing."
+msgstr "Order #%(self_pk)s is not in the packing queue yet."
+
+msgid "Order #%(self_pk)s berstatus %(f_order_status_label)s, tidak bisa diambil."
+msgstr "Order #%(self_pk)s is %(f_order_status_label)s and cannot be picked up."
+
+msgid "Order #%(self_pk)s belum siap dikirim (belum lunas / belum masuk antrean packing)."
+msgstr "Order #%(self_pk)s is not ready to ship (not paid / not in the packing queue)."
+
+msgid "Order #%(self_pk)s sudah ditugaskan ke kurir lain."
+msgstr "Order #%(self_pk)s is already assigned to another courier."
+
+msgid "Anda sudah membawa %(carrying)s paket (maks. %(limit)s per rute)."
+msgstr "You are already carrying %(carrying)s package(s) (max. %(limit)s per route)."
+
+msgid "Order #%(self_pk)s bukan paket Anda."
+msgstr "Order #%(self_pk)s is not your package."
+
+msgid "Order #%(self_pk)s tidak sedang diantar."
+msgstr "Order #%(self_pk)s is not out for delivery."
+
+msgid "QR / kode serah-terima tidak cocok dengan paket ini."
+msgstr "The handover QR / code does not match this package."
+
+msgid "Foto paket di tangan penerima wajib diambil."
+msgstr "A photo of the package in the recipient's hands is required."
+
+msgid "Pastikan uang tunai Rp %(self_total_payment)s sudah diterima."
+msgstr "Make sure the cash of Rp %(self_total_payment)s has been received."
+
+msgid "Order #%(self_pk)s tidak sedang Anda antar."
+msgstr "You are not delivering order #%(self_pk)s."
+
+msgid "Tulis kendalanya supaya admin bisa menghubungi pelanggan."
+msgstr "Describe the problem so the admin can contact the customer."
+
+msgid "Pesanan ini bukan milik Anda."
+msgstr "This order is not yours."
+
+msgid "Ulasan bisa diberikan setelah pesanan sampai."
+msgstr "You can review once the order has arrived."
+
+msgid "Pesanan ini sudah diberi ulasan."
+msgstr "This order has already been reviewed."
+
+msgid "Pesanan #%(self_pk)s tidak sedang menunggu transfer."
+msgstr "Order #%(self_pk)s is not waiting for a transfer."
+
+msgid "Order #%(self_pk)s tidak punya bukti transfer yang menunggu dicek."
+msgstr "Order #%(self_pk)s has no transfer proof waiting to be checked."
+
+msgid "Pesanan #%(self_pk)s sudah diproses toko, hubungi admin untuk pembatalan."
+msgstr "Order #%(self_pk)s is already being processed; contact the admin to cancel."
+
+msgid "Sebagian barang di keranjang sudah tidak dijual. Hapus barang tersebut dari keranjang lalu coba lagi."
+msgstr "Some items in the cart are no longer for sale. Remove them from the cart and try again."
+
+msgid "Order #%(self_pk)s sudah dibatalkan."
+msgstr "Order #%(self_pk)s is already cancelled."
+
+msgid "Belum ada item di order."
+msgstr "There are no items in the order yet."
+
+msgid "Order transfer: kurir bisa ditugaskan setelah pembayaran lunas."
+msgstr "Transfer order: a courier can be assigned once payment is complete."
+
+msgid "Shift ini sudah ditutup."
+msgstr "This shift is already closed."
+
+msgid "Isi jumlah uang tunai yang ada di laci."
+msgstr "Enter the amount of cash in the drawer."
+
+msgid "Ada selisih uang: tulis catatan penyebabnya."
+msgstr "There is a cash difference: write a note on the cause."
+
+msgid "Maksimal %(online_max_qty)s pcs per barang untuk pesanan online."
+msgstr "Maximum %(online_max_qty)s pcs per item for online orders."
+
+msgid "Alamat berjarak %(distance)s km dari toko, di luar jangkauan antar (maks. %(tore_max_delivery_km)s km)."
+msgstr "The address is %(distance)s km from the store, outside the delivery range (max. %(tore_max_delivery_km)s km)."
+
+msgid "'%(item_product_name)s' tidak dijual."
+msgstr "'%(item_product_name)s' is not for sale."
+
+msgid "Data keranjang tidak valid."
+msgstr "Invalid cart data."
+
+msgid "Order #%(order_pk)s adalah transaksi kasir: batalkan lewat halaman struk (admin, dengan alasan)."
+msgstr "Order #%(order_pk)s is a cashier transaction: void it from the receipt page (admin, with a reason)."
+
+msgid "Struk %(no)s dibatalkan"
+msgstr "Receipt %(no)s voided"
+
+msgid "Retur %(no)s"
+msgstr "Return %(no)s"
+
+msgid "Order online #%(n)s"
+msgstr "Online order #%(n)s"
+
+msgid "Order #%(n)s dibatalkan, stok dikembalikan"
+msgstr "Order #%(n)s cancelled, stock restored"
+
+msgid "Penyesuaian audit stok"
+msgstr "Stock audit adjustment"
+
+msgid "Stok awal saat produk dibuat"
+msgstr "Opening stock when the product was created"
+
+msgid "Tidak ada catatan"
+msgstr "No notes"
+
+msgid "Stok '%(name)s' tidak cukup. Stok saat ini: %(stock)s"
+msgstr "Not enough stock for '%(name)s'. Current stock: %(stock)s"
+
+msgid "Harga atau ketersediaan barang berubah sejak keranjang dibuka. Periksa kembali total terbaru lalu pesan ulang."
+msgstr "Prices or availability changed since the cart was opened. Check the latest total and order again."
+
+msgid "Tandai lokasi pengiriman di peta."
+msgstr "Mark the delivery location on the map."
+
+msgid "Pesanan sedang menunggu konfirmasi admin."
+msgstr "The order is waiting for admin confirmation."
+
+msgid "Pesanan sudah dikonfirmasi dan sedang disiapkan."
+msgstr "The order is confirmed and being prepared."
+
+msgid "Pesanan sedang diantar kurir. Posisi kurir bisa dilihat langsung di peta."
+msgstr "The order is out with a courier. You can see the courier live on the map."
+
+msgid "Pesanan sudah sampai. Foto bukti pengiriman ada di halaman lacak."
+msgstr "The order has arrived. The delivery photo is on the tracking page."
+
+msgid "Pesanan ini dibatalkan."
+msgstr "This order was cancelled."
+
+msgid "Buka halaman lacak"
+msgstr "Open tracking page"
+
+msgid "Silakan ketik pertanyaan Anda 🙂"
+msgstr "Please type your question 🙂"
+
+msgid "Sama-sama! Senang bisa membantu. 🐾"
+msgstr "You're welcome! Happy to help. 🐾"
+
+msgid "Halo! Saya asisten Seelly Petshop. Silakan pilih pertanyaan di bawah atau ketik pertanyaan Anda."
+msgstr "Hi! I'm the Seelly Petshop assistant. Pick a question below or type your own."
+
+msgid "Resi %(code)s tidak ditemukan. Periksa kembali nomor resinya ya (contoh: PS-261022-K7M2QX)."
+msgstr "Tracking number %(code)s was not found. Please check the number again (example: PS-261022-K7M2QX)."
+
+msgid "Anda juga bisa langsung chat admin di WhatsApp %(wa)s."
+msgstr "You can also chat with the admin on WhatsApp %(wa)s."
+
+msgid "Maaf, saya belum menemukan jawabannya."
+msgstr "Sorry, I couldn't find the answer yet."
+
+msgid "Status pesanan %(code)s: %(status)s."
+msgstr "Order %(code)s status: %(status)s."
+
+msgid "Mungkin maksud Anda salah satu pertanyaan di bawah?"
+msgstr "Maybe you meant one of the questions below?"
+
+msgid "Halo! 👋 Saya asisten Seelly Petshop. Pilih pertanyaan di bawah atau ketik pertanyaan Anda, misalnya “ongkir berapa?” atau nomor resi pesanan."
+msgstr "Hi! 👋 I'm the Seelly Petshop assistant. Pick a question below or type your own, e.g. “how much is shipping?” or an order tracking number. Answers are written in Indonesian."
+
+msgid "Pertanyaan itu sudah tidak tersedia."
+msgstr "That question is no longer available."
+
+msgid "Koordinat tidak valid."
+msgstr "Invalid coordinates."
+
+msgid "Tahap ini wajib foto."
+msgstr "This step requires a photo."

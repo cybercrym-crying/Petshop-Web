@@ -174,6 +174,8 @@ LANGUAGES = [("id", "Bahasa Indonesia"), ("en", "English")]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60
 LANGUAGE_COOKIE_SAMESITE = "Lax"
+# Pesan flash berteks Indonesia ikut diterjemahkan ke bahasa aktif (lihat common/stored_i18n.py).
+MESSAGE_STORAGE = "common.messages.TranslatedFallbackStorage"
 
 TIME_ZONE = "Asia/Makassar"  # WITA (Samarinda/Balikpapan)
 

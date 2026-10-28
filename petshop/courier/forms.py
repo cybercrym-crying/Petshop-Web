@@ -11,7 +11,8 @@ from .models import CourierProfile
 class CourierProfileForm(forms.ModelForm):
     class Meta:
         model = CourierProfile
-        fields = ["vehicle", "plate_number", "service_area", "status", "can_carry_pets"]
+        fields = ["vehicle", "plate_number", "service_area", "status"]
+        labels = {"vehicle": "Kendaraan", "plate_number": "Nomor polisi", "service_area": "Area layanan"}
         widgets = {
             "vehicle": forms.TextInput(attrs={"class": "form-control"}),
             "plate_number": forms.TextInput(attrs={"class": "form-control"}),
@@ -23,7 +24,7 @@ class CourierProfileForm(forms.ModelForm):
 
 
 class CourierAccountForm(forms.ModelForm):
-    """Kurir mengubah data akunnya sendiri. Area layanan, status, dan izin antar hewan tetap diatur admin."""
+    """Kurir mengubah data akunnya sendiri. Area layanan dan status tetap diatur admin."""
 
     name = forms.CharField(max_length=255, label="Nama lengkap")
     phone_number = forms.CharField(max_length=20, label="Nomor WhatsApp")
