@@ -724,6 +724,11 @@ class Command(BaseCommand):
             "--no-photos", action="store_true", help="Lewati foto produk."
         )
         parser.add_argument(
+            "--media-only",
+            action="store_true",
+            help="Hanya pulihkan file demo yang hilang (QRIS contoh, foto produk demo); data lain tidak diubah.",
+        )
+        parser.add_argument(
             "--force",
             action="store_true",
             help="Izinkan saat DEBUG=False (jangan di server produksi).",
@@ -736,6 +741,9 @@ class Command(BaseCommand):
                 "Pakai --force kalau memang disengaja."
             )
         self.rng = random.Random(opts["seed"])
+        if opts["media_only"]:
+            self.restore_media()
+            return
         if opts["reset"]:
             self.reset()
         with transaction.atomic():
@@ -1357,6 +1365,35 @@ class Command(BaseCommand):
             if status != ComplaintStatus.OPEN:
                 complaint.respond(cashier, status, response)
 
+    @staticmethod
+    def needs_demo_file(field, demo_prefix):
+        """Kosong, atau file demo tercatat tapi tidak ada di folder media (database disalin tanpa media/).
+        File unggahan asli yang hilang tidak diganti contoh: admin perlu mengunggah ulang."""
+        if not field:
+            return True
+        if not field.name.startswith(demo_prefix):
+            return False
+        return not field.storage.exists(field.name)
+
+    def restore_demo_qris(self, store):
+        if self.needs_demo_file(store.qris_image, "store/qris/contoh-qris-demo"):
+            store.qris_image.save("contoh-qris-demo.png", self.demo_qris(), save=True)
+            return True
+        return False
+
+    def restore_media(self):
+        """--media-only: pulihkan file demo yang hilang tanpa menambah/mengubah data lain."""
+        qris = self.restore_demo_qris(StoreSettings.current())
+        photos = 0
+        for name, _cat, _buy, _sell, _stock, photo, *_rest in PRODUCTS:
+            product = Product.objects.filter(name=name).first()
+            if product and photo and product.photo and self.needs_demo_file(product.photo, "products/demo-"):
+                content = self.photo_file(photo)
+                if content:
+                    product.photo.save(f"demo-{product.pk}.png", content, save=True)
+                    photos += 1
+        self.stdout.write(f"QRIS contoh dipulihkan: {'ya' if qris else 'tidak perlu'} · foto produk dipulihkan: {photos}")
+
     def photo_file(self, static_path):
         found = finders.find(static_path)
         if not found:
@@ -1416,7 +1453,7 @@ class Command(BaseCommand):
                     StockMutation.objects.filter(pk=second.pk).update(
                         date=opened + timedelta(days=10)
                     )
-            if photo and not no_photos and not product.photo:
+            if photo and not no_photos and self.needs_demo_file(product.photo, "products/demo-"):
                 content = self.photo_file(photo)
                 if content:
                     product.photo.save(f"demo-{product.pk}.png", content, save=True)
@@ -1763,8 +1800,7 @@ class Command(BaseCommand):
 
         pos.assign_codes()
         store = StoreSettings.current()
-        if not store.qris_image:
-            store.qris_image.save("contoh-qris-demo.png", self.demo_qris(), save=True)
+        self.restore_demo_qris(store)
         if Order.objects.filter(receipt_no__isnull=False, admin__username__startswith=DEMO_PREFIX).exists():
             return
         admin = admins[0]

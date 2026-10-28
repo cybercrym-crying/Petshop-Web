@@ -602,9 +602,6 @@ html {
   height: 18px;
   accent-color: #7e2fb8;
 }
-.courier-only[hidden] {
-  display: none !important;
-}
 .login-glass-card--single {
   max-width: 560px;
 }

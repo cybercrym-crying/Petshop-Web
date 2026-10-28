@@ -324,3 +324,19 @@ body {
 .approval-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--t-bd-e2e8f0,#e2e8f0); }
 .approval-row:last-child { border-bottom: 0; }
 .approval-actions { display: flex; gap: 8px; }
+/* Persetujuan staf: tolak wajib beralasan + daftar kabar WhatsApp. */
+.approval-actions { align-items: center; flex-wrap: wrap; }
+.approval-reject { display: flex; gap: 8px; align-items: center; }
+.approval-reject .form-control { width: 240px; max-width: 100%; }
+.decided-card { padding: 16px 20px; }
+.decided-title { margin: 0 0 4px; font-size: 1rem; font-weight: 800; }
+.decided-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--t-bd-e2e8f0,#e2e8f0); margin-top: 8px; }
+.decided-row.is-new { border-color: var(--t-bd-8c73c2,#8c73c2); background: var(--t-bg-f3f0f8,#f3f0f8); }
+.decided-who { min-width: 0; }
+.decided-pill { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+.decided-pill.is-ok { background: var(--t-bg-f0fdf4,#f0fdf4); color: var(--t-tx-166534,#166534); }
+.decided-pill.is-bad { background: var(--t-bg-fee2e2,#fee2e2); color: #b91c1c; }
+@media (max-width: 575.98px) {
+  .approval-actions, .approval-reject { width: 100%; }
+  .approval-reject .form-control { flex: 1; width: auto; }
+}

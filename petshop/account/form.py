@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
-from .models import ADMIN_ROLES, SELF_REGISTER_ROLES, STAFF_ROLES, Approval, Customer, Role
+from .models import ADMIN_ROLES, STAFF_ROLES, Approval, Customer, Role
 from .phone import normalize_phone
 
 User = get_user_model()
@@ -243,28 +243,59 @@ class ProfileForm(PinMixin, forms.ModelForm):
         return user
 
 
+class ProfilePhotoForm(forms.Form):
+    """Foto profil pelanggan: unggah baru (JPG/PNG/WEBP, maks. 10 MB) atau hapus."""
+
+    photo = forms.ImageField(
+        required=False,
+        error_messages={"invalid_image": "File harus berupa foto (JPG, PNG, atau WEBP)."},
+    )
+    remove = forms.BooleanField(required=False)
+
+    def clean_photo(self):
+        from common.photos import clean_photo
+
+        photo = self.cleaned_data.get("photo")
+        return clean_photo(photo) if photo else None
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get("photo") and not cleaned.get("remove") and not self.errors:
+            raise forms.ValidationError("Pilih foto terlebih dahulu.")
+        return cleaned
+
+    def save(self, user):
+        old = user.photo.name if user.photo else ""
+        user.photo = self.cleaned_data.get("photo") or None
+        user.save(update_fields=["photo"])
+        if old and old != (user.photo.name if user.photo else ""):
+            user.photo.storage.delete(old)
+        return user
+
+
 class StaffRegisterForm(forms.ModelForm):
     """Calon kurir mendaftar sendiri; akun aktif setelah disetujui admin.
 
-    Kasir dan groomer tidak bisa mendaftar sendiri: akunnya dibuat Admin/Super Admin.
+    Halaman ini khusus kurir (tanpa pilihan peran). Kasir dan groomer tidak bisa mendaftar
+    sendiri: akunnya dibuat Admin/Super Admin.
     """
 
     name = forms.CharField(max_length=255, label="Nama lengkap")
     phone_number = forms.CharField(max_length=20, label="Nomor WhatsApp")
-    role = forms.ChoiceField(
-        label="Mendaftar sebagai",
-        choices=[(code, Role(code).label) for code in SELF_REGISTER_ROLES],
+    vehicle = forms.CharField(
+        max_length=50, label="Kendaraan", error_messages={"required": "Wajib diisi untuk kurir."}
     )
-    vehicle = forms.CharField(max_length=50, required=False, label="Kendaraan (khusus kurir)")
-    plate_number = forms.CharField(max_length=20, required=False, label="Nomor polisi (khusus kurir)")
+    plate_number = forms.CharField(
+        max_length=20, label="Nomor polisi", error_messages={"required": "Wajib diisi untuk kurir."}
+    )
     can_carry_pets = forms.BooleanField(
-        required=False, label="Saya punya kandang/boks untuk antar-jemput hewan (khusus kurir)"
+        required=False, label="Saya punya kandang/boks untuk antar-jemput hewan"
     )
     password1 = forms.CharField(widget=forms.PasswordInput, label="Kata sandi")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Ulangi kata sandi")
 
     field_order = [
-        "name", "username", "phone_number", "address", "role",
+        "name", "username", "phone_number", "address",
         "vehicle", "plate_number", "can_carry_pets", "password1", "password2",
     ]
 
@@ -278,10 +309,6 @@ class StaffRegisterForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        if cleaned.get("role") == Role.COURIER:
-            for field in ("vehicle", "plate_number"):
-                if not (cleaned.get(field) or "").strip():
-                    self.add_error(field, "Wajib diisi untuk kurir.")
         p1, p2 = cleaned.get("password1"), cleaned.get("password2")
         if p1 and p2 and p1 != p2:
             self.add_error("password2", "Kata sandi tidak sama.")
@@ -298,19 +325,18 @@ class StaffRegisterForm(forms.ModelForm):
         user = super().save(commit=False)
         user.name = self.cleaned_data["name"]
         user.phone_number = self.cleaned_data["phone_number"]
-        user.role = self.cleaned_data["role"]
+        user.role = Role.COURIER
         user.approval = Approval.PENDING
         user.is_active = False
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
-            if user.role == Role.COURIER:
-                CourierProfile.objects.update_or_create(
-                    user=user,
-                    defaults={
-                        "vehicle": self.cleaned_data["vehicle"].strip(),
-                        "plate_number": self.cleaned_data["plate_number"].strip().upper(),
-                        "can_carry_pets": self.cleaned_data["can_carry_pets"],
-                    },
-                )
+            CourierProfile.objects.update_or_create(
+                user=user,
+                defaults={
+                    "vehicle": self.cleaned_data["vehicle"].strip(),
+                    "plate_number": self.cleaned_data["plate_number"].strip().upper(),
+                    "can_carry_pets": self.cleaned_data["can_carry_pets"],
+                },
+            )
         return user

@@ -7297,3 +7297,177 @@ msgstr "e.g. Budi Santoso"
 
 msgid "Simpan & pilih"
 msgstr "Save & select"
+
+msgid "Klik peta atau tekan \"Pakai lokasi saya\" untuk menandai rumah Anda. Titik ini dikirim ke admin sebagai link Google Maps."
+msgstr "Tap the map or press \"Use my location\" to mark your home. This point is sent to the admin as a Google Maps link."
+
+msgid "Cek titik di Google Maps"
+msgstr "Check the point on Google Maps"
+
+msgid "Ongkir (perkiraan)"
+msgstr "Shipping (estimate)"
+
+msgid "Titik di Google Maps"
+msgstr "Point on Google Maps"
+
+msgid "Calon kurir mendaftar lewat halaman"
+msgstr "Prospective couriers register on the page"
+
+msgid "Daftar Kurir"
+msgstr "Courier Registration"
+
+msgid "Seelly Petshop - Daftar Kurir"
+msgstr "Seelly Petshop - Courier Registration"
+
+msgid "Jadi Kurir Seelly."
+msgstr "Become a Seelly Courier."
+
+msgid "Antar pesanan dan hewan pelanggan di sekitar Samarinda. Akun Anda aktif setelah disetujui admin toko."
+msgstr "Deliver orders and customers' pets around Samarinda. Your account becomes active after the store admin approves it."
+
+msgid "Terima tugas antar langsung dari HP"
+msgstr "Get delivery tasks right on your phone"
+
+msgid "mis. Honda Beat"
+msgstr "e.g. Honda Beat"
+
+msgid "mis. KT 1234 AB"
+msgstr "e.g. KT 1234 AB"
+
+msgid "Alamat domisili"
+msgstr "Home address"
+
+msgid "Nomor polisi"
+msgstr "License plate"
+
+msgid "Saya punya kandang/boks untuk antar-jemput hewan"
+msgstr "I have a cage/box for pet pickup and delivery"
+
+msgid "Kata sandi"
+msgstr "Password"
+
+msgid "Ulangi kata sandi"
+msgstr "Repeat password"
+
+msgid "Kabari lewat WhatsApp"
+msgstr "Notify on WhatsApp"
+
+msgid "Pesan diterima/ditolak (beserta alasannya) sudah terisi; tinggal tekan kirim di WhatsApp."
+msgstr "The accepted/rejected message (with the reason) is prefilled; just press send in WhatsApp."
+
+msgid "Kirim ke WA"
+msgstr "Send on WhatsApp"
+
+msgid "Nomor WA tidak ada"
+msgstr "No WhatsApp number"
+
+msgid "Alasan penolakan"
+msgstr "Rejection reason"
+
+msgid "Alasan bila ditolak, mis. SIM belum ada"
+msgstr "Reason if rejected, e.g. no driving licence yet"
+
+msgid "Foto profil"
+msgstr "Profile photo"
+
+msgid "Tampil di menu akun dan membantu kurir mengenali Anda. JPG, PNG, atau WEBP, maks. 10 MB."
+msgstr "Shown in your account menu and helps couriers recognise you. JPG, PNG, or WEBP, max 10 MB."
+
+msgid "Pasang foto"
+msgstr "Add photo"
+
+msgid "Hapus foto profil?"
+msgstr "Remove profile photo?"
+
+msgid "Simpan foto"
+msgstr "Save photo"
+
+msgid "Foto profil dihapus."
+msgstr "Profile photo removed."
+
+msgid "Foto profil diperbarui."
+msgstr "Profile photo updated."
+
+msgid "Bagian pengaturan"
+msgstr "Settings sections"
+
+msgid "Ongkir & antar-jemput"
+msgstr "Shipping & pick-up"
+
+msgid "Titik peta toko menjadi pusat hitungan jarak ongkir dan rute kurir."
+msgstr "The store map pin is the origin for shipping distance and courier routes."
+
+msgid "Jam layanan membatasi jadwal booking; nomor WhatsApp dipakai tombol Hubungi Kami dan pesanan tamu."
+msgstr "Service hours limit booking slots; the WhatsApp number is used by the Contact Us button and guest orders."
+
+msgid "Tes"
+msgstr "Test"
+
+msgid "Rekening aktif dan QRIS tampil di petunjuk transfer pelanggan dan layar kasir."
+msgstr "Active accounts and QRIS appear in customer transfer instructions and on the cashier screen."
+
+msgid "File QRIS tercatat tetapi tidak ditemukan di folder media. Unggah ulang supaya tampil di kasir dan checkout."
+msgstr "The QRIS file is recorded but missing from the media folder. Upload it again so it shows at the cashier and checkout."
+
+msgid "Belum ada QRIS. Unggah QRIS statis dari bank (gratis)."
+msgstr "No QRIS yet. Upload the static QRIS from your bank (free)."
+
+msgid "Ganti gambar QRIS"
+msgstr "Replace QRIS image"
+
+msgid "Unggah gambar QRIS"
+msgstr "Upload QRIS image"
+
+msgid "Hapus QRIS"
+msgstr "Remove QRIS"
+
+msgid "Tarif = biaya dasar untuk jarak dasar + tarif per km berikutnya (dibulatkan ke atas)."
+msgstr "Fee = base fee for the base distance + per-km rate after that (rounded up)."
+
+msgid "per arah"
+msgstr "per trip"
+
+msgid "Coba hitung"
+msgstr "Try it"
+
+msgid "Jarak dari toko"
+msgstr "Distance from store"
+
+msgid "Jarak dari toko (km)"
+msgstr "Distance from store (km)"
+
+msgid "Ongkir produk"
+msgstr "Product shipping"
+
+msgid "Jemput atau antar saja"
+msgstr "Pick-up or drop-off only"
+
+msgid "Jemput + antar pulang"
+msgstr "Pick-up + drop-off"
+
+msgid "Pajak, batas diskon kasir, retur, dan catatan di bawah struk."
+msgstr "Tax, cashier discount limit, returns, and the receipt footer note."
+
+msgid "Pratinjau bawah struk"
+msgstr "Receipt footer preview"
+
+msgid "Batas kerja kurir, batas waktu bayar, dan pengingat pelanggan."
+msgstr "Courier workload limits, payment deadlines, and customer reminders."
+
+msgid "Semua perubahan tersimpan"
+msgstr "All changes saved"
+
+msgid "Ada perubahan yang belum disimpan"
+msgstr "You have unsaved changes"
+
+msgid "hari"
+msgstr "days"
+
+msgid "paket"
+msgstr "packages"
+
+msgid "jam"
+msgstr "hours"
+
+msgid "detik"
+msgstr "seconds"

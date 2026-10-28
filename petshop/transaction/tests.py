@@ -732,6 +732,17 @@ class OnlineOrderTests(TestCase):
             "/checkout/pesan/", data=json.dumps(body), content_type="application/json"
         )
 
+    def test_guest_checkout_has_map_pin_and_public_shipping_quote(self):
+        """Tamu (tanpa login) memilih titik rumah di peta; ongkir perkiraan dari endpoint publik."""
+        r = self.client.get("/checkout")
+        self.assertContains(r, "data-map-picker")
+        self.assertContains(r, 'data-default-lat="-1.265400"')
+        self.assertContains(r, f'data-quote-url="{reverse("customer:shipping_quote")}"')
+        q = self.client.get(reverse("customer:shipping_quote"), {"latitude": "-1.26", "longitude": "116.84"})
+        self.assertEqual(q.status_code, 200)
+        self.assertTrue(q.json()["ok"])
+        self.assertGreater(q.json()["fee"], 0)
+
     def test_guest_sees_whatsapp_checkout_and_member_sees_system_checkout(self):
         r = self.client.get("/checkout")
         self.assertTemplateUsed(r, "customer/checkout.html")

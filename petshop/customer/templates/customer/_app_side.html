@@ -3,7 +3,7 @@
 {% with v=request.resolver_match.view_name %}
     <aside class="ca-side" id="ca-side" aria-label="{% translate 'Menu pelanggan' %}">
         <div class="ca-side__who">
-            <span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>
+            {% if user.photo_url %}<img class="sn-avatar sn-avatar--img" src="{{ user.photo_url }}" alt="" width="36" height="36">{% else %}<span class="sn-avatar" aria-hidden="true">{{ user.initials }}</span>{% endif %}
             <div>
                 <strong>{{ user.name }}</strong>
                 <small>{% translate "Pelanggan" %}</small>

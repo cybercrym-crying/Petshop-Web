@@ -823,3 +823,60 @@ class DarkModeTests(TestCase):
         self.assertRegex(html, r'class="sn-icon ca-menu-btn"[^>]*data-label-open="[^"]+"\s+data-label-close="[^"]+"')
         css = open(finders.find("customer/css/app.css"), encoding="utf-8").read()
         self.assertIn(".ca-collapsed .ca-app", css)
+
+
+class ProfilePhotoTests(TestCase):
+    def setUp(self):
+        import shutil
+        import tempfile
+
+        from django.test import override_settings
+
+        media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media, ignore_errors=True)
+        patcher = override_settings(MEDIA_ROOT=media)
+        patcher.enable()
+        self.addCleanup(patcher.disable)
+        self.user = Customer.objects.create(name="Ayu", phone_number="081300000011", address="Jl. A")
+        self.user.set_password("x")
+        self.user.save()
+        self.client.force_login(self.user)
+
+    def png(self, name="a.png"):
+        import io
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+
+        buf = io.BytesIO()
+        Image.new("RGB", (40, 40), (120, 40, 160)).save(buf, "PNG")
+        return SimpleUploadedFile(name, buf.getvalue(), content_type="image/png")
+
+    def test_customer_uploads_replaces_and_removes_photo(self):
+        url = reverse("customer:account")
+        self.client.post(url, {"form": "photo", "photo": self.png()})
+        self.user.refresh_from_db()
+        first = self.user.photo.name
+        self.assertTrue(first.startswith("avatars/"))
+        # Foto tampil sebagai avatar di menu.
+        r = self.client.get(url)
+        self.assertContains(r, f'class="sn-avatar sn-avatar--img" src="{self.user.photo.url}"')
+        # Ganti foto: file lama dihapus dari penyimpanan.
+        self.client.post(url, {"form": "photo", "photo": self.png("b.png")})
+        self.user.refresh_from_db()
+        self.assertNotEqual(self.user.photo.name, first)
+        self.assertFalse(self.user.photo.storage.exists(first))
+        current = self.user.photo.name
+        self.client.post(url, {"form": "photo", "remove": "1"})
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.photo)
+        self.assertFalse(self.user.photo.storage.exists(current))
+
+    def test_non_image_is_rejected(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        r = self.client.post(reverse("customer:account"),
+                             {"form": "photo", "photo": SimpleUploadedFile("x.png", b"not an image")}, follow=True)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.photo)
+        self.assertContains(r, "File harus berupa foto")
