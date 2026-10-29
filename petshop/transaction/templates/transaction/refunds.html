@@ -1,0 +1,60 @@
+{% extends "account/staff_base.html" %}
+{% load i18n %}
+{% load static rupiah stored_i18n %}
+{% block title %}{% translate "Seelly - Pengembalian Dana" %}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=2">{% endblock %}
+{% block content %}
+    <div class="sg sg-page">
+        <header class="sg-hd">
+            <div class="sg-hd__text">
+                <p class="sg-eyebrow">{% translate "Penjualan" %}</p>
+                <h1>{% translate "Pengembalian Dana" %}</h1>
+                <p>{% translate "Semua dana yang harus atau sudah dikembalikan ke pembeli: pesanan lunas yang dibatalkan dan booking grooming lunas yang batal sebelum dikerjakan." %}</p>
+            </div>
+        </header>
+        {% include "partials/_sg_messages.html" %}
+        <nav class="sg-seg" aria-label="{% translate 'Status pengembalian dana' %}">
+            {% for value, label, n in tabs %}
+                <a href="?tab={{ value }}" class="{% if value == tab %}is-on{% endif %}"{% if value == tab %} aria-current="page"{% endif %}>{{ label }} <span class="sg-c">{{ n }}</span></a>
+            {% endfor %}
+        </nav>
+        {% if tab == "selesai" %}
+            <nav class="sg-seg sg-mt8" aria-label="{% translate 'Cara pengembalian' %}">
+                <a href="?tab=selesai" class="{% if not method %}is-on{% endif %}">{% translate "Semua cara" %}</a>
+                {% for value, label in methods %}<a href="?tab=selesai&amp;method={{ value }}" class="{% if value == method %}is-on{% endif %}">{{ label }}</a>{% endfor %}
+            </nav>
+        {% endif %}
+        <div class="sg-mt16">
+            {% for o in items %}
+                <article class="sg-card{% if not forloop.first %} sg-mt16{% endif %}">
+                    <div class="sg-row is-wrap">
+                        <span class="sg-av" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
+                        <div style="min-width:0;flex:1 1 260px">
+                            <b style="font-size:1.1rem">#{{ o.pk }}{% if o.receipt_no %} · {{ o.receipt_no }}{% endif %}</b>
+                            <div class="sg-sm sg-muted">{{ o.buyer_display }}</div>
+                        </div>
+                        <b class="sg-sm" style="font-size:1.05rem">Rp {% if o.refund_due %}{{ o.refund_due|rupiah }}{% else %}{{ o.refunded_amount|rupiah }}{% endif %}</b>
+                    </div>
+                    <dl class="sg-kv sg-mt12">
+                        <div><dt>{% translate "Untuk" %}</dt><dd>
+                            {% if o.order_status == "DIBATALKAN" %}
+                                {% translate "Pesanan dibatalkan" %}{% if o.cancel_reason %}: {{ o.cancel_reason|tr }}{% endif %}
+                            {% else %}
+                                {% for line in o.cancelled_service_lines %}{% if not forloop.first %}, {% endif %}<a class="sg-link" href="{% url 'service:manage_bookings' %}?id={{ line.booking_id }}">{% blocktranslate trimmed with pk=line.booking_id pet=line.booking.pet_name amount=line.amount|rupiah %}Booking #{{ pk }} {{ pet }} (Rp {{ amount }}){% endblocktranslate %}</a>{% if line.booking.cancel_reason %}: {{ line.booking.cancel_reason|tr }}{% endif %}{% endfor %}
+                            {% endif %}
+                        </dd></div>
+                        {% if o.refunded_at %}
+                            <div><dt>{% translate "Cara" %}</dt><dd>{{ o.get_refund_method_display }}</dd></div>
+                            {% if o.refund_method == "TRANSFER" %}<div><dt>{% translate "No. referensi" %}</dt><dd>{{ o.refund_note|default:"-" }}</dd></div>{% endif %}
+                            <div><dt>{% translate "Dicatat" %}</dt><dd>{{ o.refunded_at|date:"d M Y, H.i" }} · {{ o.refunded_by.display_name|default:"-" }}</dd></div>
+                        {% endif %}
+                    </dl>
+                    {% if o.refund_due %}{% include "transaction/_refund_box.html" with o=o back=request.get_full_path %}{% endif %}
+                    {% if o.receipt_no %}<p class="sg-mt12 mb-0"><a href="{% url 'transaction:receipt' o.pk %}" class="sg-link"><i class="bi bi-receipt" aria-hidden="true"></i> {% translate "Lihat struk" %}</a></p>{% endif %}
+                </article>
+            {% empty %}
+                <p class="sg-card sg-empty"><i class="bi bi-cash-coin" aria-hidden="true"></i>{% if tab == "menunggu" %}{% translate "Tidak ada dana yang menunggu dikembalikan." %}{% else %}{% translate "Belum ada pengembalian dana yang dicatat." %}{% endif %}</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

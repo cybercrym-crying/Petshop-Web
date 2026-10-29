@@ -39,6 +39,7 @@
                             <li><span>{% translate "+ Penjualan tunai" %}</span><b>Rp {{ summary.cash_sales|rupiah }}</b></li>
                             {% if summary.remitted %}<li><span>{% translate "+ Setoran COD kurir yang Anda terima" %}</span><b>Rp {{ summary.remitted|rupiah }}</b></li>{% endif %}
                             {% if summary.refunds %}<li><span>{% translate "- Uang retur dikembalikan" %}</span><b>Rp {{ summary.refunds|rupiah }}</b></li>{% endif %}
+                            {% for m in summary.cash_out_rows %}<li><span>- {{ m.reason }}</span><b>Rp {{ m.amount|rupiah }}</b></li>{% endfor %}
                             {% if summary.discount %}<li><span>{% translate "Total diskon" %}</span><b>Rp {{ summary.discount|rupiah }}</b></li>{% endif %}
                             <li class="is-tot"><span>{% translate "Seharusnya ada" %}</span><b>Rp {{ summary.expected_cash|rupiah }}</b></li>
                         </ul>

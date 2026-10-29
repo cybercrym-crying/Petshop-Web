@@ -9146,3 +9146,159 @@ msgstr "Customers only"
 
 msgid "Akun staf tidak bisa berbelanja di situs pelanggan. Jual produk ini lewat Kasir."
 msgstr "Staff accounts cannot shop on the customer site. Sell this product through the Cashier."
+
+msgid "Bagian QRIS/transfer belum dikembalikan: catat setelah dana dikirim ke pembeli."
+msgstr "The QRIS/transfer part has not been refunded yet: record it after the money is sent to the buyer."
+
+msgid "Pengembalian dana dicatat."
+msgstr "Refund recorded."
+
+msgid "Stok barang dikembalikan dan pembatalan dicatat. Uang tunai yang dikembalikan tercatat keluar dari laci; bagian QRIS/transfer dicatat setelah dananya dikirim ke pembeli."
+msgstr "Stock is restored and the cancellation is recorded. Cash given back is recorded as leaving the drawer; the QRIS/transfer part is recorded after the money is sent to the buyer."
+
+msgid "Dana Rp %(amount)s belum dikembalikan"
+msgstr "Rp %(amount)s not refunded yet"
+
+msgid "Pesanan ini dibatalkan setelah dibayar. Kembalikan dananya ke pembeli, lalu catat di sini supaya kas dan laporan cocok."
+msgstr "This order was cancelled after payment. Refund the buyer, then record it here so cash and reports match."
+
+msgid "Cara pengembalian"
+msgstr "Refund method"
+
+msgid "Tunai (keluar dari laci kasir Anda)"
+msgstr "Cash (from your cashier drawer)"
+
+msgid "Transfer bank"
+msgstr "Bank transfer"
+
+msgid "No. referensi / rekening tujuan"
+msgstr "Reference no. / destination account"
+
+msgid "Dana sudah benar-benar dikembalikan ke pembeli?"
+msgstr "Has the money really been returned to the buyer?"
+
+msgid "Catat dana dikembalikan"
+msgstr "Record refund"
+
+msgid "Dana Rp %(amount)s sudah dikembalikan (%(method)s, %(when)s)"
+msgstr "Rp %(amount)s refunded (%(method)s, %(when)s)"
+
+msgid "%(n)s pesanan batal menunggu pengembalian dana"
+msgstr "%(n)s cancelled orders awaiting refund"
+
+msgid "Catat"
+msgstr "Record"
+
+msgid "Dana Rp %(amount)s sedang diproses untuk dikembalikan."
+msgstr "Your refund of Rp %(amount)s is being processed."
+
+msgid "Dana Rp %(amount)s sudah dikembalikan (%(method)s, %(when)s)."
+msgstr "Rp %(amount)s has been refunded (%(method)s, %(when)s)."
+
+msgid "Pengembalian dana dicatat oleh admin atau kasir."
+msgstr "Refunds are recorded by an admin or cashier."
+
+msgid "Order #%(order_pk)s tidak punya dana yang perlu dikembalikan."
+msgstr "Order #%(order_pk)s has no money to refund."
+
+msgid "Pilih cara pengembalian dana."
+msgstr "Choose the refund method."
+
+msgid "Dana dikembalikan"
+msgstr "Refunded"
+
+msgid "Transaksi ini dari shift kasir yang sudah ditutup. Buka kasir dulu supaya uang tunai yang dikembalikan tercatat keluar dari laci."
+msgstr "This transaction is from a closed cashier shift. Open the cashier first so the cash given back is recorded as leaving the drawer."
+
+msgid "Buka kasir dulu: uang tunai yang dikembalikan harus keluar dari laci shift Anda."
+msgstr "Open the cashier first: cash refunds must come out of your shift's drawer."
+
+msgid "Tulis nomor referensi atau rekening tujuan pengembalian dana."
+msgstr "Write the reference number or destination account of the refund."
+
+msgid "Dana pesanan #%(order_pk)s dikembalikan"
+msgstr "Refund for order #%(order_pk)s"
+
+msgid "Retur tunai butuh kasir yang sedang buka: minta kasir pengaju membuka kasir, atau buka kasir Anda sendiri lalu setujui lagi."
+msgstr "Cash returns need an open cashier: ask the requesting cashier to open the cashier, or open your own and approve again."
+
+msgid "Booking grooming di transaksi ini dibatalkan setelah dibayar. Kembalikan dananya ke pelanggan, lalu catat di sini supaya kas dan laporan cocok."
+msgstr "A grooming booking in this transaction was cancelled after payment. Refund the customer, then record it here so cash and reports match."
+
+msgid "Booking ini sudah dibayar: kembalikan dananya ke pelanggan, lalu catat di panel booking."
+msgstr "This booking was already paid: refund the customer, then record it in the booking panel."
+
+msgid "Dana booking grooming dikembalikan"
+msgstr "Grooming booking refunded"
+
+msgid "Booking #%(self_pk)s: cek bukti transfernya dulu (terima atau tolak) sebelum dibatalkan."
+msgstr "Booking #%(self_pk)s: review the transfer proof first (accept or reject) before cancelling."
+
+msgid "Order #%(order_pk)s punya booking yang dibatalkan dan dananya dikembalikan terpisah, jadi tidak bisa dibatalkan penuh."
+msgstr "Order #%(order_pk)s has a cancelled booking whose payment is refunded separately, so it cannot be fully voided."
+
+msgid "Pengembalian dana diproses"
+msgstr "Refund in progress"
+
+msgid "Dana sudah dikembalikan"
+msgstr "Refunded"
+
+msgid "Nomor referensi transfer"
+msgstr "Transfer reference number"
+
+msgid "Ref."
+msgstr "Ref."
+
+msgid "Tulis nomor referensi transfer pengembalian dana."
+msgstr "Enter the transfer reference number for the refund."
+
+msgid "Belum dikembalikan"
+msgstr "Not refunded yet"
+
+msgid "Sudah dikembalikan"
+msgstr "Refunded"
+
+msgid "Pengembalian Dana"
+msgstr "Refunds"
+
+msgid "Dana belum dikembalikan"
+msgstr "Refunds pending"
+
+msgid "Seelly - Pengembalian Dana"
+msgstr "Seelly - Refunds"
+
+msgid "Semua dana yang harus atau sudah dikembalikan ke pembeli: pesanan lunas yang dibatalkan dan booking grooming lunas yang batal sebelum dikerjakan."
+msgstr "Every refund owed or already paid back: paid orders that were cancelled and paid grooming bookings cancelled before work started."
+
+msgid "Status pengembalian dana"
+msgstr "Refund status"
+
+msgid "Semua cara"
+msgstr "All methods"
+
+msgid "Pesanan dibatalkan"
+msgstr "Order cancelled"
+
+msgid "Booking #%(pk)s %(pet)s (Rp %(amount)s)"
+msgstr "Booking #%(pk)s %(pet)s (Rp %(amount)s)"
+
+msgid "Cara"
+msgstr "Method"
+
+msgid "No. referensi"
+msgstr "Reference no."
+
+msgid "Dicatat"
+msgstr "Recorded"
+
+msgid "Tidak ada dana yang menunggu dikembalikan."
+msgstr "No refunds pending."
+
+msgid "Belum ada pengembalian dana yang dicatat."
+msgstr "No refunds recorded yet."
+
+msgid "Buka Pengembalian Dana"
+msgstr "Open Refunds"
+
+msgid "%(n)s transaksi menunggu pengembalian dana"
+msgstr "%(n)s transactions awaiting refund"

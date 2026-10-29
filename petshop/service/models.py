@@ -7,6 +7,7 @@ from datetime import timedelta
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 from common.exceptions import PetshopError
 from common.models import TimeStampedModel
@@ -873,11 +874,59 @@ class ServiceBooking(TimeStampedModel):
             raise InvalidBookingTransition(
                 f"Booking #{self.pk}: hewan sudah dibawa kurir, check-in dulu lalu hubungi pemilik."
             )
+        if self.awaiting_payment_check:
+            raise InvalidBookingTransition(
+                f"Booking #{self.pk}: cek bukti transfernya dulu (terima atau tolak) sebelum dibatalkan."
+            )
+        line = self.payment_line
         self._move_to(BookingStatus.CANCELLED)
         self.cancelled_at = timezone.now()
         self.cancel_reason = (reason or "").strip()[:255]
         self.cancelled_by = by
         self.save(update_fields=["status", "cancelled_at", "cancel_reason", "cancelled_by", "updated_at"])
+        if line is not None:
+            # Sudah dibayar (kasir/transfer) tapi grooming batal: biaya booking ini harus dikembalikan,
+            # dicatat lewat transaction.pos.record_refund pada transaksi pembayarannya.
+            from transaction.models import Order
+
+            order = Order.objects.select_for_update().get(pk=line.order_id)
+            order.refund_due += line.amount
+            order.save(update_fields=["refund_due"])
+
+    @property
+    def refund_order(self):
+        """Transaksi pembayaran booking batal yang dananya harus/sudah dikembalikan."""
+        if self.status != BookingStatus.CANCELLED:
+            return None
+        line = self.payment_line
+        if line is None or not (line.order.refund_due or line.order.refunded_amount):
+            return None
+        return line.order
+
+    # Status pengembalian dana per booking, dibaca partials/_cancel_note.html (sama seperti Order).
+    @cached_property
+    def _refund_line(self):
+        order = self.refund_order
+        return (order, self.payment_line.amount) if order else (None, 0)
+
+    @property
+    def refund_due(self):
+        order, amount = self._refund_line
+        return amount if order and order.refund_due else 0
+
+    @property
+    def refunded_amount(self):
+        order, amount = self._refund_line
+        return amount if order and not order.refund_due else 0
+
+    @property
+    def refunded_at(self):
+        order, _ = self._refund_line
+        return order.refunded_at if order and not order.refund_due else None
+
+    def get_refund_method_display(self):
+        order, _ = self._refund_line
+        return order.get_refund_method_display() if order else ""
 
     @property
     def cancelled_by_label(self):

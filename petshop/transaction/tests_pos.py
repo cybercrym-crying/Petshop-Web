@@ -594,3 +594,166 @@ class DashboardHelperTests(PosTestCase):
         make_product("Hampir habis", stock=1)
         labels = [t["label"] for t in staff_tasks(self.admin)]
         self.assertIn("Produk stok menipis", labels)
+
+
+class CashLeakTests(PosTestCase):
+    """Setiap uang keluar (retur, void shift lama, pengembalian dana) tercatat di kas shift yang buka."""
+
+    def test_cash_return_needs_an_open_shift(self):
+        order = self.sell(qty=1)
+        req = pos.request_return(order, self.cashier, {order.details.get().pk: 1}, "Rusak")
+        self.shift.close(self.shift.summary()["expected_cash"])
+        with self.assertRaises(pos.InvalidTransition):
+            pos.decide_return(req, self.admin, True)
+        req.refresh_from_db()
+        self.assertEqual(req.status, ReturnStatus.PENDING)
+        self.p.refresh_from_db()
+        self.assertEqual(self.p.stock, 9)  # stok belum kembali karena retur belum disetujui
+        new_shift = pos.open_shift(self.cashier, 50000)
+        pos.decide_return(req, self.admin, True)
+        req.refresh_from_db()
+        self.assertEqual(req.refund_shift, new_shift)
+        self.assertEqual(new_shift.summary()["expected_cash"], 50000 - 20000)
+
+    def test_void_from_closed_shift_is_cash_out_of_current_shift(self):
+        order = self.sell(qty=1)
+        self.shift.close(120000)
+        old_summary = self.shift.summary()
+        with self.assertRaises(pos.InvalidTransition):
+            pos.void(order, self.admin, "Salah input")  # admin belum buka kasir
+        order.refresh_from_db()
+        self.assertEqual(order.order_status, OrderStatus.DELIVERED)
+        admin_shift = pos.open_shift(self.admin, 200000)
+        pos.void(order, self.admin, "Salah input")
+        # Shift lama tidak berubah; uang keluar tercatat di shift admin yang sedang buka.
+        self.assertEqual(self.shift.summary()["expected_cash"], old_summary["expected_cash"])
+        summary = admin_shift.summary()
+        self.assertEqual(summary["cash_out"], 20000)
+        self.assertEqual(summary["expected_cash"], 180000)
+        order.refresh_from_db()
+        self.assertEqual((order.refunded_amount, order.refund_method, order.refund_due), (20000, PaymentMethod.CASH, 0))
+
+    def test_void_in_open_shift_needs_no_cash_out_but_qris_part_is_refund_due(self):
+        order = self.sell(qty=2, cash_received=10000, pay_qris=30000, noncash_confirmed=True)
+        pos.void(order, self.admin, "Pembeli batal")
+        self.assertEqual(self.shift.summary()["expected_cash"], 100000)
+        self.assertEqual(self.shift.summary()["cash_out"], 0)
+        order.refresh_from_db()
+        self.assertEqual((order.refunded_amount, order.refund_due), (10000, 30000))
+        # Nomor referensi hanya untuk transfer; QRIS dan tunai tidak memintanya.
+        pos.record_refund(order, self.cashier, PaymentMethod.QRIS, "Ref 123456")
+        order.refresh_from_db()
+        self.assertEqual((order.refunded_amount, order.refund_due, order.refund_note), (40000, 0, ""))
+
+    def test_only_transfer_refund_needs_and_keeps_a_reference(self):
+        order = self.sell(qty=1, pay_qris=20000, noncash_confirmed=True)
+        pos.void(order, self.admin, "Pembeli batal")
+        with self.assertRaises(pos.InvalidTransition):
+            pos.record_refund(order, self.cashier, PaymentMethod.TRANSFER, "  ")
+        pos.record_refund(order, self.cashier, PaymentMethod.TRANSFER, "BCA 0099")
+        order.refresh_from_db()
+        self.assertEqual((order.refund_method, order.refund_note), (PaymentMethod.TRANSFER, "BCA 0099"))
+        # Tercatat di halaman Pengembalian Dana beserta nomor referensinya.
+        self.client.force_login(self.cashier)
+        page = self.client.get(reverse("transaction:refunds") + "?tab=selesai&method=TRANSFER")
+        self.assertContains(page, "BCA 0099")
+        self.assertContains(self.client.get(reverse("transaction:refunds")), "Tidak ada dana yang menunggu dikembalikan")
+
+    def test_paid_online_order_cancelled_is_refunded_from_drawer(self):
+        customer = Customer.objects.create(name="Rina", phone_number="081211112222", address="x")
+        order = Order.objects.create(
+            customer=customer, admin=self.admin, payment_method=PaymentMethod.TRANSFER,
+            payment_status=PaymentStatus.PAID, total_payment=55000,
+        )
+        order.cancel(reason="Stok habis", by=self.admin)
+        order.refresh_from_db()
+        self.assertEqual(order.refund_due, 55000)
+        # Admin tanpa kasir buka tidak bisa mencatat pengembalian tunai.
+        with self.assertRaises(pos.InvalidTransition):
+            pos.record_refund(order, self.admin, PaymentMethod.CASH)
+        self.client.force_login(self.cashier)
+        page = self.client.get(reverse("transaction:manage_transaction"))
+        self.assertIn(order, page.context["refund_orders"])
+        self.client.post(reverse("transaction:record_refund", args=[order.pk]), {"method": "TUNAI", "note": ""})
+        order.refresh_from_db()
+        self.assertEqual((order.refund_due, order.refunded_amount, order.refunded_by), (0, 55000, self.cashier))
+        summary = self.shift.summary()
+        self.assertEqual(summary["cash_out"], 55000)
+        self.assertEqual(summary["expected_cash"], 100000 - 55000)
+        # Pelanggan melihat dananya sudah dikembalikan.
+        from store.models import Notification
+        self.assertTrue(Notification.objects.filter(user=customer, title=f"Dana pesanan #{order.pk} dikembalikan").exists())
+
+
+class BookingRefundTests(PosTestCase):
+    """Booking grooming yang sudah dibayar lalu batal sebelum dikerjakan: dananya dikembalikan dan tercatat."""
+
+    def paid_booking(self, status="ANTRE"):
+        from service.models import Service, ServiceBooking
+
+        customer = Customer.objects.create(name="Dewi", phone_number="081299990000", address="x")
+        service = Service.objects.create(name="Mandi kucing", price=50000)
+        booking = ServiceBooking.objects.create(
+            customer=customer, service=service, pet_name="Mochi", pet_type="KUCING",
+            schedule=timezone.now(), price=50000, status=status,
+        )
+        cart = self.cart_with(qty=1)
+        cart.add_service(booking)
+        order = pos.checkout(cart, self.cashier, customer=customer, cash_received=70000)
+        return booking, order
+
+    def test_cash_paid_booking_cancelled_from_queue_is_refunded_from_drawer(self):
+        from account import dashboard
+        from service.models import BookingStatus
+
+        booking, order = self.paid_booking()
+        before = dashboard.summary(dashboard.Period.last_days(1))["sales"]["total"]
+        booking.cancel(reason="Hewan sakit", by=self.admin)
+        order.refresh_from_db()
+        self.assertEqual(booking.status, BookingStatus.CANCELLED)
+        self.assertEqual(order.refund_due, 50000)
+        self.assertEqual(order.order_status, OrderStatus.DELIVERED)  # produknya tetap terjual
+        self.assertEqual(booking.refund_order, order)
+        self.assertEqual(booking.refund_due, 50000)
+        self.assertEqual(dashboard.summary(dashboard.Period.last_days(1))["sales"]["total"], before - 50000)
+        # Void penuh akan mengembalikan dana booking dua kali.
+        with self.assertRaises(pos.InvalidTransition):
+            pos.void(order, self.admin, "Batal semua")
+        # Panel booking staf menampilkan form pengembalian dana.
+        self.client.force_login(self.cashier)
+        page = self.client.get(reverse("service:manage_bookings") + f"?id={booking.pk}")
+        self.assertContains(page, reverse("transaction:record_refund", args=[order.pk]))
+        listing = self.client.get(reverse("transaction:refunds"))
+        self.assertContains(listing, f"Booking #{booking.pk} Mochi")
+        self.assertEqual(listing.context["refund_due_count"], 1)
+        self.client.post(reverse("transaction:record_refund", args=[order.pk]), {"method": "TUNAI", "note": "abaikan"})
+        order.refresh_from_db()
+        self.assertEqual((order.refund_due, order.refunded_amount, order.refund_note), (0, 50000, ""))
+        summary = self.shift.summary()
+        self.assertEqual(summary["cash_out"], 50000)
+        self.assertEqual(summary["expected_cash"], 100000 + 70000 - 50000)
+        booking = type(booking).objects.get(pk=booking.pk)
+        self.assertEqual((booking.refund_due, booking.refunded_amount), (0, 50000))
+        from store.models import Notification
+        self.assertTrue(Notification.objects.filter(user=booking.customer, title="Dana booking grooming dikembalikan").exists())
+
+    def test_booking_in_progress_cannot_be_cancelled(self):
+        from service.models import InvalidBookingTransition
+
+        booking, order = self.paid_booking(status="PROSES")
+        with self.assertRaises(InvalidBookingTransition):
+            booking.cancel(reason="x", by=self.admin)
+        order.refresh_from_db()
+        self.assertEqual(order.refund_due, 0)
+
+    def test_unpaid_booking_cancel_has_no_refund(self):
+        from service.models import Service, ServiceBooking
+
+        customer = Customer.objects.create(name="Dewi", phone_number="081299990000", address="x")
+        booking = ServiceBooking.objects.create(
+            customer=customer, service=Service.objects.create(name="Mandi", price=50000), pet_name="Mochi",
+            pet_type="KUCING", schedule=timezone.now(), price=50000, status="ANTRE",
+        )
+        booking.cancel(reason="x", by=self.admin)
+        self.assertIsNone(booking.refund_order)
+        self.assertEqual(booking.refund_due, 0)

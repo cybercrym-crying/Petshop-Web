@@ -22,3 +22,17 @@ html[data-theme="dark"] .cxr__label { color: #e9e3f2; }
 html[data-theme="dark"] .cxr__req, html[data-theme="dark"] .cxr-note b { color: #f19999; }
 html[data-theme="dark"] .cxr__select, html[data-theme="dark"] .cxr__note { background: #18121f; border-color: #3a2f48; color: #e9e3f2; }
 html[data-theme="dark"] .cxr-note { color: #b9adc7; }
+
+/* Pengembalian dana pesanan batal yang sudah dibayar (transaction/_refund_box.html). */
+.rfd { display: grid; gap: 8px; margin-top: 12px; padding: 12px; border: 1px solid #f5d38a; border-radius: 14px; background: #fffaeb; }
+.rfd__title { margin: 0; font-weight: 800; color: #93370d; }
+.rfd__text { margin: 0; font-size: 0.85rem; line-height: 1.45; color: #6b5a3a; }
+.rfd__form { display: grid; gap: 8px; max-width: 420px; }
+.rfd__go { min-height: 40px; padding: 0 16px; border: 0; border-radius: 10px; background: #6b21a8; color: #fff; font: inherit; font-size: 0.88rem; font-weight: 700; cursor: pointer; }
+.rfd__go:hover { background: #4c1577; }
+.rfd-done { margin: 8px 0 0; font-size: 0.85rem; line-height: 1.45; color: #067647; overflow-wrap: anywhere; }
+
+html[data-theme="dark"] .rfd { background: #2a2110; border-color: #6b4f12; }
+html[data-theme="dark"] .rfd__title { color: #fbbf24; }
+html[data-theme="dark"] .rfd__text { color: #d6c7a1; }
+html[data-theme="dark"] .rfd-done { color: #6ee7a0; }

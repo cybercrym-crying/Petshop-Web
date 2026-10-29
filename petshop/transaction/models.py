@@ -309,6 +309,15 @@ class Order(models.Model):
     cancelled_by = models.ForeignKey(
         "account.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
+    # Uang yang sudah dibayar lalu pesanannya dibatalkan: wajib dicatat saat dikembalikan.
+    refund_due = models.PositiveBigIntegerField("Dana yang harus dikembalikan", default=0)
+    refunded_amount = models.PositiveBigIntegerField(default=0)
+    refund_method = models.CharField(max_length=10, choices=PaymentMethod.choices, blank=True, default="")
+    refund_note = models.CharField(max_length=255, blank=True, default="")
+    refunded_at = models.DateTimeField(null=True, blank=True)
+    refunded_by = models.ForeignKey(
+        "account.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
 
     _ALLOWED_TRANSITIONS = {
         OrderStatus.PENDING: {OrderStatus.CONFIRMED, OrderStatus.CANCELLED},
@@ -945,7 +954,10 @@ class Order(models.Model):
         self.cancel_reason = (reason or "").strip()[:255]
         self.cancelled_at = timezone.now()
         self.cancelled_by = by
-        self.save(update_fields=["order_status", "cancel_reason", "cancelled_at", "cancelled_by"])
+        if self.payment_status == PaymentStatus.PAID:
+            # Sudah lunas (transfer): pengembaliannya dicatat lewat record_refund.
+            self.refund_due = self.total_payment
+        self.save(update_fields=["order_status", "cancel_reason", "cancelled_at", "cancelled_by", "refund_due"])
         for detail in self.details.select_related("product"):
             detail.product.apply_mutation(
                 MutationType.IN,
@@ -1195,14 +1207,17 @@ class CashierShift(models.Model):
         """Ringkasan uang shift ini (dihitung dari transaksi, retur, dan setoran COD)."""
         from courier.models import CashRemittance, RemittanceStatus
 
+        start, end = self._window()
+        # Transaksi yang di-void selama shift ini masih buka tidak dihitung (uangnya langsung dikembalikan
+        # dari laci). Void setelah shift ditutup dicatat sebagai uang keluar di shift yang sedang berjalan.
         payments = OrderPayment.objects.filter(order__shift=self).exclude(
-            order__order_status=OrderStatus.CANCELLED
+            models.Q(order__order_status=OrderStatus.CANCELLED)
+            & (models.Q(order__voided_at__isnull=True) | models.Q(order__voided_at__lte=end))
         )
         by_method = {m: 0 for m in COUNTER_PAYMENT_METHODS}
         for row in payments.values("method").annotate(total=models.Sum("amount")):
             by_method[row["method"]] = row["total"] or 0
         orders = self.orders.exclude(order_status=OrderStatus.CANCELLED)
-        start, end = self._window()
         remitted = (
             CashRemittance.objects.filter(
                 received_by=self.cashier, status=RemittanceStatus.RECEIVED,
@@ -1216,6 +1231,7 @@ class CashierShift(models.Model):
             ).aggregate(t=models.Sum("refund_amount"))["t"]
             or 0
         )
+        cash_out = self.cash_movements.aggregate(t=models.Sum("amount"))["t"] or 0
         cash_sales = by_method[PaymentMethod.CASH]
         return {
             "by_method": [(PaymentMethod(m).label, m, by_method[m]) for m in COUNTER_PAYMENT_METHODS],
@@ -1227,7 +1243,9 @@ class CashierShift(models.Model):
             "noncash_sales": sum(by_method.values()) - cash_sales,
             "remitted": remitted,
             "refunds": refunds,
-            "expected_cash": self.opening_cash + cash_sales + remitted - refunds,
+            "cash_out": cash_out,
+            "cash_out_rows": list(self.cash_movements.select_related("order", "created_by")),
+            "expected_cash": self.opening_cash + cash_sales + remitted - refunds - cash_out,
         }
 
     @transaction.atomic
@@ -1261,6 +1279,22 @@ class CashierShift(models.Model):
                 "/staff/admin/laporan-kasir/",
             )
         return self
+
+
+class CashMovement(models.Model):
+    """Uang tunai keluar dari laci di luar penjualan: pengembalian dana pesanan batal / void shift lama."""
+
+    shift = models.ForeignKey(CashierShift, on_delete=models.PROTECT, related_name="cash_movements")
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, null=True, blank=True, related_name="cash_movements")
+    amount = models.PositiveBigIntegerField()
+    reason = models.CharField(max_length=255)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+        verbose_name = "uang keluar kasir"
+        verbose_name_plural = "uang keluar kasir"
 
 
 class HeldSale(models.Model):

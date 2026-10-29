@@ -36,4 +36,5 @@ def pending_online_orders(request):
             order_status=OrderStatus.CONFIRMED, packing_seq__isnull=False, packed_at__isnull=True
         ).count(),
         "pending_return_count": ReturnRequest.objects.filter(status=ReturnStatus.PENDING).count(),
+        "refund_due_count": Order.objects.filter(refund_due__gt=0).count(),
     }

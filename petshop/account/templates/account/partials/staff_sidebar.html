@@ -142,6 +142,12 @@ Dipakai oleh account/staff_base.html dan oleh partials/staff_nav.html (halaman a
                     <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>{% translate "Retur" %}
                     {% if pending_return_count %}<span class="staff-badge" title="{% translate 'Retur menunggu persetujuan' %}">{{ pending_return_count }}</span>{% endif %}
                 </a>
+                <a href="{% url 'transaction:refunds' %}"
+                   class="staff-link{% if rm.url_name == 'refunds' %} is-active{% endif %}"
+                   {% if rm.url_name == 'refunds' %}aria-current="page"{% endif %}>
+                    <i class="bi bi-cash-coin" aria-hidden="true"></i>{% translate "Pengembalian Dana" %}
+                    {% if refund_due_count %}<span class="staff-badge" title="{% translate 'Dana belum dikembalikan' %}">{{ refund_due_count }}</span>{% endif %}
+                </a>
                 <p class="staff-group">{% translate "Layanan" %}</p>
                 <a href="{% url 'service:manage_bookings' %}"
                    class="staff-link{% if rm.namespace == 'service' and rm.url_name == 'manage_bookings' %} is-active{% endif %}"

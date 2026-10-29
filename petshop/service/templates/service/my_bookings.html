@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{% static 'service/css/site-dark.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'customer/css/my_orders.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'customer/css/my_orders-dark.css' %}?v=2">
-    <link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=2">
 {% endblock %}
 {% block content %}
     <section class="container section svc-page svc-mine mo-page">
@@ -231,7 +231,7 @@
                     <div class="mo-total">
                         <div class="mo-total__pay">
                             {% if b.status == "BATAL" or b.status == "TIDAK_DATANG" %}
-                                <span class="mo-chip">{% if paid %}{% translate "Sudah dibayar · hubungi admin" %}{% else %}{% translate "Tidak ditagih" %}{% endif %}</span>
+                                <span class="mo-chip">{% if b.refund_due %}{% translate "Pengembalian dana diproses" %}{% elif b.refunded_amount %}{% translate "Dana sudah dikembalikan" %}{% elif paid %}{% translate "Sudah dibayar · hubungi admin" %}{% else %}{% translate "Tidak ditagih" %}{% endif %}</span>
                             {% elif paid %}
                                 <span class="mo-chip mo-chip--lunas">{% translate "Lunas" %}</span>
                                 {% with receipt=b.payment_line.order %}{% if receipt.receipt_token %}<a class="mo-chip" href="{% url 'transaction:receipt_public' receipt.receipt_token %}" target="_blank" rel="noopener"><i class="fas fa-receipt" aria-hidden="true"></i> {% translate "Struk" %}</a>{% endif %}{% endwith %}

@@ -42,6 +42,23 @@
     var el = event.target;
     if (el.matches && el.matches("[data-autosubmit]") && el.form) el.form.submit();
   });
+
+  /* Form pengembalian dana: nomor referensi hanya diminta untuk transfer. */
+  function syncRefundForm(form) {
+    var method = form.querySelector("select[name=method]");
+    var box = form.querySelector("[data-refund-ref]");
+    if (!method || !box) return;
+    var isTransfer = method.value === "TRANSFER";
+    var input = box.querySelector("input");
+    box.hidden = !isTransfer;
+    input.required = isTransfer;
+    input.disabled = !isTransfer;
+  }
+  document.querySelectorAll("form.rfd__form").forEach(syncRefundForm);
+  document.addEventListener("change", function (event) {
+    var form = event.target.closest && event.target.closest("form.rfd__form");
+    if (form) syncRefundForm(form);
+  });
 })();
 
 /* data-print: tombol cetak halaman (label paket, struk). */

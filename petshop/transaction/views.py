@@ -203,6 +203,7 @@ def manage_transaction(request):
             "active": active,
             "overdue_unpaid": overdue_unpaid,
             "proof_orders": list(_proof_waiting().select_related("customer").order_by("payment_proof_at")[:20]),
+            "refund_orders": list(Order.objects.filter(refund_due__gt=0).select_related("customer").order_by("cancelled_at")[:20]),
             "only_proof": only_proof,
             "couriers": User.couriers(),
         },
