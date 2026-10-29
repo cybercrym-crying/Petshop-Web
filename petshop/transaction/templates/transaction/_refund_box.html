@@ -1,0 +1,26 @@
+{% load i18n rupiah %}
+{% if o.refund_due %}
+    <div class="rfd" id="dana-{{ o.pk }}">
+        <p class="rfd__title">{% blocktranslate trimmed with amount=o.refund_due|rupiah %}Dana Rp {{ amount }} belum dikembalikan{% endblocktranslate %}</p>
+        <p class="rfd__text">{% if o.order_status == "DIBATALKAN" %}{% translate "Pesanan ini dibatalkan setelah dibayar. Kembalikan dananya ke pembeli, lalu catat di sini supaya kas dan laporan cocok." %}{% else %}{% translate "Booking grooming di transaksi ini dibatalkan setelah dibayar. Kembalikan dananya ke pelanggan, lalu catat di sini supaya kas dan laporan cocok." %}{% endif %}</p>
+        <form method="post" action="{% url 'transaction:record_refund' o.pk %}" class="rfd__form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ back|default:request.get_full_path }}">
+            <label class="visually-hidden" for="rfd-method-{{ o.pk }}">{% translate "Cara pengembalian" %}</label>
+            <select id="rfd-method-{{ o.pk }}" name="method" class="cxr__select" required>
+                <option value="">{% translate "Cara pengembalian" %}</option>
+                <option value="TUNAI">{% translate "Tunai (keluar dari laci kasir Anda)" %}</option>
+                <option value="TRANSFER">{% translate "Transfer bank" %}</option>
+                <option value="QRIS">QRIS</option>
+            </select>
+            <div data-refund-ref>
+                <label class="visually-hidden" for="rfd-note-{{ o.pk }}">{% translate "Nomor referensi transfer" %}</label>
+                <input id="rfd-note-{{ o.pk }}" name="note" class="cxr__note" maxlength="200" autocomplete="off"
+                       placeholder="{% translate 'Nomor referensi transfer' %}">
+            </div>
+            <button type="submit" class="rfd__go" data-confirm="{% translate 'Dana sudah benar-benar dikembalikan ke pembeli?' %}">{% translate "Catat dana dikembalikan" %}</button>
+        </form>
+    </div>
+{% elif o.refunded_at %}
+    <p class="rfd-done">{% blocktranslate trimmed with amount=o.refunded_amount|rupiah method=o.get_refund_method_display when=o.refunded_at|date:"d M Y, H.i" %}Dana Rp {{ amount }} sudah dikembalikan ({{ method }}, {{ when }}){% endblocktranslate %}{% if o.refunded_by %} · {{ o.refunded_by.display_name }}{% endif %}{% if o.refund_note and o.refund_method == "TRANSFER" %} · {% translate "Ref." %} {{ o.refund_note }}{% endif %}</p>
+{% endif %}

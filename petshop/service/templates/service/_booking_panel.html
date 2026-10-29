@@ -22,7 +22,7 @@
         {% with p=b.progress %}<p class="sg-xs sg-muted mb-0">{% blocktranslate trimmed with done=p.0 total=p.1 %}Tahap {{ done }} dari {{ total }} selesai{% endblocktranslate %}</p>{% endwith %}
     {% endif %}
 
-    {% if b.status == "BATAL" %}{% include "partials/_cancel_note.html" with obj=b %}{% endif %}
+    {% if b.status == "BATAL" %}{% include "partials/_cancel_note.html" with obj=b hide_refund=True %}{% with o=b.refund_order %}{% if o %}{% include "transaction/_refund_box.html" with o=o back=request.get_full_path %}{% endif %}{% endwith %}{% endif %}
     <dl class="bk-kv">
         <dt>{% translate "Pelanggan" %}</dt>
         <dd>{{ b.owner_name }}<small>{% if b.owner_whatsapp_url %}<a href="{{ b.owner_whatsapp_url }}" target="_blank" rel="noopener" class="sg-link"><i class="bi bi-whatsapp" aria-hidden="true"></i> {{ b.owner_phone }}</a>{% else %}{{ b.owner_phone }}{% endif %}</small>{% if b.is_guest %}<small>{% translate "Tamu tanpa akun" %} · {{ b.guest_address|default:"-" }}{% if b.guest_latitude is not None %} · <a href="https://www.google.com/maps/search/?api=1&amp;query={{ b.guest_latitude|unlocalize }},{{ b.guest_longitude|unlocalize }}" target="_blank" rel="noopener" class="sg-link"><i class="bi bi-geo-alt" aria-hidden="true"></i> {% translate "Peta" %}</a>{% endif %}</small>{% endif %}</dd>

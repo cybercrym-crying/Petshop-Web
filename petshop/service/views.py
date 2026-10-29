@@ -781,6 +781,8 @@ def cancel_booking(request, pk):
                 customer_body=reason,
             )
             messages.success(request, f"Booking #{booking.pk} dibatalkan.")
+            if booking.refund_due:
+                messages.warning(request, _("Booking ini sudah dibayar: kembalikan dananya ke pelanggan, lalu catat di panel booking."))
     return redirect(_safe_back(request, reverse("service:manage_bookings")))
 
 

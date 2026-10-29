@@ -394,8 +394,9 @@ def void_transaction(request, pk):
         messages.error(request, str(e))
     else:
         messages.success(request, _("Transaksi dibatalkan, stok dikembalikan."))
-        if order.payment_status == "LUNAS":
-            messages.warning(request, _("Kembalikan uang pembeli sesuai metode bayarnya."))
+        order.refresh_from_db()
+        if order.refund_due:
+            messages.warning(request, _("Bagian QRIS/transfer belum dikembalikan: catat setelah dana dikirim ke pembeli."))
     if order.receipt_no:
         return redirect("transaction:receipt", pk=order.pk)
     return redirect("transaction:manage_transaction")
@@ -520,3 +521,60 @@ def product_codes(request):
 def product_code_qr(request, pk):
     product = get_object_or_404(Product, pk=pk, sku__isnull=False)
     return qr_response(product.sku)
+
+
+@roleRequired(*POS_ROLES)
+def refunds(request):
+    """Riwayat pengembalian dana: pesanan batal yang sudah dibayar dan booking grooming lunas yang batal."""
+    from django.db.models import Prefetch, Q
+
+    from service.models import BookingStatus
+
+    from .models import OrderServiceLine
+
+    tab = request.GET.get("tab") or "menunggu"
+    if tab not in ("menunggu", "selesai"):
+        tab = "menunggu"
+    method = request.GET.get("method", "")
+    if method not in (PaymentMethod.CASH, PaymentMethod.TRANSFER, PaymentMethod.QRIS):
+        method = ""
+    pending = Order.objects.filter(refund_due__gt=0)
+    done = Order.objects.filter(refunded_at__isnull=False, refund_due=0)
+    if method:
+        done = done.filter(refund_method=method)
+    qs = (pending.order_by("-cancelled_at", "-pk") if tab == "menunggu" else done.order_by("-refunded_at"))
+    qs = qs.select_related("customer", "refunded_by", "cancelled_by").prefetch_related(
+        Prefetch(
+            "service_lines",
+            queryset=OrderServiceLine.objects.filter(booking__status=BookingStatus.CANCELLED).select_related("booking"),
+            to_attr="cancelled_service_lines",
+        )
+    )
+    return render(
+        request,
+        "transaction/refunds.html",
+        {
+            "items": qs[:100], "tab": tab, "method": method,
+            "tabs": [("menunggu", _("Belum dikembalikan"), pending.count()),
+                     ("selesai", _("Sudah dikembalikan"), Order.objects.filter(refunded_at__isnull=False, refund_due=0).count())],
+            "methods": [(PaymentMethod.CASH, PaymentMethod.CASH.label), (PaymentMethod.TRANSFER, PaymentMethod.TRANSFER.label),
+                        (PaymentMethod.QRIS, PaymentMethod.QRIS.label)],
+        },
+    )
+
+
+@roleRequired(*POS_ROLES)
+@require_POST
+def record_refund(request, pk):
+    """Catat dana pesanan batal yang sudah dikembalikan (tunai keluar dari laci shift yang buka)."""
+    order = get_object_or_404(Order, pk=pk)
+    try:
+        pos.record_refund(order, request.user, request.POST.get("method", ""), request.POST.get("note", ""))
+    except PetshopError as e:
+        messages.error(request, str(e))
+    else:
+        messages.success(request, _("Pengembalian dana dicatat."))
+    back = request.POST.get("next", "")
+    if back.startswith("/") and not back.startswith("//"):
+        return redirect(back)
+    return redirect("transaction:manage_transaction")

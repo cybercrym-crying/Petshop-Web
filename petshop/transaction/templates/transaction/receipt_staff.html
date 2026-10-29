@@ -6,6 +6,7 @@
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'transaction/css/receipt.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'transaction/css/receipt_staff.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/cancel_reason.css' %}?v=2">
 {% endblock %}
 {% block content %}
     <div class="sg sg-page rcp receipt-{{ size }}"{% if auto_print %} data-auto-print{% endif %}>
@@ -63,6 +64,9 @@
                         </div>
                     </section>
                 {% endif %}
+                {% if order.refund_due or order.refunded_at %}
+                    <section class="sg-card sg-mt16">{% include "transaction/_refund_box.html" with o=order %}</section>
+                {% endif %}
                 {% if log or returns %}
                     <section class="sg-card sg-mt16" aria-labelledby="rcp-log">
                         <h2 id="rcp-log" class="sg-h3">{% translate "Riwayat struk ini" %}</h2>
@@ -79,7 +83,7 @@
                 {% if can_void %}
                     <section class="sg-card sg-mt16" aria-labelledby="rcp-void">
                         <h2 id="rcp-void" class="sg-h3 is-sm">{% translate "Batalkan transaksi (admin)" %}</h2>
-                        <p class="sg-sm sg-muted">{% translate "Stok barang dikembalikan dan pembatalan dicatat. Kembalikan uang pembeli sesuai metode bayarnya." %}</p>
+                        <p class="sg-sm sg-muted">{% translate "Stok barang dikembalikan dan pembatalan dicatat. Uang tunai yang dikembalikan tercatat keluar dari laci; bagian QRIS/transfer dicatat setelah dananya dikirim ke pembeli." %}</p>
                         <form method="post" action="{% url 'transaction:void' order.pk %}" class="sg-form sg-row is-wrap">
                             {% csrf_token %}
                             <input type="text" name="reason" maxlength="200" required placeholder="{% translate 'Alasan pembatalan' %}" aria-label="{% translate 'Alasan pembatalan' %}" style="flex:1 1 220px;width:auto">

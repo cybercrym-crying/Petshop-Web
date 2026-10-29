@@ -3,7 +3,8 @@
 Definisi metrik (juga ditampilkan sebagai keterangan di dasbor):
 
 - Penjualan lunas: jumlah total_payment order berstatus bayar LUNAS dan tidak
-  dibatalkan, berdasarkan tanggal order. Order tunai baru lunas saat diterima.
+  dibatalkan, dikurangi dana yang dikembalikan (mis. booking grooming batal),
+  berdasarkan tanggal order. Order tunai baru lunas saat diterima.
 - Belum dibayar: total order yang masih berjalan (belum dibatalkan) tapi
   pembayarannya masih MENUNGGU.
 - Pesanan: jumlah order yang tidak dibatalkan pada rentang tanggal.
@@ -14,7 +15,7 @@ Definisi metrik (juga ditampilkan sebagai keterangan di dasbor):
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
 
-from django.db.models import Count, Q, Sum
+from django.db.models import BigIntegerField, Count, ExpressionWrapper, F, Q, Sum
 from django.db.models.functions import Coalesce, TruncDate
 from django.utils import timezone
 from django.utils.translation import gettext_lazy
@@ -70,6 +71,10 @@ def paid_orders(queryset):
     )
 
 
+# Nilai penjualan bersih: dikurangi dana yang dikembalikan/harus dikembalikan (mis. booking grooming batal).
+NET_PAYMENT = ExpressionWrapper(F("total_payment") - F("refund_due") - F("refunded_amount"), output_field=BigIntegerField())
+
+
 def sales_trend(period):
     """[(tanggal, total_lunas, jumlah_order)] untuk setiap hari, termasuk hari kosong."""
     rows = (
@@ -77,9 +82,9 @@ def sales_trend(period):
         .annotate(day=TruncDate("date"))
         .values("day")
         .annotate(
-            total=Sum("total_payment"), n=Count("pk"),
-            store=Coalesce(Sum("total_payment", filter=Q(channel="TOKO")), 0),
-            online=Coalesce(Sum("total_payment", filter=Q(channel="ONLINE")), 0),
+            total=Sum(NET_PAYMENT), n=Count("pk"),
+            store=Coalesce(Sum(NET_PAYMENT, filter=Q(channel="TOKO")), 0),
+            online=Coalesce(Sum(NET_PAYMENT, filter=Q(channel="ONLINE")), 0),
         )
     )
     by_day = {row["day"]: row for row in rows}
@@ -115,9 +120,9 @@ def top_products(period, limit=5):
 def summary(period):
     in_range = orders_in(period)
     sales = paid_orders(in_range).aggregate(
-        total=Coalesce(Sum("total_payment"), 0), n=Count("pk"),
-        offline=Coalesce(Sum("total_payment", filter=Q(channel="TOKO")), 0),
-        online=Coalesce(Sum("total_payment", filter=Q(channel="ONLINE")), 0),
+        total=Coalesce(Sum(NET_PAYMENT), 0), n=Count("pk"),
+        offline=Coalesce(Sum(NET_PAYMENT, filter=Q(channel="TOKO")), 0),
+        online=Coalesce(Sum(NET_PAYMENT, filter=Q(channel="ONLINE")), 0),
     )
     orders = in_range.exclude(order_status=OrderStatus.CANCELLED).aggregate(
         n=Count("pk"),

@@ -13,44 +13,12 @@
 }
 /* Berdiri sendiri: halaman yang tidak memuat shop.css (mis. Beranda) tetap rapi. */
 /* Foto kemasan tampil utuh di atas latar putih (sama dengan latar fotonya), juga di mode gelap. */
-.product-card .product-photo {
-  --keep-in-dark: 1;
-  position: relative;
-  display: block;
-  height: auto;
-  aspect-ratio: 4 / 3;
-  background: #fff;
-  overflow: hidden;
-}
-.product-card .product-photo > a {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.product-card .product-photo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.product-card .product-photo .chip {
-  position: absolute;
-}
-.product-card .chip-stock {
-  top: auto;
-  bottom: 10px;
-  left: 10px;
-  right: auto;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-weight: 700;
-  background: #fff3d6;
-  color: #8a5a00;
-}
-.product-card .chip-out {
-  background: #fde3e3;
-  color: #a31616;
-}
+.product-card .product-photo { --keep-in-dark: 1; position: relative; display: block; height: auto; aspect-ratio: 4 / 3; background: #fff; overflow: hidden; }
+.product-card .product-photo > a { display: block; width: 100%; height: 100%; }
+.product-card .product-photo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.product-card .product-photo .chip { position: absolute; }
+.product-card .chip-stock { top: auto; bottom: 10px; left: 10px; right: auto; padding: 4px 10px; border-radius: 999px; font-weight: 700; background: #fff3d6; color: #8a5a00; }
+.product-card .chip-out { background: #fde3e3; color: #a31616; }
 .product-card .wishlist-btn {
   position: absolute;
   top: 10px;
@@ -65,27 +33,11 @@
   cursor: pointer;
 }
 .product-card .wishlist-btn:hover,
-.product-card .wishlist-btn.active {
-  color: #e11d68;
-}
-.product-card .product-info {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-}
-.product-card .product-name a {
-  color: #261a33;
-  text-decoration: none;
-}
-.product-card .product-name a:hover {
-  color: #6b21a8;
-  text-decoration: underline;
-}
-.product-card .product-info {
-  gap: 4px;
-  padding: 12px 14px 14px;
-}
+.product-card .wishlist-btn.active { color: #e11d68; }
+.product-card .product-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.product-card .product-name a { color: #261a33; text-decoration: none; }
+.product-card .product-name a:hover { color: #6b21a8; text-decoration: underline; }
+.product-card .product-info { gap: 4px; padding: 12px 14px 14px; }
 .product-card .product-info .chip-category {
   position: static;
   align-self: flex-start;
@@ -110,23 +62,8 @@
   min-height: 2.7em;
 }
 /* Harga & tombol satu baris; bila kartu sempit tombol turun ke baris berikutnya, tidak keluar kartu. */
-.product-card .product-buy {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-width: 0;
-  margin-top: auto;
-  padding-top: 8px;
-}
-.product-card .product-price {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #261a33;
-  white-space: nowrap;
-}
+.product-card .product-buy { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; margin-top: auto; padding-top: 8px; }
+.product-card .product-price { margin: 0; font-size: 1.05rem; font-weight: 800; color: #261a33; white-space: nowrap; }
 .product-card .btn-add-cart {
   flex: 0 1 auto;
   width: auto;
@@ -146,110 +83,36 @@
   border-radius: 12px;
   background: #6b21a8;
 }
-.product-card .btn-add-cart:hover:not(:disabled) {
-  background: #4c1577;
-  transform: none;
-}
-.product-card .btn-add-cart.is-staff {
-  background: #e9e1f2;
-  color: #5b4a6b;
-  cursor: not-allowed;
-}
-.product-card .btn-add-cart__long {
-  display: none;
-}
-.product-card .btn-add-cart__short {
-  display: inline;
-}
-.product-card .wishlist-btn {
-  width: 34px;
-  height: 34px;
-  font-size: 0.9rem;
-}
-.product-card .chip-stock {
-  font-size: 0.72rem;
-}
+.product-card .btn-add-cart:hover:not(:disabled) { background: #4c1577; transform: none; }
+.product-card .btn-add-cart.is-staff { background: #e9e1f2; color: #5b4a6b; cursor: not-allowed; }
+.product-card .btn-add-cart__long { display: none; }
+.product-card .btn-add-cart__short { display: inline; }
+.product-card .wishlist-btn { width: 34px; height: 34px; font-size: 0.9rem; }
+.product-card .chip-stock { font-size: 0.72rem; }
 
 /* HP & kartu sempit: tombol keranjang jadi ikon bulat */
 @media (max-width: 767.98px) {
-  .product-card .product-info {
-    padding: 10px 12px 12px;
-  }
-  .product-card .product-name {
-    font-size: 0.9rem;
-  }
-  .product-card .product-price {
-    font-size: 0.975rem;
-  }
-  .product-card .btn-add-cart {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border-radius: 50%;
-  }
+  .product-card .product-info { padding: 10px 12px 12px; }
+  .product-card .product-name { font-size: 0.9rem; }
+  .product-card .product-price { font-size: 0.975rem; }
+  .product-card .btn-add-cart { position: relative; width: 40px; height: 40px; padding: 0; border-radius: 50%; }
   .product-card .btn-add-cart__short,
-  .product-card .btn-add-cart__long {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-  .product-card .btn-add-cart:disabled {
-    width: auto;
-    padding: 0 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-  }
-  .product-card .btn-add-cart.is-staff {
-    width: 40px;
-    padding: 0;
-    border-radius: 50%;
-  }
-  .product-card:hover {
-    transform: none;
-  }
+  .product-card .btn-add-cart__long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .product-card .btn-add-cart:disabled { width: auto; padding: 0 10px; border-radius: 12px; font-size: 0.75rem; }
+  .product-card .btn-add-cart.is-staff { width: 40px; padding: 0; border-radius: 50%; }
+  .product-card:hover { transform: none; }
 }
 
 /* Kategori cepat di halaman produk (HP & tablet, saat panel filter tersembunyi) */
-.shop-cats {
-  display: none;
-}
+.shop-cats { display: none; }
 @media (max-width: 991.98px) {
-  .shop-cats {
-    display: flex;
-    gap: 8px;
-    margin: 0 0 14px;
-    padding-bottom: 2px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .shop-cats::-webkit-scrollbar {
-    display: none;
-  }
+  .shop-cats { display: flex; gap: 8px; margin: 0 0 14px; padding-bottom: 2px; overflow-x: auto; scrollbar-width: none; }
+  .shop-cats::-webkit-scrollbar { display: none; }
   .shop-cats a {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    min-height: 38px;
-    padding: 0 14px;
-    font-size: 0.875rem;
-    font-weight: 700;
-    text-decoration: none;
-    white-space: nowrap;
-    color: #6f6479;
-    background: #fff;
-    border: 1px solid #eadcf4;
-    border-radius: 999px;
+    flex: none; display: inline-flex; align-items: center; min-height: 38px; padding: 0 14px;
+    font-size: 0.875rem; font-weight: 700; text-decoration: none; white-space: nowrap;
+    color: #6f6479; background: #fff; border: 1px solid #eadcf4; border-radius: 999px;
   }
-  .shop-cats a.is-on {
-    color: #fff;
-    background: #6b21a8;
-    border-color: #6b21a8;
-  }
+  .shop-cats a.is-on { color: #fff; background: #6b21a8; border-color: #6b21a8; }
 }
-.shop-results {
-  min-width: 0;
-}
+.shop-results { min-width: 0; }

@@ -7,6 +7,7 @@ import secrets
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import models, transaction
+from django.urls import reverse
 from django.utils import timezone
 
 from account.models import ADMIN_ROLES, User
@@ -18,6 +19,7 @@ from .models import (
     Cart,
     CartService,
     CashierShift,
+    CashMovement,
     CheckoutError,
     Fulfillment,
     HeldSale,
@@ -439,14 +441,48 @@ def void(order, admin, reason):
         raise InvalidTransition(f"Order #{order.pk} sedang diantar kurir; tunggu kembali ke toko.")
     if order.returns.exclude(status=ReturnStatus.REJECTED).exists():
         raise InvalidTransition(f"Order #{order.pk} sudah punya retur; selesaikan lewat retur.")
+    if order.refund_due or order.refunded_amount:
+        # Dana booking grooming yang batal sudah/akan dikembalikan: void penuh akan mengembalikannya dua kali.
+        raise InvalidTransition(
+            f"Order #{order.pk} punya booking yang dibatalkan dan dananya dikembalikan terpisah, jadi tidak bisa dibatalkan penuh."
+        )
+    paid = {
+        row["method"]: row["t"]
+        for row in order.payments.values("method").annotate(t=models.Sum("amount"))
+    }
+    cash_paid = paid.pop(PaymentMethod.CASH, 0) or 0
+    noncash_paid = sum(v or 0 for v in paid.values())
+    # Uang tunai dari shift yang masih buka otomatis tidak dihitung di laci shift itu.
+    # Bila shift asalnya sudah ditutup, uang yang dikembalikan keluar dari laci shift yang sedang buka.
+    payout_shift = None
+    if cash_paid and not (order.shift and order.shift.is_open):
+        payout_shift = CashierShift.current(admin)
+        if payout_shift is None:
+            raise InvalidTransition(
+                "Transaksi ini dari shift kasir yang sudah ditutup. Buka kasir dulu supaya uang tunai "
+                "yang dikembalikan tercatat keluar dari laci."
+            )
     order.order_status = OrderStatus.CANCELLED
     order.voided_at = timezone.now()
     order.voided_by = admin
     order.void_reason = reason[:255]
     order.cancel_reason, order.cancelled_at, order.cancelled_by = reason[:255], order.voided_at, admin
     order.route_position = None
+    if cash_paid:
+        order.refunded_amount = cash_paid
+        order.refund_method = PaymentMethod.CASH
+        order.refunded_at, order.refunded_by = order.voided_at, admin
+        order.refund_note = "Dikembalikan tunai saat transaksi dibatalkan"
+    # Bagian QRIS/transfer dikembalikan lewat bank: dicatat kemudian dengan record_refund.
+    order.refund_due = noncash_paid
     order.save(update_fields=["order_status", "voided_at", "voided_by", "void_reason", "route_position",
-                              "cancel_reason", "cancelled_at", "cancelled_by"])
+                              "cancel_reason", "cancelled_at", "cancelled_by", "refund_due", "refunded_amount",
+                              "refund_method", "refunded_at", "refunded_by", "refund_note"])
+    if payout_shift is not None:
+        CashMovement.objects.create(
+            shift=payout_shift, order=order, amount=cash_paid, created_by=admin,
+            reason=f"Void {order.receipt_no or order.pk} dari shift yang sudah ditutup",
+        )
     for detail in order.details.select_related("product"):
         detail.product.apply_mutation(
             MutationType.IN, detail.quantity, user=admin,
@@ -543,6 +579,15 @@ def decide_return(req, admin, approve, note=""):
     req.decided_by = admin
     req.decided_at = timezone.now()
     req.decision_note = note[:255]
+    refund_shift = None
+    if approve and req.refund_method == PaymentMethod.CASH and req.refund_amount:
+        # Uang retur tunai harus keluar dari laci shift yang sedang buka supaya tercatat di kas.
+        refund_shift = CashierShift.current(req.requested_by) or CashierShift.current(admin)
+        if refund_shift is None:
+            raise InvalidTransition(
+                "Retur tunai butuh kasir yang sedang buka: minta kasir pengaju membuka kasir, "
+                "atau buka kasir Anda sendiri lalu setujui lagi."
+            )
     if not approve:
         if not note:
             raise InvalidTransition("Tulis alasan penolakan.")
@@ -555,8 +600,7 @@ def decide_return(req, admin, approve, note=""):
             MutationType.IN, line.quantity, user=admin, note=f"Retur {req.order.receipt_no or req.order.pk}"
         )
     req.status = ReturnStatus.APPROVED
-    if req.refund_method == PaymentMethod.CASH:
-        req.refund_shift = CashierShift.current(req.requested_by) or CashierShift.current(admin)
+    req.refund_shift = refund_shift
     req.save()
     ActivityLog.record(
         req.order, "Retur disetujui", actor=admin,
@@ -576,3 +620,58 @@ __all__ = [
     "request_return", "decide_return", "returnable_qty", "can_return", "find_product",
     "find_booking", "ensure_booking_payable", "quote", "assign_codes", "CartService",
 ]
+
+
+# ---------------------------------------------------------------- pengembalian dana
+
+
+REFUND_METHODS = (PaymentMethod.CASH, PaymentMethod.TRANSFER, PaymentMethod.QRIS)
+
+
+@transaction.atomic
+def record_refund(order, user, method, note=""):
+    """Catat dana pesanan batal yang sudah dikembalikan ke pembeli.
+
+    Tunai keluar dari laci shift kasir yang sedang buka (tercatat sebagai uang keluar).
+    Hanya transfer yang wajib dan menyimpan nomor referensi; tunai dan QRIS tidak.
+    """
+    from account.models import POS_ROLES
+
+    if user.role not in POS_ROLES:
+        raise InvalidTransition("Pengembalian dana dicatat oleh admin atau kasir.")
+    order = Order.objects.select_for_update().get(pk=order.pk)
+    if not order.refund_due:
+        raise InvalidTransition(f"Order #{order.pk} tidak punya dana yang perlu dikembalikan.")
+    if method not in REFUND_METHODS:
+        raise InvalidTransition("Pilih cara pengembalian dana.")
+    note = " ".join((note or "").split())[:255] if method == PaymentMethod.TRANSFER else ""
+    amount = order.refund_due
+    if method == PaymentMethod.CASH:
+        shift = CashierShift.current(user)
+        if shift is None:
+            raise InvalidTransition("Buka kasir dulu: uang tunai yang dikembalikan harus keluar dari laci shift Anda.")
+        CashMovement.objects.create(
+            shift=shift, order=order, amount=amount, created_by=user,
+            reason=f"Pengembalian dana order #{order.pk}",
+        )
+    elif method == PaymentMethod.TRANSFER and not note:
+        raise InvalidTransition("Tulis nomor referensi transfer pengembalian dana.")
+    order.refunded_amount += amount
+    order.refund_due = 0
+    order.refund_method = method
+    order.refund_note = note
+    order.refunded_at = timezone.now()
+    order.refunded_by = user
+    order.save(update_fields=["refunded_amount", "refund_due", "refund_method", "refund_note",
+                              "refunded_at", "refunded_by"])
+    ActivityLog.record(order, "Dana dikembalikan", actor=user,
+                       detail=f"Rp {amount:,} · {PaymentMethod(method).label}".replace(",", "."))
+    if order.customer_id and not order.customer.is_walk_in:
+        body = f"Rp {amount:,} · {PaymentMethod(method).label}".replace(",", ".")
+        if order.order_status == OrderStatus.CANCELLED:
+            Notification.send(order.customer, f"Dana pesanan #{order.pk} dikembalikan", body, "/pesanan-saya/")
+        else:
+            # Transaksi tetap berjalan; yang batal adalah booking grooming di dalamnya.
+            Notification.send(order.customer, "Dana booking grooming dikembalikan", body,
+                              reverse("service:my_bookings"))
+    return order

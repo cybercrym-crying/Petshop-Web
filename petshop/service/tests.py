@@ -437,6 +437,34 @@ class BookingTransferPaymentTests(Fixtures, TestCase):
         self.client.force_login(self.customer)
         self.assertNotContains(self.client.get(reverse("customer:my_orders")), f"Pesanan #{order.pk}")
 
+    def test_transfer_paid_booking_cancelled_by_store_is_refunded(self):
+        from transaction.models import PaymentMethod
+
+        self.booking.confirm(self.kasir)
+        self.booking.submit_payment_proof(self.customer, self.photo())
+        # Bukti yang belum dicek harus diputuskan dulu, supaya transfernya tidak hilang dari catatan.
+        with self.assertRaises(InvalidBookingTransition):
+            self.booking.cancel(reason="Groomer sakit", by=self.admin)
+        self.booking.verify_transfer(self.kasir)
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("service:cancel_booking", args=[self.booking.pk]),
+                                    {"reason_choice": "lain", "reason_note": "Groomer sakit"}, follow=True)
+        self.assertContains(response, "kembalikan dananya ke pelanggan")
+        self.booking.refresh_from_db()
+        order = self.booking.refund_order
+        self.assertEqual(order.refund_due, self.booking.total_price)
+        self.client.force_login(self.customer)
+        self.assertContains(self.client.get(reverse("service:my_bookings")), "sedang diproses untuk dikembalikan")
+        self.client.force_login(self.kasir)
+        self.client.post(reverse("transaction:record_refund", args=[order.pk]), {"method": "TRANSFER", "note": ""})
+        order.refresh_from_db()
+        self.assertTrue(order.refund_due)  # referensi transfer wajib
+        self.client.post(reverse("transaction:record_refund", args=[order.pk]), {"method": "TRANSFER", "note": "BCA 123"})
+        order.refresh_from_db()
+        self.assertEqual((order.refund_due, order.refund_method), (0, PaymentMethod.TRANSFER))
+        self.client.force_login(self.customer)
+        self.assertContains(self.client.get(reverse("service:my_bookings")), "sudah dikembalikan")
+
     def test_staff_rejects_with_reason_and_customer_can_resend(self):
         self.booking.confirm(self.kasir)
         self.booking.submit_payment_proof(self.customer, self.photo())
