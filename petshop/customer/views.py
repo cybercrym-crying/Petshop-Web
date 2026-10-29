@@ -100,7 +100,21 @@ def about(request):
     )
 
 
+def _staff_cannot_shop(request):
+    """Akun staf tidak berbelanja/booking dari situs pelanggan: transaksi lewat halaman staf."""
+    from account.models import POS_ROLES
+
+    user = request.user
+    return render(request, "customer/staff_blocked.html", _site_context(
+        active_page="shop",
+        staff_home=reverse(user.dashboard_url_name),
+        can_pos=user.role in POS_ROLES,
+    ), status=403)
+
+
 def cart_page(request):
+    if request.user.is_authenticated and not request.user.is_customer:
+        return _staff_cannot_shop(request)
     return render(request, "customer/cart.html", _site_context(active_page="cart"))
 
 
@@ -443,7 +457,9 @@ def _is_customer(user):
 
 def checkout_page(request):
     """Checkout dipisah: customer yang login memesan langsung ke sistem,
-    pengunjung (belum login) tetap memesan lewat WhatsApp admin."""
+    pengunjung (belum login) tetap memesan lewat WhatsApp admin. Akun staf tidak bisa checkout."""
+    if request.user.is_authenticated and not request.user.is_customer:
+        return _staff_cannot_shop(request)
     if _is_customer(request.user):
         # Isian awal titik peta: titik rumah di akun, atau titik pesanan terakhir.
         last = (request.user.latitude, request.user.longitude) if request.user.has_pin else (

@@ -52,6 +52,7 @@
             </main>
             {% include "customer/_site_footer.html" %}
         {% endif %}
+        {% if not staff_viewer %}
         <!-- ADDED TO CART MODAL -->
         <div class="modal-backdrop-custom"
              id="cart-modal"
@@ -91,6 +92,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
         <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
         <script src="{% static 'js/common.js' %}"></script>
         <script src="{% static 'customer/js/nav.js' %}?v=ux4"></script>

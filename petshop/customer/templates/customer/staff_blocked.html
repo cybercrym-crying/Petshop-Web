@@ -1,0 +1,31 @@
+{% extends "customer/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "Khusus pelanggan - Seelly Petshop" %}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'customer/css/track.css' %}?v=7">
+    <link rel="stylesheet" href="{% static 'customer/css/track-dark.css' %}?v=2">
+{% endblock %}
+{% block content %}
+    <section class="container section track-page">
+        <article class="track-card track-verify">
+            <div class="track-card__top">
+                <div>
+                    <div class="track-label">{% translate "Akun staf" %}</div>
+                    <h1 class="track-title" style="font-size:1.5rem">{% translate "Keranjang & checkout khusus pelanggan" %}</h1>
+                </div>
+                <span class="track-badge"><i class="fas fa-lock" aria-hidden="true"></i> {% translate "Tidak tersedia" %}</span>
+            </div>
+            <p class="track-note">{% translate "Akun staf tidak bisa berbelanja atau booking layanan dari situs pelanggan, supaya transaksi toko tidak tercampur dengan pesanan pelanggan." %}</p>
+            <p class="track-note">{% if can_pos %}{% translate "Untuk melayani pembeli, pakai Kasir. Booking grooming untuk pelanggan dibuat lewat Booking Layanan." %}{% else %}{% translate "Bila ingin belanja untuk diri sendiri, pakai akun pelanggan terpisah." %}{% endif %}</p>
+            <div class="track-verify__row">
+                {% if can_pos %}
+                    <a class="btn-primary-seelly" href="{% url 'transaction:make_transaction' %}"><i class="fas fa-cash-register" aria-hidden="true"></i> {% translate "Buka Kasir" %}</a>
+                    <a class="btn-ghost" href="{% url 'service:manage_bookings' %}"><i class="fas fa-calendar-check" aria-hidden="true"></i> {% translate "Booking Layanan" %}</a>
+                {% else %}
+                    <a class="btn-primary-seelly" href="{{ staff_home }}"><i class="fas fa-house" aria-hidden="true"></i> {% translate "Ke halaman staf" %}</a>
+                {% endif %}
+            </div>
+        </article>
+    </section>
+{% endblock %}

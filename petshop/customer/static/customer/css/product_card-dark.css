@@ -10,6 +10,7 @@ html[data-theme="dark"] .product-card .product-info .chip-category { color: #d8b
 html[data-theme="dark"] .product-card .product-price { color: #f1ebf7; }
 html[data-theme="dark"] .product-card .btn-add-cart { border: 0; color: #fff; background: #6b21a8; }
 html[data-theme="dark"] .product-card .btn-add-cart:hover:not(:disabled) { background: #4c1577; }
+html[data-theme="dark"] .product-card .btn-add-cart.is-staff { background: #2b2139; color: #b9adc7; }
 @media (max-width: 991.98px) {
   html[data-theme="dark"] .shop-cats a { color: #b9adc7; background: #211a2b; border: 1px solid #3a2f48; }
   html[data-theme="dark"] .shop-cats a.is-on { color: #fff; background: #6b21a8; border-color: #6b21a8; }
